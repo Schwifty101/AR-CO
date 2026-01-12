@@ -8,8 +8,8 @@ export default function Home() {
   useEffect(() => {
     const fetchApiMessage = async () => {
       try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
-        const res = await fetch(`${apiUrl}/api/hello`, {
+        // Use relative URL - Next.js rewrites will proxy to backend
+        const res = await fetch('/api/hello', {
           cache: 'no-store',
         });
         if (!res.ok) {
