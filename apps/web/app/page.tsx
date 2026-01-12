@@ -1,20 +1,30 @@
-async function getApiMessage() {
-  try {
-    const res = await fetch('http://localhost:3000/api/hello', {
-      cache: 'no-store',
-    });
-    if (!res.ok) {
-      throw new Error('Failed to fetch');
-    }
-    return await res.json();
-  } catch (error) {
-    console.error('Error fetching API:', error);
-    return { message: 'Failed to fetch from API' };
-  }
-}
+'use client';
 
-export default async function Home() {
-  const data = await getApiMessage();
+import { useEffect, useState } from 'react';
+
+export default function Home() {
+  const [message, setMessage] = useState('Loading...');
+
+  useEffect(() => {
+    const fetchApiMessage = async () => {
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+        const res = await fetch(`${apiUrl}/api/hello`, {
+          cache: 'no-store',
+        });
+        if (!res.ok) {
+          throw new Error('Failed to fetch');
+        }
+        const data = await res.json();
+        setMessage(data.message);
+      } catch (error) {
+        console.error('Error fetching API:', error);
+        setMessage('Failed to fetch from API');
+      }
+    };
+
+    fetchApiMessage();
+  }, []);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
@@ -28,13 +38,13 @@ export default async function Home() {
           </p>
           <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 p-6 bg-zinc-100 dark:bg-zinc-900">
             <p className="text-sm font-mono text-zinc-800 dark:text-zinc-200">
-              {data.message}
+              {message}
             </p>
           </div>
         </div>
         <div className="flex flex-col gap-2 text-center text-sm text-zinc-500 dark:text-zinc-400">
-          <p>Next.js running on port 3000</p>
-          <p>API proxied from port 4000</p>
+          <p>Frontend deployed on Vercel</p>
+          <p>Backend deployed on Railway</p>
         </div>
       </main>
     </div>
