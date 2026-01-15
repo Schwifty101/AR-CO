@@ -90,7 +90,7 @@ export default function Header() {
 
         {/* CTA Buttons */}
         <div className={styles.ctaButtons}>
-          <Link href="/client-portal" className={styles.btnSecondary}>
+          <Link href="/portal/login" className={styles.btnSecondary}>
             Client Portal
           </Link>
           <Link href="/contact" className={styles.btnPrimary}>
