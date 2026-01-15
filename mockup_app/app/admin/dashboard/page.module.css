@@ -1,0 +1,287 @@
+.container {
+  display: flex;
+  background-color: var(--bg-primary);
+  min-height: 100vh;
+}
+
+.main {
+  flex: 1;
+  margin-left: 250px;
+  transition: margin-left 0.3s ease;
+}
+
+.topBar {
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--bg-tertiary);
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.menuToggle {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--fg-primary);
+  display: none;
+}
+
+.topBar h1 {
+  margin: 0;
+  flex: 1;
+}
+
+.topBarRight {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.notificationBell,
+.profileDropdown {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2rem;
+  padding: 0.5rem;
+  color: var(--fg-primary);
+  transition: opacity 0.2s;
+}
+
+.notificationBell:hover,
+.profileDropdown:hover {
+  opacity: 0.7;
+}
+
+.profileDropdown {
+  font-size: var(--font-size-p);
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  background-color: var(--bg-primary);
+}
+
+.content {
+  padding: 2rem;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.statCard {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--bg-tertiary);
+  border-radius: 4px;
+  padding: 1.5rem;
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.statCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.statIcon {
+  font-size: 2rem;
+}
+
+.statContent {
+  flex: 1;
+}
+
+.statLabel {
+  color: var(--fg-secondary);
+  font-size: 0.85rem;
+  margin: 0 0 0.5rem 0;
+}
+
+.statValue {
+  color: var(--theme-primary);
+  font-size: 1.75rem;
+  margin: 0;
+  font-weight: 700;
+}
+
+.quickActionsSection {
+  margin-bottom: 2rem;
+}
+
+.quickActionsSection h2 {
+  margin-bottom: 1rem;
+}
+
+.quickActionsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 1rem;
+}
+
+.quickActionButton {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--bg-tertiary);
+  border-radius: 4px;
+  padding: 1.5rem 1rem;
+  text-decoration: none;
+  color: var(--fg-primary);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  text-align: center;
+  transition: transform 0.2s, background-color 0.2s;
+}
+
+.quickActionButton:hover {
+  background-color: var(--bg-tertiary);
+  transform: translateY(-2px);
+}
+
+.actionIcon {
+  font-size: 1.75rem;
+}
+
+.actionLabel {
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.contentGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+
+.activityFeed,
+.appointmentsWidget {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--bg-tertiary);
+  border-radius: 4px;
+  padding: 1.5rem;
+}
+
+.activityFeed h2,
+.appointmentsWidget h2 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+
+.feedList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.feedItem {
+  display: flex;
+  gap: 1rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--bg-tertiary);
+}
+
+.feedItem:last-child {
+  border-bottom: none;
+}
+
+.feedIcon {
+  font-size: 1.2rem;
+  min-width: 1.2rem;
+}
+
+.feedContent {
+  flex: 1;
+}
+
+.feedAction {
+  margin: 0 0 0.25rem 0;
+  color: var(--fg-primary);
+  font-size: var(--font-size-p);
+}
+
+.feedTime {
+  margin: 0;
+  color: var(--fg-secondary);
+  font-size: 0.85rem;
+}
+
+.appointmentsList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.appointmentItem {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem;
+  background-color: var(--bg-primary);
+  border-radius: 4px;
+  border-left: 3px solid var(--theme-primary);
+}
+
+.appointmentTime {
+  font-weight: 600;
+  color: var(--theme-primary);
+  min-width: 70px;
+}
+
+.appointmentDetails {
+  flex: 1;
+}
+
+.appointmentClient {
+  margin: 0 0 0.25rem 0;
+  font-weight: 500;
+  color: var(--fg-primary);
+}
+
+.appointmentService {
+  margin: 0 0 0.25rem 0;
+  color: var(--fg-secondary);
+  font-size: 0.9rem;
+}
+
+.appointmentAttorney {
+  margin: 0;
+  color: var(--fg-secondary);
+  font-size: 0.85rem;
+}
+
+@media (max-width: 1024px) {
+  .contentGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .main {
+    margin-left: 0;
+  }
+
+  .menuToggle {
+    display: block;
+  }
+
+  .statsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .quickActionsGrid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  }
+}

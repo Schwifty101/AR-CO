@@ -1,0 +1,401 @@
+.container {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--bg-primary);
+}
+
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.topBar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.topBar h1 {
+  margin: 0;
+}
+
+.menuToggle {
+  display: none;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  .menuToggle {
+    display: block;
+  }
+}
+
+.content {
+  flex: 1;
+  padding: 2rem;
+  overflow-y: auto;
+}
+
+.header {
+  margin-bottom: 2rem;
+}
+
+.header h2 {
+  margin-bottom: 0.5rem;
+}
+
+.refNumber {
+  color: var(--fg-secondary);
+  font-size: 0.875rem;
+}
+
+.statusBadge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-top: 0.5rem;
+}
+
+.statusBadge[data-status="In Progress"] {
+  background-color: #e3f2fd;
+  color: #1976d2;
+}
+
+.statusBadge[data-status="Completed"] {
+  background-color: #e8f5e9;
+  color: #388e3c;
+}
+
+.statusBadge[data-status="Pending"] {
+  background-color: #fff3e0;
+  color: #f57c00;
+}
+
+.progressBar {
+  height: 8px;
+  background-color: var(--bg-secondary);
+  border-radius: 4px;
+  margin-top: 1rem;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background-color: var(--theme-primary);
+  transition: width 0.3s ease;
+}
+
+.progressText {
+  font-size: 0.875rem;
+  color: var(--fg-secondary);
+  margin-top: 0.5rem;
+}
+
+.mainContent {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 2rem;
+}
+
+.mainColumn {
+  display: flex;
+  flex-direction: column;
+}
+
+.tabs {
+  display: flex;
+  gap: 1rem;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 2rem;
+}
+
+.tab {
+  padding: 0.75rem 1rem;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--fg-secondary);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.tab:hover {
+  color: var(--fg-primary);
+}
+
+.tab.active {
+  color: var(--theme-primary);
+  border-bottom-color: var(--theme-primary);
+}
+
+.tabContent {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.tabContent h3 {
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.timelineEvent {
+  display: flex;
+  gap: 1rem;
+}
+
+.timelineIcon {
+  font-size: 1.5rem;
+  min-width: 2rem;
+}
+
+.timelineContent {
+  flex: 1;
+}
+
+.timelineDate {
+  font-weight: 500;
+  color: var(--fg-primary);
+  margin: 0 0 0.25rem 0;
+}
+
+.timelineDescription {
+  color: var(--fg-secondary);
+  margin: 0;
+}
+
+.documentHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.documentList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.documentItem {
+  display: grid;
+  grid-template-columns: 1fr auto auto auto;
+  gap: 1rem;
+  align-items: center;
+  padding: 1rem;
+  background-color: var(--bg-secondary);
+  border-radius: 0.5rem;
+}
+
+.documentName {
+  font-weight: 500;
+}
+
+.documentMeta {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.875rem;
+  color: var(--fg-secondary);
+}
+
+.messagesSection {
+  display: flex;
+  flex-direction: column;
+  height: 400px;
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+}
+
+.messagesList {
+  flex: 1;
+  padding: 1rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.message {
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  max-width: 70%;
+}
+
+.message.received {
+  background-color: var(--bg-secondary);
+  align-self: flex-start;
+}
+
+.message.sent {
+  background-color: var(--theme-primary);
+  color: white;
+  align-self: flex-end;
+}
+
+.messageSender {
+  font-weight: 500;
+  font-size: 0.875rem;
+  margin: 0 0 0.25rem 0;
+}
+
+.messageText {
+  margin: 0 0 0.25rem 0;
+}
+
+.messageTime {
+  font-size: 0.75rem;
+  opacity: 0.7;
+  margin: 0;
+}
+
+.messageInput {
+  display: flex;
+  gap: 0.5rem;
+  padding: 1rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.messageInput textarea {
+  flex: 1;
+  padding: 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 0.25rem;
+  font-family: inherit;
+  resize: none;
+}
+
+.paymentList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.paymentItem {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 1rem;
+  align-items: center;
+  padding: 1rem;
+  background-color: var(--bg-secondary);
+  border-radius: 0.5rem;
+}
+
+.paymentInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.paymentDate {
+  font-weight: 500;
+  color: var(--fg-primary);
+  margin: 0 0 0.25rem 0;
+}
+
+.paymentDescription {
+  color: var(--fg-secondary);
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+.paymentAmount {
+  font-weight: 600;
+  color: var(--fg-primary);
+}
+
+.paymentStatus {
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.paymentStatus[data-status="Paid"] {
+  background-color: #e8f5e9;
+  color: #388e3c;
+}
+
+.paymentStatus[data-status="Pending"] {
+  background-color: #fff3e0;
+  color: #f57c00;
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.attorneyCard {
+  padding: 1.5rem;
+  background-color: var(--bg-secondary);
+  border-radius: 0.5rem;
+  text-align: center;
+}
+
+.attorneyImage {
+  font-size: 3rem;
+  margin-bottom: 0.5rem;
+}
+
+.attorneyCard h3 {
+  margin: 0 0 0.25rem 0;
+}
+
+.attorneyTitle {
+  color: var(--fg-secondary);
+  font-size: 0.875rem;
+  margin: 0 0 1rem 0;
+}
+
+.attorneyContact {
+  text-align: left;
+  margin: 1rem 0;
+  font-size: 0.875rem;
+}
+
+.attorneyContact p {
+  margin: 0.25rem 0;
+  word-break: break-all;
+}
+
+@media (max-width: 1024px) {
+  .mainContent {
+    grid-template-columns: 1fr;
+  }
+
+  .documentItem {
+    grid-template-columns: 1fr auto;
+  }
+
+  .documentMeta {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 768px) {
+  .tabs {
+    overflow-x: auto;
+  }
+
+  .message {
+    max-width: 100%;
+  }
+
+  .paymentItem {
+    grid-template-columns: 1fr;
+  }
+}
