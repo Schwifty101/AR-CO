@@ -1,0 +1,168 @@
+.container {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--bg-primary);
+}
+
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.topBar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.topBar h1 {
+  margin: 0;
+}
+
+.menuToggle {
+  display: none;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  .menuToggle {
+    display: block;
+  }
+}
+
+.content {
+  flex: 1;
+  padding: 2rem;
+  overflow-y: auto;
+}
+
+.toolBar {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.filters {
+  display: flex;
+  gap: 1rem;
+}
+
+.filterSelect {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: 0.25rem;
+  background-color: var(--bg-primary);
+  color: var(--fg-primary);
+  cursor: pointer;
+}
+
+.searchInput {
+  flex: 1;
+  min-width: 200px;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: 0.25rem;
+}
+
+.documentTable {
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.tableHeader {
+  display: grid;
+  grid-template-columns: 40px 1fr 1fr 1fr 1fr 1fr 80px;
+  gap: 1rem;
+  padding: 1rem;
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.headerCell {
+  display: flex;
+  align-items: center;
+  color: var(--fg-primary);
+}
+
+.tableBody {
+  display: flex;
+  flex-direction: column;
+}
+
+.tableRow {
+  display: grid;
+  grid-template-columns: 40px 1fr 1fr 1fr 1fr 1fr 80px;
+  gap: 1rem;
+  padding: 1rem;
+  border-bottom: 1px solid var(--border-color);
+  align-items: center;
+}
+
+.tableRow:last-child {
+  border-bottom: none;
+}
+
+.cell {
+  display: flex;
+  align-items: center;
+  font-size: 0.875rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.actionBtn {
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  cursor: pointer;
+  padding: 0.25rem;
+  margin: 0 0.25rem;
+}
+
+@media (max-width: 1024px) {
+  .tableHeader {
+    grid-template-columns: 40px 1fr 1fr 80px;
+  }
+
+  .tableRow {
+    grid-template-columns: 40px 1fr 1fr 80px;
+  }
+
+  .headerCell:nth-child(3),
+  .headerCell:nth-child(4),
+  .headerCell:nth-child(5),
+  .cell:nth-child(3),
+  .cell:nth-child(4),
+  .cell:nth-child(5) {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .toolBar {
+    flex-direction: column;
+  }
+
+  .filters {
+    flex-direction: column;
+  }
+
+  .tableHeader {
+    grid-template-columns: 40px 1fr 80px;
+  }
+
+  .tableRow {
+    grid-template-columns: 40px 1fr 80px;
+  }
+}

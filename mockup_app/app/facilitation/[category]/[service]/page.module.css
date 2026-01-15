@@ -1,0 +1,142 @@
+.main {
+  background-color: var(--background);
+  color: var(--foreground);
+  padding: 2rem 1rem;
+  min-height: 100vh;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.content {
+  display: flex;
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.mainContent {
+  flex: 1;
+}
+
+.mainContent h1 {
+  color: var(--theme-color);
+  margin-bottom: 1rem;
+  font-size: var(--h1-size);
+}
+
+.description {
+  color: var(--foreground);
+  margin-bottom: 2rem;
+  font-size: var(--p-size);
+  line-height: 1.6;
+}
+
+.section {
+  margin-bottom: 3rem;
+}
+
+.section h2 {
+  color: var(--theme-color);
+  font-size: var(--h2-size);
+  margin-bottom: 1rem;
+}
+
+.featureList,
+.requirementsList {
+  list-style: none;
+  padding: 0;
+}
+
+.featureList li,
+.requirementsList li {
+  padding: 0.75rem 0;
+  padding-left: 1.5rem;
+  position: relative;
+  color: var(--foreground);
+}
+
+.featureList li::before,
+.requirementsList li::before {
+  content: "✓";
+  position: absolute;
+  left: 0;
+  color: var(--theme-color);
+  font-weight: bold;
+}
+
+.faqList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.faqItem {
+  padding: 1rem;
+  background-color: var(--secondary-color);
+  border-radius: 0.5rem;
+}
+
+.faqItem h3 {
+  color: var(--theme-color);
+  font-size: var(--h3-size);
+  margin-bottom: 0.5rem;
+}
+
+.faqItem p {
+  color: var(--foreground);
+  font-size: var(--p-size);
+}
+
+.sidebar {
+  width: 300px;
+}
+
+.priceCard {
+  background-color: var(--secondary-color);
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  position: sticky;
+  top: 2rem;
+}
+
+.priceCard h3 {
+  color: var(--theme-color);
+  font-size: var(--h3-size);
+  margin-bottom: 1rem;
+}
+
+.priceRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--background);
+  color: var(--foreground);
+}
+
+.priceRow:last-of-type {
+  border-bottom: none;
+  margin-bottom: 1.5rem;
+}
+
+.price {
+  font-weight: bold;
+  color: var(--theme-color);
+  font-size: 1.5rem;
+}
+
+@media (max-width: 768px) {
+  .content {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+  }
+
+  .priceCard {
+    position: static;
+  }
+}

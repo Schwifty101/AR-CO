@@ -1,0 +1,116 @@
+.loginContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-color: var(--bg-primary);
+  padding: 2rem;
+}
+
+.loginBox {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--bg-tertiary);
+  border-radius: 4px;
+  padding: 3rem 2rem;
+  width: 100%;
+  max-width: 400px;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.header h1 {
+  color: var(--theme-primary);
+  font-size: 2rem;
+  margin: 0 0 0.5rem 0;
+}
+
+.header h2 {
+  color: var(--fg-secondary);
+  font-size: 1rem;
+  font-weight: 400;
+  margin: 0;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.formGroup label {
+  color: var(--fg-primary);
+  font-size: var(--font-size-p);
+  font-weight: 500;
+}
+
+.formGroup input[type="email"],
+.formGroup input[type="password"] {
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--bg-tertiary);
+  border-radius: 4px;
+  background-color: var(--bg-primary);
+  color: var(--fg-primary);
+  font-size: var(--font-size-p);
+  transition: border-color 0.2s;
+}
+
+.formGroup input[type="email"]:focus,
+.formGroup input[type="password"]:focus {
+  outline: none;
+  border-color: var(--theme-primary);
+}
+
+.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-size: var(--font-size-p);
+}
+
+.checkbox input[type="checkbox"] {
+  cursor: pointer;
+}
+
+.submitButton {
+  width: 100%;
+  padding: 0.75rem;
+  font-size: var(--font-size-p);
+  font-weight: 600;
+}
+
+.footer {
+  text-align: center;
+  border-top: 1px solid var(--bg-tertiary);
+  padding-top: 1.5rem;
+}
+
+.footer a {
+  color: var(--theme-primary);
+  text-decoration: none;
+  font-size: var(--font-size-p);
+  display: block;
+  margin-bottom: 1rem;
+}
+
+.footer a:hover {
+  text-decoration: underline;
+}
+
+.security {
+  font-size: 0.75rem;
+  color: var(--fg-secondary);
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
