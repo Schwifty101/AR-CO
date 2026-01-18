@@ -5,7 +5,9 @@ import Button from "@/components/Button"
 import styles from "./page.module.css"
 import Link from "next/link"
 
-export default function ConfirmationPage({ params }: { params: { service: string } }) {
+export default async function ConfirmationPage({ params }: { params: Promise<{ service: string }> }) {
+  const { service } = await params
+  
   return (
     <>
       <Header />
@@ -33,7 +35,7 @@ export default function ConfirmationPage({ params }: { params: { service: string
               </div>
               <div className={styles.detailItem}>
                 <span className={styles.label}>Service</span>
-                <span className={styles.value}>{decodeURIComponent(params.service).replace(/-/g, " ")}</span>
+                <span className={styles.value}>{decodeURIComponent(service).replace(/-/g, " ")}</span>
               </div>
               <div className={styles.detailItem}>
                 <span className={styles.label}>Amount Paid</span>

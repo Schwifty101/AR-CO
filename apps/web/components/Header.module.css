@@ -1,0 +1,194 @@
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  transition: all 0.3s ease;
+  isolation: isolate;
+}
+
+.header.scrolled {
+  background: rgba(17, 17, 16, 0.85);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+}
+
+/* Fallback for browsers that don't support backdrop-filter */
+@supports not (backdrop-filter: blur(20px)) {
+  .header.scrolled {
+    background: rgba(17, 17, 16, 0.95);
+  }
+}
+
+.container {
+ 
+  margin: 0 auto;
+  padding-inline: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 80px;
+}
+
+.logo a {
+  font-weight: 700;
+  color: var(--theme-primary);
+}
+
+.nav {
+  flex: 1;
+  margin-left: 4rem;
+}
+
+.navList {
+  list-style: none;
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+}
+
+.navList a {
+  color: var(--fg-primary);
+  font-weight: 200;
+  transition: color 0.3s ease;
+}
+
+.navList a:hover {
+  color: var(--theme-primary);
+}
+
+.dropdown {
+  position: relative;
+  cursor: pointer;
+  color: var(--fg-primary);
+  font-weight: 500;
+}
+
+.submenu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: var(--bg-primary);
+  border-radius: 10px;
+  padding: 1rem;
+  min-width: 300px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-top: 0.5rem;
+  border: 1px solid var(--border-color);
+  animation: submenuSlideDown 0.3s ease-out forwards;
+  transform-origin: top center;
+}
+
+.submenu.submenuClosing {
+  animation: submenuSlideUp 0.3s ease-out forwards;
+}
+
+.submenu.submenuClosing .submenuColumn a {
+  animation: slideOutLeft 0.25s ease-out forwards;
+}
+
+@keyframes submenuSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes submenuSlideUp {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+
+.submenuColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.submenuColumn a {
+  color: var(--fg-primary);
+  transition: color 0.3s ease;
+  animation: slideInRight 0.4s ease-out forwards;
+  opacity: 0;
+}
+
+.submenuColumn a:nth-child(1) { animation-delay: 0.05s; }
+.submenuColumn a:nth-child(2) { animation-delay: 0.1s; }
+.submenuColumn a:nth-child(3) { animation-delay: 0.15s; }
+.submenuColumn a:nth-child(4) { animation-delay: 0.2s; }
+.submenuColumn a:nth-child(5) { animation-delay: 0.25s; }
+.submenuColumn a:nth-child(6) { animation-delay: 0.3s; }
+.submenuColumn a:nth-child(7) { animation-delay: 0.35s; }
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideOutLeft {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+}
+
+.submenuColumn a:hover {
+  color: var(--theme-accent);
+}
+
+.ctaButtons {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.btnPrimary {
+  background-color: var(--theme-primary);
+  color: white;
+  padding: 0.5rem;
+  border-radius: 4px;
+  font-weight: 300;
+  transition: background-color 0.3s ease;
+}
+
+.btnPrimary:hover {
+  background-color: var(--theme-secondary);
+  color: white;
+}
+
+.btnSecondary {
+  background-color: transparent;
+  color: var(--theme-primary);
+  padding: 0.5rem;
+  border: 1px solid var(--theme-primary);
+  border-radius: 4px;
+  font-weight: 300;
+  transition: all 0.3s ease;
+}
+
+.btnSecondary:hover {
+  background-color: var(--theme-primary);
+  color: white;
+}

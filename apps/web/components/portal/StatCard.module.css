@@ -1,0 +1,19 @@
+.card {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 0.375rem;
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.title {
+  margin: 0 0 0.75rem 0;
+  color: var(--fg-secondary);
+  font-weight: 500;
+}
+
+.value {
+  margin: 0;
+  color: var(--theme-primary);
+  font-weight: 700;
+}
