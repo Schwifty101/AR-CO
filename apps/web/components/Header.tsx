@@ -12,6 +12,9 @@ export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false)
   const [practiceTimeout, setPracticeTimeout] = useState<NodeJS.Timeout | null>(null)
   const [facilTimeout, setFacilTimeout] = useState<NodeJS.Timeout | null>(null)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [mobilePracticeOpen, setMobilePracticeOpen] = useState(false)
+  const [mobileFacilOpen, setMobileFacilOpen] = useState(false)
 
   useEffect(() => {
     const handleScroll = () => {
@@ -147,8 +150,79 @@ export default function Header() {
           <Link href="/contact" className={styles.btnPrimary}>
             Contact Us
           </Link>
+          {/* Mobile Menu Button */}
+          <button 
+            className={styles.mobileMenuBtn}
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Toggle menu"
+          >
+            <span className={mobileMenuOpen ? styles.menuIconOpen : ''}></span>
+            <span className={mobileMenuOpen ? styles.menuIconOpen : ''}></span>
+            <span className={mobileMenuOpen ? styles.menuIconOpen : ''}></span>
+          </button>
         </div>
       </div>
+
+      {/* Mobile Menu */}
+      {mobileMenuOpen && (
+        <div className={styles.mobileMenu}>
+          <nav className={styles.mobileNav}>
+            <Link href="/" onClick={() => setMobileMenuOpen(false)}>Home</Link>
+            <Link href="/about" onClick={() => setMobileMenuOpen(false)}>About Us</Link>
+            <Link href="/team" onClick={() => setMobileMenuOpen(false)}>Our Team</Link>
+            
+            {/* Mobile Practice Areas */}
+            <div className={styles.mobileDropdown}>
+              <button 
+                className={styles.mobileDropdownBtn}
+                onClick={() => setMobilePracticeOpen(!mobilePracticeOpen)}
+              >
+                Practice Areas
+                <span className={mobilePracticeOpen ? styles.arrowOpen : styles.arrow}>▼</span>
+              </button>
+              {mobilePracticeOpen && (
+                <div className={styles.mobileSubmenu}>
+                  <Link href="/practice/corporate-law" onClick={() => setMobileMenuOpen(false)}>Corporate Law</Link>
+                  <Link href="/practice/tax-law" onClick={() => setMobileMenuOpen(false)}>Tax Law</Link>
+                  <Link href="/practice/immigration" onClick={() => setMobileMenuOpen(false)}>Immigration</Link>
+                  <Link href="/practice/labor-law" onClick={() => setMobileMenuOpen(false)}>Labour Law</Link>
+                  <Link href="/practice/intellectual-property" onClick={() => setMobileMenuOpen(false)}>Intellectual Property</Link>
+                  <Link href="/practice/real-estate" onClick={() => setMobileMenuOpen(false)}>Real Estate</Link>
+                  <Link href="/practice/litigation" onClick={() => setMobileMenuOpen(false)}>Litigation</Link>
+                  <Link href="/practice/contracts" onClick={() => setMobileMenuOpen(false)}>Contracts</Link>
+                  <Link href="/practice/compliance" onClick={() => setMobileMenuOpen(false)}>Compliance</Link>
+                  <Link href="/practice/family-law" onClick={() => setMobileMenuOpen(false)}>Family Law</Link>
+                  <Link href="/practice/banking" onClick={() => setMobileMenuOpen(false)}>Banking & Finance</Link>
+                  <Link href="/practice/dispute-resolution" onClick={() => setMobileMenuOpen(false)}>Dispute Resolution</Link>
+                  <Link href="/practice/international-law" onClick={() => setMobileMenuOpen(false)}>International Law</Link>
+                </div>
+              )}
+            </div>
+
+            {/* Mobile Facilitation Centre */}
+            <div className={styles.mobileDropdown}>
+              <button 
+                className={styles.mobileDropdownBtn}
+                onClick={() => setMobileFacilOpen(!mobileFacilOpen)}
+              >
+                Facilitation Centre
+                <span className={mobileFacilOpen ? styles.arrowOpen : styles.arrow}>▼</span>
+              </button>
+              {mobileFacilOpen && (
+                <div className={styles.mobileSubmenu}>
+                  <Link href="/facilitation/document-drafting" onClick={() => setMobileMenuOpen(false)}>Document Drafting</Link>
+                  <Link href="/facilitation/legal-consultation" onClick={() => setMobileMenuOpen(false)}>Legal Consultation</Link>
+                  <Link href="/facilitation/contract-review" onClick={() => setMobileMenuOpen(false)}>Contract Review</Link>
+                  <Link href="/facilitation/compliance-audit" onClick={() => setMobileMenuOpen(false)}>Compliance Audit</Link>
+                  <Link href="/facilitation/mediation" onClick={() => setMobileMenuOpen(false)}>Mediation Services</Link>
+                </div>
+              )}
+            </div>
+
+            <Link href="/blog" onClick={() => setMobileMenuOpen(false)}>Blog</Link>
+          </nav>
+        </div>
+      )}
     </header>
   )
 }

@@ -2,6 +2,7 @@ import Header from "@/components/Header"
 import Footer from "@/components/Footer"
 import PracticeCard from "@/components/PracticeCard"
 import Button from "@/components/Button"
+import LogoCarousel from "@/components/LogoCarousel"
 import Link from "next/link"
 import styles from "./page.module.css"
 
@@ -49,6 +50,9 @@ export default function Home() {
             <Button>Get Legal Help</Button>
           </div>
         </section>
+
+        {/* Logo Carousel Section */}
+        <LogoCarousel />
 
         {/* Practice Areas Section */}
         <section className={styles.section}>
