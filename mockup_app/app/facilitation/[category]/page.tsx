@@ -4,7 +4,9 @@ import Breadcrumb from "@/components/Breadcrumb"
 import ServiceCard from "@/components/ServiceCard"
 import styles from "./page.module.css"
 
-export default function CategoryPage({ params }: { params: { category: string } }) {
+export default async function CategoryPage({ params }: { params: Promise<{ category: string }> }) {
+  const { category } = await params
+  
   const services = [
     { title: "Business Incorporation", price: "PKR 25,000", timeline: "5 days", slug: "business-incorporation" },
     { title: "Memorandum of Association", price: "PKR 15,000", timeline: "3 days", slug: "memorandum-of-association" },
@@ -20,11 +22,11 @@ export default function CategoryPage({ params }: { params: { category: string } 
             items={[
               { label: "Home", href: "/" },
               { label: "Facilitation", href: "/facilitation" },
-              { label: decodeURIComponent(params.category) },
+              { label: decodeURIComponent(category) },
             ]}
           />
 
-          <h1>{decodeURIComponent(params.category).replace(/-/g, " ")}</h1>
+          <h1>{decodeURIComponent(category).replace(/-/g, " ")}</h1>
           <p className={styles.description}>
             Professional services in this category with transparent pricing and timelines.
           </p>
@@ -36,7 +38,7 @@ export default function CategoryPage({ params }: { params: { category: string } 
                 title={service.title}
                 price={service.price}
                 timeline={service.timeline}
-                link={`/facilitation/${params.category}/${service.slug}`}
+                link={`/facilitation/${category}/${service.slug}`}
               />
             ))}
           </div>

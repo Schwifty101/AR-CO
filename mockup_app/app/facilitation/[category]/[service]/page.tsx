@@ -5,7 +5,9 @@ import Button from "@/components/Button"
 import styles from "./page.module.css"
 import Link from "next/link"
 
-export default function ServiceDetailPage({ params }: { params: { category: string; service: string } }) {
+export default async function ServiceDetailPage({ params }: { params: Promise<{ category: string; service: string }> }) {
+  const { category, service } = await params
+  
   const serviceDetails = {
     title: "Business Incorporation",
     price: "PKR 25,000",
@@ -41,8 +43,8 @@ export default function ServiceDetailPage({ params }: { params: { category: stri
             items={[
               { label: "Home", href: "/" },
               { label: "Facilitation", href: "/facilitation" },
-              { label: decodeURIComponent(params.category), href: `/facilitation/${params.category}` },
-              { label: decodeURIComponent(params.service) },
+              { label: decodeURIComponent(category), href: `/facilitation/${category}` },
+              { label: decodeURIComponent(service) },
             ]}
           />
 

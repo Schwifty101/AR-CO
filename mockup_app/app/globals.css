@@ -224,3 +224,40 @@ button {
 .page-transition {
   animation: primaryPageTransition 0.4s ease-out forwards;
 }
+
+/* Hover Effects - Change hover details here to apply across all elements */
+
+/* Button Hover Effect */
+.button-hover {
+  transition: all 0.3s ease;
+}
+
+.button-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px var(--shadow-medium);
+}
+
+.button-hover:active {
+  transform: translateY(0);
+}
+
+/* Card Hover Effect */
+.card-hover {
+  transition: all 0.3s ease;
+}
+
+.card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px var(--shadow-medium);
+  border-color: var(--theme-primary);
+}
+
+/* Text/Link Hover Effect */
+.text-hover {
+  transition: color 0.3s ease, text-decoration 0.3s ease;
+}
+
+.text-hover:hover {
+  color: var(--theme-secondary);
+  text-decoration: underline;
+}

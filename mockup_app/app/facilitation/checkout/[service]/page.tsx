@@ -2,14 +2,15 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, use } from "react"
 import Header from "@/components/Header"
 import Footer from "@/components/Footer"
 import Breadcrumb from "@/components/Breadcrumb"
 import Button from "@/components/Button"
 import styles from "./page.module.css"
 
-export default function CheckoutPage({ params }: { params: { service: string } }) {
+export default function CheckoutPage({ params }: { params: Promise<{ service: string }> }) {
+  const { service } = use(params)
   const [step, setStep] = useState(1)
   const [formData, setFormData] = useState({
     fullName: "",
@@ -44,7 +45,7 @@ export default function CheckoutPage({ params }: { params: { service: string } }
 
   const handleSubmit = () => {
     // Redirect to confirmation page
-    window.location.href = `/facilitation/checkout/${params.service}/confirmation`
+    window.location.href = `/facilitation/checkout/${service}/confirmation`
   }
 
   return (
@@ -154,7 +155,7 @@ export default function CheckoutPage({ params }: { params: { service: string } }
                     <div className={styles.reviewBlock}>
                       <h3>Service Details</h3>
                       <p>
-                        <strong>Service:</strong> {decodeURIComponent(params.service).replace(/-/g, " ")}
+                        <strong>Service:</strong> {decodeURIComponent(service).replace(/-/g, " ")}
                       </p>
                       <p>
                         <strong>Price:</strong> PKR 25,000
@@ -236,7 +237,7 @@ export default function CheckoutPage({ params }: { params: { service: string } }
                 <h3>Order Summary</h3>
                 <div className={styles.summaryItem}>
                   <span>Service</span>
-                  <span>{decodeURIComponent(params.service).replace(/-/g, " ")}</span>
+                  <span>{decodeURIComponent(service).replace(/-/g, " ")}</span>
                 </div>
                 <div className={styles.summaryItem}>
                   <span>Price</span>

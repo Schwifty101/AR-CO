@@ -1,0 +1,29 @@
+.card {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 2rem;
+  text-align: center;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.card:hover {
+  border-color: var(--theme-primary);
+  box-shadow: 0 4px 12px rgba(30, 58, 95, 0.15);
+  transform: translateY(-4px);
+}
+
+.icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.card h3 {
+  color: var(--theme-primary);
+  margin-bottom: 0.5rem;
+}
+
+.card p {
+  color: var(--fg-secondary);
+}
