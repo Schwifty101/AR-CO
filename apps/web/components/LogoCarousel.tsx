@@ -34,7 +34,30 @@ export default function LogoCarousel() {
   const canTrigger = useRef(true)
   const MAX_CONSUMED_SCROLL = typeof window !== 'undefined' ? window.innerHeight * 3 : 3000
 
-  // Check if section is at viewport center
+  // Use IntersectionObserver for visibility animation
+  useEffect(() => {
+    if (!sectionRef.current) return
+    
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !isVisible) {
+            setIsVisible(true)
+          }
+        })
+      },
+      {
+        threshold: 0.1,
+        rootMargin: '0px 0px -300px 0px'
+      }
+    )
+    
+    observer.observe(sectionRef.current)
+    
+    return () => observer.disconnect()
+  }, [isVisible])
+
+  // Check if section is at viewport center for scroll lock
   useEffect(() => {
     const checkPosition = () => {
       if (!sectionRef.current) return
@@ -51,7 +74,6 @@ export default function LogoCarousel() {
       
       if (isAtCenter && !isScrollLocked && canTrigger.current) {
         // Enter scroll lock mode
-        setIsVisible(true)
         setIsScrollLocked(true)
         lockScrollY.current = window.scrollY
         consumedScroll.current = 0
@@ -65,10 +87,9 @@ export default function LogoCarousel() {
     }
     
     window.addEventListener('scroll', checkPosition, { passive: true })
-    checkPosition() // Check on mount
     
     return () => window.removeEventListener('scroll', checkPosition)
-  }, [isScrollLocked, isVisible])
+  }, [isScrollLocked])
 
   // Wheel event handler for scroll hijacking
   useEffect(() => {

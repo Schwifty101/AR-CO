@@ -2,13 +2,16 @@
   padding: 4rem 0;
   overflow: hidden;
   opacity: 0;
+  transform: translateY(50px);
   position: relative;
+  transition: opacity 0.8s ease-out, transform 0.8s ease-out;
 }
 
 .logoSection.visible {
   opacity: 1;
   transform: translateY(0);
 }
+
 
 
 
@@ -37,6 +40,7 @@
   max-width: 1400px;
   margin: 0 auto;
   margin-top: 40px;  
+  margin-bottom: 40px;
 }
 .container h1{
     color: var(--theme-primary);
@@ -85,7 +89,6 @@
 }
 
 .logoItem:hover {
-  transform: scale(1.1);
 }
 
 .logoImage {
