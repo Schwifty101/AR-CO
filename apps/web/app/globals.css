@@ -168,6 +168,10 @@
     padding: 0;
     box-sizing: border-box;
   }
+  html {
+    overflow-x: hidden;
+    width: 100%;
+  }
   body {
     @apply text-foreground;
     font-family: 'Cabinet Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -177,6 +181,8 @@
     color: var(--fg-primary);
     line-height: var(--line-height);
     min-height: 100vh;
+    overflow-x: hidden;
+    width: 100%;
   }
 }
 
