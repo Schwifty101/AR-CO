@@ -2,7 +2,7 @@ import Header from "@/components/Header"
 import Footer from "@/components/Footer"
 import PracticeCard from "@/components/PracticeCard"
 import Button from "@/components/Button"
-import LogoCarousel from "@/components/LogoCarousel"
+import Hero from "@/components/Hero"
 import Link from "next/link"
 import styles from "./page.module.css"
 
@@ -42,17 +42,8 @@ export default function Home() {
     <>
       <Header />
       <main className="page-transition">
-        {/* Hero Section */}
-        <section className={styles.hero}>
-          <div className={styles.heroContent}>
-            <h1>Expert Legal Solutions for Your Business</h1>
-            <p>Providing professional legal services with over 20 years of experience</p>
-            <Button>Get Legal Help</Button>
-          </div>
-        </section>
-
-        {/* Logo Carousel Section */}
-        <LogoCarousel />
+        {/* Hero Section with Integrated Logo Carousel */}
+        <Hero />
 
         {/* Practice Areas Section */}
         <section className={styles.section}>
