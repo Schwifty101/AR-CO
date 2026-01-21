@@ -181,43 +181,51 @@
   .megaMenu {
     animation: none;
   }
+
+  .megaMenuColumn:hover .illustration {
+    transform: scale(1.01);
+  }
 }
 
 .megaMenuContent {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 2.5rem 2rem;
+  padding: 4rem 3rem 4.5rem;
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  gap: 2rem;
+  gap: 3.5rem;
 }
 
 .megaMenuColumn {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 2.5rem;
 }
 
 .columnIllustration {
   position: relative;
-  height: 100px;
+  height: 80px;
   display: flex;
   align-items: center;
-  justify-content: center;
-  margin-bottom: 0.5rem;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
 }
 
 .illustration {
-  width: 100%;
-  height: 100%;
+  width: 48px;
+  height: 48px;
   color: #1a1a1a;
+  will-change: transform;
+  contain: layout;
+  flex-shrink: 0;
+}
+
+.megaMenuColumn:hover .illustration {
+  transform: scale(1.05);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .badge {
-  position: absolute;
-  top: 50%;
-  right: 1rem;
-  transform: translateY(-50%);
   width: 28px;
   height: 28px;
   border-radius: 50%;
@@ -229,6 +237,7 @@
   align-items: center;
   justify-content: center;
   font-family: 'Cabinet Grotesk', sans-serif;
+  flex-shrink: 0;
 }
 
 .columnHeader {
@@ -238,32 +247,37 @@
 }
 
 .columnTitle {
-  font-size: 1.125rem;
+  font-size: 1.5rem;
   font-weight: 600;
   line-height: 1.3;
+  letter-spacing: -0.01em;
   color: #1a1a1a;
   font-family: 'Cabinet Grotesk', sans-serif;
   margin: 0;
+  margin-bottom: 0.5rem;
 }
 
 .columnLinks {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.25rem;
 }
 
 .megaMenuLink {
   color: #1a1a1a;
-  font-size: 0.875rem;
+  font-size: 0.9375rem;
+  font-weight: 400;
+  letter-spacing: 0.01em;
   text-decoration: none;
-  padding: 0.5rem 0.75rem;
+  padding: 0.4rem 0.75rem;
   border-radius: 6px;
   transition: all 0.2s ease;
   font-family: 'Cabinet Grotesk', sans-serif;
   display: flex;
   align-items: center;
   position: relative;
-  line-height: 1.4;
+  line-height: 1.5;
+  text-align: left;
 }
 
 .megaMenuLink:hover {
@@ -610,20 +624,25 @@
 @media (max-width: 1200px) and (min-width: 901px) {
   .megaMenuContent {
     grid-template-columns: repeat(3, 1fr);
-    gap: 2rem;
-    padding: 2.5rem 2rem;
+    gap: 2.5rem;
+    padding: 3rem 2rem;
   }
 
   .columnTitle {
-    font-size: 1rem;
+    font-size: 1.375rem;
   }
 
   .megaMenuLink {
-    font-size: 0.8125rem;
+    font-size: 0.875rem;
   }
 
   .columnIllustration {
-    height: 80px;
+    height: 60px;
+  }
+
+  .illustration {
+    width: 40px;
+    height: 40px;
   }
 }
 
@@ -631,20 +650,25 @@
 @media (max-width: 900px) and (min-width: 769px) {
   .megaMenuContent {
     grid-template-columns: repeat(2, 1fr);
-    gap: 1.5rem;
-    padding: 2rem 1.5rem;
+    gap: 2rem;
+    padding: 2.5rem 1.5rem;
   }
 
   .columnTitle {
-    font-size: 1rem;
+    font-size: 1.25rem;
   }
 
   .megaMenuLink {
-    font-size: 0.8125rem;
+    font-size: 0.875rem;
   }
 
   .columnIllustration {
-    height: 80px;
+    height: 60px;
+  }
+
+  .illustration {
+    width: 40px;
+    height: 40px;
   }
 }
 
