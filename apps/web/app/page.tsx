@@ -3,6 +3,8 @@ import Footer from "@/components/Footer"
 import PracticeCard from "@/components/PracticeCard"
 import Button from "@/components/Button"
 import Hero from "@/components/Hero"
+import PracticeAreasScroll from "@/components/PracticeAreasScroll"
+import ScrollRevealText from "@/components/ScrollRevealText"
 import Link from "next/link"
 import styles from "./page.module.css"
 
@@ -45,10 +47,20 @@ export default function Home() {
         {/* Hero Section with Integrated Logo Carousel */}
         <Hero />
 
+        {/* Section Header for Practice Areas */}
+        <section className={styles.practiceAreasHeader}>
+          <div className={styles.container}>
+            <ScrollRevealText as="h2" delay={100}>Our Practice Areas</ScrollRevealText>
+          </div>
+        </section>
+
+        {/* Premium Practice Areas Horizontal Scroll Section */}
+        <PracticeAreasScroll />
+
         {/* Practice Areas Section */}
         <section className={styles.section}>
           <div className={styles.container}>
-            <h2>Our Practice Areas</h2>
+            <ScrollRevealText as="h2" delay={100}>Our Practice Areas</ScrollRevealText>
             <div className={styles.grid}>
               {practiceAreas.map((area) => (
                 <PracticeCard

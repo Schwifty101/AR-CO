@@ -9,7 +9,7 @@
 }
 
 .header.scrolled {
-  background: rgba(250, 248, 245, 0.95);
+ 
   border-bottom: 1px solid rgba(0, 0, 0, 0.06);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
 }
@@ -23,6 +23,7 @@
   justify-content: space-between;
   height: 72px;
   gap: 3rem;
+  color: #898989;
 }
 
 /* Logo */
@@ -30,7 +31,7 @@
   display: flex;
   align-items: center;
   gap: 0.625rem;
-  color: #1a1a1a;
+  color: var(--fg-secondary);
   font-weight: 500;
   font-size: 1.125rem;
   letter-spacing: 0.02em;
@@ -66,12 +67,13 @@
 
 .navItem {
   position: relative;
+  color: #878787;
 }
 
 .navButton {
   background: none;
   border: none;
-  color: #1a1a1a;
+  color: var(--fg-secondary);
   font-size: 0.8125rem;
   font-weight: 500;
   letter-spacing: 0.05em;
@@ -92,7 +94,7 @@
   left: 0;
   width: 0;
   height: 1px;
-  background: #1a1a1a;
+  background: var(--fg-secondary);
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -113,7 +115,7 @@
 }
 
 .navLink {
-  color: #1a1a1a;
+  color: var(--fg-secondary);
   font-size: 0.8125rem;
   font-weight: 500;
   letter-spacing: 0.05em;
@@ -131,7 +133,7 @@
   left: 0;
   width: 0;
   height: 1px;
-  background: #1a1a1a;
+  background: var(--fg-secondary);
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -280,9 +282,9 @@
   font-size: 0.8125rem;
   font-weight: 500;
   letter-spacing: 0.05em;
-  color: #1a1a1a;
-  background: rgba(255, 255, 255, 0.8);
-  border: 1px solid rgba(0, 0, 0, 0.1);
+  color: var(--fg-secondary);
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 8px;
   text-decoration: none;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
@@ -299,7 +301,7 @@
   width: 0;
   height: 0;
   border-radius: 50%;
-  background: rgba(0, 0, 0, 0.03);
+  background: rgba(255, 255, 255, 0.1);
   transform: translate(-50%, -50%);
   transition: width 0.6s ease, height 0.6s ease;
 }
@@ -311,8 +313,8 @@
 
 .btnDemo:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  border-color: rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  border-color: rgba(255, 255, 255, 0.3);
 }
 
 .playIcon {
@@ -376,7 +378,7 @@
 .mobileMenuBtn span {
   width: 22px;
   height: 2px;
-  background: #1a1a1a;
+  background: var(--fg-secondary);
   border-radius: 2px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }

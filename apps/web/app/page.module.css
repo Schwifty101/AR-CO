@@ -25,9 +25,28 @@
   background-color: transparent;
 }
 
+.practiceAreasHeader {
+  padding: 4rem 2rem 2rem;
+}
+
+.practiceAreasHeader h2 {
+  text-align: center;
+  font-size: clamp(2.5rem, 5vw, 4rem);
+  font-weight: 500;
+  color: #000000;
+  letter-spacing: -0.02em;
+  margin: 0;
+  margin-bottom: 2rem;
+}
+
 .container {
   max-width: 1200px;
   margin: 0 auto;
+  text-align: center;
+}
+.container h2{
+  font-size: 4rem;
+  font-weight: 600;
 }
 
 .section h2 {

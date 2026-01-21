@@ -12,7 +12,7 @@
 
   /* Foreground/Text Colors */
   --fg-primary: #d4d4d4;
-  --fg-secondary: #a8a8a8;
+  --fg-secondary: #707070;
   --fg-tertiary: #8a8a8a;
 
   /* Theme Colors */
@@ -197,17 +197,24 @@
   body {
     @apply text-foreground;
     font-family: 'Cabinet Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
-    background: #faf8f5;
+    background: linear-gradient(
+      180deg,
+      rgba(250, 248, 245, 1) 0%,
+      rgba(245, 243, 240, 1) 50%,
+      rgba(240, 238, 235, 1) 100%
+    );
+    background-attachment: fixed;
     color: #1a1a1a;
     line-height: var(--line-height);
     min-height: 100vh;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
   }
 }
 
 h1 {
-  font-family: 'Lora', serif;
+  font-family: 'Cabinet Grotesk', serif;
   font-size: 3.5rem;
   font-weight: 500;
   color: #1a1a1a;
