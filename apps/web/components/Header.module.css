@@ -1,18 +1,11 @@
 /* Header Container */
 .header {
-  position: sticky;
+  position: fixed;
   top: 0;
   z-index: 100;
-  background: rgba(250, 248, 245, 0.7);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  border-bottom: 1px solid transparent;
-}
-
-.header.menuOpen {
-  background: rgba(255, 255, 255, 0.98);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  transition: all 0.3s ease;
+  width: 100%;
+  isolation: isolate;
 }
 
 .header.scrolled {
