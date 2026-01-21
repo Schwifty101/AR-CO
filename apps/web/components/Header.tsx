@@ -94,13 +94,10 @@ export default function Header() {
                   {/* Column 1: Business & Corporate */}
                   <div className={styles.megaMenuColumn}>
                     <div className={styles.columnIllustration}>
-                      <svg className={styles.illustration} viewBox="0 0 180 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="50" cy="50" r="35" stroke="currentColor" strokeWidth="1.5" strokeDasharray="4 4" opacity="0.3"/>
-                        <circle cx="90" cy="35" r="25" stroke="currentColor" strokeWidth="1.5" opacity="0.4"/>
-                        <circle cx="130" cy="55" r="20" stroke="currentColor" strokeWidth="1.5" strokeDasharray="4 4" opacity="0.3"/>
-                        <circle cx="40" cy="30" r="15" stroke="currentColor" strokeWidth="1.5" opacity="0.5"/>
-                        <line x1="50" y1="30" x2="50" y2="50" stroke="currentColor" strokeWidth="1.5" opacity="0.2"/>
-                        <line x1="30" y1="50" x2="70" y2="50" stroke="currentColor" strokeWidth="1.5" opacity="0.2"/>
+                      <svg className={styles.illustration} viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="10" y="14" width="28" height="24" rx="2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        <path d="M10 20h28" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                        <path d="M16 10h16v4H16z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                       </svg>
                       <span className={styles.badge}>1</span>
                     </div>
@@ -119,12 +116,9 @@ export default function Header() {
                   {/* Column 2: Compliance Certificates */}
                   <div className={styles.megaMenuColumn}>
                     <div className={styles.columnIllustration}>
-                      <svg className={styles.illustration} viewBox="0 0 180 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="90" cy="50" r="30" stroke="currentColor" strokeWidth="1.5" strokeDasharray="4 4" opacity="0.3"/>
-                        <circle cx="130" cy="40" r="20" stroke="currentColor" strokeWidth="1.5" opacity="0.4"/>
-                        <circle cx="60" cy="45" r="18" stroke="currentColor" strokeWidth="1.5" strokeDasharray="4 4" opacity="0.3"/>
-                        <line x1="70" y1="35" x2="70" y2="55" stroke="currentColor" strokeWidth="1.5" opacity="0.2"/>
-                        <line x1="60" y1="45" x2="80" y2="45" stroke="currentColor" strokeWidth="1.5" opacity="0.2"/>
+                      <svg className={styles.illustration} viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M24 8L28 4L32 8L38 6L40 12L46 14L44 20L48 24L44 28L46 34L40 36L38 42L32 40L28 44L24 40L20 44L16 40L10 42L8 36L2 34L4 28L0 24L4 20L2 14L8 12L10 6L16 8L20 4L24 8Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        <path d="M17 24l4 4l10-10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                       </svg>
                       <span className={styles.badge}>2</span>
                     </div>
@@ -143,12 +137,9 @@ export default function Header() {
                   {/* Column 3: Real Estate Documentation */}
                   <div className={styles.megaMenuColumn}>
                     <div className={styles.columnIllustration}>
-                      <svg className={styles.illustration} viewBox="0 0 180 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="70" cy="50" r="32" stroke="currentColor" strokeWidth="1.5" opacity="0.4"/>
-                        <circle cx="120" cy="35" r="22" stroke="currentColor" strokeWidth="1.5" strokeDasharray="4 4" opacity="0.3"/>
-                        <circle cx="110" cy="65" r="18" stroke="currentColor" strokeWidth="1.5" opacity="0.4"/>
-                        <line x1="60" y1="40" x2="60" y2="60" stroke="currentColor" strokeWidth="1.5" opacity="0.2"/>
-                        <line x1="50" y1="50" x2="70" y2="50" stroke="currentColor" strokeWidth="1.5" opacity="0.2"/>
+                      <svg className={styles.illustration} viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M6 20L24 6L42 20V40C42 41.1046 41.1046 42 40 42H8C6.89543 42 6 41.1046 6 40V20Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        <path d="M18 42V28H30V42" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                       </svg>
                       <span className={styles.badge}>3</span>
                     </div>
@@ -165,13 +156,10 @@ export default function Header() {
                   {/* Column 4: Personal Certificates */}
                   <div className={styles.megaMenuColumn}>
                     <div className={styles.columnIllustration}>
-                      <svg className={styles.illustration} viewBox="0 0 180 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="90" cy="50" r="35" stroke="currentColor" strokeWidth="1.5" strokeDasharray="4 4" opacity="0.3"/>
-                        <circle cx="130" cy="35" r="20" stroke="currentColor" strokeWidth="1.5" opacity="0.4"/>
-                        <circle cx="65" cy="60" r="25" stroke="currentColor" strokeWidth="1.5" strokeDasharray="4 4" opacity="0.3"/>
-                        <circle cx="120" cy="65" r="15" stroke="currentColor" strokeWidth="1.5" opacity="0.5"/>
-                        <line x1="80" y1="40" x2="80" y2="60" stroke="currentColor" strokeWidth="1.5" opacity="0.2"/>
-                        <line x1="70" y1="50" x2="90" y2="50" stroke="currentColor" strokeWidth="1.5" opacity="0.2"/>
+                      <svg className={styles.illustration} viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="8" y="10" width="32" height="28" rx="2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        <circle cx="24" cy="20" r="4" stroke="currentColor" strokeWidth="2"/>
+                        <path d="M16 32C16 28.6863 18.6863 26 22 26H26C29.3137 26 32 28.6863 32 32" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
                       </svg>
                       <span className={styles.badge}>4</span>
                     </div>
@@ -187,13 +175,11 @@ export default function Header() {
                   {/* Column 5: Women's Legal Desk */}
                   <div className={styles.megaMenuColumn}>
                     <div className={styles.columnIllustration}>
-                      <svg className={styles.illustration} viewBox="0 0 180 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="80" cy="45" r="28" stroke="currentColor" strokeWidth="1.5" opacity="0.4"/>
-                        <circle cx="125" cy="50" r="23" stroke="currentColor" strokeWidth="1.5" strokeDasharray="4 4" opacity="0.3"/>
-                        <circle cx="55" cy="60" r="20" stroke="currentColor" strokeWidth="1.5" opacity="0.4"/>
-                        <circle cx="100" cy="30" r="16" stroke="currentColor" strokeWidth="1.5" opacity="0.5"/>
-                        <line x1="70" y1="40" x2="70" y2="60" stroke="currentColor" strokeWidth="1.5" opacity="0.2"/>
-                        <line x1="60" y1="50" x2="80" y2="50" stroke="currentColor" strokeWidth="1.5" opacity="0.2"/>
+                      <svg className={styles.illustration} viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M14 18L24 8L34 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        <path d="M14 18L8 18L8 22L40 22L40 18L34 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        <line x1="24" y1="22" x2="24" y2="40" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                        <line x1="14" y1="40" x2="34" y2="40" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
                       </svg>
                       <span className={styles.badge}>5</span>
                     </div>
