@@ -1,12 +1,6 @@
 /* Hero Section */
 .hero {
   position: relative;
-  background: linear-gradient(
-    180deg,
-    rgba(250, 248, 245, 1) 0%,
-    rgba(245, 243, 240, 1) 50%,
-    rgba(240, 238, 235, 1) 100%
-  );
   padding: 8rem 0 6rem;
   overflow: hidden;
 }
