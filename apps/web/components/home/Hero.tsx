@@ -46,6 +46,8 @@ export default function Hero() {
                       width={120}
                       height={60}
                       className={styles.logoImage}
+                      priority
+                      loading="eager"
                     />
                   </div>
                 ))}
@@ -60,6 +62,8 @@ export default function Hero() {
                       width={120}
                       height={60}
                       className={styles.logoImage}
+                      priority
+                      loading="eager"
                     />
                   </div>
                 ))}
