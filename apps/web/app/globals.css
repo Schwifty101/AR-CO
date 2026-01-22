@@ -3,6 +3,27 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Lenis smooth scroll */
+html.lenis, html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+.lenis.lenis-scrolling iframe {
+  pointer-events: none;
+}
+
 /* Unified color system for consistent styling across portal and admin */
 :root {
   /* Background Colors */
@@ -282,6 +303,18 @@ button {
 
 .page-transition {
   animation: primaryPageTransition 0.4s ease-out forwards;
+}
+
+/* Loading State - Hide header until app is loaded */
+body:not(.app-loaded) header {
+  opacity: 0;
+  pointer-events: none;
+}
+
+body.app-loaded header {
+  opacity: 1;
+  pointer-events: auto;
+  transition: opacity 1.5s ease-out;
 }
 
 /* Hover Effects - Change hover details here to apply across all elements */

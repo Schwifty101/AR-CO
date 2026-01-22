@@ -58,7 +58,7 @@
   font-size: 0.8125rem;
   font-weight: 500;
   letter-spacing: 0.06em;
-  color: #666;
+  color: #dadada;
   background: none;
   border: none;
   padding: 0.5rem 0;
@@ -81,12 +81,13 @@
   height: 2px;
   background: linear-gradient(90deg, #b59825 0%, #d4af37 100%);
   transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  color: white;
   border-radius: 2px;
 }
 
 .navButton:hover,
 .navLink:hover {
-  color: #1a1a1a;
+  color: #ffffff;
 }
 
 .navButton:hover::after,

@@ -1,0 +1,72 @@
+/* Quote Section */
+.quoteSection {
+  position: relative;
+  min-height: 100vh;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+}
+
+.container {
+  max-width: 1400px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.quoteContent {
+  width: 75%;
+  margin: 0;
+}
+
+.quoteLine {
+  font-family: 'Lora', serif;
+  font-size: clamp(3rem, 7vw, 6rem);
+  line-height: 1.1;
+  color: #1a1a1a;
+  margin: 0;
+  padding: 0;
+}
+
+/* Font weight variations */
+.quoteLine.medium {
+  font-weight: 500;
+}
+
+.quoteLine.bold,
+.quoteLine .bold {
+  font-weight: 700;
+}
+
+.quoteLine.italic,
+.quoteLine .italic {
+  font-style: italic;
+  font-weight: 400;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .quoteContent {
+    max-width: 85%;
+  }
+  
+  .quoteLine {
+    font-size: clamp(2.5rem, 6vw, 6rem);
+  }
+}
+
+@media (max-width: 768px) {
+  .quoteSection {
+    padding: 3rem 1.5rem;
+  }
+  
+  .quoteContent {
+    max-width: 95%;
+  }
+  
+  .quoteLine {
+    font-size: clamp(2rem, 5vw, 4rem);
+    line-height: 1.3;
+  }
+}

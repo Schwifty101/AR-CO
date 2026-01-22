@@ -2,8 +2,10 @@ import Header from "@/components/nav/Header"
 import Footer from "@/components/footer/Footer"
 import Button from "@/components/Button"
 import Hero from "@/components/home/Hero"
+import QuoteSection from "@/components/home/QuoteSection"
 import PracticeAreasList from "@/components/home/PracticeAreasList"
 import ScrollRevealText from "@/components/shared/animations/ScrollRevealText"
+import SmoothScroll from "@/components/SmoothScroll"
 import Link from "next/link"
 import styles from "./page.module.css"
 
@@ -40,14 +42,18 @@ export default function Home() {
   ]
 
   return (
-    <>
+    <SmoothScroll>
       <Header />
-      <main className="page-transition">
-        {/* Hero Section with Integrated Logo Carousel */}
-        <Hero />
+        <main className="page-transition">
+         
+         
 
-        {/* Practice Areas List with Fixed Sidebar */}
-        <PracticeAreasList />
+          {/* Hero Section with Integrated Logo Carousel */}
+          <Hero />
+          <QuoteSection />
+
+          {/* Practice Areas List with Fixed Sidebar */}
+          <PracticeAreasList />
 
         {/* Portal Access Section */}
         <section className={styles.section}>
@@ -119,6 +125,6 @@ export default function Home() {
         </section>
       </main>
       <Footer />
-    </>
+    </SmoothScroll>
   )
 }
