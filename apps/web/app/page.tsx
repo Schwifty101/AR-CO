@@ -1,10 +1,9 @@
-import Header from "@/components/Header"
-import Footer from "@/components/Footer"
-import PracticeCard from "@/components/PracticeCard"
+import Header from "@/components/nav/Header"
+import Footer from "@/components/footer/Footer"
 import Button from "@/components/Button"
-import Hero from "@/components/Hero"
-import PracticeAreasScroll from "@/components/PracticeAreasScroll"
-import ScrollRevealText from "@/components/ScrollRevealText"
+import Hero from "@/components/home/Hero"
+import PracticeAreasScroll from "@/components/home/PracticeAreasScroll"
+import ScrollRevealText from "@/components/shared/animations/ScrollRevealText"
 import Link from "next/link"
 import styles from "./page.module.css"
 
@@ -56,24 +55,6 @@ export default function Home() {
 
         {/* Premium Practice Areas Horizontal Scroll Section */}
         <PracticeAreasScroll />
-
-        {/* Practice Areas Section */}
-        <section className={styles.section}>
-          <div className={styles.container}>
-            <ScrollRevealText as="h2" delay={100}>Our Practice Areas</ScrollRevealText>
-            <div className={styles.grid}>
-              {practiceAreas.map((area) => (
-                <PracticeCard
-                  key={area.title}
-                  title={area.title}
-                  description={area.description}
-                  icon={area.icon}
-                  link={area.link}
-                />
-              ))}
-            </div>
-          </div>
-        </section>
 
         {/* Portal Access Section */}
         <section className={styles.section}>

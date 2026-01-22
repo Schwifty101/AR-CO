@@ -99,7 +99,6 @@ export default function Header() {
                         <path d="M10 20h28" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
                         <path d="M16 10h16v4H16z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                       </svg>
-                      <span className={styles.badge}>1</span>
                     </div>
                     <div className={styles.columnHeader}>
                       <h3 className={styles.columnTitle}>Business & Corporate</h3>
@@ -120,7 +119,6 @@ export default function Header() {
                         <path d="M24 8L28 4L32 8L38 6L40 12L46 14L44 20L48 24L44 28L46 34L40 36L38 42L32 40L28 44L24 40L20 44L16 40L10 42L8 36L2 34L4 28L0 24L4 20L2 14L8 12L10 6L16 8L20 4L24 8Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                         <path d="M17 24l4 4l10-10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                       </svg>
-                      <span className={styles.badge}>2</span>
                     </div>
                     <div className={styles.columnHeader}>
                       <h3 className={styles.columnTitle}>Compliance Certificates</h3>
@@ -141,7 +139,6 @@ export default function Header() {
                         <path d="M6 20L24 6L42 20V40C42 41.1046 41.1046 42 40 42H8C6.89543 42 6 41.1046 6 40V20Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                         <path d="M18 42V28H30V42" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                       </svg>
-                      <span className={styles.badge}>3</span>
                     </div>
                     <div className={styles.columnHeader}>
                       <h3 className={styles.columnTitle}>Real Estate Documentation</h3>
@@ -161,7 +158,6 @@ export default function Header() {
                         <circle cx="24" cy="20" r="4" stroke="currentColor" strokeWidth="2"/>
                         <path d="M16 32C16 28.6863 18.6863 26 22 26H26C29.3137 26 32 28.6863 32 32" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
                       </svg>
-                      <span className={styles.badge}>4</span>
                     </div>
                     <div className={styles.columnHeader}>
                       <h3 className={styles.columnTitle}>Personal Certificates</h3>
