@@ -1,4 +1,4 @@
 {
-  "installCommand": "corepack enable && pnpm install",
-  "buildCommand": "pnpm turbo run build --filter=my-v0-project"
+  "installCommand": "npm install --legacy-peer-deps",
+  "buildCommand": "npx turbo run build --filter=my-v0-project"
 }
