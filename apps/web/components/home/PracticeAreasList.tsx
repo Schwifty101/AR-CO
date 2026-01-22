@@ -274,6 +274,7 @@ export default function PracticeAreasList() {
   }
 
   return (
+    <div className={styles.outerWrapper}>
     <div className={styles.container}>
       {/* Fixed Sidebar - Completely Separate */}
       <aside className={styles.sidebar}>
@@ -358,6 +359,7 @@ export default function PracticeAreasList() {
           </div>
         </section>
       </div>
+    </div>
     </div>
   )
 }
