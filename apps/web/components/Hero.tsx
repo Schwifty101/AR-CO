@@ -26,20 +26,8 @@ export default function Hero() {
         {/* Hero Content */}
         <div className={styles.content}>
           <h1 className={styles.title}>
-            Expert Legal Counsel for Your Business Growth and Success
+            Expert Legal Counsel <br />for Your Business Growth and Success
           </h1>
-          <p className={styles.subtitle}>
-            Professional legal services with comprehensive solutions tailored to your business needs. Over 20 years of excellence in corporate law, facilitation, and strategic legal counsel.
-          </p>
-
-          <div className={styles.ctaGroup}>
-            <Link href="/contact" className={styles.btnPrimary}>
-              Get Started
-            </Link>
-            <Link href="/about" className={styles.btnSecondary}>
-              Learn More
-            </Link>
-          </div>
         </div>
 
         {/* Trusted By Section */}
