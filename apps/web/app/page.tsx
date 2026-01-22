@@ -1,52 +1,131 @@
-'use client';
-
-import { useEffect, useState } from 'react';
+import Header from "@/components/nav/Header"
+import Footer from "@/components/footer/Footer"
+import Button from "@/components/Button"
+import Hero from "@/components/home/Hero"
+import PracticeAreasScroll from "@/components/home/PracticeAreasScroll"
+import ScrollRevealText from "@/components/shared/animations/ScrollRevealText"
+import Link from "next/link"
+import styles from "./page.module.css"
 
 export default function Home() {
-  const [message, setMessage] = useState('Loading...');
-
-  useEffect(() => {
-    const fetchApiMessage = async () => {
-      try {
-        // Use relative URL - Next.js rewrites will proxy to backend
-        const res = await fetch('/api/hello', {
-          cache: 'no-store',
-        });
-        if (!res.ok) {
-          throw new Error('Failed to fetch');
-        }
-        const data = await res.json();
-        setMessage(data.message);
-      } catch (error) {
-        console.error('Error fetching API:', error);
-        setMessage('Failed to fetch from API');
-      }
-    };
-
-    fetchApiMessage();
-  }, []);
+  const practiceAreas = [
+    {
+      title: "Corporate Law",
+      description: "Expert guidance for business entities",
+      icon: "🏢",
+      link: "/practice/corporate-law",
+    },
+    { title: "Tax Law", description: "Strategic tax planning and compliance", icon: "📊", link: "/practice/tax-law" },
+    {
+      title: "Immigration",
+      description: "Professional immigration services",
+      icon: "🌍",
+      link: "/practice/immigration",
+    },
+    { title: "Labour Law", description: "Employment and labour relations", icon: "👥", link: "/practice/labor-law" },
+    {
+      title: "Intellectual Property",
+      description: "Protection of IP rights",
+      icon: "💡",
+      link: "/practice/intellectual-property",
+    },
+    {
+      title: "Real Estate",
+      description: "Property and real estate matters",
+      icon: "🏠",
+      link: "/practice/real-estate",
+    },
+    { title: "Litigation", description: "Comprehensive legal representation", icon: "⚖️", link: "/practice/litigation" },
+    { title: "Contracts", description: "Contract drafting and review", icon: "📝", link: "/practice/contracts" },
+  ]
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-center gap-8 py-32 px-16 bg-white dark:bg-black">
-        <h1 className="text-4xl font-bold tracking-tight text-black dark:text-zinc-50">
-          Turborepo SaaS Monorepo
-        </h1>
-        <div className="flex flex-col items-center gap-4">
-          <p className="text-lg text-zinc-600 dark:text-zinc-400">
-            Testing API proxy connection:
-          </p>
-          <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 p-6 bg-zinc-100 dark:bg-zinc-900">
-            <p className="text-sm font-mono text-zinc-800 dark:text-zinc-200">
-              {message}
-            </p>
+    <>
+      <Header />
+      <main className="page-transition">
+        {/* Hero Section with Integrated Logo Carousel */}
+        <Hero />
+
+        {/* Section Header for Practice Areas */}
+        <section className={styles.practiceAreasHeader}>
+          <div className={styles.container}>
+            <ScrollRevealText as="h2" delay={100}>Our Practice Areas</ScrollRevealText>
           </div>
-        </div>
-        <div className="flex flex-col gap-2 text-center text-sm text-zinc-500 dark:text-zinc-400">
-          <p>Frontend deployed on Vercel</p>
-          <p>Backend deployed on Railway</p>
-        </div>
+        </section>
+
+        {/* Premium Practice Areas Horizontal Scroll Section */}
+        <PracticeAreasScroll />
+
+        {/* Portal Access Section */}
+        <section className={styles.section}>
+          <div className={styles.container}>
+            <h2>Access Your Portal</h2>
+            <div className={styles.portalGrid}>
+              <Link href="/portal/login" className={styles.portalCard}>
+                <h3>Client Portal</h3>
+                <p>Manage your cases, appointments, and documents</p>
+                <Button variant="secondary">Enter Portal</Button>
+              </Link>
+              <Link href="/admin/login" className={styles.portalCard}>
+                <h3>Admin Panel</h3>
+                <p>Manage clients, inquiries, and appointments</p>
+                <Button variant="secondary">Enter Admin</Button>
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        {/* Stats Section */}
+        <section className={styles.statsSection}>
+          <div className={styles.container}>
+            <div className={styles.statCard}>
+              <h3>20+</h3>
+              <p>Years Experience</p>
+            </div>
+            <div className={styles.statCard}>
+              <h3>500+</h3>
+              <p>Clients Served</p>
+            </div>
+            <div className={styles.statCard}>
+              <h3>95%</h3>
+              <p>Success Rate</p>
+            </div>
+          </div>
+        </section>
+
+        {/* Testimonials Section */}
+        <section className={styles.section}>
+          <div className={styles.container}>
+            <h2>What Our Clients Say</h2>
+            <div className={styles.testimonials}>
+              <div className={styles.testimonial}>
+                <p>"Exceptional service and expertise. Highly recommended!"</p>
+                <p className={styles.author}>- Client Name</p>
+              </div>
+              <div className={styles.testimonial}>
+                <p>"Professional team with deep legal knowledge."</p>
+                <p className={styles.author}>- Client Name</p>
+              </div>
+              <div className={styles.testimonial}>
+                <p>"Reliable and trustworthy legal partner."</p>
+                <p className={styles.author}>- Client Name</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Newsletter Section */}
+        <section className={styles.newsletter}>
+          <div className={styles.container}>
+            <h2>Subscribe to Our Newsletter</h2>
+            <form className={styles.newsletterForm}>
+              <input type="email" placeholder="Enter your email" required />
+              <Button type="submit">Subscribe</Button>
+            </form>
+          </div>
+        </section>
       </main>
-    </div>
-  );
+      <Footer />
+    </>
+  )
 }

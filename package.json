@@ -2,6 +2,11 @@
   "name": "ar-co",
   "version": "0.0.0",
   "private": true,
+  "packageManager": "npm@10.8.2",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
     "dev": "turbo run dev",
     "build": "turbo run build",
@@ -10,7 +15,6 @@
   "devDependencies": {
     "turbo": "^2.3.3"
   },
-  "packageManager": "pnpm@10.28.0",
   "engines": {
     "node": ">=20.9.0"
   }
