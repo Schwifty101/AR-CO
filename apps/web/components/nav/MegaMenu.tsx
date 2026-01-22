@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 import gsap from "gsap"
 import styles from "./MegaMenu.module.css"
 
@@ -59,11 +59,20 @@ export default function MegaMenu({
   const centerZoneRef = useRef<HTMLDivElement>(null)
   const rightZoneRef = useRef<HTMLDivElement>(null)
   const tlRef = useRef<gsap.core.Timeline | null>(null)
+  const [shouldRender, setShouldRender] = useState(isOpen)
+
+  // Handle mount/unmount with animation
+  useEffect(() => {
+    if (isOpen) {
+      setShouldRender(true)
+    }
+  }, [isOpen])
 
   useEffect(() => {
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    if (prefersReducedMotion) return
+    if (!shouldRender) return
 
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    
     const leftZone = leftZoneRef.current
     const centerZone = centerZoneRef.current
     const rightZone = rightZoneRef.current
@@ -72,6 +81,13 @@ export default function MegaMenu({
 
     if (isOpen) {
       // Opening animation
+      if (tlRef.current) tlRef.current.kill()
+      
+      if (prefersReducedMotion) {
+        gsap.set([leftZone, centerZone.children, rightZone], { opacity: 1, x: 0, y: 0, scale: 1 })
+        return
+      }
+
       tlRef.current = gsap.timeline()
 
       tlRef.current
@@ -94,21 +110,30 @@ export default function MegaMenu({
         )
     } else {
       // Closing animation - reverse of opening
-      tlRef.current = gsap.timeline()
+      if (tlRef.current) tlRef.current.kill()
+      
+      if (prefersReducedMotion) {
+        setShouldRender(false)
+        return
+      }
+
+      tlRef.current = gsap.timeline({
+        onComplete: () => setShouldRender(false)
+      })
 
       tlRef.current
         .to(
           rightZone,
-          { opacity: 0, scale: 0.95, duration: 0.9, ease: 'power2.in' }
+          { opacity: 0, scale: 0.95, duration: 0.35, ease: 'power2.in' }
         )
         .to(
           centerZone.children,
-          { opacity: 0, y: 20, duration: 0.8, stagger: 0.1, ease: 'power2.in' },
+          { opacity: 0, y: 20, duration: 0.3, stagger: 0.05, ease: 'power2.in' },
           '-=0.2'
         )
         .to(
           leftZone,
-          { opacity: 0, x: -30, duration: 0.9, ease: 'power3.in' },
+          { opacity: 0, x: -30, duration: 0.35, ease: 'power3.in' },
           '-=0.2'
         )
     }
@@ -119,7 +144,7 @@ export default function MegaMenu({
         tlRef.current = null
       }
     }
-  }, [isOpen])
+  }, [isOpen, shouldRender])
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Escape') {
@@ -127,7 +152,7 @@ export default function MegaMenu({
     }
   }
 
-  if (!isOpen) return null
+  if (!shouldRender) return null
 
   return (
     <div
