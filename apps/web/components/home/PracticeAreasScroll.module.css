@@ -1,0 +1,336 @@
+/* Desktop Wrapper - Creates scroll space */
+.wrapper {
+  position: relative;
+  height: calc(100vh + (100vw * 9)); /* Scroll distance for all panels */
+  width: 100%;
+}
+
+/* Desktop Section - Sticky viewport */
+.section {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  width: 100%;
+  overflow: hidden;
+  background: linear-gradient(180deg, #0a0a0a 0%, #101010 50%, #0a0a0a 100%);
+}
+
+.scrollContainer {
+  position: sticky;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: calc(100vw * 10); /* 10 panels side by side */
+  display: flex;
+  will-change: transform;
+  transition: transform 0.1s ease-out;
+}
+
+.panel {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 0 0 3vw;
+  overflow: hidden;
+}
+
+/* Content (Left Side) */
+.content {
+  position: relative;
+  width: 45%;
+  height: 100%;
+  display: flex;
+  align-items: flex-start;
+  z-index: 10;
+  will-change: transform, opacity;
+  transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  padding-top: 8vh;
+}
+
+.contentInner {
+  max-width: 600px;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+}
+
+.title {
+  font-size: clamp(2rem, 4vw, 3.5rem);
+  font-weight: 200;
+  color: #ffffff;
+  margin-bottom: 2rem;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  opacity: 0.6;
+  transform: translateY(20px);
+  transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  text-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.title.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.description {
+  font-size: clamp(1rem, 1.5vw, 1.125rem);
+  font-weight: 300;
+  color: #d4d4d4;
+  line-height: 1.7;
+  opacity: 0;
+  transform: translateY(30px);
+  transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.2s;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.description.active {
+  opacity: 0.9;
+  transform: translateY(0);
+}
+
+/* Image (Right Side) */
+.imageContainer {
+  position: relative;
+  width: 55%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  will-change: transform, opacity;
+  transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.imageWrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+  overflow: hidden;
+}
+
+.imageInner {
+  position: relative;
+  width: 120%; /* Wider than container for parallax room */
+  height: 100%;
+  will-change: transform;
+  transition: transform 0.1s ease-out;
+}
+
+.image {
+  object-fit: cover;
+  object-position: center;
+  filter: grayscale(100%);
+  transition: filter 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.imageWrapper:hover .image {
+  filter: grayscale(0%);
+}
+
+.imageOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0.7) 0%,
+    rgba(0, 0, 0, 0.3) 40%,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Progress Indicator */
+.progressContainer {
+  position: fixed;
+  bottom: 3rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  opacity: 0;
+  animation: fadeInProgress 0.6s ease-out 0.5s forwards;
+}
+
+@keyframes fadeInProgress {
+  to {
+    opacity: 1;
+  }
+}
+
+.progressBar {
+  width: 200px;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 2px;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, #b59825, #d4af37);
+  border-radius: 2px;
+  transition: width 0.1s ease-out;
+  box-shadow: 0 0 12px rgba(181, 152, 37, 0.6);
+}
+
+.progressText {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.7);
+  letter-spacing: 0.05em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Tablet Adjustments */
+@media (max-width: 1280px) {
+  .panel {
+    padding: 0 3vw;
+  }
+
+  .content {
+    width: 45%;
+  }
+
+  .imageContainer {
+    width: 55%;
+  }
+
+  .contentInner {
+    padding: 2rem;
+  }
+
+  .title {
+    font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+    margin-bottom: 1.5rem;
+  }
+
+  .description {
+    font-size: clamp(0.9rem, 1.3vw, 1rem);
+  }
+}
+
+/* Mobile Styles */
+.mobileSection {
+  width: 100%;
+  background: linear-gradient(180deg, #0a0a0a 0%, #1a1a1a 50%, #0a0a0a 100%);
+  padding: 2rem 0;
+}
+
+.mobileContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  padding: 0 1rem;
+}
+
+.mobilePanel {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2rem;
+  scroll-snap-align: start;
+  opacity: 0;
+  transform: translateY(40px);
+  animation: fadeInMobile 0.8s ease-out forwards;
+  animation-timeline: view();
+  animation-range: entry 0% cover 30%;
+}
+
+@keyframes fadeInMobile {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.mobileContent {
+  padding: 1.5rem;
+  z-index: 10;
+}
+
+.mobileTitle {
+  font-size: clamp(1.75rem, 6vw, 2.5rem);
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 1.5rem;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  text-shadow: 0 4px 12px rgba(0, 0, 0, 0.7);
+}
+
+.mobileDescription {
+  font-size: clamp(0.95rem, 3.5vw, 1.1rem);
+  font-weight: 300;
+  color: #d4d4d4;
+  line-height: 1.6;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+}
+
+.mobileImageContainer {
+  position: relative;
+  width: 100%;
+  height: 60vh;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 
+    0 20px 60px rgba(0, 0, 0, 0.7),
+    0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.mobileImage {
+  object-fit: cover;
+  object-position: center;
+  filter: brightness(0.8) contrast(1.1) saturate(0.9);
+}
+
+.mobileImageOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.4) 0%,
+    transparent 50%,
+    rgba(0, 0, 0, 0.6) 100%
+  );
+  pointer-events: none;
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  .section,
+  .scrollContainer,
+  .content,
+  .imageWrapper,
+  .title,
+  .description,
+  .mobilePanel {
+    animation: none;
+    transition: none;
+  }
+
+  .title.active,
+  .description.active {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Performance Optimization */
+.panel,
+.content,
+.imageWrapper {
+  contain: layout style paint;
+  content-visibility: auto;
+}

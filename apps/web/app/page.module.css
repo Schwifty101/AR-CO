@@ -1,0 +1,166 @@
+.hero {
+  color: white;
+  padding: 6rem 2rem;
+  text-align: center;
+  min-height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.heroContent h1 {
+  color: white;
+  font-size: 6rem;
+  font-weight: 350;
+  margin-bottom: 1rem;
+}
+
+.heroContent p {
+  color: #e0e0e0;
+  margin-bottom: 2rem;
+}
+
+.section {
+  padding: 4rem 2rem;
+  background-color: transparent;
+}
+
+.practiceAreasHeader {
+  padding: 4rem 2rem 2rem;
+}
+
+.practiceAreasHeader h2 {
+  text-align: center;
+  font-size: clamp(2.5rem, 5vw, 4rem);
+  font-weight: 500;
+  color: #000000;
+  letter-spacing: -0.02em;
+  margin: 0;
+  margin-bottom: 2rem;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  text-align: center;
+}
+.container h2{
+  font-size: 4rem;
+  font-weight: 600;
+}
+
+.section h2 {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+}
+
+.statsSection {
+  background-color: rgba(23, 26, 23, 0.3);
+  padding: 4rem 2rem;
+}
+
+.statsSection .container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+}
+
+.statCard {
+  text-align: center;
+  padding: 2rem;
+}
+
+.statCard h3 {
+  color: var(--theme-primary);
+  margin-bottom: 0.5rem;
+}
+
+.testimonials {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+}
+
+.testimonial {
+  background-color: rgba(23, 26, 23, 0.5);
+  border-left: 4px solid var(--theme-accent);
+  padding: 2rem;
+  border-radius: 4px;
+}
+
+.testimonial p {
+  font-style: italic;
+  margin-bottom: 1rem;
+}
+
+.author {
+  color: var(--fg-primary);
+  font-style: normal;
+  font-weight: 600;
+}
+
+.newsletter {
+  background-color: var(--theme-secondary);
+  color: white;
+  padding: 4rem 2rem;
+  text-align: center;
+}
+
+.newsletter h2 {
+  color: white;
+  margin-bottom: 2rem;
+}
+
+.newsletterForm {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.newsletterForm input {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border-radius: 4px;
+  border: none;
+  min-width: 250px;
+}
+
+.portalGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.portalCard {
+  background-color: rgba(23, 26, 23, 0.5);
+  padding: 2rem;
+  border-radius: 4px;
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.2s, box-shadow 0.2s;
+  border: 1px solid var(--bg-tertiary);
+}
+
+.portalCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.portalCard h3 {
+  color: var(--theme-primary);
+  margin-bottom: 0.5rem;
+}
+
+.portalCard p {
+  margin-bottom: 1.5rem;
+}
