@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
-import ScrollRevealText from './ScrollRevealText'
+import ScrollRevealText from '@/components/shared/animations/ScrollRevealText'
 import styles from './PracticeAreasScroll.module.css'
 
 interface PracticeArea {
