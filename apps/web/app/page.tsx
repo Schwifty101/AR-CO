@@ -2,7 +2,7 @@ import Header from "@/components/nav/Header"
 import Footer from "@/components/footer/Footer"
 import Button from "@/components/Button"
 import Hero from "@/components/home/Hero"
-import PracticeAreasScroll from "@/components/home/PracticeAreasScroll"
+import PracticeAreasList from "@/components/home/PracticeAreasList"
 import ScrollRevealText from "@/components/shared/animations/ScrollRevealText"
 import Link from "next/link"
 import styles from "./page.module.css"
@@ -46,15 +46,8 @@ export default function Home() {
         {/* Hero Section with Integrated Logo Carousel */}
         <Hero />
 
-        {/* Section Header for Practice Areas */}
-        <section className={styles.practiceAreasHeader}>
-          <div className={styles.container}>
-            <ScrollRevealText as="h2" delay={100}>Our Practice Areas</ScrollRevealText>
-          </div>
-        </section>
-
-        {/* Premium Practice Areas Horizontal Scroll Section */}
-        <PracticeAreasScroll />
+        {/* Practice Areas List with Fixed Sidebar */}
+        <PracticeAreasList />
 
         {/* Portal Access Section */}
         <section className={styles.section}>
