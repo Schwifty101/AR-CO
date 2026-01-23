@@ -51,114 +51,114 @@ Complete database architecture with 20+ tables, Row-Level Security, comprehensiv
 
 ### Sub-task 2.1: Create User Management Tables
 
-- [ ] **2.1.1**: Create `user_profiles` table (extends Supabase auth.users)
+- [X] **2.1.1**: Create `user_profiles` table (extends Supabase auth.users)
   - Columns: id (uuid, FK to auth.users), full_name, phone_number, user_type (enum), created_at, updated_at
-- [ ] **2.1.2**: Create `client_profiles` table with company info
+- [X] **2.1.2**: Create `client_profiles` table with company info
   - Columns: id (uuid), user_profile_id (FK), company_name, company_type, tax_id, address, city, country, created_at, updated_at
-- [ ] **2.1.3**: Create `attorney_profiles` table with specializations
+- [X] **2.1.3**: Create `attorney_profiles` table with specializations
   - Columns: id (uuid), user_profile_id (FK), bar_number, specializations (text[]), education, experience_years, hourly_rate, created_at, updated_at
 
 ### Sub-task 2.2: Create Core Business Tables
 
-- [ ] **2.2.1**: Create `practice_areas` table
+- [X] **2.2.1**: Create `practice_areas` table
   - Columns: id (uuid), name, slug, description, icon, is_active, created_at, updated_at
-- [ ] **2.2.2**: Create `services` table
+- [X] **2.2.2**: Create `services` table
   - Columns: id (uuid), practice_area_id (FK), name, slug, description, base_fee, estimated_duration, is_active, created_at, updated_at
-- [ ] **2.2.3**: Create `cases` table with case_number auto-generation
+- [X] **2.2.3**: Create `cases` table with case_number auto-generation
   - Columns: id (uuid), case_number (auto-generated, unique), client_profile_id (FK), attorney_profile_id (FK), practice_area_id (FK), service_id (FK), title, description, status (enum), priority (enum), case_type, filing_date, closing_date, created_at, updated_at
-- [ ] **2.2.4**: Create `case_activities` table for timeline
+- [X] **2.2.4**: Create `case_activities` table for timeline
   - Columns: id (uuid), case_id (FK), activity_type (enum), title, description, created_by (FK to user_profiles), attachments (jsonb), created_at
 
 ### Sub-task 2.3: Create Appointment Tables
 
-- [ ] **2.3.1**: Create `appointments` table with double-booking prevention
+- [X] **2.3.1**: Create `appointments` table with double-booking prevention
   - Columns: id (uuid), client_profile_id (FK), attorney_profile_id (FK), appointment_date, start_time, end_time, duration_minutes, appointment_type (enum), status (enum), subject, notes, meeting_link, created_at, updated_at
   - Unique constraint: (attorney_profile_id, appointment_date, start_time) to prevent double-booking
-- [ ] **2.3.2**: Create `availability_slots` table for attorney scheduling
+- [X] **2.3.2**: Create `availability_slots` table for attorney scheduling
   - Columns: id (uuid), attorney_profile_id (FK), day_of_week (int), start_time, end_time, is_available, created_at, updated_at
 
 ### Sub-task 2.4: Create Financial Tables
 
-- [ ] **2.4.1**: Create `invoices` table with auto invoice_number
+- [X] **2.4.1**: Create `invoices` table with auto invoice_number
   - Columns: id (uuid), invoice_number (auto-generated), client_profile_id (FK), case_id (FK, optional), issue_date, due_date, subtotal, tax_amount, discount_amount, total_amount, status (enum), payment_terms, notes, created_at, updated_at
-- [ ] **2.4.2**: Create `invoice_items` table
+- [X] **2.4.2**: Create `invoice_items` table
   - Columns: id (uuid), invoice_id (FK), description, quantity, unit_price, amount, created_at
-- [ ] **2.4.3**: Create `payments` table with Safepay integration
+- [X] **2.4.3**: Create `payments` table with Safepay integration
   - Columns: id (uuid), invoice_id (FK), client_profile_id (FK), amount, payment_method (enum), safepay_transaction_id, safepay_tracker_id, status (enum), payment_date, metadata (jsonb), created_at, updated_at
 
 ### Sub-task 2.5: Create Document Tables
 
-- [ ] **2.5.1**: Create `documents` table with encryption metadata
+- [X] **2.5.1**: Create `documents` table with encryption metadata
   - Columns: id (uuid), name, description, file_path (Supabase Storage path), file_size, file_type, uploaded_by (FK to user_profiles), case_id (FK, optional), client_profile_id (FK, optional), document_type (enum), is_encrypted, encryption_metadata (jsonb), created_at, updated_at
 
 ### Sub-task 2.6: Create Content Tables
 
-- [ ] **2.6.1**: Create `blog_categories` table
+- [X] **2.6.1**: Create `blog_categories` table
   - Columns: id (uuid), name, slug, description, created_at, updated_at
-- [ ] **2.6.2**: Create `blog_posts` table
+- [X] **2.6.2**: Create `blog_posts` table
   - Columns: id (uuid), title, slug, excerpt, content, featured_image, author_id (FK to user_profiles), category_id (FK), status (enum), published_at, view_count, created_at, updated_at
-- [ ] **2.6.3**: Create `testimonials` table
+- [X] **2.6.3**: Create `testimonials` table
   - Columns: id (uuid), client_profile_id (FK), content, rating (int), is_approved, approved_by (FK to user_profiles), approved_at, created_at, updated_at
-- [ ] **2.6.4**: Create `legal_news` table for news ticker
+- [X] **2.6.4**: Create `legal_news` table for news ticker
   - Columns: id (uuid), title, source, url, published_at, created_at
 
 ### Sub-task 2.7: Create Admin & Tracking Tables
 
-- [ ] **2.7.1**: Create `client_interactions` table for CRM
+- [X] **2.7.1**: Create `client_interactions` table for CRM
   - Columns: id (uuid), client_profile_id (FK), staff_user_id (FK to user_profiles), interaction_type (enum), subject, notes, scheduled_at, completed_at, created_at, updated_at
-- [ ] **2.7.2**: Create `activity_logs` table for audit trail
+- [X] **2.7.2**: Create `activity_logs` table for audit trail
   - Columns: id (uuid), user_id (FK to user_profiles), action, entity_type, entity_id, metadata (jsonb), ip_address, user_agent, created_at
 
 ### Sub-task 2.8: Create Private Schema Utility Functions
 
-- [ ] **2.8.1**: Create `private.get_user_type(user_id uuid)` function
+- [X] **2.8.1**: Create `private.get_user_type(user_id uuid)` function
   - Returns user_type from user_profiles table
-- [ ] **2.8.2**: Create `private.is_admin(user_id uuid)` function
+- [X] **2.8.2**: Create `private.is_admin(user_id uuid)` function
   - Returns boolean, checks if user_type = 'admin'
-- [ ] **2.8.3**: Create `private.is_staff(user_id uuid)` function
+- [X] **2.8.3**: Create `private.is_staff(user_id uuid)` function
   - Returns boolean, checks if user_type IN ('admin', 'attorney', 'staff')
-- [ ] **2.8.4**: Create `private.get_client_profile_id(user_id uuid)` function
+- [X] **2.8.4**: Create `private.get_client_profile_id(user_id uuid)` function
   - Returns client_profile_id for given user_id
-- [ ] **2.8.5**: Create `private.get_attorney_profile_id(user_id uuid)` function
+- [X] **2.8.5**: Create `private.get_attorney_profile_id(user_id uuid)` function
   - Returns attorney_profile_id for given user_id
-- [ ] **2.8.6**: Test all utility functions with sample data
+- [X] **2.8.6**: Test all utility functions with sample data
 
 ### Sub-task 2.9: Apply RLS Policies
 
-- [ ] **2.9.1**: Enable RLS on all tables
-- [ ] **2.9.2**: Create RLS policies for `user_profiles`
+- [X] **2.9.1**: Enable RLS on all tables
+- [X] **2.9.2**: Create RLS policies for `user_profiles`
   - Users can read their own profile
   - Staff can read all profiles
   - Users can update their own profile
   - Admin can update any profile
-- [ ] **2.9.3**: Create RLS policies for `client_profiles`
+- [X] **2.9.3**: Create RLS policies for `client_profiles`
   - Clients can read their own profile
   - Staff can read all client profiles
   - Staff can update client profiles
-- [ ] **2.9.4**: Create RLS policies for `attorney_profiles`
+- [X] **2.9.4**: Create RLS policies for `attorney_profiles`
   - Attorneys can read their own profile
   - Staff can read all attorney profiles
   - Admin can update attorney profiles
-- [ ] **2.9.5**: Create RLS policies for `cases`
+- [X] **2.9.5**: Create RLS policies for `cases`
   - Clients can read their own cases
   - Attorneys can read cases assigned to them
   - Staff can read all cases
   - Staff can create/update/delete cases
-- [ ] **2.9.6**: Create RLS policies for `documents`
+- [X] **2.9.6**: Create RLS policies for `documents`
   - Clients can read documents linked to their cases/profile
   - Attorneys can read documents for assigned cases
   - Staff can read all documents
   - Document uploader and staff can delete documents
-- [ ] **2.9.7**: Create RLS policies for `appointments`
+- [X] **2.9.7**: Create RLS policies for `appointments`
   - Clients can read their own appointments
   - Attorneys can read their assigned appointments
   - Staff can read all appointments
   - Staff can create/update appointments
-- [ ] **2.9.8**: Create RLS policies for `invoices` and `payments`
+- [X] **2.9.8**: Create RLS policies for `invoices` and `payments`
   - Clients can read their own invoices/payments
   - Staff can read all invoices/payments
   - Staff can create/update invoices
-- [ ] **2.9.9**: Create RLS policies for content tables (blog_posts, testimonials)
+- [X] **2.9.9**: Create RLS policies for content tables (blog_posts, testimonials)
   - All users can read published blog posts
   - Staff can create/update blog posts
   - Clients can submit testimonials
@@ -166,16 +166,16 @@ Complete database architecture with 20+ tables, Row-Level Security, comprehensiv
 
 ### Sub-task 2.10: Create Database Triggers
 
-- [ ] **2.10.1**: Create `generate_case_number()` trigger function
+- [X] **2.10.1**: Create `generate_case_number()` trigger function
   - Format: "CASE-YYYY-NNNN" (e.g., CASE-2025-0001)
   - Auto-increment per year
-- [ ] **2.10.2**: Apply case_number trigger to `cases` table
-- [ ] **2.10.3**: Create `generate_invoice_number()` trigger function
+- [X] **2.10.2**: Apply case_number trigger to `cases` table
+- [X] **2.10.3**: Create `generate_invoice_number()` trigger function
   - Format: "INV-YYYY-NNNN" (e.g., INV-2025-0001)
-- [ ] **2.10.4**: Apply invoice_number trigger to `invoices` table
-- [ ] **2.10.5**: Create `update_updated_at_column()` trigger function
+- [X] **2.10.4**: Apply invoice_number trigger to `invoices` table
+- [X] **2.10.5**: Create `update_updated_at_column()` trigger function
   - Automatically updates updated_at timestamp
-- [ ] **2.10.6**: Apply updated_at trigger to all tables with updated_at column
+- [X] **2.10.6**: Apply updated_at trigger to all tables with updated_at column
 
 ---
 
