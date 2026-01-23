@@ -44,6 +44,7 @@ export default function Hero() {
   const heroRef = useRef<HTMLElement>(null)
   const stickyWrapperRef = useRef<HTMLDivElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const videoContainerRef = useRef<HTMLDivElement>(null)
   const titleContainerRef = useRef<HTMLDivElement>(null)
   const titleSubRef = useRef<HTMLSpanElement>(null)
   const logosRef = useRef<HTMLDivElement>(null)
@@ -248,7 +249,17 @@ export default function Hero() {
       
       // Dynamic scroll sensitivity
       onEnter: () => setSlowScroll(),
-      onEnterBack: () => setSlowScroll(),
+      onEnterBack: () => {
+        setSlowScroll()
+        // Reset zoom when coming back
+        if (videoContainerRef.current) {
+          gsap.set(videoContainerRef.current, {
+            scale: 1,
+            opacity: 1,
+            filter: "blur(0px)",
+          })
+        }
+      },
       onLeaveBack: () => setNormalScroll(),
       
       onUpdate: (self) => {
@@ -265,6 +276,26 @@ export default function Hero() {
         
         // Calculate what percentage of frames have been rendered
         const frameCompletionPercent = (currentFrame / (TOTAL_FRAMES - 1)) * 100
+        
+        // Smooth zoom-out transition when frames are nearly complete (last 15%)
+        if (videoContainerRef.current && frameCompletionPercent >= 85) {
+          // Map frame completion from 85%-100% to zoom progress 0-1
+          const zoomProgress = Math.min((frameCompletionPercent - 85) / 15, 1)
+          
+          // Apply smooth easing
+          const easedProgress = zoomProgress * zoomProgress * (3 - 2 * zoomProgress)
+          
+          // Calculate values
+          const scale = 1 - (easedProgress * 0.25) // 1.0 -> 0.75
+          const opacity = 1 - (easedProgress * 1) // 1.0 -> 0
+          const blur = easedProgress * 10 // 0 -> 10px
+          
+          gsap.set(videoContainerRef.current, {
+            scale: scale,
+            opacity: opacity,
+            filter: `blur(${blur}px)`,
+          })
+        }
         
         // CRITICAL: Block scroll if we're past 85% scroll progress AND frames haven't caught up
         // This runs on EVERY scroll update, so it catches fast scrolling
@@ -370,7 +401,7 @@ export default function Hero() {
           </div>
 
           {/* Frame-based Background */}
-          <div className={styles.videoContainer}>
+          <div ref={videoContainerRef} className={styles.videoContainer}>
             <canvas
               ref={canvasRef}
               className={styles.video}
