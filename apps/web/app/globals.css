@@ -3,7 +3,24 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* Lenis smooth scroll */
+/* ScrollSmoother wrapper styles */
+#smooth-wrapper {
+  overflow: hidden;
+  position: fixed;
+  height: 100%;
+  width: 100%;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+#smooth-content {
+  overflow: visible;
+  width: 100%;
+}
+
+/* Legacy Lenis styles (can be removed if not needed) */
 html.lenis, html.lenis body {
   height: auto;
 }
@@ -26,6 +43,12 @@ html.lenis, html.lenis body {
 
 /* Unified color system for consistent styling across portal and admin */
 :root {
+  /* Heritage Color Palette - Elegant, minimal, timeless */
+  --heritage-walnut: #4E342E;      /* Primary/Structure: Dark Walnut - headers, heavy text, structural elements */
+  --heritage-gold: #D4AF37;        /* Accent: Burnished Gold - buttons, icons, highlights (use sparingly) */
+  --heritage-cream: #F9F8F6;       /* Surface Light: Creamy Off-White - main background */
+  --heritage-charcoal: #2C2C2C;    /* Surface Dark: Warm Charcoal - contrasting section backgrounds */
+
   /* Background Colors */
   --bg-primary: #1a1d1a;
   --bg-secondary: #171a17;
@@ -128,6 +151,13 @@ html.lenis, html.lenis body {
 @theme inline {
   --font-sans: "Geist", "Geist Fallback";
   --font-mono: "Geist Mono", "Geist Mono Fallback";
+
+  /* Heritage Color Palette - Semantic utility classes */
+  --color-heritage-walnut: var(--heritage-walnut);
+  --color-heritage-gold: var(--heritage-gold);
+  --color-heritage-cream: var(--heritage-cream);
+  --color-heritage-charcoal: var(--heritage-charcoal);
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -351,5 +381,118 @@ body.app-loaded header {
 
 .text-hover:hover {
   color: var(--theme-secondary);
-  
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Heritage Section Utilities
+   Reusable section layouts with proper contrast for accessibility
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* SectionLight: Cream background with Charcoal text
+   WCAG AA compliant contrast ratio: 12.6:1 */
+.section-light {
+  background-color: var(--heritage-cream);
+  color: var(--heritage-charcoal);
+}
+
+.section-light h1,
+.section-light h2,
+.section-light h3,
+.section-light h4,
+.section-light h5,
+.section-light h6 {
+  color: var(--heritage-walnut);
+}
+
+.section-light p,
+.section-light span,
+.section-light li {
+  color: var(--heritage-charcoal);
+}
+
+.section-light a {
+  color: var(--heritage-walnut);
+  transition: color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.section-light a:hover {
+  color: var(--heritage-gold);
+  opacity: 1;
+}
+
+/* SectionDark: Charcoal background with Cream text
+   WCAG AA compliant contrast ratio: 12.6:1 */
+.section-dark {
+  background-color: var(--heritage-charcoal);
+  color: var(--heritage-cream);
+}
+
+.section-dark h1,
+.section-dark h2,
+.section-dark h3,
+.section-dark h4,
+.section-dark h5,
+.section-dark h6 {
+  color: var(--heritage-cream);
+}
+
+.section-dark p,
+.section-dark span,
+.section-dark li {
+  color: rgba(249, 248, 246, 0.85); /* Slightly softer cream for body text */
+}
+
+.section-dark a {
+  color: var(--heritage-gold);
+  transition: color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.section-dark a:hover {
+  color: var(--heritage-cream);
+  opacity: 1;
+}
+
+/* Heritage accent utilities */
+.heritage-accent {
+  color: var(--heritage-gold);
+}
+
+.heritage-accent-bg {
+  background-color: var(--heritage-gold);
+  color: var(--heritage-charcoal);
+}
+
+/* Heritage button styles */
+.btn-heritage-primary {
+  background-color: var(--heritage-walnut);
+  color: var(--heritage-cream);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-heritage-primary:hover {
+  background-color: var(--heritage-charcoal);
+  transform: translateY(-2px);
+}
+
+.btn-heritage-gold {
+  background-color: var(--heritage-gold);
+  color: var(--heritage-charcoal);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-heritage-gold:hover {
+  filter: brightness(1.1);
+  transform: translateY(-2px);
+}
+
+.btn-heritage-outline {
+  background-color: transparent;
+  border: 1px solid var(--heritage-walnut);
+  color: var(--heritage-walnut);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-heritage-outline:hover {
+  background-color: var(--heritage-walnut);
+  color: var(--heritage-cream);
 }
