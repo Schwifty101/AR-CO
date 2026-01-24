@@ -1,7 +1,15 @@
 'use client'
 
-import { useEffect, useRef, useState, useCallback } from 'react'
+import { useLayoutEffect, useEffect, useRef, useState, useCallback } from 'react'
+import gsap from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { ScrollToPlugin } from 'gsap/ScrollToPlugin'
 import styles from './PracticeAreasHorizontal.module.css'
+
+// Register GSAP plugins
+if (typeof window !== 'undefined') {
+  gsap.registerPlugin(ScrollTrigger, ScrollToPlugin)
+}
 
 interface PracticeArea {
   id: number
@@ -98,31 +106,22 @@ const cardPositions = [
   { top: '80%', left: '20%', size: 'medium', rotation: -2 },
 ]
 
+// ============================================================
+// PIN SPACING MULTIPLIER - Adjust this to change scroll distance
+// Higher value = more scroll distance before section completes (slower)
+// Lower value = less scroll distance (faster horizontal scroll)
+// Try values: 1, 1.5, 2, 2.5, 3
+// ============================================================
+const PIN_SPACING_MULTIPLIER = 1.5
+
 export default function PracticeAreasHorizontal() {
-  const wrapperRef = useRef<HTMLDivElement>(null)
+  const sectionRef = useRef<HTMLDivElement>(null)
+  const triggerRef = useRef<HTMLDivElement>(null)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const [activeIndex, setActiveIndex] = useState(0)
-  const [scrollProgress, setScrollProgress] = useState(0)
   const [isMobile, setIsMobile] = useState(false)
 
-  const navigateToPanel = useCallback((panelIndex: number) => {
-    if (!wrapperRef.current) return
-
-    const wrapper = wrapperRef.current
-    const rect = wrapper.getBoundingClientRect()
-    const wrapperTop = rect.top + window.scrollY
-    const viewportHeight = window.innerHeight
-    const scrollableHeight = wrapper.offsetHeight - viewportHeight
-
-    const targetProgress = panelIndex / (practiceAreas.length - 1)
-    const targetScroll = wrapperTop + (scrollableHeight * targetProgress)
-
-    window.scrollTo({
-      top: targetScroll,
-      behavior: 'smooth'
-    })
-  }, [])
-
+  // Check for mobile
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 1024)
@@ -134,68 +133,88 @@ export default function PracticeAreasHorizontal() {
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
-  useEffect(() => {
-    if (isMobile) return
+  // Navigate to panel using ScrollToPlugin
+  const navigateToPanel = useCallback((panelIndex: number) => {
+    const scrollTriggerInstance = ScrollTrigger.getAll().find(
+      (st) => st.trigger === triggerRef.current
+    )
+    if (scrollTriggerInstance) {
+      const progress = panelIndex / (practiceAreas.length - 1)
+      const targetScroll =
+        scrollTriggerInstance.start +
+        (scrollTriggerInstance.end - scrollTriggerInstance.start) * progress
 
-    let animationFrameId: number
-
-    const handleScroll = () => {
-      if (!wrapperRef.current || !scrollContainerRef.current) return
-
-      const wrapper = wrapperRef.current
-      const scrollContainer = scrollContainerRef.current
-      const rect = wrapper.getBoundingClientRect()
-      const viewportHeight = window.innerHeight
-
-      const sectionStart = rect.top
-      const sectionEnd = rect.bottom
-
-      // Only apply horizontal scroll when section is sticky
-      if (sectionStart <= 0 && sectionEnd > viewportHeight) {
-        const totalScrollableHeight = rect.height - viewportHeight
-        const scrolledIntoSection = -sectionStart
-        const rawProgress = scrolledIntoSection / totalScrollableHeight
-        const progress = Math.min(Math.max(rawProgress, 0), 1)
-
-        setScrollProgress(progress)
-
-        // Calculate horizontal transform - scroll the entire width
-        const containerWidth = scrollContainer.scrollWidth
-        const viewportWidth = window.innerWidth * 0.667 // 2/3 of viewport
-        const maxScroll = containerWidth - viewportWidth
-        const translateX = -progress * maxScroll
-        scrollContainer.style.transform = `translateX(${translateX}px)`
-
-        // Calculate active index
-        const totalPanels = practiceAreas.length
-        const activeIdx = Math.min(
-          Math.floor(progress * totalPanels),
-          totalPanels - 1
-        )
-        setActiveIndex(activeIdx)
-      } else if (sectionStart > 0) {
-        // Before section - reset
-        setScrollProgress(0)
-        setActiveIndex(0)
-        scrollContainer.style.transform = `translateX(0px)`
-      }
+      // Uses ScrollToPlugin for smooth navigation
+      gsap.to(window, {
+        scrollTo: { y: targetScroll, autoKill: false },
+        duration: 0.8,
+        ease: 'power2.inOut',
+      })
     }
+  }, [])
 
-    const throttledScroll = () => {
-      if (animationFrameId) {
-        cancelAnimationFrame(animationFrameId)
-      }
-      animationFrameId = requestAnimationFrame(handleScroll)
-    }
+  // GSAP ScrollTrigger setup for horizontal scroll with pinning
+  useLayoutEffect(() => {
+    if (isMobile || !sectionRef.current || !scrollContainerRef.current || !triggerRef.current)
+      return
 
-    window.addEventListener('scroll', throttledScroll, { passive: true })
-    handleScroll()
+    // Small delay to ensure ScrollSmoother is initialized
+    const timeoutId = setTimeout(() => {
+      const ctx = gsap.context(() => {
+        const scrollContainer = scrollContainerRef.current!
+
+        // Calculate how far to scroll horizontally
+        const getScrollAmount = () => {
+          const containerWidth = scrollContainer.scrollWidth
+          const viewportWidth = window.innerWidth * 0.667 // right column is 2/3
+          return -(containerWidth - viewportWidth)
+        }
+
+        // Create the horizontal scroll animation
+        const tween = gsap.to(scrollContainer, {
+          x: getScrollAmount,
+          ease: 'none',
+        })
+
+        // Create ScrollTrigger with pinning
+        // pin: true uses transforms (works inside ScrollSmoother!)
+        ScrollTrigger.create({
+          trigger: triggerRef.current,
+          start: 'top top',
+          // ============================================================
+          // END VALUE - Controls total scroll distance while pinned
+          // Format: +=<pixels> means "pin for this many pixels of scrolling"
+          // Adjust PIN_SPACING_MULTIPLIER above to change this
+          // ============================================================
+          end: () => `+=${Math.abs(getScrollAmount()) * PIN_SPACING_MULTIPLIER}`,
+          pin: true,
+          animation: tween,
+          scrub: 1, // Smooth scrubbing (1 second lag) - try 0.5 for snappier, 2 for smoother
+          invalidateOnRefresh: true,
+          anticipatePin: 1,
+          // pinType: 'transform' is auto-detected inside ScrollSmoother
+          onUpdate: (self) => {
+            const progress = self.progress
+            const totalPanels = practiceAreas.length
+            const activeIdx = Math.min(Math.floor(progress * totalPanels), totalPanels - 1)
+            setActiveIndex(activeIdx)
+          },
+        })
+
+        // Refresh after setup to ensure measurements are correct
+        ScrollTrigger.refresh()
+      }, sectionRef)
+
+      return () => ctx.revert()
+    }, 100)
 
     return () => {
-      window.removeEventListener('scroll', throttledScroll)
-      if (animationFrameId) {
-        cancelAnimationFrame(animationFrameId)
-      }
+      clearTimeout(timeoutId)
+      ScrollTrigger.getAll().forEach((st) => {
+        if (st.trigger === triggerRef.current) {
+          st.kill()
+        }
+      })
     }
   }, [isMobile])
 
@@ -220,8 +239,8 @@ export default function PracticeAreasHorizontal() {
   }
 
   return (
-    <div ref={wrapperRef} className={styles.wrapper}>
-      <div className={styles.stickyContainer}>
+    <section ref={sectionRef} className={styles.section}>
+      <div ref={triggerRef} className={styles.pinContainer}>
         {/* Left Column - Typography List (1/3) */}
         <div className={styles.leftColumn}>
           <nav className={styles.navList}>
@@ -300,6 +319,6 @@ export default function PracticeAreasHorizontal() {
           </div>
         </div>
       </div>
-    </div>
+    </section>
   )
 }
