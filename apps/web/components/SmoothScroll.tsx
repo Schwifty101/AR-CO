@@ -40,6 +40,12 @@ export const setSlowScroll = () => {
   setSmoothness(10) // High smoothness for frame playback
 }
 
+// Preset: Medium scroll for transition sections (hero → quote overlap)
+export const setMediumScroll = () => {
+  setScrollSpeed(0.5) // Half speed for smooth transition
+  setSmoothness(6) // Medium-high smoothness
+}
+
 // Preset: Normal scroll for rest of website
 export const setNormalScroll = () => {
   setScrollSpeed(1)
