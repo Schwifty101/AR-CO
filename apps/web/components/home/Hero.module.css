@@ -1,7 +1,7 @@
 /* Hero Section */
 .hero {
   position: relative;
-  height: 400vh;
+  height: 400vh; /* Reduced for minimal scroll consumption */
   z-index: 1;
   background: #000;
 }
@@ -13,11 +13,11 @@
   left: 0;
   width: 100%;
   height: 100vh;
-  overflow: hidden;
+  overflow: visible;  /* Allow content to be visible during stacking transition */
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 100;  /* High z-index prevents subsequent sections from covering pinned content */
+  z-index: 1;  /* Lower z-index so quote section can stack over */
 }
 
 /* Video Background */

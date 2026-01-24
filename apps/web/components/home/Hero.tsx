@@ -7,7 +7,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger"
 import { useGSAP } from "@gsap/react"
 import styles from "./Hero.module.css"
 import LoadingScreen from "../LoadingScreen"
-import { setSlowScroll, setNormalScroll, getSmoother } from "../SmoothScroll"
+import { setSlowScroll, setNormalScroll } from "../SmoothScroll"
 
 // Register GSAP plugins
 if (typeof window !== "undefined") {
@@ -53,20 +53,7 @@ export default function Hero() {
   const [loadingProgress, setLoadingProgress] = useState(0)
   const imagesRef = useRef<HTMLImageElement[]>([])
   const currentFrameRef = useRef(0)
-  const targetFrameRef = useRef(0)
-  const animationFrameRef = useRef<number | null>(null)
-  const lastTimeRef = useRef<number>(0)
   const scrollTriggerRef = useRef<ScrollTrigger | null>(null)
-  const heroEndPositionRef = useRef<number>(0)
-  const isBlockingScrollRef = useRef<boolean>(false)
-  const debugOverlayRef = useRef<HTMLDivElement>(null)
-  
-  // Frame rate limiting: max frames per second regardless of scroll speed
-  const MAX_FRAMES_PER_SECOND = 90  // 772 frames at 90fps = ~8.6 seconds total
-  const FRAME_INTERVAL = 1000 / MAX_FRAMES_PER_SECOND
-  
-  // How many frames behind before we block scrolling past hero
-  const FRAME_LAG_THRESHOLD = 25
   
   // Frame range for UI element fade (frames 10-30 for smooth transition)
   const UI_FADE_START_FRAME = 10
@@ -167,74 +154,13 @@ export default function Hero() {
     }
   }
 
-  // ScrollTrigger setup - velocity-clamped frame interpolation
+  // ScrollTrigger setup - direct frame rendering from smoothed scroll progress
   useGSAP(() => {
     if (!heroRef.current || !stickyWrapperRef.current || !imagesLoaded) return
 
     const canvas = canvasRef.current
     const ctx = canvas?.getContext('2d')
     if (!canvas || !ctx) return
-
-    // Frame interpolation loop - advances at constant rate toward target
-    const interpolateFrames = (timestamp: number) => {
-      if (!lastTimeRef.current) lastTimeRef.current = timestamp
-      const deltaTime = timestamp - lastTimeRef.current
-      
-      // Only advance frame if enough time has passed (rate limiting)
-      if (deltaTime >= FRAME_INTERVAL) {
-        lastTimeRef.current = timestamp
-        
-        const current = currentFrameRef.current
-        const target = targetFrameRef.current
-        
-        // Move one frame closer to target (constant speed)
-        if (current !== target && imagesRef.current[current]) {
-          const direction = target > current ? 1 : -1
-          const nextFrame = current + direction
-
-          currentFrameRef.current = nextFrame
-          ctx.drawImage(
-            imagesRef.current[nextFrame],
-            0, 0,
-            canvas.width,
-            canvas.height
-          )
-
-          // Update UI based on current rendered frame
-          updateUIElements(nextFrame)
-        }
-
-        // Update debug overlay
-        if (debugOverlayRef.current) {
-          const frameLag = target - current
-          debugOverlayRef.current.innerHTML = `
-            <div style="
-              position: fixed; 
-              top: 10px; 
-              left: 10px; 
-              z-index: 10000; 
-              background: rgba(0, 0, 0, 0.8); 
-              color: #00ff00; 
-              padding: 10px; 
-              font-family: monospace; 
-              border-radius: 4px; 
-              pointer-events: none;
-            ">
-              <div style="margin-bottom: 4px;"><strong>Current Frame:</strong> ${current} / ${TOTAL_FRAMES - 1}</div>
-              <div style="margin-bottom: 4px;"><strong>Target Frame:</strong> ${target} / ${TOTAL_FRAMES - 1}</div>
-              <div style="margin-bottom: 4px;"><strong>Frame Lag:</strong> ${frameLag}</div>
-              <div><strong>Blocking:</strong> ${isBlockingScrollRef.current ? 'YES' : 'NO'}</div>
-            </div>
-          `;
-        }
-      }
-
-      // Continue loop
-      animationFrameRef.current = requestAnimationFrame(interpolateFrames)
-    }
-    
-    // Start the interpolation loop
-    animationFrameRef.current = requestAnimationFrame(interpolateFrames)
 
     const st = ScrollTrigger.create({
       trigger: heroRef.current,
@@ -245,97 +171,62 @@ export default function Hero() {
       anticipatePin: 1,
       invalidateOnRefresh: true,
       pinReparent: true,
+      scrub: true, // Enable scrub - ScrollSmoother will handle the smoothing
       // markers: true,
       
-      // Dynamic scroll sensitivity
+      // Dynamic scroll sensitivity - slower in hero section
       onEnter: () => setSlowScroll(),
-      onEnterBack: () => {
-        setSlowScroll()
-        // Reset zoom when coming back
-        if (videoContainerRef.current) {
-          gsap.set(videoContainerRef.current, {
-            scale: 1,
-            opacity: 1,
-            filter: "blur(0px)",
-          })
-        }
-      },
+      onEnterBack: () => setSlowScroll(),
       onLeaveBack: () => setNormalScroll(),
+      onLeave: () => setNormalScroll(),
       
       onUpdate: (self) => {
-        // Store the end position of the hero section
-        heroEndPositionRef.current = self.end
+        // Calculate frame directly from scroll progress
+        // ScrollSmoother's normalizeScroll + smooth settings handle acceleration smoothing
+        const frame = Math.floor(self.progress * (TOTAL_FRAMES - 1))
         
-        // Only update target frame - the interpolation loop handles rendering
-        targetFrameRef.current = Math.floor(self.progress * (TOTAL_FRAMES - 1))
-        
-        const smoother = getSmoother()
-        const currentFrame = currentFrameRef.current
-        const targetFrame = targetFrameRef.current
-        const frameLag = targetFrame - currentFrame
-        
-        // Calculate what percentage of frames have been rendered
-        const frameCompletionPercent = (currentFrame / (TOTAL_FRAMES - 1)) * 100
-        
-        // Smooth zoom-out transition when frames are nearly complete (last 15%)
-        if (videoContainerRef.current && frameCompletionPercent >= 85) {
-          // Map frame completion from 85%-100% to zoom progress 0-1
-          const zoomProgress = Math.min((frameCompletionPercent - 85) / 15, 1)
+        // Only render if frame changed (prevents unnecessary redraws)
+        if (frame !== currentFrameRef.current && imagesRef.current[frame]) {
+          currentFrameRef.current = frame
+          ctx.drawImage(
+            imagesRef.current[frame],
+            0, 0,
+            canvas.width,
+            canvas.height
+          )
           
-          // Apply smooth easing
-          const easedProgress = zoomProgress * zoomProgress * (3 - 2 * zoomProgress)
-          
-          // Calculate values
-          const scale = 1 - (easedProgress * 0.25) // 1.0 -> 0.75
-          const opacity = 1 - (easedProgress * 1) // 1.0 -> 0
-          const blur = easedProgress * 10 // 0 -> 10px
-          
-          gsap.set(videoContainerRef.current, {
-            scale: scale,
-            opacity: opacity,
-            filter: `blur(${blur}px)`,
-          })
+          // Update UI elements based on frame
+          updateUIElements(frame)
         }
         
-        // CRITICAL: Block scroll if we're past 85% scroll progress AND frames haven't caught up
-        // This runs on EVERY scroll update, so it catches fast scrolling
-        if (self.progress > 0.85 && frameCompletionPercent < 95) {
-          // Calculate max allowed progress based on current frame completion
-          const frameCompletionRatio = currentFrame / (TOTAL_FRAMES - 1)
-          // Allow scroll to be slightly ahead of frames, but not too far
-          const maxAllowedProgress = Math.min(frameCompletionRatio + 0.08, 0.99)
-          
-          if (self.progress > maxAllowedProgress && smoother) {
-            // Clamp scroll position to match frame progress
-            const clampedPosition = self.start + (self.end - self.start) * maxAllowedProgress
-            smoother.scrollTo(clampedPosition, false)
-            isBlockingScrollRef.current = true
+        // Subtle zoom-out transition - starts earlier since hero stays 70-80% visible
+        // This creates depth as quote overlaps, hero gently recedes
+        if (videoContainerRef.current) {
+          if (self.progress >= 0.60) {
+            const zoomProgress = (self.progress - 0.60) / 0.40 // Spread over 40% of scroll
+            const easedProgress = zoomProgress * zoomProgress * (3 - 2 * zoomProgress) // Smooth easing
+            const scale = 1 - (easedProgress * 0.08) // Very subtle scale (max 8% shrink)
+            const yOffset = easedProgress * -20 // Gentle upward drift
+            
+            gsap.set(videoContainerRef.current, {
+              scale: scale,
+              y: yOffset,
+              transformOrigin: "center center",
+            })
           } else {
-            isBlockingScrollRef.current = false
-          }
-        } else if (frameCompletionPercent >= 95) {
-          // Once 95% of frames are complete, allow free scrolling to exit
-          isBlockingScrollRef.current = false
-          if (self.progress > 0.95) {
-            setNormalScroll()
+            gsap.set(videoContainerRef.current, {
+              scale: 1,
+              y: 0,
+              transformOrigin: "center center",
+            })
           }
         }
-      },
-      
-      onLeave: () => {
-        // Allow normal scroll when leaving
-        setNormalScroll()
-        isBlockingScrollRef.current = false
       },
     })
     
     scrollTriggerRef.current = st
 
     return () => {
-      // Clean up animation frame loop
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current)
-      }
       ScrollTrigger.getAll().forEach(trigger => trigger.kill())
     }
   }, [imagesLoaded])
@@ -378,28 +269,6 @@ export default function Hero() {
       <section ref={heroRef} className={styles.hero}>
         {/* Sticky wrapper keeps content visible while scrolling */}
         <div ref={stickyWrapperRef} className={styles.stickyWrapper}>
-          {/* Debug Overlay */}
-          <div
-            ref={debugOverlayRef}
-            style={{
-              position: 'absolute',
-              top: '20px',
-              right: '20px',
-              background: 'rgba(0, 0, 0, 0.8)',
-              color: '#fff',
-              padding: '12px 16px',
-              borderRadius: '8px',
-              fontFamily: 'monospace',
-              fontSize: '12px',
-              zIndex: 9999,
-              pointerEvents: 'none',
-              lineHeight: '1.6',
-              minWidth: '200px'
-            }}
-          >
-            Loading...
-          </div>
-
           {/* Frame-based Background */}
           <div ref={videoContainerRef} className={styles.videoContainer}>
             <canvas
