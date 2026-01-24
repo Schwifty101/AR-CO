@@ -3,7 +3,7 @@ import Footer from "@/components/footer/Footer"
 import Button from "@/components/Button"
 import Hero from "@/components/home/Hero"
 import QuoteSection from "@/components/home/QuoteSection"
-import PracticeAreasList from "@/components/home/PracticeAreasList"
+import PracticeAreasHorizontal from "@/components/home/PracticeAreasHorizontal"
 import ScrollRevealText from "@/components/shared/animations/ScrollRevealText"
 import SmoothScroll from "@/components/SmoothScroll"
 import Link from "next/link"
@@ -52,8 +52,8 @@ export default function Home() {
           <Hero />
           <QuoteSection />
 
-          {/* Practice Areas List with Fixed Sidebar */}
-          <PracticeAreasList />
+          {/* Practice Areas Horizontal Scroll with Abstract Layout */}
+          <PracticeAreasHorizontal />
 
         {/* Portal Access Section */}
         <section className={styles.section}>

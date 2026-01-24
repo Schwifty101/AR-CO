@@ -27,11 +27,24 @@ export const setScrollSpeed = (speed: number) => {
   }
 }
 
+// Export function to set smoothness value dynamically
+export const setSmoothness = (smoothValue: number) => {
+  if (smootherInstance) {
+    smootherInstance.smooth(smoothValue)
+  }
+}
+
 // Preset: Slow scroll for frame sequences
-export const setSlowScroll = () => setScrollSpeed(0.25)
+export const setSlowScroll = () => {
+  setScrollSpeed(0.001)
+  setSmoothness(10) // High smoothness for frame playback
+}
 
 // Preset: Normal scroll for rest of website
-export const setNormalScroll = () => setScrollSpeed(1)
+export const setNormalScroll = () => {
+  setScrollSpeed(1)
+  setSmoothness(2.5) // Normal smoothness
+}
 
 // Pause scrolling completely (used when frames need to catch up)
 export const pauseScroll = () => {
@@ -65,14 +78,14 @@ export default function SmoothScroll({ children }: SmoothScrollProps) {
   useEffect(() => {
     if (!wrapperRef.current || !contentRef.current) return
 
-    // Initialize ScrollSmoother
+    // Initialize ScrollSmoother with high smoothing to normalize scroll acceleration
     const smoother = ScrollSmoother.create({
       wrapper: wrapperRef.current,
       content: contentRef.current,
-      smooth: 1.5,              // Smoothness factor (higher = smoother)
+      smooth: 2.5,              // Default smoothness - will be increased to 10 in hero section
       effects: true,            // Enable data-speed and data-lag attributes
       smoothTouch: 0.1,         // Enable smooth scrolling on touch devices
-      normalizeScroll: true,    // Normalize scroll behavior across browsers
+      normalizeScroll: true,    // CRITICAL: Normalizes scroll behavior, prevents acceleration spikes
       ignoreMobileResize: true, // Prevent issues with mobile address bar
       speed: 1,                 // Default scroll speed (1 = normal)
     })
