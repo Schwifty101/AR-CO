@@ -37,15 +37,19 @@ export const validationSchema = Joi.object({
     .valid('development', 'production', 'test', 'staging')
     .default('development'),
   PORT: Joi.number().port().default(4000),
-  CORS_ORIGINS: Joi.string().default('http://localhost:3000,http://localhost:4000'),
+  CORS_ORIGINS: Joi.string().default(
+    'http://localhost:3000,http://localhost:4000',
+  ),
 
   // Supabase Configuration (Required)
   SUPABASE_URL: Joi.string().uri().required().messages({
     'string.uri': 'SUPABASE_URL must be a valid URL',
-    'any.required': 'SUPABASE_URL is required. Get it from Supabase Dashboard > Project Settings > API',
+    'any.required':
+      'SUPABASE_URL is required. Get it from Supabase Dashboard > Project Settings > API',
   }),
   SUPABASE_ANON_KEY: Joi.string().required().messages({
-    'any.required': 'SUPABASE_ANON_KEY is required. Get it from Supabase Dashboard > Project Settings > API',
+    'any.required':
+      'SUPABASE_ANON_KEY is required. Get it from Supabase Dashboard > Project Settings > API',
   }),
   SUPABASE_SERVICE_ROLE_KEY: Joi.string().required().messages({
     'any.required':
@@ -56,7 +60,8 @@ export const validationSchema = Joi.object({
   // JWT Configuration (Required in production)
   JWT_SECRET: Joi.string().min(32).required().messages({
     'string.min': 'JWT_SECRET must be at least 32 characters long for security',
-    'any.required': 'JWT_SECRET is required. Generate one using: openssl rand -base64 32',
+    'any.required':
+      'JWT_SECRET is required. Generate one using: openssl rand -base64 32',
   }),
   JWT_ACCESS_TOKEN_EXPIRATION: Joi.string()
     .pattern(/^\d+[smhd]$/)
@@ -103,15 +108,17 @@ export const validationSchema = Joi.object({
   SENDGRID_FROM_NAME: Joi.string().default('AR&CO Law Firm'),
 
   // File Upload Configuration
-  MAX_FILE_SIZE: Joi.number()
-    .integer()
-    .positive()
-    .default(10485760)
-    .messages({
-      'number.base': 'MAX_FILE_SIZE must be a number (in bytes)',
-      'number.positive': 'MAX_FILE_SIZE must be a positive number',
-    }),
+  MAX_FILE_SIZE: Joi.number().integer().positive().default(10485760).messages({
+    'number.base': 'MAX_FILE_SIZE must be a number (in bytes)',
+    'number.positive': 'MAX_FILE_SIZE must be a positive number',
+  }),
   ALLOWED_FILE_TYPES: Joi.string().default('.pdf,.doc,.docx,.jpg,.jpeg,.png'),
+
+  // Admin Configuration
+  ADMIN_EMAILS: Joi.string().optional().default('').messages({
+    'string.base':
+      'ADMIN_EMAILS must be a comma-separated string of email addresses',
+  }),
 });
 
 /**
