@@ -71,6 +71,13 @@ export interface FileUploadConfig {
 }
 
 /**
+ * Admin configuration interface
+ */
+export interface AdminConfig {
+  emails: string[];
+}
+
+/**
  * Complete application configuration interface
  */
 export interface Configuration {
@@ -80,6 +87,7 @@ export interface Configuration {
   safepay: SafepayConfig;
   email: EmailConfig;
   fileUpload: FileUploadConfig;
+  admin: AdminConfig;
 }
 
 /**
@@ -140,5 +148,9 @@ export default (): Configuration => ({
       '.jpeg',
       '.png',
     ],
+  },
+  admin: {
+    emails:
+      process.env.ADMIN_EMAILS?.split(',').map((email) => email.trim()) || [],
   },
 });

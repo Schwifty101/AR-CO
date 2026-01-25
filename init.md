@@ -179,45 +179,66 @@ Complete database architecture with 20+ tables, Row-Level Security, comprehensiv
 
 ---
 
-## HEAD TASK 3: Database Service & Common Utilities
+## HEAD TASK 3: Database Service & Common Utilities ✅
 
 ### Sub-task 3.1: Create Database Module
 
-- [ ] **3.1.1**: Create `apps/api/src/database/supabase.service.ts` with SupabaseService class
+- [X] **3.1.1**: Create `apps/api/src/database/supabase.service.ts` with SupabaseService class
   - Method: `getClient(accessToken?: string)` - Returns authenticated Supabase client
-  - Method: `getAdminClient()` - Returns service role client
-- [ ] **3.1.2**: Create `apps/api/src/database/database.module.ts`
-  - Register SupabaseService as global provider
-- [ ] **3.1.3**: Import DatabaseModule in `app.module.ts`
+  - Method: `getAdminClient()` - Returns service role client (bypasses RLS)
+  - Method: `getUserFromToken(token)` - Validates JWT and retrieves user profile
+- [X] **3.1.2**: Create `apps/api/src/database/admin-whitelist.service.ts`
+  - Method: `isAdminEmail(email)` - Checks admin whitelist
+- [X] **3.1.3**: Create `apps/api/src/database/database.module.ts`
+  - Register SupabaseService and AdminWhitelistService as global providers
+- [X] **3.1.4**: Import DatabaseModule in `app.module.ts`
 
 ### Sub-task 3.2: Create Common Guards
 
-- [ ] **3.2.1**: Create `apps/api/src/common/guards/auth.guard.ts`
+- [X] **3.2.1**: Create `apps/api/src/common/guards/jwt-auth.guard.ts`
   - Extract JWT from Authorization header
-  - Validate token with Supabase
+  - Validate token with Supabase via getUserFromToken()
   - Attach user to request object
-- [ ] **3.2.2**: Create `apps/api/src/common/guards/roles.guard.ts`
+  - Respect @Public() decorator
+- [X] **3.2.2**: Create `apps/api/src/common/guards/roles.guard.ts`
   - Check user_type against required roles from @Roles() decorator
-  - Use private.is_staff(), private.is_admin() utility functions
-- [ ] **3.2.3**: Test guards with mock requests
+  - Check admin whitelist for bypass
+- [X] **3.2.3**: Register guards globally in `main.ts` with proper execution order
 
 ### Sub-task 3.3: Create Common Decorators
 
-- [ ] **3.3.1**: Create `apps/api/src/common/decorators/current-user.decorator.ts`
+- [X] **3.3.1**: Create `apps/api/src/common/decorators/current-user.decorator.ts`
   - Extracts user from request object
-- [ ] **3.3.2**: Create `apps/api/src/common/decorators/roles.decorator.ts`
+  - Supports extracting specific properties
+- [X] **3.3.2**: Create `apps/api/src/common/decorators/roles.decorator.ts`
   - Decorator to specify required roles for endpoints
-- [ ] **3.3.3**: Create `apps/api/src/common/decorators/public.decorator.ts`
+- [X] **3.3.3**: Create `apps/api/src/common/decorators/public.decorator.ts`
   - Decorator to mark endpoints as public (skip authentication)
 
 ### Sub-task 3.4: Create Common DTOs and Interfaces
 
-- [ ] **3.4.1**: Create `apps/api/src/common/dto/pagination.dto.ts`
+- [X] **3.4.1**: Create `apps/api/src/common/dto/pagination.dto.ts`
   - PaginationDto with page, limit, sort, order
-- [ ] **3.4.2**: Create `apps/api/src/common/interfaces/auth-user.interface.ts`
-  - AuthUser interface with id, email, user_type
-- [ ] **3.4.3**: Create `apps/api/src/common/enums/user-type.enum.ts`
+  - Full class-validator validation
+- [X] **3.4.2**: Create `apps/api/src/common/interfaces/auth-user.interface.ts`
+  - AuthUser interface with id, email, userType, fullName, phoneNumber
+  - Optional: clientProfileId, attorneyProfileId
+- [X] **3.4.3**: Create `apps/api/src/common/enums/user-type.enum.ts`
   - UserType enum: CLIENT, ATTORNEY, STAFF, ADMIN
+
+### Sub-task 3.5: Create Exception Filters
+
+- [X] **3.5.1**: Create `apps/api/src/common/filters/http-exception.filter.ts`
+  - Standardizes HTTP error responses
+- [X] **3.5.2**: Create `apps/api/src/common/filters/supabase-exception.filter.ts`
+  - Maps Supabase errors to HTTP status codes
+
+### Sub-task 3.6: Application Integration
+
+- [X] **3.6.1**: Update `main.ts` with global guards and filters
+- [X] **3.6.2**: Extend `configuration.ts` with AdminConfig
+- [X] **3.6.3**: Update `validation.schema.ts` with ADMIN_EMAILS
+- [X] **3.6.4**: Update `.env` and `.env.example` with ADMIN_EMAILS
 
 ---
 

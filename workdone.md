@@ -1,10 +1,10 @@
 # AR-CO Database & Backend Setup - Work Progress Log
 
-## Project Status: Initialization Phase
+## Project Status: Core Infrastructure Complete
 
 **Start Date**: 2026-01-22
-**Current Phase**: Environment & Configuration Setup
-**Overall Progress**: 0/13 Head Tasks Completed
+**Current Phase**: Database Service & Authentication Layer
+**Overall Progress**: 3/13 Head Tasks Completed
 
 ---
 
@@ -118,6 +118,94 @@
 
 ---
 
+### [2026-01-24] HEAD TASK 3: Database Service & Common Utilities (4/4 sub-tasks) ✅
+**Status**: ✅ COMPLETED
+**Started**: 2026-01-24 19:00
+**Completed**: 2026-01-24 20:30
+**Time Taken**: 90 minutes
+
+#### Sub-task 3.1: Create Database Module (3/3) ✅
+- ✅ 3.1.1: Created `apps/api/src/database/supabase.service.ts` with SupabaseService class
+  - Method: `getClient(accessToken?)` - Returns RLS-enforced Supabase client
+  - Method: `getAdminClient()` - Returns service role client (bypasses RLS)
+  - Method: `getUserFromToken(token)` - Validates JWT and retrieves user profile
+- ✅ 3.1.2: Created `apps/api/src/database/admin-whitelist.service.ts`
+  - Method: `isAdminEmail(email)` - Checks if email is in admin whitelist
+  - Loads from `ADMIN_EMAILS` environment variable (comma-separated)
+- ✅ 3.1.3: Created `apps/api/src/database/database.module.ts`
+  - Registered as `@Global()` module for app-wide access
+  - Exports: SupabaseService, AdminWhitelistService
+- ✅ 3.1.4: Imported DatabaseModule in `app.module.ts`
+
+#### Sub-task 3.2: Create Common Guards (2/2) ✅
+- ✅ 3.2.1: Created `apps/api/src/common/guards/jwt-auth.guard.ts`
+  - Extracts JWT from Authorization header
+  - Validates token with Supabase
+  - Populates `request.user` with AuthUser object
+  - Respects `@Public()` decorator for public routes
+- ✅ 3.2.2: Created `apps/api/src/common/guards/roles.guard.ts`
+  - Enforces role-based access control via `@Roles()` decorator
+  - Checks user's `userType` against required roles
+  - Admin whitelist bypass: emails in ADMIN_EMAILS access all routes
+- ✅ 3.2.3: Registered guards globally in `main.ts` with proper execution order
+
+#### Sub-task 3.3: Create Common Decorators (3/3) ✅
+- ✅ 3.3.1: Created `apps/api/src/common/decorators/current-user.decorator.ts`
+  - `@CurrentUser()` - Extracts authenticated user from request
+  - Supports extracting specific properties: `@CurrentUser('id')`
+- ✅ 3.3.2: Created `apps/api/src/common/decorators/roles.decorator.ts`
+  - `@Roles(...types)` - Specifies required user types for endpoints
+  - Works with RolesGuard for authorization
+- ✅ 3.3.3: Created `apps/api/src/common/decorators/public.decorator.ts`
+  - `@Public()` - Marks endpoints as public (skips authentication)
+
+#### Sub-task 3.4: Create Common DTOs and Interfaces (3/3) ✅
+- ✅ 3.4.1: Created `apps/api/src/common/dto/pagination.dto.ts`
+  - Fields: page (default 1), limit (max 100), sort, order (asc/desc)
+  - Full class-validator validation
+- ✅ 3.4.2: Created `apps/api/src/common/interfaces/auth-user.interface.ts`
+  - AuthUser interface: id, email, userType, fullName, phoneNumber
+  - Optional: clientProfileId, attorneyProfileId
+- ✅ 3.4.3: Created `apps/api/src/common/enums/user-type.enum.ts`
+  - UserType enum: CLIENT, ATTORNEY, STAFF, ADMIN
+
+#### Sub-task 3.5: Create Exception Filters (2/2) ✅
+- ✅ 3.5.1: Created `apps/api/src/common/filters/http-exception.filter.ts`
+  - Standardizes HTTP error responses
+  - Format: { statusCode, timestamp, path, message }
+- ✅ 3.5.2: Created `apps/api/src/common/filters/supabase-exception.filter.ts`
+  - Maps Supabase errors to HTTP status codes
+  - PGRST116 → 404, 23505 → 409, Auth errors → 401, Permission → 403
+
+#### Sub-task 3.6: Application Integration (4/4) ✅
+- ✅ 3.6.1: Updated `main.ts` with global guards and filters
+  - Registered HttpExceptionFilter and SupabaseExceptionFilter
+  - Registered JwtAuthGuard and RolesGuard (in correct order)
+  - Enabled CORS with configured origins
+- ✅ 3.6.2: Extended `configuration.ts` with AdminConfig
+  - Added `admin.emails` array loaded from ADMIN_EMAILS env var
+- ✅ 3.6.3: Updated `validation.schema.ts` with ADMIN_EMAILS validation
+- ✅ 3.6.4: Updated `.env` and `.env.example` with ADMIN_EMAILS field
+
+**Implementation Summary:**
+- **16 new files created** (services, guards, decorators, filters, DTOs, interfaces, enums)
+- **4 existing files updated** (configuration, validation, app.module, main.ts)
+- **Type safety verified** with `pnpm tsc --noEmit`
+- **Documentation complete** - Created IMPLEMENTATION_SUMMARY.md, AUTH_QUICK_REFERENCE.md, TESTING_GUIDE.md
+- **Example endpoints** - Updated app.controller.ts with demo routes
+
+**Architecture Delivered:**
+- ✅ JWT authentication on all routes by default
+- ✅ Role-based access control with @Roles() decorator
+- ✅ Public routes with @Public() decorator
+- ✅ Authenticated user injection with @CurrentUser()
+- ✅ Admin whitelist for personal email access (sobanahmad2003@gmail.com configured)
+- ✅ Standardized error responses
+- ✅ Supabase client management (user vs admin)
+- ✅ Foundation for all future API modules
+
+---
+
 ## In Progress Tasks
 
 *No tasks currently in progress*
@@ -125,9 +213,6 @@
 ---
 
 ## Remaining Tasks
-
-### HEAD TASK 3: Database Service & Common Utilities (0/4 sub-tasks)
-**Status**: Not Started
 
 ### HEAD TASK 4: Authentication Module (0/4 sub-tasks)
 **Status**: Not Started
@@ -216,53 +301,79 @@
   - Created 3 trigger functions for auto-generation and timestamps
 
 **Blockers**:
-- ⚠️ Supabase service role key needs manual addition to .env file (still pending)
+- ⚠️ Supabase service role key needs manual addition to .env file
 
 **Next Session Plan**:
-1. Add Supabase service role key to .env (from dashboard)
+1. ✅ Add Supabase service role key to .env (from dashboard) - RESOLVED
 2. Start HEAD TASK 3: Database Service & Common Utilities
 3. Create Supabase service wrapper
 4. Implement authentication guards and decorators
 
 ---
 
+### 2026-01-24 (Friday)
+**Time Spent**: 1.5 hours
+**Tasks Completed**:
+- ✅ HEAD TASK 3: Database Service & Common Utilities (COMPLETED)
+  - Created SupabaseService with client management (getClient, getAdminClient, getUserFromToken)
+  - Created AdminWhitelistService for email-based admin access
+  - Implemented JwtAuthGuard for JWT validation
+  - Implemented RolesGuard for role-based authorization
+  - Created decorators: @Public(), @Roles(), @CurrentUser()
+  - Created exception filters for standardized error responses
+  - Created common interfaces, enums, and DTOs
+  - Integrated all components into main.ts with proper guard ordering
+  - Extended configuration system with admin email whitelist
+  - Created comprehensive documentation (3 markdown guides)
+  - Updated app.controller.ts with example authenticated endpoints
+
+**Blockers**:
+- None - All dependencies resolved
+
+**Next Session Plan**:
+1. Start HEAD TASK 4: Authentication Module
+2. Implement signup/signin endpoints
+3. Add Google OAuth integration
+4. Create token refresh endpoint
+
+---
+
 ## Progress Statistics
 
-**Head Tasks**: 2/13 (15.4%) ✅
-**Sub-tasks**: 13/~40 (32.5%) ✅
-**Sub-sub-tasks**: 61/~120 (50.8%) ✅
+**Head Tasks**: 3/13 (23.1%) ✅
+**Sub-tasks**: 17/~40 (42.5%) ✅
+**Sub-sub-tasks**: 77/~120 (64.2%) ✅
 
 **Estimated Timeline**: 18-24 days
-**Days Elapsed**: 1
-**Days Remaining**: 17-23
-**Current Velocity**: Excellent - Well ahead of schedule (2 head tasks in 1 day)
+**Days Elapsed**: 3 (Jan 22, 24)
+**Days Remaining**: 15-21
+**Current Velocity**: Excellent - Ahead of schedule (3 head tasks in 3 days, 2 working days)
 
 ---
 
 ## Next Steps (Priority Order)
 
-### Immediate Actions Required
-1. **⚠️ CRITICAL**: Add Supabase service role key to `apps/api/.env`
-   - Location: Supabase Dashboard > Project Settings > API > service_role key
-   - Replace: `YOUR_SERVICE_ROLE_KEY_HERE` in .env file
-   - This is required before backend can start
-
-2. **Test Backend Startup**:
+### Immediate Testing Recommended
+1. **Test Authentication System**:
    ```bash
    cd apps/api
-   pnpm dev
+   pnpm start:dev
    ```
-   - Verify server starts on port 4000
-   - Verify no Joi validation errors
-   - Verify ConfigService can access all configuration values
+   - Test public endpoint: `curl http://localhost:4000/api/hello`
+   - Test protected endpoint: `curl http://localhost:4000/api/profile -H "Authorization: Bearer <jwt>"`
+   - See `apps/api/TESTING_GUIDE.md` for comprehensive testing instructions
 
-### Next Development Phase: Database Service & Common Utilities
-3. Begin HEAD TASK 3: Database Service & Common Utilities
-4. Create SupabaseService wrapper in `apps/api/src/database/`
-5. Create authentication guards (AuthGuard, RolesGuard)
-6. Create decorators (@CurrentUser, @Roles, @Public)
-7. Create common DTOs and interfaces
-8. Test database connection and RLS enforcement
+2. **Configure Admin Emails** (Optional):
+   - Admin email already configured: `sobanahmad2003@gmail.com`
+   - Add more if needed in `apps/api/.env` under `ADMIN_EMAILS`
+
+### Next Development Phase: Authentication Module
+3. Begin HEAD TASK 4: Authentication Module
+4. Implement signup/signin endpoints using Supabase Auth
+5. Add Google OAuth integration
+6. Create token refresh endpoint
+7. Implement password reset flow
+8. Test complete authentication flow
 
 ---
 

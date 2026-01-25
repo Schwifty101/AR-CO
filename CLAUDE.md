@@ -13,7 +13,7 @@ AR-CO is a comprehensive law firm website platform for AR&CO Law Firm, built as 
 - Admin CRM and content management (planned)
 
 **Repository:** https://github.com/Schwifty101/AR-CO
-**Current Branch:** `moiz_branch` (active development)
+**Current Branch:** `git status` (see for urself)
 
 ## Monorepo Structure
 
@@ -121,7 +121,14 @@ pnpm tsc --noEmit
 - **Runtime:** [Node.js &gt;= 20.9.0](https://nodejs.org/docs/)
 - **Language:** [TypeScript 5.7.3](https://www.typescriptlang.org/docs/)
 - **Database:** [Supabase](https://supabase.com/docs) (PostgreSQL + Auth + Storage)
+  - Row-Level Security (RLS) with 50+ policies implemented
+  - 19 tables with comprehensive data model
+  - 5 utility functions in private schema
   - See [Supabase Community Discussions](https://github.com/orgs/supabase/discussions/29260) for best practices
+- **Authentication:** JWT-based with Supabase Auth
+  - Global guards for authentication and authorization
+  - Role-based access control (CLIENT, ATTORNEY, STAFF, ADMIN)
+  - Admin email whitelist for personal accounts
 - **Testing:**
   - [Jest 30.0.0](https://jestjs.io/docs/getting-started)
   - [Supertest 7.0.0](https://github.com/visionmedia/supertest)
@@ -206,6 +213,76 @@ For complete details, see: `/Users/sobanahmad/Work/AR&CO/Global_Development_Rule
 
 ## Architecture Patterns
 
+### Backend Authentication Architecture
+
+The backend implements a comprehensive JWT-based authentication and authorization system:
+
+**Guard Execution Flow:**
+
+```
+1. Request arrives with Authorization: Bearer <token>
+   ↓
+2. JwtAuthGuard runs (unless @Public())
+   ├─ Extract JWT from Authorization header
+   ├─ Validate with Supabase (getUserFromToken)
+   └─ Populate request.user = AuthUser
+   ↓
+3. RolesGuard runs (if @Roles() present)
+   ├─ Check admin whitelist → Allow if email whitelisted
+   ├─ Check user.userType against required roles
+   └─ Allow or throw ForbiddenException
+   ↓
+4. Route handler executes
+   └─ Access user via @CurrentUser() decorator
+```
+
+**Key Components:**
+
+- **SupabaseService**: Manages Supabase clients and JWT validation
+  - `getClient(token)` - User-scoped client (RLS enforced)
+  - `getAdminClient()` - Admin client (bypasses RLS, use with caution)
+  - `getUserFromToken(token)` - Validates JWT and fetches user profile
+- **JwtAuthGuard**: Authenticates requests, populates request.user
+- **RolesGuard**: Authorizes based on user type (CLIENT, ATTORNEY, STAFF, ADMIN)
+- **AdminWhitelistService**: Email-based admin access (e.g., personal Gmail accounts)
+
+**Decorators:**
+
+- `@Public()` - Skip authentication
+- `@Roles(UserType.ADMIN)` - Require specific user types
+- `@CurrentUser()` - Extract authenticated user from request
+
+**Example Usage:**
+
+```typescript
+@Controller("cases")
+export class CasesController {
+  @Get("public")
+  @Public()
+  getPublicInfo() {} // No auth required
+
+  @Get()
+  getMyCases(@CurrentUser() user: AuthUser) {} // JWT required
+
+  @Delete(":id")
+  @Roles(UserType.ADMIN, UserType.STAFF)
+  deleteCase(@Param("id") id: string) {} // Admin/staff only
+}
+```
+
+**Admin Whitelist:**
+
+- Configured via `ADMIN_EMAILS` in .env (comma-separated)
+- Whitelisted emails bypass all @Roles() restrictions
+- Used for personal email OAuth signups (e.g., Gmail, Outlook)
+- Current whitelist: `sobanahmad2003@gmail.com`
+
+**Documentation:**
+
+- Quick Reference: `apps/api/AUTH_QUICK_REFERENCE.md`
+- Testing Guide: `apps/api/TESTING_GUIDE.md`
+- Implementation Details: `apps/api/IMPLEMENTATION_SUMMARY.md`
+
 ### API Proxy Pattern
 
 The Next.js frontend proxies all `/api/*` requests to the NestJS backend to avoid CORS issues:
@@ -243,10 +320,18 @@ The Next.js frontend proxies all `/api/*` requests to the NestJS backend to avoi
 
 - **Controller-Service-Module** pattern
 - **Dependency Injection** for all services
-- **DTOs** for request/response validation
-- **Guards** for authentication/authorization (planned)
-- **Interceptors** for logging and transformation
-- **Exception filters** for error handling
+- **DTOs** for request/response validation with class-validator
+- **Guards** for authentication/authorization (implemented)
+  - JwtAuthGuard: Validates JWT tokens and populates request.user
+  - RolesGuard: Enforces role-based access control
+- **Decorators** for route metadata
+  - @Public(): Skip authentication
+  - @Roles(...types): Require specific user types
+  - @CurrentUser(): Extract authenticated user
+- **Exception filters** for standardized error handling
+  - HttpExceptionFilter: HTTP error formatting
+  - SupabaseExceptionFilter: Database error mapping
+- **Interceptors** for logging and transformation (planned)
 
 ## Key Files to Know
 
@@ -268,10 +353,13 @@ The Next.js frontend proxies all `/api/*` requests to the NestJS backend to avoi
 
 ### Backend Entry Points
 
-- `apps/api/src/main.ts` - NestJS bootstrap, sets global `/api` prefix
-- `apps/api/src/app.module.ts` - Root module
-- `apps/api/src/app.controller.ts` - Main controller (GET /api/hello endpoint)
+- `apps/api/src/main.ts` - NestJS bootstrap with global guards, filters, and CORS
+- `apps/api/src/app.module.ts` - Root module (imports ConfigModule, DatabaseModule)
+- `apps/api/src/app.controller.ts` - Main controller with example authenticated endpoints
 - `apps/api/src/app.service.ts` - Business logic
+- `apps/api/src/database/supabase.service.ts` - Supabase client management
+- `apps/api/src/common/guards/jwt-auth.guard.ts` - JWT authentication
+- `apps/api/src/common/guards/roles.guard.ts` - Role-based authorization
 
 ### Environment Variables
 
@@ -282,9 +370,29 @@ NEXT_PUBLIC_API_URL=http://localhost:3000
 API_BACKEND_URL=http://localhost:4000
 ```
 
-**Backend:**
+**Backend (.env.example):**
 
-- `PORT` - Server port (defaults to 4000)
+```bash
+# Application
+PORT=4000
+NODE_ENV=development
+CORS_ORIGINS=http://localhost:3000,http://localhost:4000
+
+# Supabase
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=your_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+
+# JWT
+JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
+JWT_ACCESS_TOKEN_EXPIRATION=15m
+JWT_REFRESH_TOKEN_EXPIRATION=7d
+
+# Admin Configuration
+ADMIN_EMAILS=admin1@example.com,admin2@example.com
+
+# Safepay, SendGrid, etc. (see .env.example)
+```
 
 ## Development Workflow
 
@@ -326,17 +434,55 @@ When adding features (e.g., client portal, appointments, payments):
 
 ### API Integration
 
-- The backend currently has minimal implementation (single `GET /api/hello` endpoint)
-- Most planned features (client portal, appointments, payments) are not yet implemented
-- When implementing new endpoints, always prefix with `/api` per NestJS global prefix
+**Current Implementation:**
 
-### Supabase Integration (Planned)
+- ✅ Complete database schema with 19 tables and RLS policies
+- ✅ JWT authentication system with guards and decorators
+- ✅ Role-based access control (CLIENT, ATTORNEY, STAFF, ADMIN)
+- ✅ Admin email whitelist for personal accounts
+- ✅ Standardized error handling
+- ✅ Example endpoints: `/api/hello` (public), `/api/profile` (protected), `/api/admin-dashboard` (admin-only)
 
-- Database will use Supabase (PostgreSQL with Auth and Storage)
-- Row-level security (RLS) for data access control
+**In Progress:**
+
+- Authentication module (signup, login, OAuth, password reset)
+
+**Planned:**
+
+- User management endpoints (profile CRUD)
+- Case management endpoints
+- Appointment booking endpoints
+- Payment processing (Safepay integration)
+- Document management endpoints
+
+**All routes prefixed with `/api`** per NestJS global prefix in `main.ts`
+
+### Supabase Integration (Implemented)
+
+**Completed:**
+
+- ✅ Database schema with 19 tables (user_profiles, cases, appointments, invoices, etc.)
+- ✅ Row-level security (RLS) with 50+ policies
+- ✅ Private schema utility functions (is_admin, is_staff, get_client_profile_id)
+- ✅ Database triggers (auto-generate case numbers, invoice numbers, updated_at timestamps)
+- ✅ SupabaseService for client management (getClient, getAdminClient, getUserFromToken)
+- ✅ JWT authentication via JwtAuthGuard
+
+**Planned:**
+
 - Real-time subscriptions for live updates
-- JWT authentication for client portal
-- **Study Supabase docs thoroughly before implementing:** https://github.com/orgs/supabase/discussions/29260
+- File upload to Supabase Storage
+
+**Important:**
+
+- Always use `getClient(token)` for user operations (RLS enforced)
+- Only use `getAdminClient()` when RLS bypass is necessary (document why)
+- See `apps/api/AUTH_QUICK_REFERENCE.md` for authentication patterns
+
+**Resources:**
+
+- [Supabase Community Best Practices](https://github.com/orgs/supabase/discussions/29260)
+- [Schema Validation Report](SCHEMA_VALIDATION_REPORT.md) - Database design review
 
 ### Payment Processing (Planned)
 
@@ -464,10 +610,45 @@ npx shadcn@latest add <component-name>
 
 1. **Research:** Study NestJS controller/service patterns
 2. **Plan:** Define DTOs, interfaces, service methods
-3. **Create Controller:** Add route handler in appropriate controller
-4. **Create Service:** Implement business logic in service class
+3. **Create Controller:** Add route handler with appropriate decorators
+
+   ```typescript
+   import { Controller, Get } from "@nestjs/common";
+   import { CurrentUser } from "./common/decorators/current-user.decorator";
+   import { Roles } from "./common/decorators/roles.decorator";
+   import { UserType } from "./common/enums/user-type.enum";
+   import type { AuthUser } from "./common/interfaces/auth-user.interface";
+
+   @Controller("cases")
+   export class CasesController {
+     @Get()
+     getMyCases(@CurrentUser() user: AuthUser) {
+       // JWT required by default
+     }
+
+     @Get("admin")
+     @Roles(UserType.ADMIN, UserType.STAFF)
+     getAdminCases(@CurrentUser() user: AuthUser) {
+       // Only admin and staff can access
+     }
+   }
+   ```
+
+4. **Create Service:** Implement business logic with Supabase RLS
+   ```typescript
+   async getUserCases(user: AuthUser) {
+     const client = this.supabase.getClient();
+     const { data } = await client
+       .from('cases')
+       .select('*')
+       .eq('client_profile_id', user.clientProfileId);
+     return data;
+   }
+   ```
 5. **Add Module:** Register in appropriate module
 6. **Validate:** Test with Supertest, check types with `tsc --noEmit`
+
+**Authentication Reference:** See `apps/api/AUTH_QUICK_REFERENCE.md` for complete patterns
 
 ### Debugging
 
@@ -478,7 +659,7 @@ npx shadcn@latest add <component-name>
 ## Git Workflow
 
 - **Main branch:** Production-ready code
-- **Current branch:** `moiz_branch` (active frontend development)
+- **Current branch:** `git status` (see for urself)
 - **Commit conventions:** Use clear, descriptive commit messages
 - Recent focus: UI improvements, animations, header fixes, client logo carousel
 
