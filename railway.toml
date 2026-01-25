@@ -1,5 +1,5 @@
 [build]
-builder = "RAILPACK"
+builder = "NIXPACKS"
 buildCommand = "pnpm install --frozen-lockfile && pnpm --filter api build"
 watchPatterns = ["/apps/api/**"]
 
