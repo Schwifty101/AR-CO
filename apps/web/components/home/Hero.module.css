@@ -1,9 +1,115 @@
 /* Hero Section */
 .hero {
   position: relative;
-  padding: 8rem 0 6rem;
-  overflow: hidden;
+  height: 400vh; /* Reduced for minimal scroll consumption */
+  z-index: 1;
+  background: #000;
+}
+
+/* Sticky wrapper to keep content in view while scrolling through hero */
+.stickyWrapper {
+  position: relative;  /* Let GSAP control positioning - no CSS conflict */
+  top: 0;
+  left: 0;
+  width: 100%;
   height: 100vh;
+  overflow: visible;  /* Allow content to be visible during stacking transition */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;  /* Lower z-index so quote section can stack over */
+}
+
+/* Video Background */
+.videoContainer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  transform-origin: center center;
+  will-change: transform, opacity, filter;
+}
+
+.video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  /* Canvas will be drawn to fill the container via ctx.drawImage */
+}
+
+.videoOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.45);
+  pointer-events: none;
+}
+  
+
+/* Content Wrapper */
+.contentWrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Title Container - Centered initially, moves to bottom on scroll */
+.titleContainer {
+  position: absolute;
+  left: 50%;
+  top: 32%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  z-index: 10;
+  will-change: transform, top, opacity;
+}
+
+.titleScrolled {
+  text-align: center;
+}
+
+.title {
+  font-family: 'Lora', serif;
+  font-size: clamp(3rem, 8vw, 7rem);
+  font-weight: 600;
+  line-height: 1;
+  color: #fff;
+  margin: 0;
+  letter-spacing: -0.02em;
+  text-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.titleScrolled .title {
+  align-items: center;
+}
+
+.titleSub {
+  display: block;
+  font-family: 'Cabinet Grotesk', sans-serif;
+  font-size: clamp(1rem, 2.5vw, 2rem);
+  font-weight: 400;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  margin-top: 0.5rem;
+  opacity: 0.9;
 }
 
 .container {
@@ -20,23 +126,12 @@
   margin-bottom: 2rem;
 }
 
-.title {
-  font-family: 'Lora', serif;
-  font-size: clamp(1.5rem, 3vw, 3.5rem);
-  font-weight: 400;
-  line-height: 1.15;
-  color: #1a1a1a;
-  margin-bottom: 1.5rem;
-  letter-spacing: -0.02em;
-  animation: fadeInUp 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
 .subtitle {
   font-family: 'Cabinet Grotesk', sans-serif;
   font-size: clamp(1rem, 2vw, 1.25rem);
   font-weight: 400;
   line-height: 1.6;
-  color: #666;
+  color: rgba(255, 255, 255, 0.85);
   margin-bottom: 2.5rem;
   max-width: 700px;
   margin-left: auto;
@@ -145,12 +240,16 @@
 
 /* Trusted By Section */
 .trustedBy {
+  position: absolute;
+  top: 42%;
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2rem;
-  animation: fadeInUp 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.3s;
-  animation-fill-mode: backwards;
+  gap: 0.35rem;
+  transition: opacity 0.3s ease-out, visibility 0.3s ease-out;
+  will-change: opacity;
 }
 
 .trustedLabel {
@@ -158,30 +257,19 @@
   font-size: 0.75rem;
   font-weight: 800;
   letter-spacing: 0.15em;
-  color: #999;
+  color: rgba(255, 255, 255, 0.7);
   text-transform: uppercase;
   margin: 0;
 }
 
 /* Logo Scroll Container */
 .logoScrollContainer {
-  width: 50%;
+  width: 15%;
+  min-width: 300px;
   overflow: hidden;
   position: relative;
-  mask-image: linear-gradient(
-    to right,
-    transparent,
-    black 10%,
-    black 90%,
-    transparent
-  );
-  -webkit-mask-image: linear-gradient(
-    to right,
-    transparent,
-    black 10%,
-    black 90%,
-    transparent
-  );
+  margin-top: 20px;
+  
 }
 
 @keyframes infiniteScroll {
@@ -214,60 +302,44 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 120px;
-  height: 60px;
-  margin-right: 2.5rem;
+  width: 150px;
+  height: 70px;
+  margin-right: 3rem;
 }
 
 .logoImage {
   width: 100%;
   height: 100%;
-  max-width: 120px;
-  max-height: 40px;
+  max-width: 150px;
+  max-height: 50px;
   object-fit: contain;
-  filter: grayscale(100%) brightness(0.4) opacity(0.6);
-  transition: filter 0.3s ease, transform 0.3s ease;
+  filter: grayscale(100%) opacity(0.9);
+  transition: filter 0.4s ease, transform 0.4s ease;
 }
 
 .logoItem:hover .logoImage {
   filter: grayscale(0%) brightness(1) opacity(1);
-  transform: scale(1.05);
+  transform: scale(1.1);
 }
 
 /* Responsive */
 @media (max-width: 768px) {
   .hero {
-    padding: 5rem 0 4rem;
-  }
-
-  .container {
-    padding: 0 1.5rem;
-  }
-
-  .content {
-    margin-bottom: 4rem;
+    height: 100vh;
   }
 
   .title {
-    font-size: 2rem;
-    margin-bottom: 1rem;
+    font-size: clamp(2.5rem, 12vw, 4rem);
   }
 
-  .subtitle {
-    font-size: 1rem;
-    margin-bottom: 2rem;
+  .titleSub {
+    font-size: clamp(0.75rem, 3vw, 1.25rem);
+    letter-spacing: 0.2em;
   }
 
-  .ctaGroup {
-    flex-direction: column;
-    gap: 0.75rem;
-  }
-
-  .btnPrimary,
-  .btnSecondary {
-    width: 100%;
-    padding: 0.875rem 2rem;
-    font-size: 0.9375rem;
+  .trustedBy {
+    bottom: 2rem;
+    gap: 1rem;
   }
 
   .trustedLabel {
@@ -287,16 +359,17 @@
 }
 
 @media (max-width: 480px) {
-  .hero {
-    padding: 4rem 0 3rem;
-  }
-
   .title {
-    font-size: 1.75rem;
+    font-size: clamp(2rem, 10vw, 3rem);
   }
 
-  .subtitle {
-    font-size: 0.9375rem;
+  .titleSub {
+    font-size: clamp(0.6rem, 2.5vw, 1rem);
+    letter-spacing: 0.15em;
+  }
+
+  .trustedBy {
+    bottom: 1.5rem;
   }
 
   .logoItem {
