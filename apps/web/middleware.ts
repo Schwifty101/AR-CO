@@ -33,53 +33,61 @@ const AUTH_ROUTES = ['/auth/signin', '/auth/signup', '/auth/forgot-password'];
  * Runs on every matched request to handle auth routing.
  */
 export async function middleware(request: NextRequest) {
-  const { supabaseResponse, user } = await updateSession(request);
-  const { pathname } = request.nextUrl;
+  try {
+    const { supabaseResponse, user } = await updateSession(request);
+    const { pathname } = request.nextUrl;
 
-  // Check if user is accessing a protected route
-  const isProtectedRoute = PROTECTED_ROUTES.some((route) =>
-    pathname.startsWith(route),
-  );
+    // Check if user is accessing a protected route
+    const isProtectedRoute = PROTECTED_ROUTES.some((route) =>
+      pathname.startsWith(route),
+    );
 
-  // Check if user is accessing an auth route
-  const isAuthRoute = AUTH_ROUTES.some((route) => pathname.startsWith(route));
+    // Check if user is accessing an auth route
+    const isAuthRoute = AUTH_ROUTES.some((route) => pathname.startsWith(route));
 
-  if (isProtectedRoute && !user) {
-    // Redirect unauthenticated users to sign in
-    const url = request.nextUrl.clone();
-    url.pathname = '/auth/signin';
-    url.searchParams.set('redirect', pathname);
-    return NextResponse.redirect(url);
-  }
-
-  if (isAuthRoute && user) {
-    // Redirect authenticated users to their dashboard
-    // Fetch user type from backend to determine dashboard
-    try {
-      const response = await fetch(
-        `${process.env.API_BACKEND_URL || 'http://localhost:4000'}/api/auth/me`,
-        {
-          headers: {
-            Authorization: `Bearer ${(await getAccessToken(request)) || ''}`,
-          },
-        },
-      );
-
-      if (response.ok) {
-        const userData = (await response.json()) as { userType: string };
-        const url = request.nextUrl.clone();
-        url.pathname =
-          userData.userType === 'admin' || userData.userType === 'staff'
-            ? '/admin/dashboard'
-            : '/client/dashboard';
-        return NextResponse.redirect(url);
-      }
-    } catch {
-      // If we can't determine user type, let them through
+    if (isProtectedRoute && !user) {
+      // Redirect unauthenticated users to sign in
+      const url = request.nextUrl.clone();
+      url.pathname = '/auth/signin';
+      url.searchParams.set('redirect', pathname);
+      return NextResponse.redirect(url);
     }
-  }
 
-  return supabaseResponse;
+    if (isAuthRoute && user) {
+      // Redirect authenticated users to their dashboard
+      // Fetch user type from backend to determine dashboard
+      try {
+        const backendUrl = process.env.API_BACKEND_URL || 'http://localhost:4000';
+        const response = await fetch(
+          `${backendUrl}/api/auth/me`,
+          {
+            headers: {
+              Authorization: `Bearer ${(await getAccessToken(request)) || ''}`,
+            },
+          },
+        );
+
+        if (response.ok) {
+          const userData = (await response.json()) as { userType: string };
+          const url = request.nextUrl.clone();
+          url.pathname =
+            userData.userType === 'admin' || userData.userType === 'staff'
+              ? '/admin/dashboard'
+              : '/client/dashboard';
+          return NextResponse.redirect(url);
+        }
+      } catch (error) {
+        console.error('Error fetching user type:', error);
+        // If we can't determine user type, let them through
+      }
+    }
+
+    return supabaseResponse;
+  } catch (error) {
+    console.error('Middleware error:', error);
+    // Return next response on any error to prevent blocking
+    return NextResponse.next();
+  }
 }
 
 /**
