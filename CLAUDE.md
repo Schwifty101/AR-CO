@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 AR-CO is a comprehensive law firm website platform for AR&CO Law Firm, built as a **Turborepo monorepo** with separate Next.js frontend and NestJS backend applications. The platform includes:
 
 - Public-facing law firm website with practice areas, attorney profiles, and facilitation services
-- Client authentication portal (planned)
+- Client authentication portal (implemented - Supabase OAuth + email/password)
 - Appointment booking system (planned)
 - Integrated Safepay payment processing (planned)
 - Admin CRM and content management (planned)
@@ -113,6 +113,9 @@ pnpm tsc --noEmit
   - [next-themes](https://github.com/pacocoursey/next-themes) - Dark mode support
 - **Animation (Planned):**
   - [GSAP](https://greensock.com/gsap/) or [Framer Motion](https://www.framer.com/motion/) - Kinetic animations
+- **Authentication:**
+  - [@supabase/supabase-js](https://supabase.com/docs/reference/javascript) - Supabase client
+  - [@supabase/ssr](https://supabase.com/docs/guides/auth/server-side/nextjs) - SSR cookie-based session management
 - **Analytics:** [Vercel Analytics](https://vercel.com/docs/analytics)
 
 ### Backend Stack (apps/api)
@@ -125,10 +128,13 @@ pnpm tsc --noEmit
   - 19 tables with comprehensive data model
   - 5 utility functions in private schema
   - See [Supabase Community Discussions](https://github.com/orgs/supabase/discussions/29260) for best practices
-- **Authentication:** JWT-based with Supabase Auth
+- **Authentication:** JWT-based with Supabase Auth (fully implemented)
+  - Auth module with signup, signin, OAuth callback, token refresh, password reset, signout
   - Global guards for authentication and authorization
   - Role-based access control (CLIENT, ATTORNEY, STAFF, ADMIN)
   - Admin email whitelist for personal accounts
+  - Google OAuth for admin users, email/password + OAuth for clients
+  - Global ValidationPipe for DTO validation
 - **Testing:**
   - [Jest 30.0.0](https://jestjs.io/docs/getting-started)
   - [Supertest 7.0.0](https://github.com/visionmedia/supertest)
@@ -345,21 +351,34 @@ The Next.js frontend proxies all `/api/*` requests to the NestJS backend to avoi
 
 ### Frontend Entry Points
 
-- `apps/web/app/layout.tsx` - Root layout with analytics and theme provider
+- `apps/web/app/layout.tsx` - Root layout with AuthProvider, analytics
 - `apps/web/app/page.tsx` - Homepage with practice areas
 - `apps/web/app/globals.css` - Global Tailwind styles
 - `apps/web/components/Header.tsx` - Navigation with mega-menu
 - `apps/web/components/theme-provider.tsx` - Dark mode setup
+- `apps/web/middleware.ts` - Auth session refresh, route protection
+- `apps/web/lib/supabase/client.ts` - Browser Supabase client
+- `apps/web/lib/supabase/server.ts` - Server component Supabase client
+- `apps/web/lib/auth/auth-context.tsx` - AuthProvider with useAuth hook
+- `apps/web/lib/auth/auth-actions.ts` - Client-side auth operations
+- `apps/web/app/auth/signin/page.tsx` - Unified sign-in (Google OAuth + email)
+- `apps/web/app/auth/signup/page.tsx` - Client registration
+- `apps/web/app/auth/callback/route.ts` - OAuth callback handler
+- `apps/web/app/admin/dashboard/page.tsx` - Admin dashboard placeholder
+- `apps/web/app/client/dashboard/page.tsx` - Client dashboard placeholder
 
 ### Backend Entry Points
 
-- `apps/api/src/main.ts` - NestJS bootstrap with global guards, filters, and CORS
-- `apps/api/src/app.module.ts` - Root module (imports ConfigModule, DatabaseModule)
+- `apps/api/src/main.ts` - NestJS bootstrap with global guards, filters, ValidationPipe, and CORS
+- `apps/api/src/app.module.ts` - Root module (imports ConfigModule, DatabaseModule, AuthModule)
 - `apps/api/src/app.controller.ts` - Main controller with example authenticated endpoints
 - `apps/api/src/app.service.ts` - Business logic
 - `apps/api/src/database/supabase.service.ts` - Supabase client management
 - `apps/api/src/common/guards/jwt-auth.guard.ts` - JWT authentication
 - `apps/api/src/common/guards/roles.guard.ts` - Role-based authorization
+- `apps/api/src/auth/auth.service.ts` - Authentication business logic (signup, signin, OAuth, password reset)
+- `apps/api/src/auth/auth.controller.ts` - Auth REST endpoints
+- `apps/api/src/auth/auth.module.ts` - Auth module registration
 
 ### Environment Variables
 
