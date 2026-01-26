@@ -1,4 +1,4 @@
 {
-  "installCommand": "npm install --legacy-peer-deps",
-  "buildCommand": "npx turbo run build --filter=my-v0-project"
+  "installCommand": "pnpm install --frozen-lockfile",
+  "buildCommand": "pnpm turbo run build --filter=my-v0-project"
 }
