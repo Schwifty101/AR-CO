@@ -1,0 +1,25 @@
+{
+  "name": "AR&CO Law Associates",
+  "short_name": "AR&CO",
+  "description": "Professional legal services and facilitation centre in Pakistan",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2d5016",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/assets/favicon.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "/apple-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "legal", "professional"],
+  "lang": "en-US"
+}

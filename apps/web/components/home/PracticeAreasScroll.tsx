@@ -81,8 +81,38 @@ export default function PracticeAreasScroll() {
   const [scrollProgress, setScrollProgress] = useState(0)
   const [isScrollLocked, setIsScrollLocked] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
+  const [activeIndex, setActiveIndex] = useState(0)
   const scrollLockPositionRef = useRef(0)
-  const activeIndexRef = useRef(0)
+
+  const navigateToPanel = (panelIndex: number) => {
+    if (!containerRef.current) return
+    
+    const container = containerRef.current
+    const rect = container.getBoundingClientRect()
+    const viewportHeight = window.innerHeight
+    const totalScrollableHeight = rect.height - viewportHeight
+    
+    // Calculate target scroll position
+    const targetProgress = panelIndex / practiceAreas.length
+    const targetScroll = container.offsetTop + (totalScrollableHeight * targetProgress)
+    
+    window.scrollTo({
+      top: targetScroll,
+      behavior: 'smooth'
+    })
+  }
+
+  const skipSection = () => {
+    if (!containerRef.current) return
+    
+    const container = containerRef.current
+    const targetScroll = container.offsetTop + container.offsetHeight
+    
+    window.scrollTo({
+      top: targetScroll,
+      behavior: 'smooth'
+    })
+  }
 
   useEffect(() => {
     const checkMobile = () => {
@@ -130,10 +160,10 @@ export default function PracticeAreasScroll() {
         const progress = Math.min(Math.max(rawProgress, 0), 1)
         
         setScrollProgress(progress)
-        activeIndexRef.current = Math.min(
+        setActiveIndex(Math.min(
           Math.floor(progress * totalPanels),
           totalPanels - 1
-        )
+        ))
         
         // Apply horizontal transform
         const maxScroll = (totalPanels - 1) * window.innerWidth
@@ -247,6 +277,33 @@ export default function PracticeAreasScroll() {
 
   return (
     <div ref={containerRef} className={styles.wrapper}>
+      {/* Navigation Sidebar - Outside section to avoid overflow clipping */}
+      {!isMobile && (
+        <div className={styles.sidebar}>
+          <div className={styles.sidebarContent}>
+            <div className={styles.sidebarNav}>
+              {practiceAreas.map((area, index) => (
+                <button
+                  key={area.id}
+                  className={`${styles.sidebarItem} ${activeIndex === index ? styles.sidebarItemActive : ''}`}
+                  onClick={() => navigateToPanel(index)}
+                  title={area.title}
+                >
+                  <span className={styles.sidebarNumber}>{String(index + 1).padStart(2, '0')}</span>
+                  <span className={styles.sidebarTitle}>{area.title}</span>
+                </button>
+              ))}
+            </div>
+            <button className={styles.skipButton} onClick={skipSection}>
+              Skip Section
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M8 3L8 13M8 13L12 9M8 13L4 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
+
       <section className={styles.section}>
         <div ref={scrollContainerRef} className={styles.scrollContainer}>
         {practiceAreas.map((area, index) => {
@@ -310,7 +367,7 @@ export default function PracticeAreasScroll() {
           />
         </div>
         <div className={styles.progressText}>
-          {activeIndexRef.current + 1} / {practiceAreas.length}
+          {activeIndex + 1} / {practiceAreas.length}
         </div>
       </div>
       </section>
