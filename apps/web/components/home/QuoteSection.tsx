@@ -5,7 +5,7 @@ import { useGSAP } from "@gsap/react"
 import gsap from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
 import ScrollRevealText from "@/components/shared/animations/ScrollRevealText"
-import { setSlowScroll, setNormalScroll, setMediumScroll } from "@/components/SmoothScroll"
+import { setSlowScroll, setNormalScroll, setScrollSpeed } from "@/components/SmoothScroll"
 import styles from "./QuoteSection.module.css"
 
 if (typeof window !== "undefined") {
@@ -24,40 +24,46 @@ export default function QuoteSection() {
     gsap.fromTo(
       sectionRef.current,
       {
-        y: 250, // Start well below for smooth long travel
-        opacity: 0.85,
-        scale: 0.96,
+        y: 150, // Reduced distance for smoother travel
+        opacity: 0.9,
+        scale: 0.98,
       },
       {
         y: 0,
         opacity: 1,
         scale: 1,
-        ease: "power2.out", // Smooth ease-out for natural deceleration
+        ease: "none", // Linear ease for consistent scroll-linked movement
         scrollTrigger: {
           trigger: sectionRef.current,
-          start: "top 120%", // Start earlier - when quote is still below viewport
-          end: "top 20%", // Longer travel distance for smooth overlap
-          scrub: 1.25, // Faster scrub for quote advancing quicker than hero
+          start: "top 100%", // Start when quote is at bottom of viewport
+          end: "top 30%", // Shorter travel distance
+          scrub: 0.5, // Gentler scrub for less aggressive movement
           // markers: true,
         }
       }
     )
     
-    // Scroll speed control for quote section - slow down during overlap transition
+    // Gradual scroll speed transition for quote section - prevent abrupt jumping
     ScrollTrigger.create({
       trigger: sectionRef.current,
       start: "top bottom", // When quote starts entering viewport
       end: "bottom 70%", // Until quote is mostly scrolled through
       // markers: true,
-      onEnter: () => setMediumScroll(), // Medium speed during quote section
-      onEnterBack: () => setMediumScroll(),
+      onEnter: () => {
+        // Gradual transition from hero's slow scroll to a gentler speed
+        setScrollSpeed(0.15) // Gentle intermediate speed instead of abrupt change
+      },
+      onEnterBack: () => {
+        // Smooth transition back to quote section settings
+        setScrollSpeed(0.15)
+      },
       onLeave: () => setNormalScroll(), // Normal speed after quote
       onLeaveBack: () => setSlowScroll(), // Back to slow for hero
     })
   }, [])
   
   return (
-    <section ref={sectionRef} className={styles.quoteSection}>
+    <section ref={sectionRef} className={styles.quoteSection} data-section="quote" id="quote-section">
       {/* Abstract Visual Elements */}
       <div className={styles.abstractElements}>
         {/* Flowing curved line - top right */}
