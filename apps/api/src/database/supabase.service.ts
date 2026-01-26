@@ -184,10 +184,8 @@ export class SupabaseService {
       // Fetch user profile with user_type
       const { data: profile, error: profileError } = await client
         .from('user_profiles')
-        .select(
-          'full_name, phone_number, user_type, client_profile_id, attorney_profile_id',
-        )
-        .eq('user_id', authUser.id)
+        .select('full_name, phone_number, user_type')
+        .eq('id', authUser.id)
         .single();
 
       if (profileError || !profile) {
@@ -195,26 +193,31 @@ export class SupabaseService {
       }
 
       // Map to AuthUser interface
-      // Note: Supabase's .select().single() doesn't preserve column types,
-      // so we need to cast to any and then to specific types with assertions.
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      const profileData = profile as any;
+      const profileData = profile as {
+        full_name: string;
+        phone_number: string | null;
+        user_type: string;
+      };
+
       const authenticatedUser: AuthUser = {
         id: authUser.id,
         email: authUser.email!,
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         userType: profileData.user_type as UserType,
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        fullName: profileData.full_name as string,
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        phoneNumber: (profileData.phone_number as string | null) ?? null,
-        clientProfileId:
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-          (profileData.client_profile_id as string | null) ?? undefined,
-        attorneyProfileId:
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-          (profileData.attorney_profile_id as string | null) ?? undefined,
+        fullName: profileData.full_name,
+        phoneNumber: profileData.phone_number ?? null,
       };
+
+      // Look up linked profile IDs based on user type
+      if (profileData.user_type === UserType.CLIENT) {
+        const { data: clientProfile } = await client
+          .from('client_profiles')
+          .select('id')
+          .eq('user_profile_id', authUser.id)
+          .single();
+        if (clientProfile) {
+          authenticatedUser.clientProfileId = (clientProfile as { id: string }).id;
+        }
+      }
 
       return authenticatedUser;
     } catch (error: unknown) {
