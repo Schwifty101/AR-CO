@@ -165,6 +165,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@gsap/react':
+        specifier: ^2.1.2
+        version: 2.1.2(gsap@3.14.2)(react@19.2.0)
       '@hookform/resolvers':
         specifier: ^3.10.0
         version: 3.10.0(react-hook-form@7.71.1(react@19.2.0))
@@ -276,12 +279,18 @@ importers:
       embla-carousel-react:
         specifier: 8.5.1
         version: 8.5.1(react@19.2.0)
+      framer-motion:
+        specifier: ^12.29.0
+        version: 12.29.0(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       gsap:
         specifier: ^3.14.2
         version: 3.14.2
       input-otp:
         specifier: 1.4.1
         version: 1.4.1(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      lenis:
+        specifier: ^1.3.17
+        version: 1.3.17(react@19.2.0)
       lucide-react:
         specifier: ^0.454.0
         version: 0.454.0(react@19.2.0)
@@ -656,6 +665,12 @@ packages:
 
   '@floating-ui/utils@0.2.10':
     resolution: {integrity: sha512-aGTxbpbg8/b5JfU1HXSrbH3wXZuLPJcNEcZQFMxLs3oSzgtVu6nFPkbbGGUvBcUjKV2YyB9Wxxabo+HEH9tcRQ==}
+
+  '@gsap/react@2.1.2':
+    resolution: {integrity: sha512-JqliybO1837UcgH2hVOM4VO+38APk3ECNrsuSM4MuXp+rbf+/2IG2K1YJiqfTcXQHH7XlA0m3ykniFYstfq0Iw==}
+    peerDependencies:
+      gsap: ^3.12.5
+      react: '>=17'
 
   '@hapi/address@5.1.1':
     resolution: {integrity: sha512-A+po2d/dVoY7cYajycYI43ZbYMXukuopIsqCjh5QzsBCipDtdofHntljDlpccMjIfTy6UOkg+5KPriwYch2bXA==}
@@ -3317,6 +3332,20 @@ packages:
   fraction.js@5.3.4:
     resolution: {integrity: sha512-1X1NTtiJphryn/uLQz3whtY6jK3fTqoE3ohKs0tT+Ujr1W59oopxmoEh7Lu5p6vBaPbgoM0bzveAW4Qi5RyWDQ==}
 
+  framer-motion@12.29.0:
+    resolution: {integrity: sha512-1gEFGXHYV2BD42ZPTFmSU9buehppU+bCuOnHU0AD18DKh9j4DuTx47MvqY5ax+NNWRtK32qIcJf1UxKo1WwjWg==}
+    peerDependencies:
+      '@emotion/is-prop-valid': '*'
+      react: ^18.0.0 || ^19.0.0
+      react-dom: ^18.0.0 || ^19.0.0
+    peerDependenciesMeta:
+      '@emotion/is-prop-valid':
+        optional: true
+      react:
+        optional: true
+      react-dom:
+        optional: true
+
   fresh@2.0.0:
     resolution: {integrity: sha512-Rx/WycZ60HOaqLKAi6cHRKKI7zxWbJ31MhntmtwMoaTeF7XFH9hhBp8vITaMidfljRQ6eYWCKkaTK+ykVJHP2A==}
     engines: {node: '>= 0.8'}
@@ -3767,6 +3796,20 @@ packages:
   kuler@2.0.0:
     resolution: {integrity: sha512-Xq9nH7KlWZmXAtodXDDRE7vs6DU1gTU8zYDHDiWLSip45Egwq3plLHzPn27NgvzL2r1LMPC1vdqh98sQxtqj4A==}
 
+  lenis@1.3.17:
+    resolution: {integrity: sha512-k9T9rgcxne49ggJOvXCraWn5dt7u2mO+BNkhyu6yxuEnm9c092kAW5Bus5SO211zUvx7aCCEtzy9UWr0RB+oJw==}
+    peerDependencies:
+      '@nuxt/kit': '>=3.0.0'
+      react: '>=17.0.0'
+      vue: '>=3.0.0'
+    peerDependenciesMeta:
+      '@nuxt/kit':
+        optional: true
+      react:
+        optional: true
+      vue:
+        optional: true
+
   leven@3.1.0:
     resolution: {integrity: sha512-qsda+H8jTaUaN/x5vzW2rzc+8Rw4TAQ/4KjB46IwK5VH+IlVeeeje/EoZRpiXvIqjFgK84QffqPztGI3VBLG1A==}
     engines: {node: '>=6'}
@@ -4025,6 +4068,12 @@ packages:
     resolution: {integrity: sha512-vVqVZQyf3WLx2Shd0qJ9xuvqgAyKPLAiqITEtqW0oIUjzo3PePDd6fW9iFz30ef7Ysp/oiWqbhszeGWW2T6Gzw==}
     engines: {node: '>=10'}
     hasBin: true
+
+  motion-dom@12.29.0:
+    resolution: {integrity: sha512-3eiz9bb32yvY8Q6XNM4AwkSOBPgU//EIKTZwsSWgA9uzbPBhZJeScCVcBuwwYVqhfamewpv7ZNmVKTGp5qnzkA==}
+
+  motion-utils@12.27.2:
+    resolution: {integrity: sha512-B55gcoL85Mcdt2IEStY5EEAsrMSVE2sI14xQ/uAdPL+mfQxhKKFaEag9JmfxedJOR4vZpBGoPeC/Gm13I/4g5Q==}
 
   ms@2.1.3:
     resolution: {integrity: sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==}
@@ -5461,6 +5510,11 @@ snapshots:
       react-dom: 19.2.0(react@19.2.0)
 
   '@floating-ui/utils@0.2.10': {}
+
+  '@gsap/react@2.1.2(gsap@3.14.2)(react@19.2.0)':
+    dependencies:
+      gsap: 3.14.2
+      react: 19.2.0
 
   '@hapi/address@5.1.1':
     dependencies:
@@ -8276,6 +8330,15 @@ snapshots:
 
   fraction.js@5.3.4: {}
 
+  framer-motion@12.29.0(react-dom@19.2.0(react@19.2.0))(react@19.2.0):
+    dependencies:
+      motion-dom: 12.29.0
+      motion-utils: 12.27.2
+      tslib: 2.8.1
+    optionalDependencies:
+      react: 19.2.0
+      react-dom: 19.2.0(react@19.2.0)
+
   fresh@2.0.0: {}
 
   fs-extra@10.1.0:
@@ -8902,6 +8965,10 @@ snapshots:
 
   kuler@2.0.0: {}
 
+  lenis@1.3.17(react@19.2.0):
+    optionalDependencies:
+      react: 19.2.0
+
   leven@3.1.0: {}
 
   levn@0.4.1:
@@ -9102,6 +9169,12 @@ snapshots:
       minimist: 1.2.8
 
   mkdirp@1.0.4: {}
+
+  motion-dom@12.29.0:
+    dependencies:
+      motion-utils: 12.27.2
+
+  motion-utils@12.27.2: {}
 
   ms@2.1.3: {}
 

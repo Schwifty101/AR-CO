@@ -39,28 +39,32 @@ public/
 ### Logos
 
 **Primary Logo:** Use `assets/logos/main-logo.svg` for most applications
+
 - Vector format scales perfectly at any size
 - Use in headers, footers, and promotional materials
 
 **Raster Logos:** Use webp variants when SVG is not supported
+
 - `main-logo.webp` - Standard raster version
 - Other variants available for specific use cases
 
 **Import in React components:**
+
 ```tsx
-import Image from 'next/image'
+import Image from "next/image";
 
 <Image
   src="/assets/logos/main-logo.svg"
   alt="AR&CO Law Associates"
   width={200}
   height={80}
-/>
+/>;
 ```
 
 ### Business Cards
 
 Located in `assets/business-cards/`:
+
 - `card-front.webp` - Front design (optimized)
 - `card-back.webp` - Back design (optimized)
 - PNG versions available for compatibility
@@ -69,14 +73,17 @@ Located in `assets/business-cards/`:
 ### Favicons
 
 **Browser Favicon:** `/favicon.ico` (placed in app directory for Next.js)
+
 - Automatically detected by browsers
 - 32x32 ICO format
 
 **Apple Touch Icon:** `/apple-icon.png`
+
 - 180x180 PNG format
 - Used when users add site to iOS home screen
 
 **PNG Favicon:** `/assets/favicon.png`
+
 - 32x32 PNG format
 - Modern browsers
 
@@ -85,6 +92,7 @@ All favicon metadata is configured in `app/layout.tsx`.
 ### Client Logos
 
 Located in `/client-logos/`:
+
 - Grayscale filter applied in Hero component
 - Format: PNG with transparent backgrounds
 - Usage: Trusted client showcase carousel
@@ -92,6 +100,7 @@ Located in `/client-logos/`:
 ### Banner Frames
 
 Located in `/banner/frames/`:
+
 - 772 frames for scroll-based video animation
 - Format: JPG (Web%20image%20XXXXX.jpg)
 - Used in Hero component with canvas rendering
@@ -99,12 +108,14 @@ Located in `/banner/frames/`:
 ## Design Files
 
 The `assets/design-files/` directory contains source files:
+
 - Adobe Illustrator (.ai)
 - Encapsulated PostScript (.eps)
 - Adobe PDF (.pdf)
 - Microsoft Word (.docx)
 
 **Important:** These files are excluded from git via `.gitignore` due to their large size.
+
 - Design team should maintain these files in a separate design repository or cloud storage
 - Only web-ready formats (.svg, .png, .webp, .ico) are committed to git
 
@@ -121,13 +132,14 @@ The `assets/design-files/` directory contains source files:
 ### Next.js Image Optimization
 
 All images should use Next.js `<Image>` component for:
+
 - Automatic lazy loading
 - Responsive images
 - Format conversion (WebP)
 - Size optimization
 
 ```tsx
-import Image from 'next/image'
+import Image from "next/image";
 
 <Image
   src="/assets/logos/main-logo.svg"
@@ -135,22 +147,25 @@ import Image from 'next/image'
   width={200}
   height={80}
   priority // Use for above-the-fold images
-/>
+/>;
 ```
 
 ## Adding New Assets
 
 ### 1. Business Assets (Logos, Cards, Letterheads)
+
 - Add web-ready formats to appropriate `assets/` subdirectory
 - Keep source files in `assets/design-files/` (not committed to git)
 - Update this documentation
 
 ### 2. Content Images (Practice Areas, Team Photos)
+
 - Place in relevant subdirectory (`practic-areas/`, `team/`, etc.)
 - Optimize before adding (use WebP format)
 - Use descriptive filenames (lowercase-with-hyphens.webp)
 
 ### 3. Icon Sets
+
 - Use Lucide React icon library (already installed)
 - Only add custom icons if not available in Lucide
 - Place custom icons in `assets/icons/`
@@ -158,6 +173,7 @@ import Image from 'next/image'
 ## Metadata & SEO
 
 Favicon and Open Graph images are configured in `app/layout.tsx`:
+
 - Site metadata (title, description, keywords)
 - Open Graph tags (social media sharing)
 - Twitter card configuration
@@ -169,12 +185,14 @@ Update `app/layout.tsx` and `manifest.json` when changing branding assets.
 ## Maintenance
 
 **Monthly:**
+
 - Review asset usage with analytics
 - Remove unused images
 - Re-optimize large images
 
 **Before Deployment:**
-- Run `npm run build` to test asset loading
+
+- Run `pnpm build` to test asset loading
 - Check favicon display in multiple browsers
 - Verify Open Graph images display correctly when sharing
 
