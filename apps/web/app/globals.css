@@ -49,6 +49,15 @@ html.lenis, html.lenis body {
   --heritage-cream: #F9F8F6;       /* Surface Light: Creamy Off-White - main background */
   --heritage-charcoal: #2C2C2C;    /* Surface Dark: Warm Charcoal - contrasting section backgrounds */
 
+  /* Dark Woody Brown Theme - Rich, warm, natural tones */
+  --wood-espresso: #1a110a;        /* Deepest brown - primary backgrounds, headers */
+  --wood-mahogany: #5C3D2E;        /* Rich mahogany - secondary elements */
+  --wood-cedar: #7A5C4E;           /* Medium cedar - borders, dividers */
+  --wood-oak: #8B6F47;             /* Light oak - hover states, accents */
+  --wood-walnut-dark: #3A2618;     /* Deep walnut - shadows, deep contrast */
+  --wood-chestnut: #654321;        /* Classic chestnut - buttons, active states */
+  --wood-sandalwood: #A0826D;      /* Warm sandalwood - disabled states, subtle accents */
+
   /* Background Colors */
   --bg-primary: #1a1d1a;
   --bg-secondary: #171a17;
@@ -157,6 +166,15 @@ html.lenis, html.lenis body {
   --color-heritage-gold: var(--heritage-gold);
   --color-heritage-cream: var(--heritage-cream);
   --color-heritage-charcoal: var(--heritage-charcoal);
+
+  /* Dark Woody Brown Theme - Semantic utility classes */
+  --color-wood-espresso: var(--wood-espresso);
+  --color-wood-mahogany: var(--wood-mahogany);
+  --color-wood-cedar: var(--wood-cedar);
+  --color-wood-oak: var(--wood-oak);
+  --color-wood-walnut-dark: var(--wood-walnut-dark);
+  --color-wood-chestnut: var(--wood-chestnut);
+  --color-wood-sandalwood: var(--wood-sandalwood);
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -452,6 +470,69 @@ body.app-loaded header {
   opacity: 1;
 }
 
+/* SectionWood: Dark woody brown background with cream text
+   Rich, warm, natural aesthetic */
+.section-wood {
+  background-color: var(--wood-espresso);
+  color: var(--heritage-cream);
+}
+
+.section-wood h1,
+.section-wood h2,
+.section-wood h3,
+.section-wood h4,
+.section-wood h5,
+.section-wood h6 {
+  color: var(--heritage-cream);
+}
+
+.section-wood p,
+.section-wood span,
+.section-wood li {
+  color: rgba(249, 248, 246, 0.9);
+}
+
+.section-wood a {
+  color: var(--heritage-gold);
+  transition: color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.section-wood a:hover {
+  color: var(--wood-oak);
+  opacity: 1;
+}
+
+/* SectionWoodLight: Medium brown background with cream text */
+.section-wood-light {
+  background-color: var(--wood-mahogany);
+  color: var(--heritage-cream);
+}
+
+.section-wood-light h1,
+.section-wood-light h2,
+.section-wood-light h3,
+.section-wood-light h4,
+.section-wood-light h5,
+.section-wood-light h6 {
+  color: var(--heritage-cream);
+}
+
+.section-wood-light p,
+.section-wood-light span,
+.section-wood-light li {
+  color: rgba(249, 248, 246, 0.85);
+}
+
+.section-wood-light a {
+  color: var(--heritage-gold);
+  transition: color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.section-wood-light a:hover {
+  color: var(--wood-oak);
+  opacity: 1;
+}
+
 /* Heritage accent utilities */
 .heritage-accent {
   color: var(--heritage-gold);
@@ -460,6 +541,72 @@ body.app-loaded header {
 .heritage-accent-bg {
   background-color: var(--heritage-gold);
   color: var(--heritage-charcoal);
+}
+
+/* Dark Woody Brown Theme Utilities */
+.wood-espresso-bg {
+  background-color: var(--wood-espresso);
+  color: var(--heritage-cream);
+}
+
+.wood-mahogany-bg {
+  background-color: var(--wood-mahogany);
+  color: var(--heritage-cream);
+}
+
+.wood-cedar-bg {
+  background-color: var(--wood-cedar);
+  color: var(--heritage-cream);
+}
+
+.wood-oak-bg {
+  background-color: var(--wood-oak);
+  color: var(--heritage-cream);
+}
+
+.wood-text {
+  color: var(--wood-espresso);
+}
+
+.wood-border {
+  border-color: var(--wood-cedar);
+}
+
+/* Reusable Gradient Backgrounds */
+
+/* White background with subtle woody brown hint - for light sections */
+.bg-white-wood-hint {
+  background: linear-gradient(
+    180deg,
+   rgba(255, 255, 255, 1) 0%,
+    rgb(246, 239, 228) 30%,
+    rgb(255, 244, 232) 60%,
+    rgb(255, 238, 217) 100%
+  );
+  color: var(--wood-espresso);
+}
+
+/* Black background with subtle dark brown hint - for dark sections */
+.bg-black-wood-hint {
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 1) 0%,
+    rgba(15, 10, 8, 1) 30%,
+    rgba(25, 17, 13, 1) 60%,
+    rgba(35, 23, 18, 1) 100%
+  );
+  color: var(--heritage-cream);
+}
+
+/* Alternative: Solid backgrounds with very subtle tint */
+.bg-white-wood-tint {
+  background-color: rgba(251, 247, 242, 1);
+  color: var(--wood-espresso);
+}
+
+.bg-black-wood-tint {
+  background-color: rgba(25, 17, 13, 1);
+  color: var(--heritage-cream);
 }
 
 /* Heritage button styles */
@@ -495,4 +642,41 @@ body.app-loaded header {
 .btn-heritage-outline:hover {
   background-color: var(--heritage-walnut);
   color: var(--heritage-cream);
+}
+
+/* Dark Woody Brown Button Styles */
+.btn-wood-primary {
+  background-color: var(--wood-espresso);
+  color: var(--heritage-cream);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-wood-primary:hover {
+  background-color: var(--wood-mahogany);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(61, 40, 23, 0.3);
+}
+
+.btn-wood-secondary {
+  background-color: var(--wood-chestnut);
+  color: var(--heritage-cream);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-wood-secondary:hover {
+  background-color: var(--wood-mahogany);
+  transform: translateY(-2px);
+}
+
+.btn-wood-outline {
+  background-color: transparent;
+  border: 2px solid var(--wood-cedar);
+  color: var(--wood-espresso);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-wood-outline:hover {
+  background-color: var(--wood-espresso);
+  color: var(--heritage-cream);
+  border-color: var(--wood-espresso);
 }

@@ -6,6 +6,7 @@ import QuoteSection from "@/components/home/QuoteSection"
 import PracticeAreasHorizontal from "@/components/home/PracticeAreasHorizontal"
 import ScrollRevealText from "@/components/shared/animations/ScrollRevealText"
 import SmoothScroll from "@/components/SmoothScroll"
+
 import Link from "next/link"
 import styles from "./page.module.css"
 
@@ -51,9 +52,11 @@ export default function Home() {
           {/* Hero Section with Integrated Logo Carousel */}
           <Hero />
           <QuoteSection />
+          
 
           {/* Practice Areas Horizontal Scroll with Abstract Layout */}
           <PracticeAreasHorizontal />
+          
 
         {/* Portal Access Section */}
         <section className={styles.section}>

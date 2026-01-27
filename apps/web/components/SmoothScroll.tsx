@@ -84,16 +84,16 @@ export default function SmoothScroll({ children }: SmoothScrollProps) {
   useEffect(() => {
     if (!wrapperRef.current || !contentRef.current) return
 
-    // Initialize ScrollSmoother with high smoothing to normalize scroll acceleration
+    // Initialize ScrollSmoother with damped, flowy scrolling
     const smoother = ScrollSmoother.create({
       wrapper: wrapperRef.current,
       content: contentRef.current,
-      smooth: 2.5,              // Default smoothness - will be increased to 10 in hero section
+      smooth: 4,                // Higher smoothness for damped, flowy feel
       effects: true,            // Enable data-speed and data-lag attributes
       smoothTouch: 0.1,         // Enable smooth scrolling on touch devices
       normalizeScroll: true,    // CRITICAL: Normalizes scroll behavior, prevents acceleration spikes
       ignoreMobileResize: true, // Prevent issues with mobile address bar
-      speed: 1,                 // Default scroll speed (1 = normal)
+      speed: 0.7,               // Slightly slower speed for more damped feel
     })
 
     // Store globally for dynamic updates

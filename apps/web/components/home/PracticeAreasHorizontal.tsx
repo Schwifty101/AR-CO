@@ -1,9 +1,9 @@
 'use client'
-
 import { useLayoutEffect, useEffect, useRef, useState, useCallback } from 'react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { ScrollToPlugin } from 'gsap/ScrollToPlugin'
+import ScrollRevealText from '@/components/shared/animations/ScrollRevealText'
 import styles from './PracticeAreasHorizontal.module.css'
 
 // Register GSAP plugins
@@ -92,18 +92,42 @@ const practiceAreas: PracticeArea[] = [
   },
 ]
 
-// Artistic positions for content cards - scattered abstract layout like Lando Norris site
-const cardPositions = [
-  { top: '5%', left: '8%', size: 'large', rotation: -2 },
-  { top: '55%', left: '60%', size: 'medium', rotation: 1 },
-  { top: '12%', left: '55%', size: 'large', rotation: 0 },
-  { top: '65%', left: '5%', size: 'medium', rotation: -1 },
-  { top: '30%', left: '30%', size: 'small', rotation: 2 },
-  { top: '75%', left: '40%', size: 'large', rotation: 0 },
-  { top: '8%', left: '35%', size: 'medium', rotation: -1 },
-  { top: '50%', left: '75%', size: 'small', rotation: 1 },
-  { top: '40%', left: '10%', size: 'large', rotation: 0 },
-  { top: '80%', left: '20%', size: 'medium', rotation: -2 },
+// Card spacing configuration - cards placed in horizontal sequence
+const CARD_SPACING = 70 // vw units between each card center
+const CARD_INITIAL_OFFSET = 80 // vw units - where first card starts (higher = enters from further right)
+const ACTIVATION_THRESHOLD = 22 // vw units - card must be within this distance of center to expand
+
+// Hardcoded navigation progress for each card (0 to 1)
+// Adjust these values to fine-tune where clicking each menu item scrolls to
+const CARD_NAV_PROGRESS = [
+  0.15,   // Card 0 - IP & Innovation
+  0.30,   // Card 1 - Power & Energy
+  0.50,   // Card 2 - Oil & Gas
+  0.65,   // Card 3 - Renewable Energy
+  0.80,   // Card 4 - Dispute Resolution
+  0.95,   // Card 5 - Banking & Finance
+  1.10,   // Card 6 - Corporate & M&A
+  1.25,   // Card 7 - Tech & Telecom
+  1.40,   // Card 8 - Construction
+  1.55,   // Card 9 - Nuclear & Regulatory
+]
+
+// Hardcoded skip section progress - scrolls past the entire section
+// Adjust this value to fine-tune where the skip button scrolls to
+const SKIP_SECTION_PROGRESS = 1.55
+
+// Random vertical positions and rotations for visual variety
+const cardVariations = [
+  { top: '25%', rotation: -1.5 },
+  { top: '60%', rotation: 2 },
+  { top: '35%', rotation: -1.5 },
+  { top: '70%', rotation: 2.5 },
+  { top: '20%', rotation: -2 },
+  { top: '55%', rotation: 3 },
+  { top: '30%', rotation: -2.5 },
+  { top: '65%', rotation: 1.5 },
+  { top: '40%', rotation: -3 },
+  { top: '50%', rotation: 2 },
 ]
 
 // ============================================================
@@ -112,13 +136,13 @@ const cardPositions = [
 // Lower value = less scroll distance (faster horizontal scroll)
 // Try values: 1, 1.5, 2, 2.5, 3
 // ============================================================
-const PIN_SPACING_MULTIPLIER = 1.5
+const PIN_SPACING_MULTIPLIER = 2
 
 export default function PracticeAreasHorizontal() {
   const sectionRef = useRef<HTMLDivElement>(null)
   const triggerRef = useRef<HTMLDivElement>(null)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
-  const [activeIndex, setActiveIndex] = useState(0)
+  const [activeIndex, setActiveIndex] = useState(-1)
   const [isMobile, setIsMobile] = useState(false)
 
   // Check for mobile
@@ -133,13 +157,15 @@ export default function PracticeAreasHorizontal() {
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
-  // Navigate to panel using ScrollToPlugin
+  // Navigate to specific card using ScrollToPlugin
   const navigateToPanel = useCallback((panelIndex: number) => {
     const scrollTriggerInstance = ScrollTrigger.getAll().find(
       (st) => st.trigger === triggerRef.current
     )
     if (scrollTriggerInstance) {
-      const progress = panelIndex / (practiceAreas.length - 1)
+      // Use hardcoded progress value for this card
+      const progress = CARD_NAV_PROGRESS[panelIndex] ?? panelIndex / (practiceAreas.length - 1)
+
       const targetScroll =
         scrollTriggerInstance.start +
         (scrollTriggerInstance.end - scrollTriggerInstance.start) * progress
@@ -147,7 +173,26 @@ export default function PracticeAreasHorizontal() {
       // Uses ScrollToPlugin for smooth navigation
       gsap.to(window, {
         scrollTo: { y: targetScroll, autoKill: false },
-        duration: 0.8,
+        duration: 1.2,
+        ease: 'power2.inOut',
+      })
+    }
+  }, [])
+
+  // Skip entire section
+  const skipSection = useCallback(() => {
+    const scrollTriggerInstance = ScrollTrigger.getAll().find(
+      (st) => st.trigger === triggerRef.current
+    )
+    if (scrollTriggerInstance) {
+      // Use hardcoded progress value to scroll past the section
+      const targetScroll =
+        scrollTriggerInstance.start +
+        (scrollTriggerInstance.end - scrollTriggerInstance.start) * SKIP_SECTION_PROGRESS
+
+      gsap.to(window, {
+        scrollTo: { y: targetScroll, autoKill: false },
+        duration: 1,
         ease: 'power2.inOut',
       })
     }
@@ -163,11 +208,23 @@ export default function PracticeAreasHorizontal() {
       const ctx = gsap.context(() => {
         const scrollContainer = scrollContainerRef.current!
 
-        // Calculate how far to scroll horizontally
+        // Calculate scroll amount to move all cards so the last card can be centered
+        // We account for CARD_INITIAL_OFFSET so the translation reaches the final card
         const getScrollAmount = () => {
-          const containerWidth = scrollContainer.scrollWidth
-          const viewportWidth = window.innerWidth * 0.667 // right column is 2/3
-          return -(containerWidth - viewportWidth)
+          const vw = window.innerWidth / 100
+          const totalCards = practiceAreas.length
+
+          // position of the last card (in px)
+          const lastCardPos = ((totalCards - 1) * CARD_SPACING + CARD_INITIAL_OFFSET) * vw
+
+          // approximate center position of the right column (where cards should appear)
+          const centerViewport = vw * 33
+
+          // required movement to bring last card to centerViewport
+          const requiredMove = lastCardPos - centerViewport
+
+          // return negative value (translateX left)
+          return -requiredMove
         }
 
         // Create the horizontal scroll animation
@@ -196,8 +253,32 @@ export default function PracticeAreasHorizontal() {
           onUpdate: (self) => {
             const progress = self.progress
             const totalPanels = practiceAreas.length
-            const activeIdx = Math.min(Math.floor(progress * totalPanels), totalPanels - 1)
-            setActiveIndex(activeIdx)
+
+            // Calculate which card is closest to the center of the viewport
+            // Right column is 66.67% wide, center is at ~33vw from its left edge
+            const vw = window.innerWidth / 100
+            const scrollX = Math.abs(getScrollAmount() * progress)
+            const centerViewport = vw * 33 // Center of right column (66.67vw / 2)
+
+            // Each card is at (index * CARD_SPACING + CARD_INITIAL_OFFSET)vw
+            // Find which card index is closest to centerViewport + scrollX
+            // Only activate if within ACTIVATION_THRESHOLD
+            const cardsPositions = practiceAreas.map((_, idx) => (idx * CARD_SPACING + CARD_INITIAL_OFFSET) * vw)
+            const currentCenter = centerViewport + scrollX
+            const thresholdPx = ACTIVATION_THRESHOLD * vw
+
+            let closestIdx = -1 // -1 means no card is active
+            let minDistance = Infinity
+
+            for (let i = 0; i < cardsPositions.length; i++) {
+              const distance = Math.abs(cardsPositions[i] - currentCenter)
+              if (distance < minDistance && distance < thresholdPx) {
+                minDistance = distance
+                closestIdx = i
+              }
+            }
+
+            setActiveIndex(closestIdx)
           },
         })
 
@@ -251,10 +332,22 @@ export default function PracticeAreasHorizontal() {
                 onClick={() => navigateToPanel(index)}
               >
                 <span className={styles.navLabel}>{area.tagline}</span>
-                <span className={styles.navTitle}>{area.shortTitle}</span>
+                <ScrollRevealText
+                  as="span"
+                  className={styles.navTitle}
+                  delay={index * 50}
+                >
+                  {area.shortTitle}
+                </ScrollRevealText>
               </button>
             ))}
           </nav>
+          <button className={styles.skipButton} onClick={skipSection}>
+            <span>Skip Section</span>
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+              <path d="M8 3L8 13M8 13L12 9M8 13L4 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
         </div>
 
         {/* Right Column - Abstract Scattered Cards (2/3) */}
@@ -265,38 +358,48 @@ export default function PracticeAreasHorizontal() {
               <path
                 d="M-100,300 C200,250 400,400 700,350 C1000,300 1200,450 1500,400 C1800,350 2000,450 2200,400"
                 fill="none"
-                stroke="rgba(78, 52, 46, 0.08)"
+                stroke="rgba(139, 111, 71, 0.15)"
                 strokeWidth="2"
               />
               <path
                 d="M-100,500 C300,450 500,550 800,500 C1100,450 1300,550 1600,500 C1900,450 2100,550 2300,500"
                 fill="none"
-                stroke="rgba(78, 52, 46, 0.06)"
+                stroke="rgba(160, 130, 109, 0.12)"
                 strokeWidth="1.5"
               />
               <path
                 d="M-100,200 C150,180 350,250 600,200 C850,150 1050,280 1300,230 C1550,180 1750,280 2000,230"
                 fill="none"
-                stroke="rgba(212, 175, 55, 0.08)"
+                stroke="rgba(212, 175, 55, 0.2)"
                 strokeWidth="1"
               />
             </svg>
 
-            {/* Practice area cards with artistic scattered placement */}
+            {/* Large section heading - slides in from right */}
+            <div className={styles.sectionHeading}>
+              <span className={styles.headingLine}>Our</span>
+              <span className={styles.headingLine}>Practice</span>
+              <span className={styles.headingLine}>Areas</span>
+            </div>
+
+            {/* Practice area cards placed in sequential order with random vertical positions */}
             {practiceAreas.map((area, index) => {
-              const position = cardPositions[index % cardPositions.length]
               const isActive = activeIndex === index
               const isPast = index < activeIndex
               const isFuture = index > activeIndex
+              const variation = cardVariations[index % cardVariations.length]
+
+              // Calculate horizontal position: each card at index * CARD_SPACING
+              const leftPosition = `${index * CARD_SPACING + CARD_INITIAL_OFFSET}vw`
 
               return (
                 <article
                   key={area.id}
-                  className={`${styles.card} ${styles[position.size]} ${isActive ? styles.cardActive : ''} ${isPast ? styles.cardPast : ''} ${isFuture ? styles.cardFuture : ''}`}
+                  className={`${styles.card} ${styles.large} ${isActive ? styles.cardActive : ''} ${isPast ? styles.cardPast : ''} ${isFuture ? styles.cardFuture : ''}`}
                   style={{
-                    '--card-top': position.top,
-                    '--card-left': `calc(${index * 60}vw / ${practiceAreas.length} + ${position.left})`,
-                    '--card-rotation': `${position.rotation}deg`,
+                    '--card-top': variation.top,
+                    '--card-left': leftPosition,
+                    '--card-rotation': `${variation.rotation}deg`,
                   } as React.CSSProperties}
                 >
                   <span className={styles.cardLabel}>{area.tagline}</span>
@@ -307,14 +410,31 @@ export default function PracticeAreasHorizontal() {
             })}
 
             {/* Signature quotes scattered in the layout */}
-            <div className={styles.quoteBlock} style={{ '--quote-top': '25%', '--quote-left': '35%' } as React.CSSProperties}>
-              <p className={styles.quoteText}>Excellence in legal practice demands both precision and vision.</p>
-              <span className={styles.quoteSignature}>AR&CO</span>
+            <div className={styles.quoteBlock} style={{ '--quote-top': '15%', '--quote-left': '290vw' } as React.CSSProperties}>
+              <ScrollRevealText as="p" className={styles.quoteText} delay={0}>
+                Excellence in legal practice demands both precision and vision.
+              </ScrollRevealText>
+              <ScrollRevealText as="span" className={styles.quoteSignature} delay={200}>
+                AR&CO
+              </ScrollRevealText>
             </div>
 
-            <div className={styles.quoteBlock} style={{ '--quote-top': '70%', '--quote-left': '55%' } as React.CSSProperties}>
-              <p className={styles.quoteText}>Where complex matters meet strategic solutions.</p>
-              <span className={styles.quoteSignature}>AR&CO</span>
+            <div className={styles.quoteBlock} style={{ '--quote-top': '75%', '--quote-left': '590vw' } as React.CSSProperties}>
+              <ScrollRevealText as="p" className={styles.quoteText} delay={0}>
+                Where complex matters meet strategic solutions.
+              </ScrollRevealText>
+              <ScrollRevealText as="span" className={styles.quoteSignature} delay={200}>
+                AR&CO
+              </ScrollRevealText>
+            </div>
+
+            <div className={styles.quoteBlock} style={{ '--quote-top': '20%', '--quote-left': '850vw' } as React.CSSProperties}>
+              <ScrollRevealText as="p" className={styles.quoteText} delay={0}>
+                Trusted advisors to industry leaders.
+              </ScrollRevealText>
+              <ScrollRevealText as="span" className={styles.quoteSignature} delay={200}>
+                AR&CO
+              </ScrollRevealText>
             </div>
           </div>
         </div>
