@@ -7,7 +7,6 @@ import { ScrollTrigger } from "gsap/ScrollTrigger"
 import { useGSAP } from "@gsap/react"
 import styles from "./Hero.module.css"
 import LoadingScreen from "../LoadingScreen"
-import { setSlowScroll, setNormalScroll } from "../SmoothScroll"
 
 // Register GSAP plugins
 if (typeof window !== "undefined") {
@@ -59,6 +58,35 @@ export default function Hero() {
   const UI_FADE_START_FRAME = 10
   const UI_FADE_END_FRAME = 30
 
+  // Helper function to draw image with proper aspect ratio (object-fit: cover behavior)
+  const drawImageCover = (
+    ctx: CanvasRenderingContext2D,
+    img: HTMLImageElement,
+    canvasWidth: number,
+    canvasHeight: number
+  ) => {
+    const imgAspect = img.width / img.height
+    const canvasAspect = canvasWidth / canvasHeight
+
+    let drawWidth, drawHeight, offsetX, offsetY
+
+    if (imgAspect > canvasAspect) {
+      // Image is wider than canvas - fit to height
+      drawHeight = canvasHeight
+      drawWidth = img.width * (canvasHeight / img.height)
+      offsetX = (canvasWidth - drawWidth) / 2
+      offsetY = 0
+    } else {
+      // Image is taller than canvas - fit to width
+      drawWidth = canvasWidth
+      drawHeight = img.height * (canvasWidth / img.width)
+      offsetX = 0
+      offsetY = (canvasHeight - drawHeight) / 2
+    }
+
+    ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight)
+  }
+
   // Preload all frames with progress tracking
   useEffect(() => {
     const loadImages = async () => {
@@ -106,8 +134,8 @@ export default function Hero() {
           canvas.style.width = '100%'
           canvas.style.height = '100%'
 
-          // Draw first frame to fill canvas
-          ctx.drawImage(loadedImages[0], 0, 0, canvas.width, canvas.height)
+          // Draw first frame with proper aspect ratio
+          drawImageCover(ctx, loadedImages[0], canvas.width, canvas.height)
         }
       }
     }
@@ -173,13 +201,7 @@ export default function Hero() {
       pinReparent: true,
       scrub: true, // Enable scrub - ScrollSmoother will handle the smoothing
       // markers: true,
-      
-      // Dynamic scroll sensitivity - slower in hero section
-      onEnter: () => setSlowScroll(),
-      onEnterBack: () => setSlowScroll(),
-      onLeaveBack: () => setNormalScroll(),
-      onLeave: () => setNormalScroll(),
-      
+
       onUpdate: (self) => {
         // Calculate frame directly from scroll progress
         // ScrollSmoother's normalizeScroll + smooth settings handle acceleration smoothing
@@ -188,38 +210,10 @@ export default function Hero() {
         // Only render if frame changed (prevents unnecessary redraws)
         if (frame !== currentFrameRef.current && imagesRef.current[frame]) {
           currentFrameRef.current = frame
-          ctx.drawImage(
-            imagesRef.current[frame],
-            0, 0,
-            canvas.width,
-            canvas.height
-          )
-          
+          drawImageCover(ctx, imagesRef.current[frame], canvas.width, canvas.height)
+
           // Update UI elements based on frame
           updateUIElements(frame)
-        }
-        
-        // Subtle zoom-out transition - starts earlier since hero stays 70-80% visible
-        // This creates depth as quote overlaps, hero gently recedes
-        if (videoContainerRef.current) {
-          if (self.progress >= 0.60) {
-            const zoomProgress = (self.progress - 0.60) / 0.40 // Spread over 40% of scroll
-            const easedProgress = zoomProgress * zoomProgress * (3 - 2 * zoomProgress) // Smooth easing
-            const scale = 1 - (easedProgress * 0.08) // Very subtle scale (max 8% shrink)
-            const yOffset = easedProgress * -20 // Gentle upward drift
-            
-            gsap.set(videoContainerRef.current, {
-              scale: scale,
-              y: yOffset,
-              transformOrigin: "center center",
-            })
-          } else {
-            gsap.set(videoContainerRef.current, {
-              scale: 1,
-              y: 0,
-              transformOrigin: "center center",
-            })
-          }
         }
       },
     })
@@ -247,12 +241,7 @@ export default function Hero() {
         const ctx = canvas.getContext('2d')
         const frameToRender = Math.round(currentFrameRef.current)
         if (ctx && imagesRef.current[frameToRender]) {
-          ctx.drawImage(
-            imagesRef.current[frameToRender],
-            0, 0,
-            canvas.width,
-            canvas.height
-          )
+          drawImageCover(ctx, imagesRef.current[frameToRender], canvas.width, canvas.height)
         }
       }
     }
