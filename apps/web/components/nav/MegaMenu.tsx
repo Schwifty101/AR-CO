@@ -64,6 +64,7 @@ export default function MegaMenu({
   // Handle mount/unmount with animation
   useEffect(() => {
     if (isOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setShouldRender(true)
     }
   }, [isOpen])
@@ -113,6 +114,7 @@ export default function MegaMenu({
       if (tlRef.current) tlRef.current.kill()
       
       if (prefersReducedMotion) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setShouldRender(false)
         return
       }
