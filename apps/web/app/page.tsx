@@ -98,15 +98,15 @@ export default function Home() {
             <h2>What Our Clients Say</h2>
             <div className={styles.testimonials}>
               <div className={styles.testimonial}>
-                <p>"Exceptional service and expertise. Highly recommended!"</p>
+                <p>&quot;Exceptional service and expertise. Highly recommended!&quot;</p>
                 <p className={styles.author}>- Client Name</p>
               </div>
               <div className={styles.testimonial}>
-                <p>"Professional team with deep legal knowledge."</p>
+                <p>&quot;Professional team with deep legal knowledge.&quot;</p>
                 <p className={styles.author}>- Client Name</p>
               </div>
               <div className={styles.testimonial}>
-                <p>"Reliable and trustworthy legal partner."</p>
+                <p>&quot;Reliable and trustworthy legal partner.&quot;</p>
                 <p className={styles.author}>- Client Name</p>
               </div>
             </div>

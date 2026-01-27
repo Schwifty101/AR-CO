@@ -311,12 +311,15 @@ The Next.js frontend proxies all `/api/*` requests to the NestJS backend to avoi
 ### Component Organization
 
 - **App-specific components:** `apps/web/components/` (Header, Footer, Hero, PracticeCard, etc.)
+- **Auth components:** `apps/web/components/auth/` (signin-form, signup-form, oauth-button)
+- **Dashboard components:** `apps/web/components/dashboard/` (sidebar, dashboard-header)
 - **Shared UI library:** `packages/ui/` (currently exports Button component)
 - **shadcn/ui components:** `apps/web/components/ui/` (59 pre-built components)
 - **Styling:** Mix of Tailwind CSS utility classes and CSS Modules for component-scoped styles
 
 ### State Management
 
+- **Auth:** AuthProvider context with Supabase onAuthStateChange listener (`lib/auth/auth-context.tsx`)
 - **Forms:** React Hook Form with Zod validation
 - **UI State:** React state and Context API
 - **Theme:** next-themes for dark/light mode
@@ -387,6 +390,10 @@ The Next.js frontend proxies all `/api/*` requests to the NestJS backend to avoi
 ```bash
 NEXT_PUBLIC_API_URL=http://localhost:3000
 API_BACKEND_URL=http://localhost:4000
+
+# Supabase (required for authentication)
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key_here
 ```
 
 **Backend (.env.example):**
@@ -461,10 +468,11 @@ When adding features (e.g., client portal, appointments, payments):
 - ✅ Admin email whitelist for personal accounts
 - ✅ Standardized error handling
 - ✅ Example endpoints: `/api/hello` (public), `/api/profile` (protected), `/api/admin-dashboard` (admin-only)
-
-**In Progress:**
-
-- Authentication module (signup, login, OAuth, password reset)
+- ✅ Authentication module: signup, signin, Google OAuth callback, token refresh, password reset, signout
+- ✅ Auth endpoints: `POST /api/auth/signup`, `POST /api/auth/signin`, `POST /api/auth/oauth/callback`, `POST /api/auth/refresh`, `POST /api/auth/password-reset/request`, `POST /api/auth/password-reset/confirm`, `GET /api/auth/me`, `POST /api/auth/signout`
+- ✅ Frontend auth: Supabase SSR client, AuthProvider context, route protection middleware
+- ✅ Auth pages: Sign-in (Google + email tabs), sign-up, OAuth callback, password reset, admin/client dashboards
+- ✅ 12 unit tests passing for AuthService
 
 **Planned:**
 
@@ -486,6 +494,8 @@ When adding features (e.g., client portal, appointments, payments):
 - ✅ Database triggers (auto-generate case numbers, invoice numbers, updated_at timestamps)
 - ✅ SupabaseService for client management (getClient, getAdminClient, getUserFromToken)
 - ✅ JWT authentication via JwtAuthGuard
+- ✅ Supabase Auth integration (email/password + Google OAuth)
+- ✅ Frontend Supabase SSR client with cookie-based sessions (@supabase/ssr)
 
 **Planned:**
 
@@ -537,7 +547,7 @@ When adding features (e.g., client portal, appointments, payments):
 
 - **Practice Areas:** Corporate Law, Tax Law, Immigration, Labour Law, IP, Real Estate, Litigation, Contracts
 - **Facilitation Services:** Business registration (NTN, SECP), compliance certificates (AML/CFT, Food Authority), real estate docs, personal certificates, Women's Legal Desk
-- **Target Routes:** `/practice/*`, `/portal/login`, `/admin/login`
+- **Target Routes:** `/practice/*`, `/auth/signin`, `/auth/signup`, `/admin/dashboard`, `/client/dashboard`
 
 ## Scope Documents
 

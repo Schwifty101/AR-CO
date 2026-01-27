@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import LogoSection from "./LogoSection"
 import FullScreenDropdown from "./FullScreenDropdown"
@@ -24,6 +24,13 @@ export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
 
+  const isScrolledRef = useRef(isScrolled)
+
+  // Keep ref in sync with state
+  useEffect(() => {
+    isScrolledRef.current = isScrolled
+  }, [isScrolled])
+
   // Scroll detection for header state change - optimized for immediate response
   useEffect(() => {
     let timeoutId: NodeJS.Timeout
@@ -37,19 +44,25 @@ export default function Header() {
       }
       
       // Immediate update for performance-critical transitions
-      if (!scrolled && isScrolled) {
+      if (!scrolled && isScrolledRef.current) {
         // Scrolling back to top - immediate response
         setIsScrolled(false)
-      } else if (scrolled && !isScrolled) {
+      } else if (scrolled && !isScrolledRef.current) {
         // Scrolling down - slight delay to prevent flickering
         timeoutId = setTimeout(() => {
           setIsScrolled(true)
+          setDropdownSection(null) // Close dropdown when scrolled
         }, 50)
       }
     }
 
     // Initial check
-    setIsScrolled(window.scrollY > 50)
+    if (window.scrollY > 50) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setIsScrolled(true)
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setDropdownSection(null)
+    }
     
     window.addEventListener('scroll', handleScroll, { passive: true })
     return () => {
@@ -58,7 +71,7 @@ export default function Header() {
         clearTimeout(timeoutId)
       }
     }
-  }, [isScrolled])
+  }, []) // Empty dependency array as we use ref
 
   // Track viewport size for responsive behavior
   useEffect(() => {
@@ -83,12 +96,7 @@ export default function Header() {
     return () => window.removeEventListener('resize', handleResize)
   }, [mobileMenuOpen])
 
-  // Close dropdown when scrolled
-  useEffect(() => {
-    if (isScrolled && dropdownSection) {
-      setDropdownSection(null)
-    }
-  }, [isScrolled, dropdownSection])
+
 
   const handleNavClick = (section: 'practice-areas' | 'facilitation') => {
     if (dropdownSection === section) {

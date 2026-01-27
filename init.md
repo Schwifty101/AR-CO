@@ -242,55 +242,71 @@ Complete database architecture with 20+ tables, Row-Level Security, comprehensiv
 
 ---
 
-## HEAD TASK 4: Authentication Module
+## HEAD TASK 4: Authentication Module ✅
 
-### Sub-task 4.1: Create Auth Service
+### Sub-task 4.1: Create Auth DTOs & Validation (7/7) ✅
 
-- [ ] **4.1.1**: Create `apps/api/src/auth/auth.service.ts`
-- [ ] **4.1.2**: Implement `signUp(signUpDto)` method
-  - Create user in Supabase Auth
-  - Create user_profile record
-  - Return JWT tokens
-- [ ] **4.1.3**: Implement `signIn(signInDto)` method
-  - Validate email/password with Supabase
-  - Return JWT tokens
-- [ ] **4.1.4**: Implement `signOut(userId)` method
-  - Invalidate refresh token in Supabase
-- [ ] **4.1.5**: Implement `refreshToken(refreshToken)` method
-  - Exchange refresh token for new access token
-- [ ] **4.1.6**: Implement `forgotPassword(email)` method
-  - Send password reset email via Supabase
-- [ ] **4.1.7**: Implement `resetPassword(token, newPassword)` method
-  - Reset password with token
-
-### Sub-task 4.2: Create Auth Controller
-
-- [ ] **4.2.1**: Create `apps/api/src/auth/auth.controller.ts`
-- [ ] **4.2.2**: Create endpoint: `POST /api/auth/signup`
-- [ ] **4.2.3**: Create endpoint: `POST /api/auth/signin`
-- [ ] **4.2.4**: Create endpoint: `POST /api/auth/signout`
-- [ ] **4.2.5**: Create endpoint: `POST /api/auth/refresh-token`
-- [ ] **4.2.6**: Create endpoint: `POST /api/auth/forgot-password`
-- [ ] **4.2.7**: Create endpoint: `POST /api/auth/reset-password`
-- [ ] **4.2.8**: Create endpoint: `GET /api/auth/me` (returns current user profile)
-
-### Sub-task 4.3: Create DTOs & Validation
-
-- [ ] **4.3.1**: Create `apps/api/src/auth/dto/sign-up.dto.ts`
-  - Fields: email, password, fullName
-  - Validators: IsEmail, MinLength(8) for password
-- [ ] **4.3.2**: Create `apps/api/src/auth/dto/sign-in.dto.ts`
+- [X] **4.1.1**: Create `apps/api/src/auth/dto/signup.dto.ts`
+  - Fields: email (@IsEmail), password (@MinLength(8), @MaxLength(72), @Matches for complexity), fullName, phoneNumber (optional)
+- [X] **4.1.2**: Create `apps/api/src/auth/dto/signin.dto.ts`
   - Fields: email, password
-- [ ] **4.3.3**: Create `apps/api/src/auth/dto/reset-password.dto.ts`
-  - Fields: token, newPassword
-- [ ] **4.3.4**: Create `apps/api/src/auth/dto/refresh-token.dto.ts`
+- [X] **4.1.3**: Create `apps/api/src/auth/dto/oauth-callback.dto.ts`
+  - Fields: accessToken, refreshToken
+- [X] **4.1.4**: Create `apps/api/src/auth/dto/refresh-token.dto.ts`
   - Fields: refreshToken
+- [X] **4.1.5**: Create `apps/api/src/auth/dto/password-reset.dto.ts`
+  - PasswordResetRequestDto (email), PasswordResetConfirmDto (accessToken, newPassword)
+- [X] **4.1.6**: Create `apps/api/src/auth/dto/auth-response.dto.ts`
+  - AuthResponseDto (user, accessToken, refreshToken), AuthMessageDto (message)
+- [X] **4.1.7**: Create `apps/api/src/auth/dto/index.ts` (barrel export)
 
-### Sub-task 4.4: Create Auth Module
+### Sub-task 4.2: Create Auth Service (1/1) ✅
 
-- [ ] **4.4.1**: Create `apps/api/src/auth/auth.module.ts`
-  - Import PassportModule, JwtModule
-  - Register AuthService, AuthController
+- [X] **4.2.1**: Create `apps/api/src/auth/auth.service.ts`
+  - `signup(dto)` - Email/password signup (clients only, blocks admin emails)
+  - `signin(dto)` - Email/password signin
+  - `processOAuthCallback(dto)` - Handle OAuth tokens, create/fetch profile, detect user type
+  - `refreshToken(dto)` - Refresh access token via Supabase
+  - `requestPasswordReset(dto)` - Send reset email (generic message prevents enumeration)
+  - `confirmPasswordReset(dto)` - Reset password using admin.updateUserById
+  - `signout(userId)` - Log event, return success
+  - `getCurrentUser(userId, email)` - Fetch user profile
+
+### Sub-task 4.3: Create Auth Controller (1/1) ✅
+
+- [X] **4.3.1**: Create `apps/api/src/auth/auth.controller.ts`
+  - POST /api/auth/signup, signin, oauth/callback, refresh, password-reset/request, password-reset/confirm (all @Public)
+  - GET /api/auth/me, POST /api/auth/signout (protected)
+
+### Sub-task 4.4: Create Auth Module & Integration (2/2) ✅
+
+- [X] **4.4.1**: Create `apps/api/src/auth/auth.module.ts`
+- [X] **4.4.2**: Import AuthModule in app.module.ts, add global ValidationPipe in main.ts
+
+### Sub-task 4.5: Frontend Auth Infrastructure (5/5) ✅
+
+- [X] **4.5.1**: Install @supabase/supabase-js and @supabase/ssr
+- [X] **4.5.2**: Create Supabase client configuration (browser, server, middleware)
+- [X] **4.5.3**: Create Auth Context & Hooks (AuthProvider, useAuth, auth-actions)
+- [X] **4.5.4**: Create Next.js middleware (session refresh, route protection, user type routing)
+- [X] **4.5.5**: Wrap root layout with AuthProvider
+
+### Sub-task 4.6: Frontend Auth Pages (6/6) ✅
+
+- [X] **4.6.1**: Create Sign-In Page (tabbed Google OAuth + email/password)
+- [X] **4.6.2**: Create Sign-Up Page (client registration)
+- [X] **4.6.3**: Create OAuth Callback Handler (code exchange + backend POST + redirect)
+- [X] **4.6.4**: Create Password Reset Pages (request + confirm)
+- [X] **4.6.5**: Create Dashboard Layouts & Pages (admin + client with sidebar/header)
+- [X] **4.6.6**: Update .env.example with Supabase configuration
+
+### Sub-task 4.7: Testing (1/1) ✅
+
+- [X] **4.7.1**: Create auth.service.spec.ts (12 unit tests, all passing)
+
+### Sub-task 4.8: Bug Fixes (1/1) ✅
+
+- [X] **4.8.1**: Fix getUserFromToken() in supabase.service.ts (wrong column name + missing columns)
 
 ---
 

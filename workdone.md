@@ -1,10 +1,10 @@
 # AR-CO Database & Backend Setup - Work Progress Log
 
-## Project Status: Core Infrastructure Complete
+## Project Status: Authentication System Complete
 
 **Start Date**: 2026-01-22
-**Current Phase**: Database Service & Authentication Layer
-**Overall Progress**: 3/13 Head Tasks Completed
+**Current Phase**: Authentication Module Complete
+**Overall Progress**: 4/13 Head Tasks Completed
 
 ---
 
@@ -204,6 +204,70 @@
 - ✅ Supabase client management (user vs admin)
 - ✅ Foundation for all future API modules
 
+### [2026-01-26] HEAD TASK 4: Authentication Module (8/8 sub-tasks) ✅
+**Status**: ✅ COMPLETED
+**Started**: 2026-01-26
+**Completed**: 2026-01-26
+
+#### Sub-task 4.1: Create Auth DTOs & Validation (7/7) ✅
+- ✅ 4.1.1-4.1.7: Created 7 DTO files (signup, signin, oauth-callback, refresh-token, password-reset, auth-response, index barrel)
+  - Password validation: @MinLength(8), @MaxLength(72), @Matches for uppercase/lowercase/number/special char
+  - Email validation: @IsEmail with lowercase transform
+  - Phone number: optional field
+
+#### Sub-task 4.2: Create Auth Service (1/1) ✅
+- ✅ 4.2.1: Created `apps/api/src/auth/auth.service.ts` (545 lines)
+  - 8 public methods: signup, signin, processOAuthCallback, refreshToken, requestPasswordReset, confirmPasswordReset, signout, getCurrentUser
+  - 5 private helpers: createUserProfile, createClientProfile, fetchUserProfile, fetchUserProfileOrNull, logAuthEvent
+  - Admin emails blocked from email/password signup (ForbiddenException)
+  - OAuth callback auto-detects admin vs client based on whitelist
+  - All auth events logged to activity_logs table
+  - Generic password reset message prevents email enumeration
+
+#### Sub-task 4.3: Create Auth Controller (1/1) ✅
+- ✅ 4.3.1: Created `apps/api/src/auth/auth.controller.ts` (177 lines)
+  - 6 public endpoints: signup, signin, oauth/callback, refresh, password-reset/request, password-reset/confirm
+  - 2 protected endpoints: me (GET), signout (POST)
+  - All endpoints with proper @HttpCode decorators
+
+#### Sub-task 4.4: Create Auth Module & Integration (2/2) ✅
+- ✅ 4.4.1: Created `apps/api/src/auth/auth.module.ts`
+- ✅ 4.4.2: Updated app.module.ts (AuthModule import), main.ts (ValidationPipe)
+
+#### Sub-task 4.5: Frontend Auth Infrastructure (5/5) ✅
+- ✅ 4.5.1: Installed @supabase/supabase-js, @supabase/ssr in apps/web
+- ✅ 4.5.2: Created Supabase clients (browser, server, middleware) in `lib/supabase/`
+- ✅ 4.5.3: Created AuthProvider context, useAuth hook, auth-actions in `lib/auth/`
+- ✅ 4.5.4: Created Next.js middleware for session refresh, route protection, user type routing
+- ✅ 4.5.5: Wrapped root layout with AuthProvider
+
+#### Sub-task 4.6: Frontend Auth Pages (6/6) ✅
+- ✅ 4.6.1: Sign-in page with tabbed Google OAuth + email/password form
+- ✅ 4.6.2: Sign-up page with full registration form + password confirmation
+- ✅ 4.6.3: OAuth callback route handler (code exchange + backend POST + redirect by userType)
+- ✅ 4.6.4: Password reset pages (forgot-password request + reset-password confirm)
+- ✅ 4.6.5: Admin & client dashboard layouts with sidebar navigation + header
+- ✅ 4.6.6: Updated .env.example with Supabase configuration
+
+#### Sub-task 4.7: Testing (1/1) ✅
+- ✅ 4.7.1: Created auth.service.spec.ts with 12 unit tests (all passing)
+  - signup: blocks admin emails, creates client user, throws on failure
+  - signin: valid credentials, invalid credentials
+  - processOAuthCallback: admin profile, client profile, existing profile, invalid token
+  - refreshToken, requestPasswordReset, signout
+
+#### Sub-task 4.8: Bug Fixes (1/1) ✅
+- ✅ 4.8.1: Fixed getUserFromToken() in supabase.service.ts
+  - Changed `.eq('user_id', ...)` to `.eq('id', ...)` (correct column name)
+  - Removed non-existent column selects
+  - Added separate client_profiles query for clientProfileId
+
+**Implementation Summary:**
+- **Backend**: 10 new files (7 DTOs, 1 service, 1 controller, 1 module), 3 files updated
+- **Frontend**: 18 new files (3 supabase clients, 4 auth lib files, 3 auth components, 7 pages/routes, 1 middleware)
+- **Tests**: 12 unit tests, all passing
+- **Verification**: Backend `tsc --noEmit` clean, frontend `next build` successful (10 routes)
+
 ---
 
 ## In Progress Tasks
@@ -213,9 +277,6 @@
 ---
 
 ## Remaining Tasks
-
-### HEAD TASK 4: Authentication Module (0/4 sub-tasks)
-**Status**: Not Started
 
 ### HEAD TASK 5: Users & Profiles Module (0/4 sub-tasks)
 **Status**: Not Started
@@ -260,8 +321,22 @@
 - **Date**: 2026-01-22
 - **Description**: Supabase MCP `get_publishable_keys` tool only returns anon key and publishable keys, not service role key
 - **Resolution**: Added placeholder in .env file with TODO comment. User needs to manually retrieve from Supabase Dashboard > Project Settings > API > service_role key
-- **Status**: ⏳ Requires Manual Action
-- **Impact**: Medium - Backend will not start until service role key is added
+- **Status**: ✅ Resolved (key added manually)
+- **Impact**: None - Resolved
+
+### Issue 3: getUserFromToken() Using Wrong Column Name
+- **Date**: 2026-01-26
+- **Description**: `SupabaseService.getUserFromToken()` queried `.eq('user_id', authUser.id)` but the `user_profiles` table uses `id` as PK/FK to `auth.users.id`. Also selected non-existent columns `client_profile_id` and `attorney_profile_id`.
+- **Resolution**: Changed to `.eq('id', authUser.id)`, removed non-existent column selects, added separate query to `client_profiles` for `clientProfileId` lookup.
+- **Status**: ✅ Resolved
+- **Impact**: Low - Caught during auth module implementation, fixed before any user impact
+
+### Issue 4: Frontend Package Name Mismatch
+- **Date**: 2026-01-26
+- **Description**: `pnpm add --filter web` failed because `apps/web/package.json` has `name: "my-v0-project"` instead of `web`
+- **Resolution**: Used `pnpm add --filter my-v0-project` to install packages
+- **Status**: ✅ Resolved
+- **Impact**: Low - Quick workaround
 
 ---
 
@@ -331,49 +406,67 @@
 - None - All dependencies resolved
 
 **Next Session Plan**:
-1. Start HEAD TASK 4: Authentication Module
-2. Implement signup/signin endpoints
-3. Add Google OAuth integration
-4. Create token refresh endpoint
+1. ✅ Start HEAD TASK 4: Authentication Module - COMPLETED
+2. ✅ Implement signup/signin endpoints - COMPLETED
+3. ✅ Add Google OAuth integration - COMPLETED
+4. ✅ Create token refresh endpoint - COMPLETED
+
+---
+
+### 2026-01-26 (Sunday)
+**Tasks Completed**:
+- ✅ HEAD TASK 4: Authentication Module (COMPLETED)
+  - Backend: Created auth DTOs (7), service, controller, module
+  - Frontend: Installed Supabase SSR, created auth context/hooks, middleware
+  - Frontend: Created sign-in, sign-up, OAuth callback, password reset, dashboard pages
+  - Testing: 12 unit tests for AuthService, all passing
+  - Bug Fix: Fixed getUserFromToken() column name and missing columns
+  - Verification: Backend tsc clean, frontend build successful
+
+**Blockers**:
+- None
+
+**Next Session Plan**:
+1. Configure Supabase Google OAuth provider in dashboard
+2. Manual testing of complete auth flow
+3. Begin HEAD TASK 5: Users & Profiles Module
 
 ---
 
 ## Progress Statistics
 
-**Head Tasks**: 3/13 (23.1%) ✅
-**Sub-tasks**: 17/~40 (42.5%) ✅
-**Sub-sub-tasks**: 77/~120 (64.2%) ✅
+**Head Tasks**: 4/13 (30.8%) ✅
+**Sub-tasks**: 25/~40 (62.5%) ✅
+**Sub-sub-tasks**: 101/~120 (84.2%) ✅
 
 **Estimated Timeline**: 18-24 days
-**Days Elapsed**: 3 (Jan 22, 24)
-**Days Remaining**: 15-21
-**Current Velocity**: Excellent - Ahead of schedule (3 head tasks in 3 days, 2 working days)
+**Days Elapsed**: 5 (Jan 22, 24, 26)
+**Days Remaining**: 13-19
+**Current Velocity**: Excellent - Ahead of schedule (4 head tasks in 5 days, 3 working days)
 
 ---
 
 ## Next Steps (Priority Order)
 
-### Immediate Testing Recommended
-1. **Test Authentication System**:
-   ```bash
-   cd apps/api
-   pnpm start:dev
-   ```
-   - Test public endpoint: `curl http://localhost:4000/api/hello`
-   - Test protected endpoint: `curl http://localhost:4000/api/profile -H "Authorization: Bearer <jwt>"`
-   - See `apps/api/TESTING_GUIDE.md` for comprehensive testing instructions
+### Immediate: Configure & Test Auth
+1. **Configure Supabase Google OAuth**:
+   - Supabase Dashboard > Authentication > Providers > Google
+   - Add Google OAuth Client ID/Secret from Google Cloud Console
+   - Set redirect URL: `https://pxqwdshlpuwxufudqude.supabase.co/auth/v1/callback`
+   - Set site URL and redirect URLs in Authentication > URL Configuration
 
-2. **Configure Admin Emails** (Optional):
-   - Admin email already configured: `sobanahmad2003@gmail.com`
-   - Add more if needed in `apps/api/.env` under `ADMIN_EMAILS`
+2. **Manual Testing**:
+   - Start both apps: `pnpm dev` from root
+   - Navigate to `http://localhost:3000/auth/signin`
+   - Test Google OAuth with admin email
+   - Test Google OAuth with client email
+   - Test email/password signup/signin
+   - Verify route protection and redirects
 
-### Next Development Phase: Authentication Module
-3. Begin HEAD TASK 4: Authentication Module
-4. Implement signup/signin endpoints using Supabase Auth
-5. Add Google OAuth integration
-6. Create token refresh endpoint
-7. Implement password reset flow
-8. Test complete authentication flow
+### Next Development Phase: Users & Profiles Module
+3. Begin HEAD TASK 5: Users & Profiles Module
+4. Implement user profile CRUD endpoints
+5. Create client/attorney profile management
 
 ---
 
