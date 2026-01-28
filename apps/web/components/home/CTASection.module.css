@@ -74,7 +74,7 @@
 .testimonialCard {
   position: absolute;
   backdrop-filter: blur(8px);
- 
+
   border: 1px solid rgba(122, 92, 78, 0.12);
   border-radius: 16px;
   padding: 1.75rem;
@@ -197,18 +197,24 @@
 }
 
 @keyframes badgePulse {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: scale(1);
   }
+
   50% {
     transform: scale(1.02);
   }
 }
 
 @keyframes dotPulse {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 1;
   }
+
   50% {
     opacity: 0.5;
   }
@@ -230,8 +236,8 @@
   font-size: clamp(4rem, 12vw, 10rem);
   font-weight: 250;
   line-height: 0.9;
- 
-  
+
+
   color: var(--wood-espresso);
   letter-spacing: -0.04em;
   text-transform: uppercase;
@@ -275,7 +281,7 @@
   border-radius: 100px;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 
+  box-shadow:
     0 4px 16px rgba(58, 38, 24, 0.06),
     0 2px 8px rgba(58, 38, 24, 0.12);
   position: relative;
@@ -296,7 +302,7 @@
 
 .ctaButton:hover {
   transform: translateY(-2px);
-  box-shadow: 
+  box-shadow:
     0 8px 24px rgba(58, 38, 24, 0.12),
     0 4px 12px rgba(58, 38, 24, 0.2);
   background: var(--wood-mahogany);
@@ -359,6 +365,7 @@
 }
 
 @media (max-width: 900px) {
+
   /* Hide top testimonials on tablet */
   .testimonialCard.top-left,
   .testimonialCard.top-right {
@@ -437,6 +444,7 @@
    PERFORMANCE & ACCESSIBILITY
    ============================================ */
 @media (prefers-reduced-motion: reduce) {
+
   :global(*),
   :global(*)::before,
   :global(*)::after {

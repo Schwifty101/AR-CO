@@ -1,25 +1,37 @@
 .footer {
   width: 100%;
-  height: 100vh;
+  min-height: 100vh;
   background: var(--heritage-cream);
-  padding: 6rem 0 3rem;
+  padding: 2rem 0 2rem;
   border-top: 1px solid rgba(122, 92, 78, 0.15);
   position: relative;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   will-change: transform;
   box-sizing: border-box;
 }
 
 .container {
-  max-width: 1600px;
+  max-width: 100%;
   width: 100%;
   margin: 0 auto;
-  padding: 0 3rem;
+  padding: 0 clamp(2rem, 4vw, 4rem);
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 8rem);
+  box-sizing: border-box;
+}
+
+/* ============================================
+   MAIN GRID - 3 Columns with Center Prominence
+   ============================================ */
+.mainGrid {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 4rem;
+  grid-template-columns: minmax(0, 25%) minmax(0, 45%) minmax(0, 30%);
+  gap: clamp(1rem, 1.5vw, 2rem);
   align-items: start;
+  flex: 1;
+  width: 100%;
 }
 
 /* ============================================
@@ -28,12 +40,14 @@
 .leftColumn {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 1.5rem;
+  min-width: 0;
+  /* Prevent overflow */
 }
 
 .imageContainer {
   width: 100%;
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 4 / 5;
   background: var(--wood-sandalwood);
   border-radius: 4px;
   overflow: hidden;
@@ -45,16 +59,19 @@
   display: flex;
   align-items: center;
   justify-content: flex-start;
+  min-width: 0;
+  /* Prevent overflow */
 }
 
 .logo {
   font-family: 'Cabinet Grotesk', sans-serif;
-  font-size: clamp(8rem, 12vw, 12rem);
+  font-size: clamp(6rem, 10vw, 10rem);
   font-weight: 700;
   line-height: 0.85;
   letter-spacing: -0.04em;
   color: var(--wood-espresso);
   margin: 0;
+  max-width: 100%;
 }
 
 /* ============================================
@@ -63,22 +80,26 @@
 .middleColumn {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 0.75rem;
   padding-top: 0.5rem;
+  min-width: 0;
+  /* Prevent overflow */
 }
 
 .columnLabel {
   font-family: 'Cabinet Grotesk', sans-serif;
-  font-size: 0.75rem;
+  font-size: 1.25rem;
   font-weight: 500;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--wood-espresso);
-  opacity: 0.6;
+  /* opacity: 0.6; */
 }
 
 .navigation {
   width: 100%;
+  min-width: 0;
+  /* Prevent overflow */
 }
 
 .navList {
@@ -87,24 +108,30 @@
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0;
 }
 
 .navItem {
   margin: 0;
+  min-width: 0;
+  /* Prevent overflow */
 }
 
 .navLink {
   font-family: 'Cabinet Grotesk', sans-serif;
-  font-size: clamp(2rem, 3.5vw, 3rem);
-  font-weight: 400;
-  line-height: 1.15;
+  font-size: clamp(2.25rem, 4vw, 4rem);
+  font-weight: 700;
+  line-height: 1.05;
   letter-spacing: -0.03em;
   color: var(--wood-mahogany);
   text-decoration: none;
   transition: color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: inline-block;
   text-transform: uppercase;
+  max-width: 100%;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
 }
 
 .navLink:hover {
@@ -117,109 +144,243 @@
 .rightColumn {
   display: flex;
   flex-direction: column;
-  gap: 3rem;
+  gap: 2rem;
   padding-top: 0.5rem;
+  min-width: 0;
+  /* Prevent overflow */
 }
 
 .acknowledgement {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.5rem;
 }
 
 .acknowledgementText {
   font-family: 'Cabinet Grotesk', sans-serif;
-  font-size: 0.9375rem;
+  font-size: clamp(1rem, 1.1vw, 1.125rem);
+  font-weight: 500;
   line-height: 1.6;
   color: var(--wood-espresso);
   margin: 0;
+  text-align: left;
 }
 
-.infoSection {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.infoContent {
+.contactInfo {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
 }
 
-.infoItem {
-  font-family: 'Cabinet Grotesk', sans-serif;
-  font-size: 0.9375rem;
-  line-height: 1.5;
-  color: var(--wood-espresso);
-  margin: 0;
-}
-
-.infoItem strong {
-  font-weight: 600;
-  margin-right: 0.25rem;
-}
-
-.logoPlaceholder {
-  width: 100%;
-  max-width: 250px;
-  height: 80px;
-  background: rgba(0, 0, 0, 0.05);
-  border-radius: 4px;
-  margin-top: 1rem;
-}
-
-/* Contact Info Section */
-.contactInfo {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
 .contactContent {
   display: flex;
   flex-direction: column;
-  gap: 0.375rem;
+  gap: 0.5rem;
 }
 
 .contactItem {
   font-family: 'Cabinet Grotesk', sans-serif;
-  font-size: 0.9375rem;
+  /* font-size: clamp(1rem, 1.1vw, 1.125rem); */
+  font-weight: 600;
   line-height: 1.5;
   color: var(--wood-mahogany);
   margin: 0;
+  display: flex;
+  gap: 0.75rem;
+  text-align: left;
+}
+
+.contactPrefix {
+  font-weight: 800;
+  font-size: 1.25rem;
+  color: var(--wood-espresso);
+  min-width: 2rem;
+  flex-shrink: 0;
 }
 
 /* ============================================
-   RESPONSIVE - TABLET
+   BOTTOM ROW - Copyright, Time, Status, Links
    ============================================ */
-@media (max-width: 1200px) {
-  .container {
+.bottomRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 1.5rem;
+  margin-top: auto;
+  border-top: 1px solid rgba(122, 92, 78, 0.15);
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.bottomLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.timeStatusRow {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.copyright {
+  font-family: 'Cabinet Grotesk', sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--wood-espresso);
+}
+
+.clockTime {
+  font-family: 'Cabinet Grotesk', sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 400;
+  color: var(--wood-mahogany);
+}
+
+.officeStatus {
+  font-family: 'Cabinet Grotesk', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.officeStatus::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.statusOpen {
+  color: #2d7a3a;
+}
+
+.statusOpen::before {
+  background-color: #2d7a3a;
+  box-shadow: 0 0 8px rgba(45, 122, 58, 0.5);
+}
+
+.statusClosed {
+  color: #a83232;
+}
+
+.statusClosed::before {
+  background-color: #a83232;
+  box-shadow: 0 0 8px rgba(168, 50, 50, 0.5);
+}
+
+.bottomCenter {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.legalLink {
+  font-family: 'Cabinet Grotesk', sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 400;
+  color: var(--wood-mahogany);
+  text-decoration: none;
+  transition: color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.legalLink:hover {
+  color: var(--heritage-gold);
+}
+
+.bottomRight {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.socialLink {
+  font-family: 'Cabinet Grotesk', sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--wood-espresso);
+  text-decoration: none;
+  transition: color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.socialLink:hover {
+  color: var(--heritage-gold);
+}
+
+.credits {
+  font-family: 'Cabinet Grotesk', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  color: var(--wood-sandalwood);
+}
+
+/* ============================================
+   RESPONSIVE - DESKTOP INTERMEDIATE (1024-1280px)
+   ============================================ */
+@media (max-width: 1280px) {
+  .mainGrid {
+    grid-template-columns: minmax(0, 26%) minmax(0, 44%) minmax(0, 30%);
+    gap: clamp(1.5rem, 3vw, 3rem);
+  }
+
+  .navLink {
+    font-size: clamp(1.75rem, 3vw, 3.25rem);
+  }
+
+  .logo {
+    font-size: clamp(5rem, 9vw, 8rem);
+  }
+}
+
+/* ============================================
+   RESPONSIVE - TABLET (1024px)
+   ============================================ */
+@media (max-width: 1024px) {
+  .mainGrid {
     grid-template-columns: 1fr 1fr;
-    gap: 3rem;
-    padding: 0 2rem;
+    gap: 2.5rem;
   }
 
   .leftColumn {
     grid-column: 1 / -1;
-    max-width: 400px;
+    max-width: 360px;
   }
 
   .logo {
-    font-size: clamp(6rem, 10vw, 8rem);
+    font-size: clamp(5rem, 9vw, 7rem);
   }
 
   .middleColumn {
     grid-column: 1 / 2;
   }
 
+  .navLink {
+    font-size: clamp(1.5rem, 3vw, 2.75rem);
+  }
+
   .rightColumn {
     grid-column: 2 / 3;
+  }
+
+  .bottomRow {
+    gap: 1.5rem;
+  }
+
+  .bottomLeft,
+  .bottomCenter,
+  .bottomRight {
+    flex: 0 0 auto;
   }
 }
 
 /* ============================================
-   RESPONSIVE - MOBILE
+   RESPONSIVE - MOBILE (768px)
    ============================================ */
 @media (max-width: 768px) {
   .footer {
@@ -228,9 +389,13 @@
   }
 
   .container {
+    padding: 0 1.5rem;
+    min-height: auto;
+  }
+
+  .mainGrid {
     grid-template-columns: 1fr;
     gap: 3rem;
-    padding: 0 1.5rem;
   }
 
   .leftColumn {
@@ -251,13 +416,33 @@
   }
 
   .navLink {
-    font-size: clamp(1.5rem, 6vw, 2rem);
+    font-size: clamp(2rem, 8vw, 3rem);
   }
 
   .acknowledgementText,
-  .infoItem,
   .contactItem {
-    font-size: 0.875rem;
+    font-size: 0.9375rem;
+  }
+
+  .bottomRow {
+    flex-direction: column;
+    gap: 1.5rem;
+    align-items: flex-start;
+  }
+
+  .bottomLeft,
+  .bottomCenter,
+  .bottomRight {
+    width: 100%;
+  }
+
+  .bottomCenter {
+    flex-direction: row;
+    gap: 1.5rem;
+  }
+
+  .bottomRight {
+    justify-content: flex-start;
   }
 }
 
@@ -265,18 +450,25 @@
    ACCESSIBILITY
    ============================================ */
 @media (prefers-reduced-motion: reduce) {
-  .navLink {
+
+  .navLink,
+  .legalLink,
+  .socialLink {
     transition: none;
   }
 }
 
 /* Focus states for keyboard navigation */
-.navLink:focus {
+.navLink:focus,
+.legalLink:focus,
+.socialLink:focus {
   outline: 2px solid var(--heritage-gold);
   outline-offset: 4px;
   border-radius: 2px;
 }
 
-.navLink:focus:not(:focus-visible) {
+.navLink:focus:not(:focus-visible),
+.legalLink:focus:not(:focus-visible),
+.socialLink:focus:not(:focus-visible) {
   outline: none;
 }

@@ -1,40 +1,101 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import ScrollRevealText from '../shared/animations/ScrollRevealText'
+import SlotMachineText from '../shared/animations/SlotMachineText'
 import styles from './Footer.module.css'
 
 gsap.registerPlugin(ScrollTrigger)
 
+/**
+ * Footer Component - AR&CO Law Firm
+ *
+ * Features:
+ * - 3-column grid layout with image, navigation, and info
+ * - Live Pakistan time clock (updates every second)
+ * - Dynamic open/closed office status
+ * - Slot machine text animation on navigation links
+ * - GSAP scroll-triggered reveal animation
+ */
 export default function Footer() {
   const footerRef = useRef<HTMLElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
+  const [currentTime, setCurrentTime] = useState<string>('')
+  const [isOfficeOpen, setIsOfficeOpen] = useState<boolean>(false)
 
   const navigationLinks = [
     { label: 'Home', href: '/' },
     { label: 'Our Team', href: '/team' },
+    { label: 'About Us', href: '/about' },
+    { label: 'Case Studies', href: '/case-studies' },
     { label: 'Practice Areas', href: '/practice-areas' },
-    { label: 'Facilitation Centre', href: '/facilitation' },
+    { label: 'Facilitation', href: '/facilitation' },
     { label: 'Contact Us', href: '/contact' },
+    { label: 'Blog', href: '/blog' },
   ]
 
+  /**
+   * Calculates if the office is currently open
+   * Office hours: Monday-Friday, 9:00 AM - 5:00 PM PKT time
+   */
+  const calculateOfficeStatus = (pktDate: Date): boolean => {
+    const dayOfWeek = pktDate.getDay() // 0 = Sunday, 6 = Saturday
+    const hours = pktDate.getHours()
+    const minutes = pktDate.getMinutes()
+    const currentMinutes = hours * 60 + minutes
+
+    // Monday (1) to Friday (5), 9:00 AM (540 min) to 5:00 PM (1020 min)
+    const isWeekday = dayOfWeek >= 1 && dayOfWeek <= 5
+    const isBusinessHours = currentMinutes >= 540 && currentMinutes < 1020
+
+    return isWeekday && isBusinessHours
+  }
+
+  /**
+   * Live clock effect - updates every second with Pakistan timezone
+   */
+  useEffect(() => {
+    const updateClock = () => {
+      const now = new Date()
+      const pktTime = new Date(
+        now.toLocaleString('en-US', { timeZone: 'Asia/Karachi' })
+      )
+
+      // Format time as "H:MM AM/PM PKT"
+      const timeString = pktTime.toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+      })
+      setCurrentTime(`${timeString} PKT`)
+
+      // Update office status
+      setIsOfficeOpen(calculateOfficeStatus(pktTime))
+    }
+
+    // Initial update
+    updateClock()
+
+    // Update every second
+    const interval = setInterval(updateClock, 1000)
+
+    return () => clearInterval(interval)
+  }, [])
+
+  /**
+   * GSAP scroll-triggered reveal animation
+   */
   useEffect(() => {
     const footer = footerRef.current
     if (!footer) return
 
-    // Get the trigger element (spacer in main content)
     const trigger = document.getElementById('footer-trigger')
     if (!trigger) return
 
-    // Set initial state - footer below viewport
-    gsap.set(footer, {
-      yPercent: 100,
-    })
+    gsap.set(footer, { yPercent: 100 })
 
-    // Create the slide-up reveal animation
     const st = ScrollTrigger.create({
       trigger: trigger,
       start: 'top bottom',
@@ -42,9 +103,9 @@ export default function Footer() {
       scrub: 1,
       onUpdate: (self) => {
         gsap.set(footer, {
-          yPercent: 100 - (self.progress * 100),
+          yPercent: 100 - self.progress * 100,
         })
-      }
+      },
     })
 
     return () => {
@@ -55,60 +116,122 @@ export default function Footer() {
   return (
     <footer ref={footerRef} className={styles.footer}>
       <div ref={containerRef} className={styles.container}>
-        {/* Left Column - Image Container + Logo */}
-        <div className={styles.leftColumn}>
-          <div className={styles.imageContainer}>
-            {/* Image will be added here */}
-          </div>
-          <div className={styles.logoContainer}>
-           <h2 className={styles.logo}>AR&CO</h2>
-            
-           
-          </div>
-        </div>
-
-        {/* Middle Column - Navigation */}
-        <div className={styles.middleColumn}>
-          <span className={styles.columnLabel}>(NAVIGATION)</span>
-          <nav className={styles.navigation}>
-            <ul className={styles.navList}>
-              {navigationLinks.map((link, index) => (
-                <li key={index} className={styles.navItem}>
-                  <ScrollRevealText as="span" delay={0}>
-                    <Link href={link.href} className={styles.navLink}>
-                      {link.label}
-                    </Link>
-                  </ScrollRevealText>
-                </li>
-              ))}
-            </ul>
-          </nav>
-        </div>
-
-        {/* Right Column - Acknowledgement & Info */}
-        <div className={styles.rightColumn}>
-          <div className={styles.acknowledgement}>
-            <span className={styles.columnLabel}>(ABOUT)</span>
-            <ScrollRevealText as="p" className={styles.acknowledgementText} delay={0}>
-              AR&CO is a premier law firm specializing in intellectual property, energy regulation,
-              and corporate law. With decades of experience, we provide strategic legal counsel
-              to businesses across Pakistan and beyond.
-            </ScrollRevealText>
-          </div>
-
-          <div className={styles.contactInfo}>
-            <span className={styles.columnLabel}>(CONTACT)</span>
-            <div className={styles.contactContent}>
-              <ScrollRevealText as="p" className={styles.contactItem} delay={0}>
-                Islamabad, Pakistan
-              </ScrollRevealText>
-              <ScrollRevealText as="p" className={styles.contactItem} delay={0}>
-                info@arco.law
-              </ScrollRevealText>
-              <ScrollRevealText as="p" className={styles.contactItem} delay={0}>
-                +92 51 XXX XXXX
-              </ScrollRevealText>
+        {/* Main 3-Column Grid */}
+        <div className={styles.mainGrid}>
+          {/* Left Column - Image Container + Logo */}
+          <div className={styles.leftColumn}>
+            <div className={styles.imageContainer}>
+              {/* Placeholder for 4:3 image */}
             </div>
+            <div className={styles.logoContainer}>
+              <h2 className={styles.logo}>AR <br />&CO</h2>
+            </div>
+          </div>
+
+          {/* Middle Column - Navigation */}
+          <div className={styles.middleColumn}>
+            <span className={styles.columnLabel}>(NAVIGATION)</span>
+            <nav className={styles.navigation}>
+              <ul className={styles.navList}>
+                {navigationLinks.map((link, index) => (
+                  <li key={index} className={styles.navItem}>
+                    <Link href={link.href} className={styles.navLink}>
+                      <SlotMachineText>{link.label}</SlotMachineText>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          </div>
+
+          {/* Right Column - About & Contact Info */}
+          <div className={styles.rightColumn}>
+            <div className={styles.acknowledgement}>
+              <span className={styles.columnLabel}>(ABOUT)</span>
+              <p className={styles.acknowledgementText}>
+                AR&CO is a premier law firm specializing in intellectual
+                property, energy regulation, and corporate law. With decades of
+                experience, we provide strategic legal counsel to businesses
+                across Pakistan and beyond.
+              </p>
+            </div>
+
+            <div className={styles.contactInfo}>
+              <span className={styles.columnLabel}>(INFO)</span>
+              <div className={styles.contactContent}>
+                <p className={styles.contactItem}>
+                  <span className={styles.contactPrefix}>A:</span>
+                  Islamabad, Pakistan
+                </p>
+                <p className={styles.contactItem}>
+                  <span className={styles.contactPrefix}>E:</span>
+                  info@arco.law
+                </p>
+                <p className={styles.contactItem}>
+                  <span className={styles.contactPrefix}>P:</span>
+                  +92 51 XXX XXXX
+                </p>
+                <p className={styles.contactItem}>
+                  <span className={styles.contactPrefix}>H:</span>
+                  Monday to Friday, 9:00am - 5:00pm
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom Row */}
+        <div className={styles.bottomRow}>
+          {/* Left Group - Copyright, Time, Status */}
+          <div className={styles.bottomLeft}>
+            <SlotMachineText className={`${styles.copyright} cursor-pointer`}>{"© 2026 AR&CO"}</SlotMachineText>
+            <div className={styles.timeStatusRow}>
+              <span className={styles.clockTime}>{currentTime}</span>
+              <span
+                className={`${styles.officeStatus} ${isOfficeOpen ? styles.statusOpen : styles.statusClosed}`}
+              >
+                {isOfficeOpen ? 'WE ARE OPEN' : 'WE ARE CLOSED'}
+              </span>
+            </div>
+          </div>
+
+          {/* Center Group - Legal Links */}
+          <div className={styles.bottomCenter}>
+            <Link href="/privacy" className={styles.legalLink}>
+              <SlotMachineText>Privacy Policy</SlotMachineText>
+            </Link>
+            <Link href="/terms" className={styles.legalLink}>
+              <SlotMachineText>Terms of Service</SlotMachineText>
+            </Link>
+          </div>
+
+          {/* Right Group - Social & Credits */}
+          <div className={styles.bottomRight}>
+            <a
+              href="https://instagram.com/arco.law"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.socialLink}
+            >
+              <SlotMachineText>Instagram</SlotMachineText>
+            </a>
+            <a
+              href="https://Linkedin.com/arco.law"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.socialLink}
+            >
+              <SlotMachineText>LinkedIn</SlotMachineText>
+            </a>
+            <a
+              href="https://Facebook.com/arco.law"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.socialLink}
+            >
+              Facebook
+            </a>
+            <span className={`${styles.credits} cursor-pointer`}>SITE BY <SlotMachineText>SCHWIFTY</SlotMachineText></span>
           </div>
         </div>
       </div>
