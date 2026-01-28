@@ -163,19 +163,27 @@ export default function SidePanel({ isOpen, onClose }: SidePanelProps) {
   // GSAP animation for mega menu content change
   useEffect(() => {
     if (hoveredItem && megaContentRef.current) {
-      const categories = megaContentRef.current.querySelectorAll(`.${styles.megaCategory}`)
-      
-      gsap.fromTo(
-        categories,
-        { opacity: 0, y: 20 },
-        {
-          opacity: 1,
-          y: 0,
-          duration: 0.3,
-          stagger: 0.05,
-          ease: 'power2.out',
+      // Delay to wait for AnimatePresence to finish rendering new content
+      const timer = setTimeout(() => {
+        if (megaContentRef.current) {
+          const categories = megaContentRef.current.querySelectorAll(`.${styles.megaCategory}`)
+          if (categories && categories.length > 0) {
+            gsap.fromTo(
+              categories,
+              { opacity: 0, y: 20 },
+              {
+                opacity: 1,
+                y: 0,
+                duration: 0.3,
+                stagger: 0.05,
+                ease: 'power2.out',
+              }
+            )
+          }
         }
-      )
+      }, 220) // Wait for AnimatePresence transition (200ms) + buffer
+
+      return () => clearTimeout(timer)
     }
   }, [hoveredItem])
 
@@ -257,15 +265,23 @@ export default function SidePanel({ isOpen, onClose }: SidePanelProps) {
             </div>
 
             {/* Split Content Area */}
-            <div className={styles.splitContainer}>
+            <div
+              className={styles.splitContainer}
+              onMouseLeave={() => setHoveredItem(null)}
+            >
               {/* Left Zone - Navigation Links */}
               <div ref={navLinksRef} className={styles.navZone}>
                 {navItems.map((item) => (
                   <div
                     key={item.id}
                     className={`${styles.navItem} ${hoveredItem === item.id ? styles.navItemActive : ''}`}
-                    onMouseEnter={() => item.hasSubmenu && setHoveredItem(item.id)}
-                    onMouseLeave={() => !item.hasSubmenu && setHoveredItem(null)}
+                    onMouseEnter={() => {
+                      if (item.hasSubmenu) {
+                        setHoveredItem(item.id)
+                      } else {
+                        setHoveredItem(null)
+                      }
+                    }}
                   >
                     <Link
                       href={item.href}
@@ -282,11 +298,9 @@ export default function SidePanel({ isOpen, onClose }: SidePanelProps) {
               </div>
 
               {/* Right Zone - Mega Menu Content */}
-              <div 
-                ref={megaContentRef} 
+              <div
+                ref={megaContentRef}
                 className={styles.megaZone}
-                onMouseEnter={() => hoveredItem && setHoveredItem(hoveredItem)}
-                onMouseLeave={() => setHoveredItem(null)}
               >
                 <AnimatePresence mode="wait">
                   {currentSubmenu ? (

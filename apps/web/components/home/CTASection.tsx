@@ -74,72 +74,74 @@ const testimonials: Testimonial[] = [
 
 export default function CTASection() {
   const sectionRef = useRef<HTMLElement>(null)
-  const backgroundTextRef = useRef<HTMLDivElement>(null)
   const testimonialsLayerRef = useRef<HTMLDivElement>(null)
   const testimonialsRef = useRef<HTMLDivElement[]>([])
 
   useEffect(() => {
     const section = sectionRef.current
-    const backgroundText = backgroundTextRef.current
     const testimonialsLayer = testimonialsLayerRef.current
-    if (!section || !backgroundText || !testimonialsLayer) return
+    if (!section || !testimonialsLayer) return
 
     const ctx = gsap.context(() => {
-      // Entry animation only - cards slide in from right and stay visible
+      // Entry animation only - cards slide in from right
       testimonialsRef.current.forEach((card, index) => {
         if (card) {
-          const testimonial = testimonials[index]
-
-          // Starting position (off-screen right)
+          // Starting state
           gsap.set(card, {
             opacity: 0,
-            x: 200 + index * 40,
+            x: 300,
           })
 
-          // Entrance animation - slide in from right (after heading completes)
+          // Entry animation - slide in from right with stagger
           gsap.to(card, {
             opacity: 1,
             x: 0,
-            ease: 'power2.out',
+            duration: 1,
+            delay: 0.2 + index * 0.15,
+            ease: 'power3.out',
             scrollTrigger: {
               trigger: section,
-              start: `top ${35 - index * 5}%`,
-              end: `top ${5 - index * 3}%`,
-              scrub: 1.5,
+              start: 'top 80%',
+              toggleActions: 'play none none none',
             }
           })
-
-          // Subtle Y parallax
-          const yDirection = testimonial.position.includes('top') ? 25 : -25
-          const yAmount = yDirection * testimonial.parallaxSpeed * 2
-
-          gsap.to(card, {
-            y: yAmount,
-            ease: 'none',
-            scrollTrigger: {
-              trigger: section,
-              start: 'top bottom',
-              end: 'bottom top',
-              scrub: 1.5,
-            }
-          })
-        }
-      })
-
-      // Background text parallax
-      gsap.to(backgroundText, {
-        y: 60,
-        ease: 'none',
-        scrollTrigger: {
-          trigger: section,
-          start: 'top bottom',
-          end: 'bottom top',
-          scrub: 1.5,
         }
       })
     }, section)
 
-    return () => ctx.revert()
+    // Mouse parallax effect
+    const handleMouseMove = (e: MouseEvent) => {
+      const { clientX, clientY } = e
+      const { innerWidth, innerHeight } = window
+
+      // Calculate mouse position relative to center (-1 to 1)
+      const xPos = (clientX / innerWidth - 0.5) * 2
+      const yPos = (clientY / innerHeight - 0.5) * 2
+
+      testimonialsRef.current.forEach((card, index) => {
+        if (card) {
+          const testimonial = testimonials[index]
+          // Different movement intensity based on card depth/position
+          const intensity = 15 + testimonial.depth * 0.3
+          const xMove = xPos * intensity * (index % 2 === 0 ? 1 : -1)
+          const yMove = yPos * intensity * 0.5
+
+          gsap.to(card, {
+            x: xMove,
+            y: yMove,
+            duration: 0.8,
+            ease: 'power2.out',
+          })
+        }
+      })
+    }
+
+    window.addEventListener('mousemove', handleMouseMove)
+
+    return () => {
+      ctx.revert()
+      window.removeEventListener('mousemove', handleMouseMove)
+    }
   }, [])
 
   return (

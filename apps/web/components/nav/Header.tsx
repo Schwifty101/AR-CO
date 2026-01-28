@@ -3,11 +3,18 @@
 import Link from "next/link"
 import { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
+import gsap from "gsap"
+import { ScrollTrigger } from "gsap/ScrollTrigger"
 import LogoSection from "./LogoSection"
 import FullScreenDropdown from "./FullScreenDropdown"
 import SidePanel from "./SidePanel"
 import MobileFullScreenMenu from "./MobileFullScreenMenu"
 import styles from "./Header.module.css"
+
+// Register GSAP plugins
+if (typeof window !== "undefined") {
+  gsap.registerPlugin(ScrollTrigger)
+}
 
 /**
  * Header Component - Multi-State Navigation System
@@ -19,59 +26,55 @@ import styles from "./Header.module.css"
  */
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false)
+  const [isHidden, setIsHidden] = useState(false)
   const [dropdownSection, setDropdownSection] = useState<'practice-areas' | 'facilitation' | null>(null)
   const [sidePanelOpen, setSidePanelOpen] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
+  const headerRef = useRef<HTMLElement>(null)
 
-  const isScrolledRef = useRef(isScrolled)
-
-  // Keep ref in sync with state
+  // Hero section scroll detection - hide during hero, show after
   useEffect(() => {
-    isScrolledRef.current = isScrolled
-  }, [isScrolled])
+    // Find the hero section
+    const heroSection = document.querySelector('section[class*="hero"]') as HTMLElement
+    if (!heroSection) return
 
-  // Scroll detection for header state change - optimized for immediate response
-  useEffect(() => {
-    let timeoutId: NodeJS.Timeout
-    
-    const handleScroll = () => {
-      const scrolled = window.scrollY > 50 // Reduced threshold for earlier trigger
-      
-      // Clear any pending timeout
-      if (timeoutId) {
-        clearTimeout(timeoutId)
-      }
-      
-      // Immediate update for performance-critical transitions
-      if (!scrolled && isScrolledRef.current) {
-        // Scrolling back to top - immediate response
+    // Create ScrollTrigger to track hero section
+    const st = ScrollTrigger.create({
+      trigger: heroSection,
+      start: "top top",
+      end: "bottom top",
+      onUpdate: (self) => {
+        // Hide header when scrolling within hero section (after initial scroll)
+        if (self.progress > 0.05 && self.progress < 1) {
+          setIsHidden(true)
+        } else {
+          setIsHidden(false)
+        }
+
+        // Update scrolled state
+        setIsScrolled(self.progress > 0.05)
+      },
+      onLeave: () => {
+        // Hero section ended - show header
+        setIsHidden(false)
+        setIsScrolled(true)
+      },
+      onEnterBack: () => {
+        // Scrolled back into hero - hide header
+        setIsHidden(true)
+      },
+      onLeaveBack: () => {
+        // Back at top - show header
+        setIsHidden(false)
         setIsScrolled(false)
-      } else if (scrolled && !isScrolledRef.current) {
-        // Scrolling down - slight delay to prevent flickering
-        timeoutId = setTimeout(() => {
-          setIsScrolled(true)
-          setDropdownSection(null) // Close dropdown when scrolled
-        }, 50)
       }
-    }
+    })
 
-    // Initial check
-    if (window.scrollY > 50) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setIsScrolled(true)
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setDropdownSection(null)
-    }
-    
-    window.addEventListener('scroll', handleScroll, { passive: true })
     return () => {
-      window.removeEventListener('scroll', handleScroll)
-      if (timeoutId) {
-        clearTimeout(timeoutId)
-      }
+      st.kill()
     }
-  }, []) // Empty dependency array as we use ref
+  }, [])
 
   // Track viewport size for responsive behavior
   useEffect(() => {
@@ -120,7 +123,8 @@ export default function Header() {
     <>
       {/* Main Header */}
       <header
-        className={`${styles.header} ${isScrolled ? styles.scrolled : ''} ${isMenuOpen ? styles.menuOpen : ''}`}
+        ref={headerRef}
+        className={`${styles.header} ${isScrolled ? styles.scrolled : ''} ${isHidden ? styles.hidden : ''} ${isMenuOpen ? styles.menuOpen : ''}`}
         onKeyDown={handleKeyDown}
       >
         <div className={styles.gridContainer}>
@@ -217,62 +221,37 @@ export default function Header() {
             </Link>
 
             {/* Hamburger Menu Button (scrolled state on desktop, always on mobile) */}
-            <AnimatePresence>
-              {(isScrolled || isMobile) && (
-                <motion.button
-                  className={styles.menuToggle}
-                  onClick={() => {
-                    if (isMobile) {
-                      setMobileMenuOpen(!mobileMenuOpen)
-                    } else {
-                      setSidePanelOpen(!sidePanelOpen)
-                    }
-                  }}
-                  aria-label={sidePanelOpen || mobileMenuOpen ? 'Close menu' : 'Open menu'}
-                  aria-expanded={sidePanelOpen || mobileMenuOpen}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  transition={{ 
-                    duration: 0.1, 
-                    ease: [0.22, 1, 0.36, 1]
-                  }}
-                >
-                  <motion.span
-                    className={styles.menuLine}
-                    animate={{
-                      rotate: sidePanelOpen || mobileMenuOpen ? 45 : 0,
-                      y: sidePanelOpen || mobileMenuOpen ? 7 : 0,
-                    }}
-                    transition={{ 
-                      duration: 0.2,
-                      ease: [0.22, 1, 0.36, 1]
-                    }}
-                  />
-                  <motion.span
-                    className={styles.menuLine}
-                    animate={{
-                      opacity: sidePanelOpen || mobileMenuOpen ? 0 : 1,
-                    }}
-                    transition={{ 
-                      duration: 0.15,
-                      ease: "easeOut"
-                    }}
-                  />
-                  <motion.span
-                    className={styles.menuLine}
-                    animate={{
-                      rotate: sidePanelOpen || mobileMenuOpen ? -45 : 0,
-                      y: sidePanelOpen || mobileMenuOpen ? -7 : 0,
-                    }}
-                    transition={{ 
-                      duration: 0.2,
-                      ease: [0.22, 1, 0.36, 1]
-                    }}
-                  />
-                </motion.button>
-              )}
-            </AnimatePresence>
+            <button
+              className={`${styles.menuToggle} ${(isScrolled || isMobile) ? styles.menuToggleVisible : ''}`}
+              onClick={() => {
+                if (isMobile) {
+                  setMobileMenuOpen(!mobileMenuOpen)
+                } else {
+                  setSidePanelOpen(!sidePanelOpen)
+                }
+              }}
+              aria-label={sidePanelOpen || mobileMenuOpen ? 'Close menu' : 'Open menu'}
+              aria-expanded={sidePanelOpen || mobileMenuOpen}
+            >
+              <span
+                className={styles.menuLine}
+                style={{
+                  transform: sidePanelOpen || mobileMenuOpen ? 'rotate(45deg) translateY(7px)' : 'none',
+                }}
+              />
+              <span
+                className={styles.menuLine}
+                style={{
+                  opacity: sidePanelOpen || mobileMenuOpen ? 0 : 1,
+                }}
+              />
+              <span
+                className={styles.menuLine}
+                style={{
+                  transform: sidePanelOpen || mobileMenuOpen ? 'rotate(-45deg) translateY(-7px)' : 'none',
+                }}
+              />
+            </button>
           </div>
         </div>
       </header>
