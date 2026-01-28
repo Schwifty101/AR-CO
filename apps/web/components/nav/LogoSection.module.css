@@ -16,7 +16,7 @@
 }
 
 .logoContainer:focus-visible {
-  outline: 2px solid #b59825;
+  outline: 2px solid var(--heritage-gold);
   outline-offset: 4px;
   border-radius: 8px;
 }
@@ -41,7 +41,7 @@
 }
 
 .framePath {
-  stroke: #b59825;
+  stroke: var(--heritage-gold);
   fill: none;
   stroke-dasharray: 200;
   stroke-dashoffset: 200;
@@ -49,13 +49,13 @@
 }
 
 .frameInner {
-  stroke: #d4af37;
+  stroke: var(--heritage-gold);
   fill: none;
   opacity: 0.4;
 }
 
 .cornerAccent {
-  fill: #b59825;
+  fill: var(--heritage-gold);
   opacity: 0;
   animation: fadeInAccent 1s cubic-bezier(0.4, 0, 0.2, 1) 1.5s forwards;
 }
@@ -92,21 +92,21 @@
 
 /* Layered icon paths with stagger animation */
 .iconLayer1 {
-  stroke: #1a1a1a;
+  stroke: var(--wood-espresso);
   fill: none;
   opacity: 0;
   animation: fadeInLayer 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.1s forwards;
 }
 
 .iconLayer2 {
-  stroke: #2d5016;
+  stroke: var(--heritage-gold);
   fill: none;
   opacity: 0;
   animation: fadeInLayer 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.3s forwards;
 }
 
 .iconLayer3 {
-  stroke: #b59825;
+  stroke: var(--heritage-gold);
   fill: none;
   opacity: 0;
   animation: fadeInLayer 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.5s forwards;
@@ -117,6 +117,7 @@
     opacity: 0;
     transform: translateY(4px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -135,15 +136,18 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #b59825 0%, #d4af37 100%);
+  background: linear-gradient(135deg, var(--heritage-gold) 0%, var(--heritage-gold) 100%);
   box-shadow: 0 0 8px rgba(181, 152, 37, 0.6);
   animation: floatDot 3s ease-in-out infinite;
 }
 
 @keyframes floatDot {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translate(0, 0);
   }
+
   50% {
     transform: translate(2px, -3px);
   }
@@ -159,7 +163,7 @@
   font-weight: 600;
   font-size: 1.25rem;
   letter-spacing: 0.02em;
-  color: #1a1a1a;
+  color: var(--wood-espresso);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -171,19 +175,19 @@
 
 .textSeparator {
   font-size: 1rem;
-  color: #b59825;
+  color: var(--heritage-gold);
   font-weight: 400;
   opacity: 0.8;
 }
 
 .logoContainer:hover .textPrimary {
   transform: translateX(-2px);
-  color: #2d5016;
+  color: var(--heritage-gold);
 }
 
 .logoContainer:hover .textSecondary {
   transform: translateX(2px);
-  color: #2d5016;
+  color: var(--heritage-gold);
 }
 
 .logoContainer:hover .textSeparator {
@@ -198,7 +202,7 @@
   font-weight: 500;
   letter-spacing: 0.15em;
   text-transform: uppercase;
-  color: #878787;
+  color: var(--wood-sandalwood);
   opacity: 0;
   animation: fadeInSubtitle 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.8s forwards;
 }
@@ -210,11 +214,12 @@
 }
 
 .logoContainer:hover .logoSubtitle {
-  color: #b59825;
+  color: var(--heritage-gold);
 }
 
 /* Reduced Motion Support */
 @media (prefers-reduced-motion: reduce) {
+
   .logoContainer,
   .logoIcon,
   .textPrimary,

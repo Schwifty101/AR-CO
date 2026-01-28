@@ -147,7 +147,7 @@ export default function CTASection() {
   return (
     <section ref={sectionRef} className={styles.ctaSection}>
       {/* Massive background text */}
-    
+
 
       {/* Flowing lines - more visible and parallel */}
       <svg className={styles.flowingLines} viewBox="0 0 1000 800" preserveAspectRatio="none">

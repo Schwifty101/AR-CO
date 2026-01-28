@@ -62,7 +62,7 @@
   font-size: 0.8125rem;
   font-weight: 500;
   letter-spacing: 0.06em;
-  color: #dadada;
+  color: var(--wood-sandalwood);
   background: none;
   border: none;
   padding: 0.5rem 0;
@@ -83,7 +83,7 @@
   left: 0;
   width: 0;
   height: 2px;
-  background: linear-gradient(90deg, #b59825 0%, #d4af37 100%);
+  background: linear-gradient(90deg, var(--heritage-gold) 0%, var(--heritage-gold) 100%);
   transition: width 0.25s cubic-bezier(0.22, 1, 0.36, 1);
   color: white;
   border-radius: 2px;
@@ -91,7 +91,7 @@
 
 .navButton:hover,
 .navLink:hover {
-  color: #ffffff;
+  color: var(--heritage-cream);
 }
 
 .navButton:hover::after,
@@ -101,14 +101,14 @@
 
 .navButton:focus-visible,
 .navLink:focus-visible {
-  outline: 2px solid #b59825;
+  outline: 2px solid var(--heritage-gold);
   outline-offset: 4px;
   border-radius: 4px;
 }
 
 /* Active state for nav buttons when dropdown is open */
 .navButtonActive {
-  color: #ffffff;
+  color: var(--heritage-cream);
 }
 
 .navButtonActive::after {
@@ -117,7 +117,7 @@
 
 .chevron {
   transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
-  color: #b59825;
+  color: var(--heritage-gold);
 }
 
 .chevronOpen {
@@ -148,7 +148,7 @@
   font-size: 0.8125rem;
   font-weight: 500;
   letter-spacing: 0.05em;
-  color: #fff;
+  color: var(--heritage-cream);
   background: linear-gradient(135deg, #2d5016 0%, #3a6b1d 100%);
   border: none;
   border-radius: 10px;
@@ -209,14 +209,14 @@
 }
 
 .menuToggle:focus-visible {
-  outline: 2px solid #b59825;
+  outline: 2px solid var(--heritage-gold);
   outline-offset: 4px;
 }
 
 .menuLine {
   width: 20px;
   height: 2px;
-  background: #ffffff;
+  background: var(--heritage-cream);
   border-radius: 2px;
   transition: transform 0.2s ease, opacity 0.15s ease;
 }
@@ -240,7 +240,7 @@
   font-size: 0.8125rem;
   font-weight: 500;
   letter-spacing: 0.05em;
-  color: #fff;
+  color: var(--heritage-cream);
   background: linear-gradient(135deg, #2d5016 0%, #3a6b1d 100%);
   border: none;
   border-radius: 10px;
@@ -278,14 +278,14 @@
 }
 
 .floatingMenuToggle:focus-visible {
-  outline: 2px solid #b59825;
+  outline: 2px solid var(--heritage-gold);
   outline-offset: 4px;
 }
 
 .floatingMenuToggle .menuLine {
   width: 20px;
   height: 2px;
-  background: #ffffff;
+  background: var(--heritage-cream);
   border-radius: 2px;
 }
 
@@ -307,14 +307,14 @@
 }
 
 .mobileMenuBtn:focus-visible {
-  outline: 2px solid #b59825;
+  outline: 2px solid var(--heritage-gold);
   outline-offset: 2px;
 }
 
 .mobileMenuBtn span {
   width: 24px;
   height: 2px;
-  background: #1a1a1a;
+  background: var(--wood-espresso);
   border-radius: 2px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -334,6 +334,7 @@
 
 /* Reduced Motion Support */
 @media (prefers-reduced-motion: reduce) {
+
   .header,
   .navButton,
   .navLink,
@@ -410,7 +411,7 @@
     justify-self: start;
   }
 
-  .actionsSection > .btnPrimary {
+  .actionsSection>.btnPrimary {
     display: none;
   }
 
