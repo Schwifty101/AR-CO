@@ -5,6 +5,7 @@ import Hero from "@/components/home/Hero"
 import QuoteSection from "@/components/home/QuoteSection"
 import PracticeAreasHorizontal from "@/components/home/PracticeAreasHorizontal"
 import ScrollRevealText from "@/components/shared/animations/ScrollRevealText"
+import CTASection from "@/components/home/CTASection"
 import SmoothScroll from "@/components/SmoothScroll"
 
 import Link from "next/link"
@@ -56,76 +57,10 @@ export default function Home() {
 
           {/* Practice Areas Horizontal Scroll with Abstract Layout */}
           <PracticeAreasHorizontal />
+          <CTASection />
           
 
-        {/* Portal Access Section */}
-        <section className={styles.section}>
-          <div className={styles.container}>
-            <h2>Access Your Portal</h2>
-            <div className={styles.portalGrid}>
-              <Link href="/portal/login" className={styles.portalCard}>
-                <h3>Client Portal</h3>
-                <p>Manage your cases, appointments, and documents</p>
-                <Button variant="secondary">Enter Portal</Button>
-              </Link>
-              <Link href="/admin/login" className={styles.portalCard}>
-                <h3>Admin Panel</h3>
-                <p>Manage clients, inquiries, and appointments</p>
-                <Button variant="secondary">Enter Admin</Button>
-              </Link>
-            </div>
-          </div>
-        </section>
-
-        {/* Stats Section */}
-        <section className={styles.statsSection}>
-          <div className={styles.container}>
-            <div className={styles.statCard}>
-              <h3>20+</h3>
-              <p>Years Experience</p>
-            </div>
-            <div className={styles.statCard}>
-              <h3>500+</h3>
-              <p>Clients Served</p>
-            </div>
-            <div className={styles.statCard}>
-              <h3>95%</h3>
-              <p>Success Rate</p>
-            </div>
-          </div>
-        </section>
-
-        {/* Testimonials Section */}
-        <section className={styles.section}>
-          <div className={styles.container}>
-            <h2>What Our Clients Say</h2>
-            <div className={styles.testimonials}>
-              <div className={styles.testimonial}>
-                <p>&quot;Exceptional service and expertise. Highly recommended!&quot;</p>
-                <p className={styles.author}>- Client Name</p>
-              </div>
-              <div className={styles.testimonial}>
-                <p>&quot;Professional team with deep legal knowledge.&quot;</p>
-                <p className={styles.author}>- Client Name</p>
-              </div>
-              <div className={styles.testimonial}>
-                <p>&quot;Reliable and trustworthy legal partner.&quot;</p>
-                <p className={styles.author}>- Client Name</p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Newsletter Section */}
-        <section className={styles.newsletter}>
-          <div className={styles.container}>
-            <h2>Subscribe to Our Newsletter</h2>
-            <form className={styles.newsletterForm}>
-              <input type="email" placeholder="Enter your email" required />
-              <Button type="submit">Subscribe</Button>
-            </form>
-          </div>
-        </section>
+        
       </main>
       <Footer />
     </SmoothScroll>

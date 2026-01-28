@@ -2,13 +2,7 @@
 .quoteSection {
   position: relative;
   min-height: 140vh;
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 1) 0%,
-    rgb(246, 239, 228) 30%,
-    rgb(255, 244, 232) 60%,
-    rgb(255, 238, 217) 100%
-  );
+   background: var(--heritage-cream);
   display: flex;
   align-items: center;
   justify-content: center;
