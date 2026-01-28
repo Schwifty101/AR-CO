@@ -44,25 +44,24 @@ export default function Home() {
   ]
 
   return (
-    <SmoothScroll>
+    <>
       <Header />
+      <SmoothScroll>
         <main className="page-transition">
-         
-         
-
           {/* Hero Section with Integrated Logo Carousel */}
           <Hero />
           <QuoteSection />
-          
 
           {/* Practice Areas Horizontal Scroll with Abstract Layout */}
           <PracticeAreasHorizontal />
           <CTASection />
-          
 
-        
-      </main>
-      <Footer />
-    </SmoothScroll>
+          <div className={styles.footerSpacer} id="footer-trigger" />
+        </main>
+        <div className={styles.footerWrapper}>
+          <Footer />
+        </div>
+      </SmoothScroll>
+    </>
   )
 }
