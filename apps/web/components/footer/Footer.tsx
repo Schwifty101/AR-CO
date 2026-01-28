@@ -1,71 +1,66 @@
-import Link from "next/link"
-import styles from "./Footer.module.css"
+'use client'
+
+import Link from 'next/link'
+import styles from './Footer.module.css'
 
 export default function Footer() {
+  const navigationLinks = [
+    { label: 'Home', href: '/' },
+    { label: 'Our Team', href: '/team' },
+    { label: 'Practice Areas', href: '/practice-areas' },
+    { label: 'Facilitation Centre', href: '/facilitation' },
+    { label: 'Contact Us', href: '/contact' },
+  ]
+
   return (
     <footer className={styles.footer}>
       <div className={styles.container}>
-        <div className={styles.section}>
-          <h3>Quick Links</h3>
-          <ul>
-            <li>
-              <Link href="/about" className="text-hover">About Us</Link>
-            </li>
-            <li>
-              <Link href="/team" className="text-hover">Our Team</Link>
-            </li>
-            <li>
-              <Link href="/blog" className="text-hover">Blog</Link>
-            </li>
-            <li>
-              <Link href="/contact" className="text-hover">Contact</Link>
-            </li>
-          </ul>
-        </div>
-
-        <div className={styles.section}>
-          <h3>Practice Areas</h3>
-          <ul>
-            <li>
-              <Link href="/practice/corporate-law" className="text-hover">Corporate Law</Link>
-            </li>
-            <li>
-              <Link href="/practice/tax-law" className="text-hover">Tax Law</Link>
-            </li>
-            <li>
-              <Link href="/practice/immigration" className="text-hover">Immigration</Link>
-            </li>
-            <li>
-              <Link href="/practice/litigation" className="text-hover">Litigation</Link>
-            </li>
-          </ul>
-        </div>
-
-        <div className={styles.section}>
-          <h3>Contact Info</h3>
-          <p>Address: 123 Legal Street, City</p>
-          <p>Phone: +92-XXX-XXXXX</p>
-          <p>Email: info@arco.law</p>
-        </div>
-
-        <div className={styles.section}>
-          <h3>Follow Us</h3>
-          <div className={styles.social}>
-            <a href="#" title="LinkedIn" className="text-hover">
-              LinkedIn
-            </a>
-            <a href="#" title="Twitter" className="text-hover">
-              Twitter
-            </a>
-            <a href="#" title="Facebook" className="text-hover">
-              Facebook
-            </a>
+        {/* Left Column - Image Container + Logo */}
+        <div className={styles.leftColumn}>
+          <div className={styles.imageContainer}>
+            {/* Image will be added here */}
+          </div>
+          <div className={styles.logoContainer}>
+            <h2 className={styles.logo}>AR&CO</h2>
           </div>
         </div>
-      </div>
 
-      <div className={styles.bottom}>
-        <p>&copy; 2026 AR&CO Law Firm. All rights reserved.</p>
+        {/* Middle Column - Navigation */}
+        <div className={styles.middleColumn}>
+          <span className={styles.columnLabel}>(NAVIGATION)</span>
+          <nav className={styles.navigation}>
+            <ul className={styles.navList}>
+              {navigationLinks.map((link, index) => (
+                <li key={index} className={styles.navItem}>
+                  <Link href={link.href} className={styles.navLink}>
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        </div>
+
+        {/* Right Column - Acknowledgement & Info */}
+        <div className={styles.rightColumn}>
+          <div className={styles.acknowledgement}>
+            <span className={styles.columnLabel}>(ABOUT)</span>
+            <p className={styles.acknowledgementText}>
+              AR&CO is a premier law firm specializing in intellectual property, energy regulation,
+              and corporate law. With decades of experience, we provide strategic legal counsel
+              to businesses across Pakistan and beyond.
+            </p>
+          </div>
+
+          <div className={styles.contactInfo}>
+            <span className={styles.columnLabel}>(CONTACT)</span>
+            <div className={styles.contactContent}>
+              <p className={styles.contactItem}>Islamabad, Pakistan</p>
+              <p className={styles.contactItem}>info@arco.law</p>
+              <p className={styles.contactItem}>+92 51 XXX XXXX</p>
+            </div>
+          </div>
+        </div>
       </div>
     </footer>
   )
