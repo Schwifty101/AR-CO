@@ -4,6 +4,7 @@
   height: calc(100vh + (100vw * 9)); /* Scroll distance for all panels */
   width: 100%;
   overflow: visible;
+  margin-top: 100vh;
 }
 
 /* Desktop Section - Sticky viewport */

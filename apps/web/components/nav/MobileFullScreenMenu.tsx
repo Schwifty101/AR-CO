@@ -4,6 +4,9 @@ import Link from "next/link"
 import { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import gsap from "gsap"
+import SlotMachineText from "../shared/animations/SlotMachineText"
+import NavButton from "./components/NavButton"
+import { NAV_ITEMS } from "./data/navData"
 import styles from "./MobileFullScreenMenu.module.css"
 
 /**
@@ -30,14 +33,8 @@ interface MobileFullScreenMenuProps {
   onClose: () => void
 }
 
-// Navigation items
-const navItems = [
-  { id: 'home', label: 'Home', href: '/' },
-  { id: 'team', label: 'Our Team', href: '/team' },
-  { id: 'practice-areas', label: 'Practice Areas', href: '/practice-areas' },
-  { id: 'facilitation', label: 'Facilitation Centre', href: '/facilitation' },
-  { id: 'contact', label: 'Contact Us', href: '/contact' },
-]
+// Navigation items - using shared data
+const navItems = NAV_ITEMS.map(({ id, label, href }) => ({ id, label, href }))
 
 export default function MobileFullScreenMenu({ isOpen, onClose }: MobileFullScreenMenuProps) {
   const [currentTime, setCurrentTime] = useState('')
@@ -78,7 +75,7 @@ export default function MobileFullScreenMenu({ isOpen, onClose }: MobileFullScre
   useEffect(() => {
     if (isOpen && navLinksRef.current) {
       const links = navLinksRef.current.querySelectorAll(`.${styles.navItem}`)
-      
+
       gsap.fromTo(
         links,
         { opacity: 0, x: -40 },
@@ -132,18 +129,14 @@ export default function MobileFullScreenMenu({ isOpen, onClose }: MobileFullScre
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1, duration: 0.4 }}
           >
-            <Link href="/contact?consultation=true" className={styles.ctaButton} onClick={onClose}>
-              BOOK A CALL
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                <path
-                  d="M3 11L11 3M11 3H5M11 3V9"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </Link>
+            <NavButton
+              href="/contact?consultation=true"
+              onClick={onClose}
+              arrowStyle="diagonal"
+              className={styles.ctaButton}
+            >
+              Schedule a Call
+            </NavButton>
             <button
               className={styles.closeButton}
               onClick={onClose}
@@ -188,7 +181,7 @@ export default function MobileFullScreenMenu({ isOpen, onClose }: MobileFullScre
                       },
                     }}
                   >
-                    {item.label}
+                    <SlotMachineText>{item.label}</SlotMachineText>
                   </motion.span>
                   <motion.span
                     className={styles.navArrow}

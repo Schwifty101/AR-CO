@@ -5,10 +5,13 @@ import { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import gsap from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
+import { useGSAP } from "@gsap/react"
 import LogoSection from "./LogoSection"
 import FullScreenDropdown from "./FullScreenDropdown"
 import SidePanel from "./SidePanel"
 import MobileFullScreenMenu from "./MobileFullScreenMenu"
+import SlotMachineText from "../shared/animations/SlotMachineText"
+import NavButton from "./components/NavButton"
 import styles from "./Header.module.css"
 
 // Register GSAP plugins
@@ -27,11 +30,13 @@ if (typeof window !== "undefined") {
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isHidden, setIsHidden] = useState(false)
+  const [pastQuoteSection, setPastQuoteSection] = useState(false)
   const [dropdownSection, setDropdownSection] = useState<'practice-areas' | 'facilitation' | null>(null)
   const [sidePanelOpen, setSidePanelOpen] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const headerRef = useRef<HTMLElement>(null)
+  const menuToggleRef = useRef<HTMLButtonElement>(null)
 
   // Hero section scroll detection - hide during hero, show after
   useEffect(() => {
@@ -75,6 +80,66 @@ export default function Header() {
       st.kill()
     }
   }, [])
+
+  // Track quotation section to control hamburger menu visibility
+  useEffect(() => {
+    // Find the quote section
+    const quoteSection = document.querySelector('section[class*="quote"], section[class*="Quote"]') as HTMLElement
+    if (!quoteSection) {
+      // If quote section not found, default to showing hamburger after hero
+      setPastQuoteSection(true)
+      return
+    }
+
+    // Create ScrollTrigger to track quote section
+    const st = ScrollTrigger.create({
+      trigger: quoteSection,
+      start: "top bottom", // When quote section enters viewport
+      end: "bottom top",
+      onEnter: () => setPastQuoteSection(true),
+      onLeaveBack: () => setPastQuoteSection(false)
+    })
+
+    return () => {
+      st.kill()
+    }
+  }, [])
+
+  // Smooth GSAP animation for header show/hide
+  useGSAP(() => {
+    if (!headerRef.current) return
+
+    // Animate header based on isHidden state with slower, smoother timing
+    gsap.to(headerRef.current, {
+      y: isHidden ? -100 : 0, // Slide up when hidden, slide down when visible
+      duration: 0.9, // Slower for smoother feel
+      ease: "power2.inOut", // Smooth easing curve
+      overwrite: true // Cancel any existing animations
+    })
+  }, [isHidden])
+
+  // Smooth GSAP animation for hamburger menu visibility
+  useGSAP(() => {
+    if (!menuToggleRef.current) return
+
+    // Show hamburger only after quote section is reached (or always on mobile)
+    const shouldShow = (isScrolled && pastQuoteSection) || isMobile
+
+    // Coordinate hamburger fade with navbar animation
+    gsap.to(menuToggleRef.current, {
+      opacity: shouldShow ? 1 : 0,
+      duration: 0.4,
+      ease: "power2.out",
+      delay: shouldShow ? 0.2 : 0, // Slight delay when appearing for sequential effect
+      overwrite: true,
+      onComplete: () => {
+        // Update pointer-events after animation
+        if (menuToggleRef.current) {
+          menuToggleRef.current.style.pointerEvents = shouldShow ? 'auto' : 'none'
+        }
+      }
+    })
+  }, [isScrolled, pastQuoteSection, isMobile])
 
   // Track viewport size for responsive behavior
   useEffect(() => {
@@ -142,16 +207,16 @@ export default function Header() {
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
-                transition={{ 
+                transition={{
                   duration: 0.15,
                   ease: [0.22, 1, 0.36, 1] // Smooth easing for natural feel
                 }}
               >
                 <Link href="/" className={styles.navLink}>
-                  HOME
+                  <SlotMachineText>HOME</SlotMachineText>
                 </Link>
                 <Link href="/team" className={styles.navLink}>
-                  OUR TEAM
+                  <SlotMachineText>OUR TEAM</SlotMachineText>
                 </Link>
 
                 {/* Practice Areas - Click Trigger */}
@@ -161,7 +226,7 @@ export default function Header() {
                   aria-expanded={dropdownSection === 'practice-areas'}
                   aria-haspopup="true"
                 >
-                  PRACTICE AREAS
+                  <SlotMachineText>PRACTICE AREAS</SlotMachineText>
                   <svg
                     className={`${styles.chevron} ${dropdownSection === 'practice-areas' ? styles.chevronOpen : ''}`}
                     width="12"
@@ -187,7 +252,7 @@ export default function Header() {
                   aria-expanded={dropdownSection === 'facilitation'}
                   aria-haspopup="true"
                 >
-                  FACILITATION CENTRE
+                  <SlotMachineText>FACILITATION CENTRE</SlotMachineText>
                   <svg
                     className={`${styles.chevron} ${dropdownSection === 'facilitation' ? styles.chevronOpen : ''}`}
                     width="12"
@@ -207,7 +272,7 @@ export default function Header() {
                 </button>
 
                 <Link href="/contact" className={styles.navLink}>
-                  CONTACT US
+                  <SlotMachineText>CONTACT US</SlotMachineText>
                 </Link>
               </motion.nav>
             )}
@@ -216,22 +281,14 @@ export default function Header() {
           {/* RIGHT SECTION - Actions */}
           <div className={styles.actionsSection}>
             {/* Desktop CTA Button (always visible on desktop) */}
-            <Link href="/contact?consultation=true" className={styles.btnPrimary}>
+            <NavButton href="/contact?consultation=true">
               Book Consultation
-              <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-                <path
-                  d="M4 10h12m0 0l-4-4m4 4l-4 4"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </Link>
+            </NavButton>
 
             {/* Hamburger Menu Button (scrolled state on desktop, always on mobile) */}
             <button
-              className={`${styles.menuToggle} ${(isScrolled || isMobile) ? styles.menuToggleVisible : ''}`}
+              ref={menuToggleRef}
+              className={styles.menuToggle}
               onClick={() => {
                 if (isMobile) {
                   setMobileMenuOpen(!mobileMenuOpen)

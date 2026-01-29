@@ -1,0 +1,97 @@
+/* ============================================
+   NAV BUTTON COMPONENT STYLES
+   Unified CTA button styling for nav components
+   ============================================ */
+
+.navButton {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.875rem 1.75rem;
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-size: 0.875rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--heritage-cream);
+    background: var(--wood-espresso);
+    border: none;
+    border-radius: 100px;
+    text-decoration: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    box-shadow:
+        0 4px 16px rgba(58, 38, 24, 0.06),
+        0 2px 8px rgba(58, 38, 24, 0.12);
+}
+
+/* Gradient overlay on hover */
+.navButton::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.navButton:hover {
+    transform: translateY(-2px);
+    box-shadow:
+        0 8px 24px rgba(58, 38, 24, 0.12),
+        0 4px 12px rgba(58, 38, 24, 0.2);
+    background: var(--wood-mahogany);
+}
+
+.navButton:hover::before {
+    opacity: 1;
+}
+
+.navButton:active {
+    transform: translateY(0);
+}
+
+.navButton:focus-visible {
+    outline: 2px solid var(--heritage-gold);
+    outline-offset: 4px;
+}
+
+/* Button text */
+.buttonText {
+    position: relative;
+    z-index: 1;
+}
+
+/* Arrow icon with animation */
+.arrowIcon {
+    position: relative;
+    z-index: 1;
+    transition: transform 0.3s ease;
+}
+
+.navButton:hover .arrowIcon {
+    transform: translateX(4px);
+}
+
+/* Compact variant for side panels */
+.navButton.compact {
+    padding: 0.75rem 1.25rem;
+    font-size: 0.8125rem;
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+
+    .navButton,
+    .navButton::before,
+    .arrowIcon {
+        transition: none;
+    }
+
+    .navButton::before {
+        display: none;
+    }
+}

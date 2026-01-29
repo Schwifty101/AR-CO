@@ -4,19 +4,9 @@
   background: var(--wood-espresso);
   padding: 4rem 0 2rem;
   position: relative;
-  /* Larger negative margin creates significant overlap with CTA section */
-  margin-top: -50vh;
   display: flex;
   align-items: flex-start;
-  will-change: transform, opacity;
   box-sizing: border-box;
-  z-index: 20;
-  /* Rounded top corners for parallax overlap effect */
-  border-radius: 2.5rem 2.5rem 0 0;
-  /* Enhanced shadow for depth and overlap effect */
-  box-shadow:
-    0 -30px 80px rgba(58, 38, 24, 0.25),
-    0 -10px 30px rgba(58, 38, 24, 0.15);
 }
 
 .container {
@@ -96,8 +86,8 @@
 
 .columnLabel {
   font-family: 'Cabinet Grotesk', sans-serif;
-  font-size: 1.25rem;
-  font-weight: 500;
+  font-size: 1rem;
+  font-weight: 300;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--heritage-gold);
@@ -395,9 +385,6 @@
     padding: 4rem 0 2rem;
     min-height: auto;
     position: relative;
-    margin-top: 0;
-    /* Disable overlap on mobile */
-    border-radius: 1.5rem 1.5rem 0 0;
   }
 
   .container {

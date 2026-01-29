@@ -1,13 +1,9 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import gsap from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import SlotMachineText from '../shared/animations/SlotMachineText'
 import styles from './Footer.module.css'
-
-gsap.registerPlugin(ScrollTrigger)
 
 /**
  * Footer Component - AR&CO Law Firm
@@ -17,11 +13,8 @@ gsap.registerPlugin(ScrollTrigger)
  * - Live Pakistan time clock (updates every second)
  * - Dynamic open/closed office status
  * - Slot machine text animation on navigation links
- * - GSAP scroll-triggered reveal animation
  */
 export default function Footer() {
-  const footerRef = useRef<HTMLElement>(null)
-  const containerRef = useRef<HTMLDivElement>(null)
   const [currentTime, setCurrentTime] = useState<string>('')
   const [isOfficeOpen, setIsOfficeOpen] = useState<boolean>(false)
 
@@ -84,80 +77,9 @@ export default function Footer() {
     return () => clearInterval(interval)
   }, [])
 
-  /**
-   * GSAP scroll-triggered parallax reveal animation
-   * Footer slides up and overlaps the CTA section with parallax effect
-   * Uses ScrollTrigger with ScrollSmoother integration
-   */
-  useEffect(() => {
-    const footer = footerRef.current
-    if (!footer) return
-
-    // Wait for next frame to ensure ScrollSmoother is initialized
-    const initAnimation = () => {
-      const trigger = document.getElementById('footer-trigger')
-      if (!trigger) return
-
-      // Get ScrollSmoother instance for proper integration
-      const smoother = (window as unknown as { ScrollSmoother?: { get: () => unknown } }).ScrollSmoother?.get?.()
-
-      // Set initial state - footer starts translated down for full overlap effect
-      gsap.set(footer, {
-        yPercent: 40,
-        opacity: 0.85,
-      })
-
-      // Create ScrollTrigger for parallax reveal - full CTA overlap
-      const st = ScrollTrigger.create({
-        trigger: trigger,
-        start: 'top 80%', // Start earlier for smoother transition
-        end: 'bottom top', // End when CTA section bottom exits viewport top
-        scrub: 1.2, // Smooth scrubbing for parallax feel
-        markers: false, // Set to true for debugging
-        onUpdate: (self) => {
-          // Smooth eased progress for natural parallax feel
-          const progress = gsap.utils.clamp(0, 1, self.progress)
-
-          // Use custom easing for more natural feel
-          const yProgress = gsap.parseEase('power2.out')(progress)
-          const opacityProgress = gsap.parseEase('power1.out')(progress)
-
-          gsap.set(footer, {
-            yPercent: 40 - (yProgress * 40), // Slide from 40% to 0%
-            opacity: 0.85 + (opacityProgress * 0.15), // Fade from 0.85 to 1
-          })
-        },
-      })
-
-      // Force ScrollTrigger refresh after mount
-      ScrollTrigger.refresh()
-
-      return st
-    }
-
-    // Delay initialization to ensure ScrollSmoother is ready
-    const timeoutId = setTimeout(() => {
-      const st = initAnimation()
-
-      // Store cleanup function
-      return () => {
-        st?.kill()
-      }
-    }, 100)
-
-    return () => {
-      clearTimeout(timeoutId)
-      ScrollTrigger.getAll().forEach(trigger => {
-        if (trigger.trigger === document.getElementById('footer-trigger')) {
-          trigger.kill()
-        }
-      })
-    }
-  }, [])
-
   return (
-    <footer ref={footerRef} className={styles.footer}>
-      <div ref={containerRef} className={styles.container}>
+    <footer className={styles.footer}>
+      <div className={styles.container}>
         {/* Main 3-Column Grid */}
         <div className={styles.mainGrid}>
           {/* Left Column - Image Container + Logo */}

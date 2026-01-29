@@ -1,0 +1,54 @@
+/* ============================================
+   NAV LINK COMPONENT STYLES
+   Consistent styling for navigation links
+   ============================================ */
+
+.navLink {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    color: var(--wood-sandalwood);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    padding: 0.5rem 0;
+    position: relative;
+    transition: color 0.15s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Underline animation */
+.navLink::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--heritage-gold) 0%, var(--heritage-gold) 100%);
+    transition: width 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+    border-radius: 2px;
+}
+
+.navLink:hover {
+    color: var(--heritage-cream);
+}
+
+.navLink:hover::after {
+    width: 100%;
+}
+
+.navLink:focus-visible {
+    outline: 2px solid var(--heritage-gold);
+    outline-offset: 4px;
+    border-radius: 4px;
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+
+    .navLink,
+    .navLink::after {
+        transition: none;
+    }
+}
