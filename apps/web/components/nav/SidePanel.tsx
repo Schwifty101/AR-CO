@@ -4,6 +4,9 @@ import Link from "next/link"
 import { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import gsap from "gsap"
+import SlotMachineText from "../shared/animations/SlotMachineText"
+import NavButton from "./components/NavButton"
+import { NAV_ITEMS, SUBMENU_DATA } from "./data/navData"
 import styles from "./SidePanel.module.css"
 
 /**
@@ -30,97 +33,11 @@ interface SidePanelProps {
   onClose: () => void
 }
 
-// Navigation items with potential sub-content
-const navItems = [
-  { id: 'home', label: 'Home', href: '/', hasSubmenu: false },
-  { id: 'team', label: 'Our Team', href: '/team', hasSubmenu: false },
-  { id: 'practice-areas', label: 'Practice Areas', href: '/practice-areas', hasSubmenu: true },
-  { id: 'facilitation', label: 'Facilitation Centre', href: '/facilitation', hasSubmenu: true },
-  { id: 'contact', label: 'Contact Us', href: '/contact', hasSubmenu: false },
-]
+// Navigation items with potential sub-content - using shared data
+const navItems = NAV_ITEMS
 
-// Submenu data for items with hasSubmenu: true
-const submenuData: Record<string, { title: string; categories: Array<{ title: string; highlight?: boolean; links: Array<{ label: string; href: string }> }> }> = {
-  'practice-areas': {
-    title: 'Practice Areas',
-    categories: [
-      {
-        title: 'Corporate Law',
-        links: [
-          { label: 'Company Formation', href: '/practice-areas/company-formation' },
-          { label: 'Mergers & Acquisitions', href: '/practice-areas/mergers-acquisitions' },
-          { label: 'Corporate Governance', href: '/practice-areas/corporate-governance' },
-          { label: 'Joint Ventures', href: '/practice-areas/joint-ventures' },
-        ]
-      },
-      {
-        title: 'Litigation',
-        links: [
-          { label: 'Civil Litigation', href: '/practice-areas/civil-litigation' },
-          { label: 'Criminal Defense', href: '/practice-areas/criminal-defense' },
-          { label: 'Appellate Practice', href: '/practice-areas/appellate-practice' },
-          { label: 'Arbitration', href: '/practice-areas/arbitration' },
-        ]
-      },
-      {
-        title: 'Real Estate',
-        links: [
-          { label: 'Property Transactions', href: '/practice-areas/property-transactions' },
-          { label: 'Land Disputes', href: '/practice-areas/land-disputes' },
-          { label: 'Construction Law', href: '/practice-areas/construction-law' },
-        ]
-      },
-      {
-        title: 'Banking & Finance',
-        links: [
-          { label: 'Banking Regulations', href: '/practice-areas/banking-regulations' },
-          { label: 'Project Finance', href: '/practice-areas/project-finance' },
-          { label: 'Debt Recovery', href: '/practice-areas/debt-recovery' },
-        ]
-      },
-    ]
-  },
-  'facilitation': {
-    title: 'Facilitation Centre',
-    categories: [
-      {
-        title: 'Business & Corporate',
-        links: [
-          { label: 'NTN / STRN', href: '/facilitation/ntn-strn' },
-          { label: 'SECP Registration', href: '/facilitation/secp-registration' },
-          { label: 'Partnership Deeds', href: '/facilitation/partnership-deeds' },
-          { label: 'Agreements', href: '/facilitation/agreements' },
-        ]
-      },
-      {
-        title: 'Compliance Certificates',
-        links: [
-          { label: 'AML / CFT Certificate', href: '/facilitation/aml-cft' },
-          { label: 'Food Authority Licensing', href: '/facilitation/food-authority' },
-          { label: 'Environmental Clearance', href: '/facilitation/environmental' },
-          { label: 'Fire Compliance', href: '/facilitation/fire-compliance' },
-        ]
-      },
-      {
-        title: 'Real Estate',
-        links: [
-          { label: 'Property Transfer', href: '/facilitation/property-transfer' },
-          { label: 'Fard Verification', href: '/facilitation/fard-verification' },
-          { label: 'Rent Agreements', href: '/facilitation/rent-agreements' },
-        ]
-      },
-      {
-        title: "Women's Legal Desk",
-        highlight: true,
-        links: [
-          { label: 'Khula / Divorce', href: '/facilitation/khula-divorce' },
-          { label: 'Harassment Complaints', href: '/facilitation/harassment' },
-          { label: 'Inheritance Documentation', href: '/facilitation/inheritance' },
-        ]
-      },
-    ]
-  }
-}
+// Submenu data for items with hasSubmenu: true - using shared data
+const submenuData = SUBMENU_DATA
 
 export default function SidePanel({ isOpen, onClose }: SidePanelProps) {
   const [hoveredItem, setHoveredItem] = useState<string | null>(null)
@@ -144,7 +61,7 @@ export default function SidePanel({ isOpen, onClose }: SidePanelProps) {
   useEffect(() => {
     if (isOpen && navLinksRef.current) {
       const links = navLinksRef.current.querySelectorAll(`.${styles.navItem}`)
-      
+
       gsap.fromTo(
         links,
         { opacity: 0, x: -30 },
@@ -232,18 +149,14 @@ export default function SidePanel({ isOpen, onClose }: SidePanelProps) {
           >
             {/* Header with Close Button */}
             <div className={styles.panelHeader}>
-              <Link href="/contact?consultation=true" className={styles.ctaButton} onClick={onClose}>
-                BOOK A CALL
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                  <path
-                    d="M3 11L11 3M11 3H5M11 3V9"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </Link>
+              <NavButton
+                href="/contact?consultation=true"
+                onClick={onClose}
+                arrowStyle="diagonal"
+                className={styles.ctaButton}
+              >
+                Schedule a Call
+              </NavButton>
               <motion.button
                 className={styles.closeButton}
                 onClick={onClose}
@@ -288,7 +201,9 @@ export default function SidePanel({ isOpen, onClose }: SidePanelProps) {
                       className={styles.navLink}
                       onClick={onClose}
                     >
-                      <span className={styles.navText}>{item.label}</span>
+                      <span className={styles.navText}>
+                        <SlotMachineText>{item.label}</SlotMachineText>
+                      </span>
                       {item.hasSubmenu && (
                         <span className={styles.navArrow}>→</span>
                       )}

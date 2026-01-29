@@ -12,37 +12,7 @@ import Link from "next/link"
 import styles from "./page.module.css"
 
 export default function Home() {
-  const practiceAreas = [
-    {
-      title: "Corporate Law",
-      description: "Expert guidance for business entities",
-      icon: "🏢",
-      link: "/practice/corporate-law",
-    },
-    { title: "Tax Law", description: "Strategic tax planning and compliance", icon: "📊", link: "/practice/tax-law" },
-    {
-      title: "Immigration",
-      description: "Professional immigration services",
-      icon: "🌍",
-      link: "/practice/immigration",
-    },
-    { title: "Labour Law", description: "Employment and labour relations", icon: "👥", link: "/practice/labor-law" },
-    {
-      title: "Intellectual Property",
-      description: "Protection of IP rights",
-      icon: "💡",
-      link: "/practice/intellectual-property",
-    },
-    {
-      title: "Real Estate",
-      description: "Property and real estate matters",
-      icon: "🏠",
-      link: "/practice/real-estate",
-    },
-    { title: "Litigation", description: "Comprehensive legal representation", icon: "⚖️", link: "/practice/litigation" },
-    { title: "Contracts", description: "Contract drafting and review", icon: "📝", link: "/practice/contracts" },
-  ]
-
+  
   return (
     <>
       <Header />
@@ -54,12 +24,10 @@ export default function Home() {
 
           {/* Practice Areas Horizontal Scroll with Abstract Layout */}
           <PracticeAreasHorizontal />
-          {/* CTA Section with footer trigger for parallax overlap effect */}
-          <div id="footer-trigger" className={styles.ctaWrapper}>
+          {/* CTA Section */}
+          <div className={styles.ctaWrapper}>
             <CTASection />
           </div>
-          {/* Spacer inside main to create scroll height for footer parallax reveal */}
-          <div className={styles.footerSpacer} aria-hidden="true" />
         </main>
         <Footer />
       </SmoothScroll>

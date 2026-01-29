@@ -1,12 +1,7 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
-import { gsap } from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import ScrollRevealText from '@/components/shared/animations/ScrollRevealText'
 import styles from './CTASection.module.css'
-
-gsap.registerPlugin(ScrollTrigger)
 
 interface Testimonial {
   id: number
@@ -73,95 +68,11 @@ const testimonials: Testimonial[] = [
 ]
 
 export default function CTASection() {
-  const sectionRef = useRef<HTMLElement>(null)
-  const testimonialsLayerRef = useRef<HTMLDivElement>(null)
-  const testimonialsRef = useRef<HTMLDivElement[]>([])
-
-  useEffect(() => {
-    const section = sectionRef.current
-    const testimonialsLayer = testimonialsLayerRef.current
-    if (!section || !testimonialsLayer) return
-
-    const ctx = gsap.context(() => {
-      // Pin the CTA section for parallax overlap effect with footer
-      // Section stays fixed when its top hits viewport top
-      // IMPORTANT: Use pinType: "transform" when inside ScrollSmoother
-      // because ScrollSmoother uses CSS transforms for scrolling,
-      // and position:fixed pins break out of the transformed container
-      ScrollTrigger.create({
-        trigger: section,
-        start: 'top top', // Pin when CTA top touches viewport top
-        end: '+=150%', // Stay pinned for 150% of viewport height (enough for footer to overlap)
-        pin: true,
-        pinSpacing: true, // Creates scroll room for the pin duration
-        pinType: 'transform', // CRITICAL: Use transform-based pinning for ScrollSmoother compatibility
-        anticipatePin: 1, // Smoother pin start
-        markers: false,
-      })
-
-      // Entry animation only - cards slide in from right
-      testimonialsRef.current.forEach((card, index) => {
-        if (card) {
-          // Starting state
-          gsap.set(card, {
-            opacity: 0,
-            x: 300,
-          })
-
-          // Entry animation - slide in from right with stagger
-          gsap.to(card, {
-            opacity: 1,
-            x: 0,
-            duration: 1,
-            delay: 0.2 + index * 0.15,
-            ease: 'power3.out',
-            scrollTrigger: {
-              trigger: section,
-              start: 'top 80%',
-              toggleActions: 'play none none none',
-            }
-          })
-        }
-      })
-    }, section)
-
-    // Mouse parallax effect
-    const handleMouseMove = (e: MouseEvent) => {
-      const { clientX, clientY } = e
-      const { innerWidth, innerHeight } = window
-
-      // Calculate mouse position relative to center (-1 to 1)
-      const xPos = (clientX / innerWidth - 0.5) * 2
-      const yPos = (clientY / innerHeight - 0.5) * 2
-
-      testimonialsRef.current.forEach((card, index) => {
-        if (card) {
-          const testimonial = testimonials[index]
-          // Different movement intensity based on card depth/position
-          const intensity = 15 + testimonial.depth * 0.3
-          const xMove = xPos * intensity * (index % 2 === 0 ? 1 : -1)
-          const yMove = yPos * intensity * 0.5
-
-          gsap.to(card, {
-            x: xMove,
-            y: yMove,
-            duration: 0.8,
-            ease: 'power2.out',
-          })
-        }
-      })
-    }
-
-    window.addEventListener('mousemove', handleMouseMove)
-
-    return () => {
-      ctx.revert()
-      window.removeEventListener('mousemove', handleMouseMove)
-    }
-  }, [])
+  // All animations removed for simpler, static presentation
+  // Individual section animations (ScrollRevealText) remain intact
 
   return (
-    <section ref={sectionRef} className={styles.ctaSection}>
+    <section className={styles.ctaSection}>
       {/* Massive background text */}
 
 
@@ -200,13 +111,10 @@ export default function CTASection() {
       </svg>
 
       {/* Floating testimonials layer */}
-      <div ref={testimonialsLayerRef} className={styles.testimonialsLayer}>
-        {testimonials.map((testimonial, index) => (
+      <div className={styles.testimonialsLayer}>
+        {testimonials.map((testimonial) => (
           <div
             key={testimonial.id}
-            ref={(el) => {
-              if (el) testimonialsRef.current[index] = el
-            }}
             className={`${styles.testimonialCard} ${styles[testimonial.position]}`}
           >
             <div className={styles.quoteIcon}>

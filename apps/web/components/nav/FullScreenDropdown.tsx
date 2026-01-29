@@ -4,6 +4,9 @@ import Link from "next/link"
 import { useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import gsap from "gsap"
+import NavButton from "./components/NavButton"
+import { NAV_SECTIONS } from "./data/navData"
+import type { INavCategory, INavSection } from "./types/nav.types"
 import styles from "./FullScreenDropdown.module.css"
 
 /**
@@ -32,114 +35,12 @@ interface FullScreenDropdownProps {
   activeSection: 'practice-areas' | 'facilitation' | null
 }
 
-// Category type definition
-interface Category {
-  title: string
-  highlight?: boolean
-  links: Array<{ label: string; href: string }>
-}
+// Using shared types from nav.types.ts
+type Category = INavCategory
+type NavSection = INavSection
 
-interface NavSection {
-  title: string
-  description: string
-  categories: Category[]
-}
-
-// Navigation data structure
-const navData: Record<'practice-areas' | 'facilitation', NavSection> = {
-  'practice-areas': {
-    title: 'Practice Areas',
-    description: 'Our comprehensive legal services',
-    categories: [
-      {
-        title: 'Corporate Law',
-        links: [
-          { label: 'Company Formation', href: '/practice-areas/company-formation' },
-          { label: 'Mergers & Acquisitions', href: '/practice-areas/mergers-acquisitions' },
-          { label: 'Corporate Governance', href: '/practice-areas/corporate-governance' },
-          { label: 'Joint Ventures', href: '/practice-areas/joint-ventures' },
-        ]
-      },
-      {
-        title: 'Litigation',
-        links: [
-          { label: 'Civil Litigation', href: '/practice-areas/civil-litigation' },
-          { label: 'Criminal Defense', href: '/practice-areas/criminal-defense' },
-          { label: 'Appellate Practice', href: '/practice-areas/appellate-practice' },
-          { label: 'Arbitration', href: '/practice-areas/arbitration' },
-        ]
-      },
-      {
-        title: 'Real Estate',
-        links: [
-          { label: 'Property Transactions', href: '/practice-areas/property-transactions' },
-          { label: 'Land Disputes', href: '/practice-areas/land-disputes' },
-          { label: 'Construction Law', href: '/practice-areas/construction-law' },
-          { label: 'Lease Agreements', href: '/practice-areas/lease-agreements' },
-        ]
-      },
-      {
-        title: 'Banking & Finance',
-        links: [
-          { label: 'Banking Regulations', href: '/practice-areas/banking-regulations' },
-          { label: 'Project Finance', href: '/practice-areas/project-finance' },
-          { label: 'Debt Recovery', href: '/practice-areas/debt-recovery' },
-          { label: 'Securities Law', href: '/practice-areas/securities-law' },
-        ]
-      },
-    ]
-  },
-  'facilitation': {
-    title: 'Facilitation Centre',
-    description: 'Legal facilitation services',
-    categories: [
-      {
-        title: 'Business & Corporate',
-        links: [
-          { label: 'NTN / STRN', href: '/facilitation/ntn-strn' },
-          { label: 'SECP Registration', href: '/facilitation/secp-registration' },
-          { label: 'Partnership Deeds', href: '/facilitation/partnership-deeds' },
-          { label: 'Agreements', href: '/facilitation/agreements' },
-          { label: 'Bank Documents', href: '/facilitation/bank-documents' },
-        ]
-      },
-      {
-        title: 'Compliance Certificates',
-        links: [
-          { label: 'AML / CFT Certificate', href: '/facilitation/aml-cft' },
-          { label: 'Food Authority Licensing', href: '/facilitation/food-authority' },
-          { label: 'Environmental Clearance', href: '/facilitation/environmental' },
-          { label: 'Fire Compliance', href: '/facilitation/fire-compliance' },
-          { label: 'Labour Registration', href: '/facilitation/labour' },
-        ]
-      },
-      {
-        title: 'Real Estate Documentation',
-        links: [
-          { label: 'Property Transfer', href: '/facilitation/property-transfer' },
-          { label: 'Fard Verification', href: '/facilitation/fard-verification' },
-          { label: 'Rent Agreements', href: '/facilitation/rent-agreements' },
-        ]
-      },
-      {
-        title: 'Personal Certificates',
-        links: [
-          { label: 'Character Certificate', href: '/facilitation/character-certificate' },
-          { label: 'Succession Certificate', href: '/facilitation/succession-certificate' },
-        ]
-      },
-      {
-        title: "Women's Legal Desk",
-        highlight: true,
-        links: [
-          { label: 'Khula / Divorce', href: '/facilitation/khula-divorce' },
-          { label: 'Harassment Complaints', href: '/facilitation/harassment' },
-          { label: 'Inheritance Documentation', href: '/facilitation/inheritance' },
-        ]
-      },
-    ]
-  }
-}
+// Navigation data structure - using shared data
+const navData: Record<'practice-areas' | 'facilitation', NavSection> = NAV_SECTIONS
 
 export default function FullScreenDropdown({
   isOpen,
@@ -165,7 +66,7 @@ export default function FullScreenDropdown({
   useEffect(() => {
     if (isOpen && categoriesRef.current) {
       const categories = categoriesRef.current.querySelectorAll(`.${styles.category}`)
-      
+
       gsap.fromTo(
         categories,
         { opacity: 0, y: 40 },
@@ -292,18 +193,14 @@ export default function FullScreenDropdown({
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.6, duration: 0.4 }}
               >
-                <Link href="/contact?consultation=true" className={styles.ctaButton} onClick={onClose}>
+                <NavButton
+                  href="/contact?consultation=true"
+                  onClick={onClose}
+                  arrowStyle="diagonal"
+                  className={styles.ctaButton}
+                >
                   Book Consultation
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                    <path
-                      d="M4 12L12 4M12 4H6M12 4V10"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </Link>
+                </NavButton>
               </motion.div>
             </div>
           </motion.div>

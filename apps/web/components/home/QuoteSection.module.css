@@ -1,19 +1,12 @@
 /* Quote Section */
 .quoteSection {
   position: relative;
-  min-height: 140vh;
-   background: var(--heritage-cream);
+  min-height: 100vh;
+  background: var(--heritage-cream);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 2rem 2rem;
-  z-index: 10;  /* Stack above hero section */
-  /* Large overlap - hero remains 70-80% visible as quote slides in */
-  margin-top: -75vh;
-  /* Subtle shadow for layered depth effect */
-  box-shadow:
-    0 -40px 100px rgba(0, 0, 0, 0.12),
-    0 -15px 50px rgba(0, 0, 0, 0.08);
+  padding: 4rem 2rem;
   overflow: hidden;
 }
 

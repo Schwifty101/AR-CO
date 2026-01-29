@@ -166,37 +166,7 @@
   margin-bottom: 1.5rem;
 }
 
-/* CTA Section wrapper for parallax overlap effect */
+/* CTA Section wrapper */
 .ctaWrapper {
   position: relative;
-  z-index: 5;
-}
-
-/* Footer Wrapper for slide-up animation (legacy) */
-.footerWrapper {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 100vh;
-  z-index: 100;
-  pointer-events: none;
-}
-
-.footerWrapper>* {
-  pointer-events: auto;
-}
-
-/* Spacer creates scroll room for footer parallax reveal - height compensates for footer's negative margin */
-.footerSpacer {
-  height: 50vh;
-  width: 100%;
-  pointer-events: none;
-  background: transparent;
-}
-
-@media (max-width: 768px) {
-  .footerSpacer {
-    display: none;
-  }
 }
