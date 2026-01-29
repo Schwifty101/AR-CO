@@ -1,14 +1,22 @@
 .footer {
   width: 100%;
   min-height: 100vh;
-  background: var(--heritage-cream);
-  padding: 2rem 0 2rem;
-  border-top: 1px solid rgba(122, 92, 78, 0.15);
+  background: var(--wood-espresso);
+  padding: 4rem 0 2rem;
   position: relative;
+  /* Larger negative margin creates significant overlap with CTA section */
+  margin-top: -50vh;
   display: flex;
   align-items: flex-start;
-  will-change: transform;
+  will-change: transform, opacity;
   box-sizing: border-box;
+  z-index: 20;
+  /* Rounded top corners for parallax overlap effect */
+  border-radius: 2.5rem 2.5rem 0 0;
+  /* Enhanced shadow for depth and overlap effect */
+  box-shadow:
+    0 -30px 80px rgba(58, 38, 24, 0.25),
+    0 -10px 30px rgba(58, 38, 24, 0.15);
 }
 
 .container {
@@ -69,7 +77,7 @@
   font-weight: 700;
   line-height: 0.85;
   letter-spacing: -0.04em;
-  color: var(--wood-espresso);
+  color: var(--heritage-cream);
   margin: 0;
   max-width: 100%;
 }
@@ -92,8 +100,8 @@
   font-weight: 500;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--wood-espresso);
-  /* opacity: 0.6; */
+  color: var(--heritage-gold);
+  opacity: 0.8;
 }
 
 .navigation {
@@ -123,7 +131,7 @@
   font-weight: 700;
   line-height: 1.05;
   letter-spacing: -0.03em;
-  color: var(--wood-mahogany);
+  color: var(--heritage-cream);
   text-decoration: none;
   transition: color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: inline-block;
@@ -161,7 +169,7 @@
   font-size: clamp(1rem, 1.1vw, 1.125rem);
   font-weight: 500;
   line-height: 1.6;
-  color: var(--wood-espresso);
+  color: rgba(250, 248, 244, 0.85);
   margin: 0;
   text-align: left;
 }
@@ -183,7 +191,7 @@
   /* font-size: clamp(1rem, 1.1vw, 1.125rem); */
   font-weight: 600;
   line-height: 1.5;
-  color: var(--wood-mahogany);
+  color: rgba(250, 248, 244, 0.8);
   margin: 0;
   display: flex;
   gap: 0.75rem;
@@ -193,7 +201,7 @@
 .contactPrefix {
   font-weight: 800;
   font-size: 1.25rem;
-  color: var(--wood-espresso);
+  color: var(--heritage-gold);
   min-width: 2rem;
   flex-shrink: 0;
 }
@@ -207,7 +215,7 @@
   align-items: center;
   padding-top: 1.5rem;
   margin-top: auto;
-  border-top: 1px solid rgba(122, 92, 78, 0.15);
+  border-top: 1px solid rgba(250, 248, 244, 0.12);
   gap: 2rem;
   flex-wrap: wrap;
 }
@@ -228,14 +236,14 @@
   font-family: 'Cabinet Grotesk', sans-serif;
   font-size: 0.8125rem;
   font-weight: 500;
-  color: var(--wood-espresso);
+  color: var(--heritage-cream);
 }
 
 .clockTime {
   font-family: 'Cabinet Grotesk', sans-serif;
   font-size: 0.8125rem;
   font-weight: 400;
-  color: var(--wood-mahogany);
+  color: rgba(250, 248, 244, 0.7);
 }
 
 .officeStatus {
@@ -284,7 +292,7 @@
   font-family: 'Cabinet Grotesk', sans-serif;
   font-size: 0.8125rem;
   font-weight: 400;
-  color: var(--wood-mahogany);
+  color: rgba(250, 248, 244, 0.7);
   text-decoration: none;
   transition: color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -303,7 +311,7 @@
   font-family: 'Cabinet Grotesk', sans-serif;
   font-size: 0.8125rem;
   font-weight: 500;
-  color: var(--wood-espresso);
+  color: var(--heritage-cream);
   text-decoration: none;
   transition: color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -317,7 +325,7 @@
   font-size: 0.75rem;
   font-weight: 500;
   letter-spacing: 0.05em;
-  color: var(--wood-sandalwood);
+  color: rgba(250, 248, 244, 0.5);
 }
 
 /* ============================================
@@ -386,6 +394,10 @@
   .footer {
     padding: 4rem 0 2rem;
     min-height: auto;
+    position: relative;
+    margin-top: 0;
+    /* Disable overlap on mobile */
+    border-radius: 1.5rem 1.5rem 0 0;
   }
 
   .container {
