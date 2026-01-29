@@ -5,13 +5,10 @@ import { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import gsap from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
-import { useGSAP } from "@gsap/react"
 import LogoSection from "./LogoSection"
 import FullScreenDropdown from "./FullScreenDropdown"
 import SidePanel from "./SidePanel"
 import MobileFullScreenMenu from "./MobileFullScreenMenu"
-import SlotMachineText from "../shared/animations/SlotMachineText"
-import NavButton from "./components/NavButton"
 import styles from "./Header.module.css"
 
 // Register GSAP plugins
@@ -30,13 +27,13 @@ if (typeof window !== "undefined") {
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isHidden, setIsHidden] = useState(false)
-  const [pastQuoteSection, setPastQuoteSection] = useState(false)
+  const [pastHeroSection, setPastHeroSection] = useState(false)
+  const [quotationReached, setQuotationReached] = useState(false)
   const [dropdownSection, setDropdownSection] = useState<'practice-areas' | 'facilitation' | null>(null)
   const [sidePanelOpen, setSidePanelOpen] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const headerRef = useRef<HTMLElement>(null)
-  const menuToggleRef = useRef<HTMLButtonElement>(null)
 
   // Hero section scroll detection - hide during hero, show after
   useEffect(() => {
@@ -61,18 +58,21 @@ export default function Header() {
         setIsScrolled(self.progress > 0.05)
       },
       onLeave: () => {
-        // Hero section ended - show header
+        // Hero section ended - show header and mark as past hero
         setIsHidden(false)
         setIsScrolled(true)
+        setPastHeroSection(true)
       },
       onEnterBack: () => {
         // Scrolled back into hero - hide header
         setIsHidden(true)
+        setPastHeroSection(false)
       },
       onLeaveBack: () => {
         // Back at top - show header
         setIsHidden(false)
         setIsScrolled(false)
+        setPastHeroSection(false)
       }
     })
 
@@ -81,65 +81,29 @@ export default function Header() {
     }
   }, [])
 
-  // Track quotation section to control hamburger menu visibility
+  // Quotation section scroll detection - trigger CTA and hamburger visibility
   useEffect(() => {
-    // Find the quote section
-    const quoteSection = document.querySelector('section[class*="quote"], section[class*="Quote"]') as HTMLElement
-    if (!quoteSection) {
-      // If quote section not found, default to showing hamburger after hero
-      setPastQuoteSection(true)
-      return
-    }
+    const quotationSection = document.getElementById('quote-section')
+    if (!quotationSection) return
 
-    // Create ScrollTrigger to track quote section
     const st = ScrollTrigger.create({
-      trigger: quoteSection,
-      start: "top bottom", // When quote section enters viewport
-      end: "bottom top",
-      onEnter: () => setPastQuoteSection(true),
-      onLeaveBack: () => setPastQuoteSection(false)
+      trigger: quotationSection,
+      start: "top bottom", // When quotation enters viewport from bottom
+      end: "bottom top", // When quotation leaves viewport from top
+      onEnter: () => {
+        // Quotation section reached - enable CTA and hamburger
+        setQuotationReached(true)
+      },
+      onLeaveBack: () => {
+        // Scrolled back above quotation - hide CTA and hamburger
+        setQuotationReached(false)
+      }
     })
 
     return () => {
       st.kill()
     }
   }, [])
-
-  // Smooth GSAP animation for header show/hide
-  useGSAP(() => {
-    if (!headerRef.current) return
-
-    // Animate header based on isHidden state with slower, smoother timing
-    gsap.to(headerRef.current, {
-      y: isHidden ? -100 : 0, // Slide up when hidden, slide down when visible
-      duration: 0.9, // Slower for smoother feel
-      ease: "power2.inOut", // Smooth easing curve
-      overwrite: true // Cancel any existing animations
-    })
-  }, [isHidden])
-
-  // Smooth GSAP animation for hamburger menu visibility
-  useGSAP(() => {
-    if (!menuToggleRef.current) return
-
-    // Show hamburger only after quote section is reached (or always on mobile)
-    const shouldShow = (isScrolled && pastQuoteSection) || isMobile
-
-    // Coordinate hamburger fade with navbar animation
-    gsap.to(menuToggleRef.current, {
-      opacity: shouldShow ? 1 : 0,
-      duration: 0.4,
-      ease: "power2.out",
-      delay: shouldShow ? 0.2 : 0, // Slight delay when appearing for sequential effect
-      overwrite: true,
-      onComplete: () => {
-        // Update pointer-events after animation
-        if (menuToggleRef.current) {
-          menuToggleRef.current.style.pointerEvents = shouldShow ? 'auto' : 'none'
-        }
-      }
-    })
-  }, [isScrolled, pastQuoteSection, isMobile])
 
   // Track viewport size for responsive behavior
   useEffect(() => {
@@ -163,8 +127,6 @@ export default function Header() {
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
   }, [mobileMenuOpen])
-
-
 
   const handleNavClick = (section: 'practice-areas' | 'facilitation') => {
     if (dropdownSection === section) {
@@ -193,10 +155,21 @@ export default function Header() {
         onKeyDown={handleKeyDown}
       >
         <div className={styles.gridContainer}>
-          {/* LEFT SECTION - Logo */}
-          <div className={styles.logoSection}>
+          {/* LEFT SECTION - Logo (hidden once scrolled) */}
+          <motion.div
+            className={styles.logoSection}
+            animate={{
+              opacity: isScrolled ? 0 : 1,
+              y: isScrolled ? -10 : 0
+            }}
+            transition={{
+              duration: 0.15,
+              ease: [0.22, 1, 0.36, 1]
+            }}
+            style={{ pointerEvents: isScrolled ? 'none' : 'auto' }}
+          >
             <LogoSection />
-          </div>
+          </motion.div>
 
           {/* CENTER SECTION - Navigation Links (Desktop, Non-scrolled) */}
           <AnimatePresence>
@@ -209,14 +182,14 @@ export default function Header() {
                 exit={{ opacity: 0, y: -10 }}
                 transition={{
                   duration: 0.15,
-                  ease: [0.22, 1, 0.36, 1] // Smooth easing for natural feel
+                  ease: [0.22, 1, 0.36, 1]
                 }}
               >
                 <Link href="/" className={styles.navLink}>
-                  <SlotMachineText>HOME</SlotMachineText>
+                  HOME
                 </Link>
                 <Link href="/team" className={styles.navLink}>
-                  <SlotMachineText>OUR TEAM</SlotMachineText>
+                  OUR TEAM
                 </Link>
 
                 {/* Practice Areas - Click Trigger */}
@@ -226,7 +199,7 @@ export default function Header() {
                   aria-expanded={dropdownSection === 'practice-areas'}
                   aria-haspopup="true"
                 >
-                  <SlotMachineText>PRACTICE AREAS</SlotMachineText>
+                  PRACTICE AREAS
                   <svg
                     className={`${styles.chevron} ${dropdownSection === 'practice-areas' ? styles.chevronOpen : ''}`}
                     width="12"
@@ -252,7 +225,7 @@ export default function Header() {
                   aria-expanded={dropdownSection === 'facilitation'}
                   aria-haspopup="true"
                 >
-                  <SlotMachineText>FACILITATION CENTRE</SlotMachineText>
+                  FACILITATION CENTRE
                   <svg
                     className={`${styles.chevron} ${dropdownSection === 'facilitation' ? styles.chevronOpen : ''}`}
                     width="12"
@@ -272,7 +245,7 @@ export default function Header() {
                 </button>
 
                 <Link href="/contact" className={styles.navLink}>
-                  <SlotMachineText>CONTACT US</SlotMachineText>
+                  CONTACT US
                 </Link>
               </motion.nav>
             )}
@@ -280,44 +253,71 @@ export default function Header() {
 
           {/* RIGHT SECTION - Actions */}
           <div className={styles.actionsSection}>
-            {/* Desktop CTA Button (always visible on desktop) */}
-            <NavButton href="/contact?consultation=true">
-              Book Consultation
-            </NavButton>
+            {/* CTA Button - visible at top, hides during hero scroll, reappears at quotation section */}
+            <AnimatePresence mode="wait">
+              {((!isScrolled || quotationReached) && !isHidden) && (
+                <motion.div
+                  key="cta-button"
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{
+                    duration: 0.15,
+                    ease: [0.22, 1, 0.36, 1]
+                  }}
+                >
+                  <Link href="/contact?consultation=true" className={styles.btnPrimary}>
+                    BOOK CONSULTATION
+                  </Link>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
-            {/* Hamburger Menu Button (scrolled state on desktop, always on mobile) */}
-            <button
-              ref={menuToggleRef}
-              className={styles.menuToggle}
-              onClick={() => {
-                if (isMobile) {
-                  setMobileMenuOpen(!mobileMenuOpen)
-                } else {
-                  setSidePanelOpen(!sidePanelOpen)
-                }
-              }}
-              aria-label={sidePanelOpen || mobileMenuOpen ? 'Close menu' : 'Open menu'}
-              aria-expanded={sidePanelOpen || mobileMenuOpen}
-            >
-              <span
-                className={styles.menuLine}
-                style={{
-                  transform: sidePanelOpen || mobileMenuOpen ? 'rotate(45deg) translateY(7px)' : 'none',
-                }}
-              />
-              <span
-                className={styles.menuLine}
-                style={{
-                  opacity: sidePanelOpen || mobileMenuOpen ? 0 : 1,
-                }}
-              />
-              <span
-                className={styles.menuLine}
-                style={{
-                  transform: sidePanelOpen || mobileMenuOpen ? 'rotate(-45deg) translateY(-7px)' : 'none',
-                }}
-              />
-            </button>
+            {/* Hamburger Menu Button - appears when quotation reached or always on mobile */}
+            <AnimatePresence mode="wait">
+              {((quotationReached || isMobile) && !isHidden) && (
+                <motion.button
+                  key="hamburger-menu"
+                  className={styles.menuToggle}
+                  onClick={() => {
+                    if (isMobile) {
+                      setMobileMenuOpen(!mobileMenuOpen)
+                    } else {
+                      setSidePanelOpen(!sidePanelOpen)
+                    }
+                  }}
+                  aria-label={sidePanelOpen || mobileMenuOpen ? 'Close menu' : 'Open menu'}
+                  aria-expanded={sidePanelOpen || mobileMenuOpen}
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{
+                    duration: 0.15,
+                    ease: [0.22, 1, 0.36, 1]
+                  }}
+                  style={{ pointerEvents: 'auto' }}
+                >
+                  <span
+                    className={styles.menuLine}
+                    style={{
+                      transform: sidePanelOpen || mobileMenuOpen ? 'rotate(45deg) translateY(7px)' : 'none',
+                    }}
+                  />
+                  <span
+                    className={styles.menuLine}
+                    style={{
+                      opacity: sidePanelOpen || mobileMenuOpen ? 0 : 1,
+                    }}
+                  />
+                  <span
+                    className={styles.menuLine}
+                    style={{
+                      transform: sidePanelOpen || mobileMenuOpen ? 'rotate(-45deg) translateY(-7px)' : 'none',
+                    }}
+                  />
+                </motion.button>
+              )}
+            </AnimatePresence>
           </div>
         </div>
       </header>

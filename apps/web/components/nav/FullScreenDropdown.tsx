@@ -6,7 +6,6 @@ import { motion, AnimatePresence } from "framer-motion"
 import gsap from "gsap"
 import NavButton from "./components/NavButton"
 import { NAV_SECTIONS } from "./data/navData"
-import type { INavCategory, INavSection } from "./types/nav.types"
 import styles from "./FullScreenDropdown.module.css"
 
 /**
@@ -35,12 +34,8 @@ interface FullScreenDropdownProps {
   activeSection: 'practice-areas' | 'facilitation' | null
 }
 
-// Using shared types from nav.types.ts
-type Category = INavCategory
-type NavSection = INavSection
-
 // Navigation data structure - using shared data
-const navData: Record<'practice-areas' | 'facilitation', NavSection> = NAV_SECTIONS
+const navData = NAV_SECTIONS
 
 export default function FullScreenDropdown({
   isOpen,
@@ -62,7 +57,7 @@ export default function FullScreenDropdown({
     }
   }, [isOpen])
 
-  // GSAP stagger animation for categories
+  // GSAP stagger animation for categories - premium, luxurious timing
   useEffect(() => {
     if (isOpen && categoriesRef.current) {
       const categories = categoriesRef.current.querySelectorAll(`.${styles.category}`)
@@ -73,10 +68,10 @@ export default function FullScreenDropdown({
         {
           opacity: 1,
           y: 0,
-          duration: 0.5,
-          stagger: 0.08,
+          duration: 0.7,
+          stagger: 0.12,
           ease: 'power3.out',
-          delay: 0.3,
+          delay: 0.4,
         }
       )
     }
@@ -105,7 +100,7 @@ export default function FullScreenDropdown({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
+            transition={{ duration: 0.6 }}
             onClick={onClose}
             aria-hidden="true"
           />
@@ -118,7 +113,7 @@ export default function FullScreenDropdown({
             exit={{ y: '-100%' }}
             transition={{
               type: 'tween',
-              duration: 0.6,
+              duration: 0.8,
               ease: [0.25, 0.46, 0.45, 0.94],
             }}
             role="dialog"
@@ -132,7 +127,7 @@ export default function FullScreenDropdown({
               aria-label="Close menu"
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.4 }}
+              transition={{ delay: 0.5, duration: 0.6 }}
             >
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
                 <path
@@ -151,7 +146,7 @@ export default function FullScreenDropdown({
                 className={styles.header}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2, duration: 0.5 }}
+                transition={{ delay: 0.3, duration: 0.6 }}
               >
                 <h2 className={styles.title}>{currentData.title}</h2>
                 <p className={styles.description}>{currentData.description}</p>
@@ -159,7 +154,7 @@ export default function FullScreenDropdown({
 
               {/* Categories Grid */}
               <div ref={categoriesRef} className={styles.categoriesGrid}>
-                {currentData.categories.map((category, index) => (
+                {currentData.categories.map((category) => (
                   <div
                     key={category.title}
                     className={`${styles.category} ${category.highlight ? styles.categoryHighlight : ''}`}
@@ -191,7 +186,7 @@ export default function FullScreenDropdown({
                 className={styles.footer}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ delay: 0.6, duration: 0.4 }}
+                transition={{ delay: 0.8, duration: 0.6 }}
               >
                 <NavButton
                   href="/contact?consultation=true"

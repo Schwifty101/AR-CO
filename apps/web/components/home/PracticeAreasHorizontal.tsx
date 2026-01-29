@@ -4,6 +4,7 @@ import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { ScrollToPlugin } from 'gsap/ScrollToPlugin'
 import ScrollRevealText from '@/components/shared/animations/ScrollRevealText'
+import { getSmoother } from '@/components/SmoothScroll'
 import styles from './PracticeAreasHorizontal.module.css'
 
 // Register GSAP plugins
@@ -112,9 +113,6 @@ const CARD_NAV_PROGRESS = [
   1.55,   // Card 9 - Nuclear & Regulatory
 ]
 
-// Hardcoded skip section progress - scrolls past the entire section
-// Adjust this value to fine-tune where the skip button scrolls to
-const SKIP_SECTION_PROGRESS = 1.55
 
 // Random vertical positions and rotations for visual variety
 const cardVariations = [
@@ -179,22 +177,25 @@ export default function PracticeAreasHorizontal() {
     }
   }, [])
 
-  // Skip entire section
+  // Skip entire section - scrolls directly to the next section (CTASection)
   const skipSection = useCallback(() => {
-    const scrollTriggerInstance = ScrollTrigger.getAll().find(
-      (st) => st.trigger === triggerRef.current
-    )
-    if (scrollTriggerInstance) {
-      // Use hardcoded progress value to scroll past the section
-      const targetScroll =
-        scrollTriggerInstance.start +
-        (scrollTriggerInstance.end - scrollTriggerInstance.start) * SKIP_SECTION_PROGRESS
+    // Find the next section after Practice Areas
+    const nextSection = sectionRef.current?.nextElementSibling as HTMLElement | null
 
-      gsap.to(window, {
-        scrollTo: { y: targetScroll, autoKill: false },
-        duration: 1,
-        ease: 'power2.inOut',
-      })
+    if (nextSection) {
+      // Use ScrollSmoother if available for proper smooth scrolling to element
+      const smoother = getSmoother()
+      if (smoother) {
+        // ScrollSmoother.scrollTo can accept an element directly
+        smoother.scrollTo(nextSection, true)
+      } else {
+        // Fallback to gsap scrollTo
+        gsap.to(window, {
+          scrollTo: { y: nextSection, autoKill: false },
+          duration: 1,
+          ease: 'power2.inOut',
+        })
+      }
     }
   }, [])
 
@@ -252,7 +253,6 @@ export default function PracticeAreasHorizontal() {
           // pinType: 'transform' is auto-detected inside ScrollSmoother
           onUpdate: (self) => {
             const progress = self.progress
-            const totalPanels = practiceAreas.length
 
             // Calculate which card is closest to the center of the viewport
             // Right column is 66.67% wide, center is at ~33vw from its left edge
@@ -291,8 +291,10 @@ export default function PracticeAreasHorizontal() {
 
     return () => {
       clearTimeout(timeoutId)
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      const currentTrigger = triggerRef.current
       ScrollTrigger.getAll().forEach((st) => {
-        if (st.trigger === triggerRef.current) {
+        if (st.trigger === currentTrigger) {
           st.kill()
         }
       })
@@ -345,7 +347,7 @@ export default function PracticeAreasHorizontal() {
           <button className={styles.skipButton} onClick={skipSection}>
             <span>Skip Section</span>
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-              <path d="M8 3L8 13M8 13L12 9M8 13L4 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M8 3L8 13M8 13L12 9M8 13L4 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
         </div>

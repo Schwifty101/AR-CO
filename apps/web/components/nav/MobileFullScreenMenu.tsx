@@ -71,7 +71,7 @@ export default function MobileFullScreenMenu({ isOpen, onClose }: MobileFullScre
     }
   }, [isOpen])
 
-  // GSAP stagger animation for nav links
+  // GSAP stagger animation for nav links - premium, luxurious timing
   useEffect(() => {
     if (isOpen && navLinksRef.current) {
       const links = navLinksRef.current.querySelectorAll(`.${styles.navItem}`)
@@ -82,10 +82,10 @@ export default function MobileFullScreenMenu({ isOpen, onClose }: MobileFullScre
         {
           opacity: 1,
           x: 0,
-          duration: 0.5,
-          stagger: 0.1,
+          duration: 0.7,
+          stagger: 0.15,
           ease: 'power3.out',
-          delay: 0.2,
+          delay: 0.3,
         }
       )
     }
@@ -117,7 +117,7 @@ export default function MobileFullScreenMenu({ isOpen, onClose }: MobileFullScre
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.3 }}
+          transition={{ duration: 0.6 }}
           role="dialog"
           aria-modal="true"
           aria-label="Mobile navigation menu"
@@ -127,7 +127,7 @@ export default function MobileFullScreenMenu({ isOpen, onClose }: MobileFullScre
             className={styles.header}
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1, duration: 0.4 }}
+            transition={{ delay: 0.2, duration: 0.6 }}
           >
             <NavButton
               href="/contact?consultation=true"
@@ -165,7 +165,7 @@ export default function MobileFullScreenMenu({ isOpen, onClose }: MobileFullScre
                   hover: {
                     x: 16,
                     transition: {
-                      duration: 0.3,
+                      duration: 0.5,
                       ease: [0.25, 0.46, 0.45, 0.94],
                     },
                   },
@@ -177,7 +177,7 @@ export default function MobileFullScreenMenu({ isOpen, onClose }: MobileFullScre
                     variants={{
                       hover: {
                         color: '#ffffff',
-                        transition: { duration: 0.2 },
+                        transition: { duration: 0.4 },
                       },
                     }}
                   >
@@ -190,7 +190,7 @@ export default function MobileFullScreenMenu({ isOpen, onClose }: MobileFullScre
                       hover: {
                         opacity: 1,
                         x: 0,
-                        transition: { duration: 0.2, delay: 0.05 },
+                        transition: { duration: 0.4, delay: 0.1 },
                       },
                     }}
                   >
@@ -206,7 +206,7 @@ export default function MobileFullScreenMenu({ isOpen, onClose }: MobileFullScre
             className={styles.footer}
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6, duration: 0.5 }}
+            transition={{ delay: 0.7, duration: 0.6 }}
           >
             {/* Left - Email and Time */}
             <div className={styles.footerLeft}>

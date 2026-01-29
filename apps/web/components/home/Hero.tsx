@@ -7,6 +7,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger"
 import { useGSAP } from "@gsap/react"
 import styles from "./Hero.module.css"
 import LoadingScreen from "../LoadingScreen"
+import { setSlowScroll } from "../SmoothScroll"
 
 // Register GSAP plugins
 if (typeof window !== "undefined") {
@@ -53,7 +54,7 @@ export default function Hero() {
   const imagesRef = useRef<HTMLImageElement[]>([])
   const currentFrameRef = useRef(0)
   const scrollTriggerRef = useRef<ScrollTrigger | null>(null)
-  
+
   // Frame range for UI element fade (frames 10-30 for smooth transition)
   const UI_FADE_START_FRAME = 10
   const UI_FADE_END_FRAME = 30
@@ -92,10 +93,10 @@ export default function Hero() {
     const loadImages = async () => {
       const loadedImages: HTMLImageElement[] = []
       let loadedCount = 0
-      
+
       // Load images one batch at a time for smoother progress
       const batchSize = 10
-      
+
       for (let i = 0; i < TOTAL_FRAMES; i += batchSize) {
         const batch = []
         for (let j = i; j < Math.min(i + batchSize, TOTAL_FRAMES); j++) {
@@ -111,7 +112,7 @@ export default function Hero() {
           })
           batch.push(promise)
         }
-        
+
         try {
           const batchResults = await Promise.all(batch)
           loadedImages.push(...batchResults)
@@ -154,7 +155,7 @@ export default function Hero() {
       // Linear interpolation between start and end frames
       opacity = 1 - (currentFrame - UI_FADE_START_FRAME) / (UI_FADE_END_FRAME - UI_FADE_START_FRAME)
     }
-    
+
     // Apply smooth easing to opacity for more natural feel
     const easedOpacity = opacity * opacity * (3 - 2 * opacity) // smoothstep easing
 
@@ -202,11 +203,17 @@ export default function Hero() {
       scrub: true, // Enable scrub - ScrollSmoother will handle the smoothing
       // markers: true,
 
+      // Slow down scroll when entering hero section for smooth frame playback
+      // Note: onLeave/onLeaveBack removed to prevent momentum burst between sections
+      // QuoteSection immediately takes over scroll speed control via its own handlers
+      onEnter: () => setSlowScroll(),
+      onEnterBack: () => setSlowScroll(),
+
       onUpdate: (self) => {
         // Calculate frame directly from scroll progress
         // ScrollSmoother's normalizeScroll + smooth settings handle acceleration smoothing
         const frame = Math.floor(self.progress * (TOTAL_FRAMES - 1))
-        
+
         // Only render if frame changed (prevents unnecessary redraws)
         if (frame !== currentFrameRef.current && imagesRef.current[frame]) {
           currentFrameRef.current = frame
@@ -217,7 +224,7 @@ export default function Hero() {
         }
       },
     })
-    
+
     scrollTriggerRef.current = st
 
     return () => {
@@ -272,13 +279,13 @@ export default function Hero() {
 
           {/* Hero Content */}
           <div className={styles.contentWrapper}>
-            <div 
+            <div
               ref={titleContainerRef}
               className={styles.titleContainer}
             >
               <h1 className={styles.title}>
                 AR&CO
-                <span 
+                <span
                   ref={titleSubRef}
                   className={styles.titleSub}
                 >
@@ -288,52 +295,52 @@ export default function Hero() {
             </div>
 
             {/* Client Logos Section */}
-            <div 
+            <div
               ref={logosRef}
               className={styles.trustedBy}
             >
-         
 
-          <div className={styles.logoScrollContainer}>
-            <div className={styles.logoScroll}>
-              {/* First set of logos */}
-              <div className={styles.logoSet}>
-                {logos.map((logo, index) => (
-                  <div key={`a-${index}`} className={styles.logoItem}>
-                    <Image
-                      src={`/client-logos/${logo}`}
-                      alt={logo.replace("-logo.png", "").replace("-Logo.png", "")}
-                      width={120}
-                      height={60}
-                      className={styles.logoImage}
-                      priority
-                      loading="eager"
-                    />
+
+              <div className={styles.logoScrollContainer}>
+                <div className={styles.logoScroll}>
+                  {/* First set of logos */}
+                  <div className={styles.logoSet}>
+                    {logos.map((logo, index) => (
+                      <div key={`a-${index}`} className={styles.logoItem}>
+                        <Image
+                          src={`/client-logos/${logo}`}
+                          alt={logo.replace("-logo.png", "").replace("-Logo.png", "")}
+                          width={120}
+                          height={60}
+                          className={styles.logoImage}
+                          priority
+                          loading="eager"
+                        />
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-              {/* Duplicate set for seamless loop */}
-              <div className={styles.logoSet}>
-                {logos.map((logo, index) => (
-                  <div key={`b-${index}`} className={styles.logoItem}>
-                    <Image
-                      src={`/client-logos/${logo}`}
-                      alt={logo.replace("-logo.png", "").replace("-Logo.png", "")}
-                      width={120}
-                      height={60}
-                      className={styles.logoImage}
-                      priority
-                      loading="eager"
-                    />
+                  {/* Duplicate set for seamless loop */}
+                  <div className={styles.logoSet}>
+                    {logos.map((logo, index) => (
+                      <div key={`b-${index}`} className={styles.logoItem}>
+                        <Image
+                          src={`/client-logos/${logo}`}
+                          alt={logo.replace("-logo.png", "").replace("-Logo.png", "")}
+                          width={120}
+                          height={60}
+                          className={styles.logoImage}
+                          priority
+                          loading="eager"
+                        />
+                      </div>
+                    ))}
                   </div>
-                ))}
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-      </div>
-    </section>
+      </section>
     </>
   )
 }

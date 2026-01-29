@@ -1,5 +1,6 @@
 'use client'
 
+import { forwardRef } from 'react'
 import Link from 'next/link'
 import SlotMachineText from '../../shared/animations/SlotMachineText'
 import type { INavButtonProps } from '../types/nav.types'
@@ -10,6 +11,7 @@ import styles from './NavButton.module.css'
  *
  * Unified CTA button component with consistent styling across all nav contexts.
  * Matches "Book Consultation" / "Schedule a Call" design pattern.
+ * Supports ref forwarding for GSAP animations.
  *
  * @example
  * ```tsx
@@ -21,7 +23,7 @@ import styles from './NavButton.module.css'
  * </NavButton>
  * ```
  */
-export default function NavButton({
+const NavButton = forwardRef<HTMLAnchorElement, INavButtonProps>(({
     href,
     children,
     onClick,
@@ -29,10 +31,11 @@ export default function NavButton({
     showArrow = true,
     arrowStyle = 'horizontal',
     animated = false,
-}: INavButtonProps) {
+}, ref) => {
     return (
         <Link
             href={href}
+            ref={ref}
             className={`${styles.navButton} ${className}`}
             onClick={onClick}
         >
@@ -72,4 +75,9 @@ export default function NavButton({
             )}
         </Link>
     )
-}
+})
+
+NavButton.displayName = 'NavButton'
+
+export default NavButton
+

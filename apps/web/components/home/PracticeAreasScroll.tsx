@@ -82,7 +82,6 @@ export default function PracticeAreasScroll() {
   const [isScrollLocked, setIsScrollLocked] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const [activeIndex, setActiveIndex] = useState(0)
-  const scrollLockPositionRef = useRef(0)
 
   const navigateToPanel = (panelIndex: number) => {
     if (!containerRef.current) return
@@ -229,8 +228,7 @@ export default function PracticeAreasScroll() {
     // Image parallax (horizontal movement within container)
     // Move left when approaching, right when leaving
     const imageX = -panelProgress * 15 // Horizontal parallax movement percentage
-    const imageScale = 1.0 + Math.abs(panelProgress) * 0.05 // Slight scale for depth
-    
+
     return {
       text: {
         transform: `translate(${textX}px, ${textY}px)`,
