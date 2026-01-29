@@ -1,23 +1,27 @@
 /* Hero Section */
 .hero {
   position: relative;
-  height: 400vh; /* Reduced for minimal scroll consumption */
+  height: 700vh;
+  /* Increased height to slow down frame-by-frame animation (772 frames over 700vh) */
   z-index: 1;
   background: #000;
 }
 
 /* Sticky wrapper to keep content in view while scrolling through hero */
 .stickyWrapper {
-  position: relative;  /* Let GSAP control positioning - no CSS conflict */
+  position: relative;
+  /* Let GSAP control positioning - no CSS conflict */
   top: 0;
   left: 0;
   width: 100%;
   height: 100vh;
-  overflow: visible;  /* Allow content to be visible during stacking transition */
+  overflow: visible;
+  /* Allow content to be visible during stacking transition */
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1;  /* Lower z-index so quote section can stack over */
+  z-index: 1;
+  /* Lower z-index so quote section can stack over */
 }
 
 /* Video Background */
@@ -51,7 +55,7 @@
   background: rgba(0, 0, 0, 0.45);
   pointer-events: none;
 }
-  
+
 
 /* Content Wrapper */
 .contentWrapper {
@@ -145,6 +149,7 @@
     opacity: 0;
     transform: translateY(30px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -269,13 +274,14 @@
   overflow: hidden;
   position: relative;
   margin-top: 20px;
-  
+
 }
 
 @keyframes infiniteScroll {
   from {
     transform: translate3d(0, 0, 0);
   }
+
   to {
     transform: translate3d(-50%, 0, 0);
   }

@@ -34,10 +34,10 @@ export const setSmoothness = (smoothValue: number) => {
   }
 }
 
-// Preset: Slow scroll for frame sequences
+// Preset: Slow scroll for frame sequences (e.g., hero animation)
 export const setSlowScroll = () => {
-  setScrollSpeed(0.001)
-  setSmoothness(10) // High smoothness for frame playback
+  setScrollSpeed(0.3)    // 30% of normal speed for frame playback
+  setSmoothness(10)      // Higher smoothness to dampen scroll velocity variations
 }
 
 // Preset: Medium scroll for transition sections (hero → quote overlap)
@@ -46,10 +46,16 @@ export const setMediumScroll = () => {
   setSmoothness(6) // Medium-high smoothness
 }
 
-// Preset: Normal scroll for rest of website
+// Preset: Overlap scroll for Hero → QuoteSection parallax transition
+export const setOverlapScroll = () => {
+  setScrollSpeed(0.6)    // Medium-slow for smooth overlap effect
+  setSmoothness(4)       // Medium smoothness for natural parallax feel
+}
+
+// Preset: Normal scroll for rest of website (matches base SmoothScroll config)
 export const setNormalScroll = () => {
-  setScrollSpeed(1)
-  setSmoothness(2.5) // Normal smoothness
+  setScrollSpeed(0.6)   // Matches base speed
+  setSmoothness(4)       // Matches base smooth value
 }
 
 // Pause scrolling completely (used when frames need to catch up)
@@ -88,12 +94,12 @@ export default function SmoothScroll({ children }: SmoothScrollProps) {
     const smoother = ScrollSmoother.create({
       wrapper: wrapperRef.current,
       content: contentRef.current,
-      smooth: 4,                // Higher smoothness for damped, flowy feel
+      smooth: 2,                // Lower value for less aggressive, more organic easing
       effects: true,            // Enable data-speed and data-lag attributes
-      smoothTouch: 0.1,         // Enable smooth scrolling on touch devices
+      smoothTouch: 0.15,        // Slightly higher for better mobile feel
       normalizeScroll: true,    // CRITICAL: Normalizes scroll behavior, prevents acceleration spikes
       ignoreMobileResize: true, // Prevent issues with mobile address bar
-      speed: 0.7,               // Slightly slower speed for more damped feel
+      speed: 0.85,              // Slightly faster to prevent sluggishness while staying smooth
     })
 
     // Store globally for dynamic updates

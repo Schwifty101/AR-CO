@@ -50,14 +50,16 @@ export default function SidePanel({ isOpen, onClose }: SidePanelProps) {
       document.body.style.overflow = 'hidden'
     } else {
       document.body.style.overflow = ''
-      setHoveredItem(null) // Reset hover state when closing
     }
     return () => {
       document.body.style.overflow = ''
     }
   }, [isOpen])
 
-  // GSAP stagger animation for nav links
+  // Only show hover state when panel is open
+  const activeHoveredItem = isOpen ? hoveredItem : null
+
+  // GSAP stagger animation for nav links - premium, luxurious timing
   useEffect(() => {
     if (isOpen && navLinksRef.current) {
       const links = navLinksRef.current.querySelectorAll(`.${styles.navItem}`)
@@ -68,18 +70,18 @@ export default function SidePanel({ isOpen, onClose }: SidePanelProps) {
         {
           opacity: 1,
           x: 0,
-          duration: 0.4,
-          stagger: 0.08,
+          duration: 0.6,
+          stagger: 0.12,
           ease: 'power3.out',
-          delay: 0.3,
+          delay: 0.4,
         }
       )
     }
   }, [isOpen])
 
-  // GSAP animation for mega menu content change
+  // GSAP animation for mega menu content change - premium timing
   useEffect(() => {
-    if (hoveredItem && megaContentRef.current) {
+    if (activeHoveredItem && megaContentRef.current) {
       // Delay to wait for AnimatePresence to finish rendering new content
       const timer = setTimeout(() => {
         if (megaContentRef.current) {
@@ -91,18 +93,18 @@ export default function SidePanel({ isOpen, onClose }: SidePanelProps) {
               {
                 opacity: 1,
                 y: 0,
-                duration: 0.3,
-                stagger: 0.05,
+                duration: 0.6,
+                stagger: 0.12,
                 ease: 'power2.out',
               }
             )
           }
         }
-      }, 220) // Wait for AnimatePresence transition (200ms) + buffer
+      }, 450) // Wait for AnimatePresence transition (400ms) + buffer
 
       return () => clearTimeout(timer)
     }
-  }, [hoveredItem])
+  }, [activeHoveredItem])
 
   // Close on Escape key
   useEffect(() => {
@@ -115,7 +117,7 @@ export default function SidePanel({ isOpen, onClose }: SidePanelProps) {
     return () => document.removeEventListener('keydown', handleEscape)
   }, [isOpen, onClose])
 
-  const currentSubmenu = hoveredItem ? submenuData[hoveredItem] : null
+  const currentSubmenu = activeHoveredItem ? submenuData[activeHoveredItem] : null
 
   return (
     <AnimatePresence>
@@ -127,7 +129,7 @@ export default function SidePanel({ isOpen, onClose }: SidePanelProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
+            transition={{ duration: 0.6 }}
             onClick={onClose}
             aria-hidden="true"
           />
@@ -140,7 +142,7 @@ export default function SidePanel({ isOpen, onClose }: SidePanelProps) {
             exit={{ x: '100%' }}
             transition={{
               type: 'tween',
-              duration: 0.5,
+              duration: 0.8,
               ease: [0.25, 0.46, 0.45, 0.94],
             }}
             role="dialog"
@@ -163,7 +165,7 @@ export default function SidePanel({ isOpen, onClose }: SidePanelProps) {
                 aria-label="Close menu"
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.2 }}
+                transition={{ delay: 0.4, duration: 0.6 }}
               >
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                   <path
@@ -187,7 +189,7 @@ export default function SidePanel({ isOpen, onClose }: SidePanelProps) {
                 {navItems.map((item) => (
                   <div
                     key={item.id}
-                    className={`${styles.navItem} ${hoveredItem === item.id ? styles.navItemActive : ''}`}
+                    className={`${styles.navItem} ${activeHoveredItem === item.id ? styles.navItemActive : ''}`}
                     onMouseEnter={() => {
                       if (item.hasSubmenu) {
                         setHoveredItem(item.id)
@@ -220,12 +222,12 @@ export default function SidePanel({ isOpen, onClose }: SidePanelProps) {
                 <AnimatePresence mode="wait">
                   {currentSubmenu ? (
                     <motion.div
-                      key={hoveredItem}
+                      key={activeHoveredItem}
                       className={styles.megaContent}
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
-                      transition={{ duration: 0.2 }}
+                      transition={{ duration: 0.4 }}
                     >
                       <h3 className={styles.megaTitle}>{currentSubmenu.title}</h3>
                       <div className={styles.megaGrid}>
@@ -262,7 +264,7 @@ export default function SidePanel({ isOpen, onClose }: SidePanelProps) {
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
-                      transition={{ duration: 0.2 }}
+                      transition={{ duration: 0.4 }}
                     >
                       <div className={styles.placeholderIcon}>
                         <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
@@ -284,7 +286,7 @@ export default function SidePanel({ isOpen, onClose }: SidePanelProps) {
               className={styles.panelFooter}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5, duration: 0.4 }}
+              transition={{ delay: 0.6, duration: 0.6 }}
             >
               <div className={styles.footerLeft}>
                 <div className={styles.footerLabel}>Email</div>

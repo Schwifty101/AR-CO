@@ -78,7 +78,6 @@ export default function PracticeAreasList() {
   const containerRef = useRef<HTMLDivElement>(null)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const [scrollProgress, setScrollProgress] = useState(0)
-  const [entranceProgress, setEntranceProgress] = useState(0)
   const [activeIndex, setActiveIndex] = useState(0)
   const [isMobile, setIsMobile] = useState(false)
 
@@ -156,8 +155,7 @@ export default function PracticeAreasList() {
         const entranceRaw = 1 - (sectionStart / viewportHeight)
         const entranceClamped = Math.min(Math.max(entranceRaw, 0), 1)
         const entranceEased = easeOutCubic(entranceClamped)
-        setEntranceProgress(entranceClamped)
-        
+
         // Apply entrance animation - panels slide in from right with easing
         const maxEntranceOffset = window.innerWidth * 1.0 // Start from 100% off-screen right
         const entranceOffset = (1 - entranceEased) * maxEntranceOffset
@@ -166,7 +164,6 @@ export default function PracticeAreasList() {
         setActiveIndex(0)
       } else if (sectionStart <= 0 && sectionEnd > viewportHeight) {
         // Section is fully in view and sticky - normal horizontal scrolling
-        setEntranceProgress(1)
         
         const totalScrollableHeight = rect.height - viewportHeight
         const scrolledIntoSection = -sectionStart
@@ -192,7 +189,6 @@ export default function PracticeAreasList() {
         setActiveIndex(Math.min(activeIdx, totalPanels - 1))
       } else if (sectionStart >= viewportHeight) {
         // Section is below viewport - reset to initial state (off-screen right)
-        setEntranceProgress(0)
         setScrollProgress(0)
         setActiveIndex(0)
         scrollContainer.style.transform = `translateX(${window.innerWidth * 1.0}px)`

@@ -8,7 +8,7 @@
   text-decoration: none;
   cursor: pointer;
   isolation: isolate;
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .logoContainer:hover {
@@ -164,13 +164,13 @@
   font-size: 1.25rem;
   letter-spacing: 0.02em;
   color: var(--wood-espresso);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .textPrimary,
 .textSecondary {
   display: inline-block;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .textSeparator {

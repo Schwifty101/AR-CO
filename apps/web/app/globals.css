@@ -21,7 +21,8 @@
 }
 
 /* Legacy Lenis styles (can be removed if not needed) */
-html.lenis, html.lenis body {
+html.lenis,
+html.lenis body {
   height: auto;
 }
 
@@ -44,19 +45,30 @@ html.lenis, html.lenis body {
 /* Unified color system for consistent styling across portal and admin */
 :root {
   /* Heritage Color Palette - Elegant, minimal, timeless */
-  --heritage-walnut: #4E342E;      /* Primary/Structure: Dark Walnut - headers, heavy text, structural elements */
-  --heritage-gold: #D4AF37;        /* Accent: Burnished Gold - buttons, icons, highlights (use sparingly) */
-  --heritage-cream: #F9F8F6;       /* Surface Light: Creamy Off-White - main background */
-  --heritage-charcoal: #2C2C2C;    /* Surface Dark: Warm Charcoal - contrasting section backgrounds */
+  --heritage-walnut: #4E342E;
+  /* Primary/Structure: Dark Walnut - headers, heavy text, structural elements */
+  --heritage-gold: #D4AF37;
+  /* Accent: Burnished Gold - buttons, icons, highlights (use sparingly) */
+  --heritage-cream: #F9F8F6;
+  /* Surface Light: Creamy Off-White - main background */
+  --heritage-charcoal: #2C2C2C;
+  /* Surface Dark: Warm Charcoal - contrasting section backgrounds */
 
   /* Dark Woody Brown Theme - Rich, warm, natural tones */
-  --wood-espresso: #1a110a;        /* Deepest brown - primary backgrounds, headers */
-  --wood-mahogany: #5C3D2E;        /* Rich mahogany - secondary elements */
-  --wood-cedar: #7A5C4E;           /* Medium cedar - borders, dividers */
-  --wood-oak: #8B6F47;             /* Light oak - hover states, accents */
-  --wood-walnut-dark: #3A2618;     /* Deep walnut - shadows, deep contrast */
-  --wood-chestnut: #654321;        /* Classic chestnut - buttons, active states */
-  --wood-sandalwood: #A0826D;      /* Warm sandalwood - disabled states, subtle accents */
+  --wood-espresso: #1a110a;
+  /* Deepest brown - primary backgrounds, headers */
+  --wood-mahogany: #5C3D2E;
+  /* Rich mahogany - secondary elements */
+  --wood-cedar: #7A5C4E;
+  /* Medium cedar - borders, dividers */
+  --wood-oak: #8B6F47;
+  /* Light oak - hover states, accents */
+  --wood-walnut-dark: #3A2618;
+  /* Deep walnut - shadows, deep contrast */
+  --wood-chestnut: #654321;
+  /* Classic chestnut - buttons, active states */
+  --wood-sandalwood: #A0826D;
+  /* Warm sandalwood - disabled states, subtle accents */
 
   /* Background Colors */
   --bg-primary: #1a1d1a;
@@ -234,8 +246,8 @@ html.lenis, html.lenis body {
 @font-face {
   font-family: 'Lora';
   src: url('/fonts/lora/Lora-Variable.woff2') format('woff2'),
-       url('/fonts/lora/Lora-Variable.woff') format('woff'),
-       url('/fonts/lora/Lora-Variable.ttf') format('truetype');
+    url('/fonts/lora/Lora-Variable.woff') format('woff'),
+    url('/fonts/lora/Lora-Variable.ttf') format('truetype');
   font-weight: 400 700;
   font-display: swap;
   font-style: normal;
@@ -244,8 +256,8 @@ html.lenis, html.lenis body {
 @font-face {
   font-family: 'Lora';
   src: url('/fonts/lora/Lora-VariableItalic.woff2') format('woff2'),
-       url('/fonts/lora/Lora-VariableItalic.woff') format('woff'),
-       url('/fonts/lora/Lora-VariableItalic.ttf') format('truetype');
+    url('/fonts/lora/Lora-VariableItalic.woff') format('woff'),
+    url('/fonts/lora/Lora-VariableItalic.ttf') format('truetype');
   font-weight: 400 700;
   font-display: swap;
   font-style: italic;
@@ -259,20 +271,29 @@ html.lenis, html.lenis body {
     box-sizing: border-box;
   }
 
-  html {
-    scroll-behavior: smooth;
+  /* Respect user motion preferences for smooth scrolling */
+  @media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
   }
 
   body {
     @apply text-foreground;
     font-family: 'Cabinet Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
     /* background: linear-gradient(
-      180deg,
-      rgba(250, 248, 245, 1) 0%,
-      rgba(245, 243, 240, 1) 50%,
-      rgba(240, 238, 235, 1) 100%
-    ); */
-    background: var(--heritage-cream);  
+        180deg,
+        rgba(250, 248, 245, 1) 0%,
+        rgba(245, 243, 240, 1) 50%,
+        rgba(240, 238, 235, 1) 100%
+      ); */
+    background: var(--heritage-cream);
     background-attachment: fixed;
     color: #1a1a1a;
     line-height: var(--line-height);
@@ -344,6 +365,7 @@ button {
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -458,7 +480,8 @@ body.app-loaded header {
 .section-dark p,
 .section-dark span,
 .section-dark li {
-  color: rgba(249, 248, 246, 0.85); /* Slightly softer cream for body text */
+  color: rgba(249, 248, 246, 0.85);
+  /* Slightly softer cream for body text */
 }
 
 .section-dark a {
@@ -577,25 +600,21 @@ body.app-loaded header {
 
 /* White background with subtle woody brown hint - for light sections */
 .bg-white-wood-hint {
-  background: linear-gradient(
-    180deg,
-   rgba(255, 255, 255, 1) 0%,
-    rgb(246, 239, 228) 30%,
-    rgb(255, 244, 232) 60%,
-    rgb(255, 238, 217) 100%
-  );
+  background: linear-gradient(180deg,
+      rgba(255, 255, 255, 1) 0%,
+      rgb(246, 239, 228) 30%,
+      rgb(255, 244, 232) 60%,
+      rgb(255, 238, 217) 100%);
   color: var(--wood-espresso);
 }
 
 /* Black background with subtle dark brown hint - for dark sections */
 .bg-black-wood-hint {
-  background: linear-gradient(
-    180deg,
-    rgba(0, 0, 0, 1) 0%,
-    rgba(15, 10, 8, 1) 30%,
-    rgba(25, 17, 13, 1) 60%,
-    rgba(35, 23, 18, 1) 100%
-  );
+  background: linear-gradient(180deg,
+      rgba(0, 0, 0, 1) 0%,
+      rgba(15, 10, 8, 1) 30%,
+      rgba(25, 17, 13, 1) 60%,
+      rgba(35, 23, 18, 1) 100%);
   color: var(--heritage-cream);
 }
 
