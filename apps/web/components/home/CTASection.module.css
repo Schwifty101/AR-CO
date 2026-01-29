@@ -1,16 +1,17 @@
 /* ============================================
-   CTA SECTION - Heritage Aesthetic
+   CTA SECTION - Heritage Aesthetic with Parallax
    Relies on globals.css for all color variables
    ============================================ */
 
 /* ============================================
-   SECTION
+   SECTION - Pinned via GSAP ScrollTrigger for parallax overlap
    ============================================ */
 .ctaSection {
   position: relative;
   height: 100vh;
   max-height: 100vh;
   width: 100%;
+  margin-top: 4rem;
   /* Using bg-white-wood-hint gradient from globals.css */
   background: var(--heritage-cream);
   display: flex;
@@ -18,6 +19,7 @@
   justify-content: center;
   overflow: hidden;
   padding: 2rem;
+  z-index: 1;
 }
 
 /* ============================================
@@ -386,6 +388,8 @@
     padding: 1.5rem;
     height: 100vh;
     max-height: 100vh;
+    position: relative;
+    /* Disable sticky on mobile for better performance */
   }
 
   /* Hide or fade all testimonials on mobile */

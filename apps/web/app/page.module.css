@@ -44,7 +44,8 @@
   margin: 0 auto;
   text-align: center;
 }
-.container h2{
+
+.container h2 {
   font-size: 4rem;
   font-weight: 600;
 }
@@ -165,24 +166,37 @@
   margin-bottom: 1.5rem;
 }
 
-/* Footer spacer to create scroll distance for footer reveal */
-.footerSpacer {
-  height: 100vh;
-  width: 100%;
-  pointer-events: none;
+/* CTA Section wrapper for parallax overlap effect */
+.ctaWrapper {
+  position: relative;
+  z-index: 5;
 }
 
-/* Footer Wrapper for slide-up animation */
+/* Footer Wrapper for slide-up animation (legacy) */
 .footerWrapper {
   position: fixed;
   bottom: 0;
   left: 0;
   width: 100%;
   height: 100vh;
-  z-index: 50;
+  z-index: 100;
   pointer-events: none;
 }
 
-.footerWrapper > * {
+.footerWrapper>* {
   pointer-events: auto;
+}
+
+/* Spacer creates scroll room for footer parallax reveal - height compensates for footer's negative margin */
+.footerSpacer {
+  height: 50vh;
+  width: 100%;
+  pointer-events: none;
+  background: transparent;
+}
+
+@media (max-width: 768px) {
+  .footerSpacer {
+    display: none;
+  }
 }

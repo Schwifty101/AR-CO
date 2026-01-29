@@ -54,13 +54,14 @@ export default function Home() {
 
           {/* Practice Areas Horizontal Scroll with Abstract Layout */}
           <PracticeAreasHorizontal />
-          <CTASection />
-
-          <div className={styles.footerSpacer} id="footer-trigger" />
+          {/* CTA Section with footer trigger for parallax overlap effect */}
+          <div id="footer-trigger" className={styles.ctaWrapper}>
+            <CTASection />
+          </div>
+          {/* Spacer inside main to create scroll height for footer parallax reveal */}
+          <div className={styles.footerSpacer} aria-hidden="true" />
         </main>
-        <div className={styles.footerWrapper}>
-          <Footer />
-        </div>
+        <Footer />
       </SmoothScroll>
     </>
   )

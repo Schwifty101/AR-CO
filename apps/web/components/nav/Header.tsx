@@ -217,7 +217,16 @@ export default function Header() {
           <div className={styles.actionsSection}>
             {/* Desktop CTA Button (always visible on desktop) */}
             <Link href="/contact?consultation=true" className={styles.btnPrimary}>
-              BOOK CONSULTATION
+              Book Consultation
+              <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                <path
+                  d="M4 10h12m0 0l-4-4m4 4l-4 4"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
             </Link>
 
             {/* Hamburger Menu Button (scrolled state on desktop, always on mobile) */}

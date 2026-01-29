@@ -143,41 +143,61 @@
 }
 
 .btnPrimary {
-  padding: 0.75rem 1.75rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.75rem;
   font-family: 'Cabinet Grotesk', sans-serif;
-  font-size: 0.8125rem;
-  font-weight: 500;
-  letter-spacing: 0.05em;
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
   color: var(--heritage-cream);
-  background: linear-gradient(135deg, #2d5016 0%, #3a6b1d 100%);
+  background: var(--wood-espresso);
   border: none;
-  border-radius: 10px;
+  border-radius: 100px;
   text-decoration: none;
-  transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(45, 80, 22, 0.2);
+  box-shadow:
+    0 4px 16px rgba(58, 38, 24, 0.06),
+    0 2px 8px rgba(58, 38, 24, 0.12);
 }
 
 .btnPrimary::before {
   content: '';
   position: absolute;
   top: 0;
-  left: -100%;
+  left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-  transition: left 0.6s ease;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
 
 .btnPrimary:hover {
-  background: linear-gradient(135deg, #3a6b1d 0%, #4a8523 100%);
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(45, 80, 22, 0.35);
+  box-shadow:
+    0 8px 24px rgba(58, 38, 24, 0.12),
+    0 4px 12px rgba(58, 38, 24, 0.2);
+  background: var(--wood-mahogany);
 }
 
 .btnPrimary:hover::before {
-  left: 100%;
+  opacity: 1;
+}
+
+.btnPrimary:active {
+  transform: translateY(0);
+}
+
+.btnPrimary svg {
+  transition: transform 0.3s ease;
+}
+
+.btnPrimary:hover svg {
+  transform: translateX(4px);
 }
 
 /* ========== Menu Toggle Button (Hamburger) ========== */

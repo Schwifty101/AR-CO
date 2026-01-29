@@ -266,12 +266,13 @@ html.lenis, html.lenis body {
   body {
     @apply text-foreground;
     font-family: 'Cabinet Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
-    background: linear-gradient(
+    /* background: linear-gradient(
       180deg,
       rgba(250, 248, 245, 1) 0%,
       rgba(245, 243, 240, 1) 50%,
       rgba(240, 238, 235, 1) 100%
-    );
+    ); */
+    background: var(--heritage-cream);  
     background-attachment: fixed;
     color: #1a1a1a;
     line-height: var(--line-height);

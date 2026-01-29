@@ -83,6 +83,22 @@ export default function CTASection() {
     if (!section || !testimonialsLayer) return
 
     const ctx = gsap.context(() => {
+      // Pin the CTA section for parallax overlap effect with footer
+      // Section stays fixed when its top hits viewport top
+      // IMPORTANT: Use pinType: "transform" when inside ScrollSmoother
+      // because ScrollSmoother uses CSS transforms for scrolling,
+      // and position:fixed pins break out of the transformed container
+      ScrollTrigger.create({
+        trigger: section,
+        start: 'top top', // Pin when CTA top touches viewport top
+        end: '+=150%', // Stay pinned for 150% of viewport height (enough for footer to overlap)
+        pin: true,
+        pinSpacing: true, // Creates scroll room for the pin duration
+        pinType: 'transform', // CRITICAL: Use transform-based pinning for ScrollSmoother compatibility
+        anticipatePin: 1, // Smoother pin start
+        markers: false,
+      })
+
       // Entry animation only - cards slide in from right
       testimonialsRef.current.forEach((card, index) => {
         if (card) {
