@@ -27,7 +27,6 @@ if (typeof window !== "undefined") {
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isHidden, setIsHidden] = useState(false)
-  const [pastHeroSection, setPastHeroSection] = useState(false)
   const [quotationReached, setQuotationReached] = useState(false)
   const [dropdownSection, setDropdownSection] = useState<'practice-areas' | 'facilitation' | null>(null)
   const [sidePanelOpen, setSidePanelOpen] = useState(false)
@@ -58,21 +57,18 @@ export default function Header() {
         setIsScrolled(self.progress > 0.05)
       },
       onLeave: () => {
-        // Hero section ended - show header and mark as past hero
+        // Hero section ended - show header
         setIsHidden(false)
         setIsScrolled(true)
-        setPastHeroSection(true)
       },
       onEnterBack: () => {
         // Scrolled back into hero - hide header
         setIsHidden(true)
-        setPastHeroSection(false)
       },
       onLeaveBack: () => {
         // Back at top - show header
         setIsHidden(false)
         setIsScrolled(false)
-        setPastHeroSection(false)
       }
     })
 
