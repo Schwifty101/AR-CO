@@ -16,14 +16,14 @@ import styles from "./FullScreenDropdown.module.css"
  *
  * @param {boolean} isOpen - Controls menu visibility
  * @param {() => void} onClose - Callback when menu should close
- * @param {'practice-areas' | 'facilitation' | null} activeSection - Which section to display
+ * @param {'facilitation' | null} activeSection - Which section to display
  *
  * @example
  * ```tsx
  * <FullScreenDropdown
  *   isOpen={dropdownOpen}
  *   onClose={() => setDropdownOpen(false)}
- *   activeSection="practice-areas"
+ *   activeSection="facilitation"
  * />
  * ```
  */
@@ -31,7 +31,7 @@ import styles from "./FullScreenDropdown.module.css"
 interface FullScreenDropdownProps {
   isOpen: boolean
   onClose: () => void
-  activeSection: 'practice-areas' | 'facilitation' | null
+  activeSection: 'facilitation' | null
 }
 
 // Navigation data structure - using shared data

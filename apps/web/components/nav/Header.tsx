@@ -30,7 +30,7 @@ export default function Header() {
   const [isHidden, setIsHidden] = useState(false)
   const [quotationReached, setQuotationReached] = useState(false)
   const [onDarkSection, setOnDarkSection] = useState(false)
-  const [dropdownSection, setDropdownSection] = useState<'practice-areas' | 'facilitation' | null>(null)
+  const [dropdownSection, setDropdownSection] = useState<'facilitation' | null>(null)
   const [sidePanelOpen, setSidePanelOpen] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
@@ -242,7 +242,7 @@ export default function Header() {
     return () => window.removeEventListener('resize', handleResize)
   }, [mobileMenuOpen])
 
-  const handleNavClick = (section: 'practice-areas' | 'facilitation') => {
+  const handleNavClick = (section: 'facilitation') => {
     if (dropdownSection === section) {
       setDropdownSection(null)
     } else {
@@ -309,31 +309,9 @@ export default function Header() {
                   <SlotMachineText>OUR TEAM</SlotMachineText>
                 </Link>
 
-                {/* Practice Areas - Click Trigger */}
-                <button
-                  className={`${styles.navButton} ${dropdownSection === 'practice-areas' ? styles.navButtonActive : ''}`}
-                  onClick={() => handleNavClick('practice-areas')}
-                  aria-expanded={dropdownSection === 'practice-areas'}
-                  aria-haspopup="true"
-                >
+                <Link href="/practice-areas" className={styles.navLink}>
                   <SlotMachineText>PRACTICE AREAS</SlotMachineText>
-                  <svg
-                    className={`${styles.chevron} ${dropdownSection === 'practice-areas' ? styles.chevronOpen : ''}`}
-                    width="12"
-                    height="12"
-                    viewBox="0 0 12 12"
-                    fill="none"
-                    aria-hidden="true"
-                  >
-                    <path
-                      d="M3 4.5L6 7.5L9 4.5"
-                      stroke="currentColor"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </button>
+                </Link>
 
                 {/* Facilitation Centre - Click Trigger */}
                 <button

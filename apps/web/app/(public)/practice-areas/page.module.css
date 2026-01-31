@@ -1,0 +1,457 @@
+/* ============================================
+   PRACTICE AREAS PAGE
+   Heritage light brown theme with GSAP pinning
+   ============================================ */
+
+/* ============================================
+   PAGE CONTAINER
+   ============================================ */
+.pageContainer {
+  position: relative;
+  min-height: 100vh;
+  background: var(--heritage-cream);
+}
+
+/* ============================================
+   TITLE CONTAINER - Pinned by GSAP
+   ============================================ */
+.titleContainer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 50;
+  padding-top: 2rem;
+  padding-bottom: 2rem;
+  will-change: transform;
+}
+
+.titleWrapper {
+  position: relative;
+  overflow: hidden;
+  width: calc(100% - 4rem);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: clamp(4rem, 10vw, 8rem);
+  border-radius: 16px;
+  margin: 0 2rem;
+  padding: 1.5rem 2rem;
+  isolation: isolate;
+}
+
+/* Blur background using pseudo-element */
+.titleWrapper::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: rgba(249, 248, 246, 0.65);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-radius: inherit;
+  border: 1px solid rgba(78, 52, 46, 0.1);
+  box-shadow:
+    0 4px 24px rgba(78, 52, 46, 0.08),
+    0 1px 2px rgba(78, 52, 46, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.pageTitle {
+  font-size: clamp(3rem, 10vw, 5rem);
+  font-weight: 250;
+  line-height: 0.9;
+  color: var(--wood-espresso);
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  font-family: 'Cabinet Grotesk', sans-serif;
+  text-align: center;
+  margin: 0;
+  padding: 0 2rem;
+  will-change: transform, opacity;
+}
+
+/* ============================================
+   HERO SPACER - Empty space at top showing only title
+   ============================================ */
+.heroSpacer {
+  height: 100vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+/* ============================================
+   CONTENT CONTAINER
+   ============================================ */
+.contentContainer {
+  position: relative;
+  width: 100%;
+}
+
+/* ============================================
+   INDIVIDUAL PRACTICE SECTION
+   ============================================ */
+.section {
+  min-height: 100vh;
+  padding: 4rem;
+  display: grid;
+  grid-template-columns: 35% 65%;
+  gap: 4rem;
+  background: var(--heritage-cream);
+  border-bottom: 1px solid rgba(78, 52, 46, 0.08);
+  position: relative;
+}
+
+.section:nth-child(even) {
+  background: rgba(78, 52, 46, 0.02);
+}
+
+/* ============================================
+   LEFT COLUMN - PERSONNEL
+   ============================================ */
+.leftColumn {
+  padding-right: 2rem;
+}
+
+.personnelLabel {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--heritage-gold);
+  margin-bottom: 1.5rem;
+  font-family: 'Cabinet Grotesk', sans-serif;
+}
+
+.personnelList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Personnel Card */
+.personnelCard {
+  background: linear-gradient(
+    135deg,
+    rgba(212, 175, 55, 0.08) 0%,
+    rgba(78, 52, 46, 0.06) 100%
+  );
+  border: 1px solid rgba(212, 175, 55, 0.15);
+  border-radius: 12px;
+  padding: 1.5rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.personnelCard:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(212, 175, 55, 0.12) 0%,
+    rgba(78, 52, 46, 0.08) 100%
+  );
+  border-color: var(--heritage-gold);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(212, 175, 55, 0.15);
+}
+
+.personnelName {
+  font-family: 'Cabinet Grotesk', sans-serif;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--wood-espresso);
+  margin: 0 0 0.375rem;
+  line-height: 1.3;
+}
+
+.personnelRole {
+  font-size: 0.8125rem;
+  color: var(--heritage-gold);
+  font-weight: 500;
+  margin-bottom: 0.75rem;
+  font-family: 'Cabinet Grotesk', sans-serif;
+}
+
+.personnelExpertise {
+  font-size: 0.875rem;
+  color: var(--wood-mahogany);
+  line-height: 1.5;
+  font-family: 'Cabinet Grotesk', sans-serif;
+  margin: 0;
+}
+
+/* No Personnel State */
+.noPersonnel {
+  color: var(--wood-sandalwood);
+  font-size: 0.875rem;
+  font-family: 'Cabinet Grotesk', sans-serif;
+}
+
+/* ============================================
+   RIGHT COLUMN - CONTENT
+   ============================================ */
+.rightColumn {
+  padding-left: 2rem;
+  border-left: 1px solid rgba(78, 52, 46, 0.08);
+}
+
+/* Section Label */
+.sectionLabel {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--heritage-gold);
+  margin-bottom: 0.75rem;
+  font-family: 'Cabinet Grotesk', sans-serif;
+}
+
+/* Overview */
+.overview {
+  margin-bottom: 3rem;
+}
+
+.overviewText {
+  font-family: 'Cabinet Grotesk', sans-serif;
+  font-size: 1.125rem;
+  line-height: 1.7;
+  color: var(--wood-espresso);
+  margin: 0;
+}
+
+/* Services */
+.services {
+  margin-bottom: 3rem;
+}
+
+.servicesList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.serviceItem {
+  font-family: 'Cabinet Grotesk', sans-serif;
+  font-size: 1rem;
+  color: var(--wood-mahogany);
+  padding-left: 1.5rem;
+  position: relative;
+  line-height: 1.5;
+}
+
+.serviceItem::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.6em;
+  width: 6px;
+  height: 6px;
+  background: var(--heritage-gold);
+  border-radius: 50%;
+}
+
+/* Cases & Clients */
+.cases,
+.clients {
+  margin-bottom: 3rem;
+}
+
+.casesList,
+.clientsList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.caseItem,
+.clientItem {
+  font-family: 'Cabinet Grotesk', sans-serif;
+  font-size: 1rem;
+  color: var(--wood-mahogany);
+  padding-left: 1.5rem;
+  position: relative;
+  line-height: 1.5;
+}
+
+.caseItem::before,
+.clientItem::before {
+  content: '\2014';
+  position: absolute;
+  left: 0;
+  color: var(--heritage-gold);
+}
+
+/* ============================================
+   RESPONSIVE - TABLET
+   ============================================ */
+@media (max-width: 1200px) {
+  .section {
+    padding: 3rem;
+    gap: 3rem;
+  }
+
+  .pageTitle {
+    font-size: clamp(2.5rem, 8vw, 6rem);
+  }
+
+  .contentContainer {
+    padding-top: calc(clamp(2.5rem, 8vw, 6rem) + 4.5rem);
+  }
+}
+
+@media (max-width: 1023px) {
+  .section {
+    grid-template-columns: 40% 60%;
+    padding: 3rem 2rem;
+    gap: 2.5rem;
+  }
+
+  .titleContainer {
+    padding: 1.5rem 0;
+  }
+
+  .pageTitle {
+    font-size: clamp(2rem, 7vw, 4rem);
+  }
+
+  .titleWrapper {
+    min-height: clamp(2.5rem, 7vw, 4rem);
+  }
+
+  .contentContainer {
+    padding-top: calc(clamp(2rem, 7vw, 4rem) + 4rem);
+  }
+
+  .leftColumn {
+    padding-right: 1.5rem;
+  }
+
+  .rightColumn {
+    padding-left: 1.5rem;
+  }
+
+  .overviewText {
+    font-size: 1.125rem;
+  }
+}
+
+/* ============================================
+   RESPONSIVE - MOBILE
+   ============================================ */
+@media (max-width: 768px) {
+  .section {
+    grid-template-columns: 1fr;
+    padding: 2.5rem 1.5rem;
+    gap: 2rem;
+    min-height: auto;
+  }
+
+  .titleContainer {
+    padding: 1.25rem 0;
+  }
+
+  .pageTitle {
+    font-size: clamp(1.5rem, 8vw, 2.5rem);
+    letter-spacing: -0.02em;
+    padding: 0 1rem;
+  }
+
+  .titleWrapper {
+    min-height: clamp(2rem, 8vw, 3rem);
+  }
+
+  .contentContainer {
+    padding-top: calc(clamp(1.5rem, 8vw, 2.5rem) + 3.5rem);
+  }
+
+  .leftColumn {
+    padding-right: 0;
+    order: 2;
+  }
+
+  .rightColumn {
+    padding-left: 0;
+    border-left: none;
+    order: 1;
+  }
+
+  .personnelLabel,
+  .sectionLabel {
+    font-size: 0.6875rem;
+  }
+
+  .overviewText {
+    font-size: 1rem;
+    line-height: 1.7;
+  }
+
+  .serviceItem {
+    font-size: 0.9375rem;
+  }
+
+  .personnelCard {
+    padding: 1.25rem;
+  }
+
+  .personnelName {
+    font-size: 1rem;
+  }
+
+  .personnelExpertise {
+    font-size: 0.8125rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .section {
+    padding: 2rem 1rem;
+  }
+
+  .pageTitle {
+    font-size: clamp(1.25rem, 7vw, 2rem);
+  }
+
+  .contentContainer {
+    padding-top: calc(clamp(1.25rem, 7vw, 2rem) + 3rem);
+  }
+
+  .overviewText {
+    font-size: 0.9375rem;
+  }
+}
+
+/* ============================================
+   PERFORMANCE & ACCESSIBILITY
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+  .pageTitle,
+  .personnelCard {
+    transition: none !important;
+  }
+}
+
+/* Print styles */
+@media print {
+  .titleContainer {
+    position: relative;
+  }
+
+  .section {
+    min-height: auto;
+    page-break-inside: avoid;
+  }
+
+  .contentContainer {
+    padding-top: 0;
+  }
+}

@@ -15,7 +15,7 @@ import type { INavItem, INavSection, INavCategory } from '../nav/types/nav.types
 export const NAV_ITEMS: INavItem[] = [
     { id: 'home', label: 'Home', href: '/', hasSubmenu: false },
     { id: 'team', label: 'Our Team', href: '/team', hasSubmenu: false },
-    { id: 'practice-areas', label: 'Practice Areas', href: '/practice-areas', hasSubmenu: true },
+    { id: 'practice-areas', label: 'Practice Areas', href: '/practice-areas', hasSubmenu: false },
     { id: 'facilitation', label: 'Facilitation Centre', href: '/facilitation', hasSubmenu: true },
     { id: 'contact', label: 'Contact Us', href: '/contact', hasSubmenu: false },
 ]
