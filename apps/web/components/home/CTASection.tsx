@@ -162,7 +162,7 @@ export default function CTASection() {
         </div>
 
         <button className={styles.ctaButton}>
-          Schedule a Call
+          Book Consultation
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
             <path
               d="M4 10h12m0 0l-4-4m4 4l-4 4"

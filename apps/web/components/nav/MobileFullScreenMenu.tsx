@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import gsap from "gsap"
 import SlotMachineText from "../shared/animations/SlotMachineText"
 import NavButton from "./components/NavButton"
-import { NAV_ITEMS } from "./data/navData"
+import { NAV_ITEMS } from "../data/navData"
 import { pauseScroll, resumeScroll } from "../SmoothScroll"
 import styles from "./MobileFullScreenMenu.module.css"
 
@@ -139,7 +139,7 @@ export default function MobileFullScreenMenu({ isOpen, onClose }: MobileFullScre
               arrowStyle="diagonal"
               className={styles.ctaButton}
             >
-              Schedule a Call
+              Book Consultation
             </NavButton>
             <button
               className={styles.closeButton}

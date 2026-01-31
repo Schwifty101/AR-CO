@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import gsap from "gsap"
 import SlotMachineText from "../shared/animations/SlotMachineText"
 import NavButton from "./components/NavButton"
-import { NAV_ITEMS, SUBMENU_DATA } from "./data/navData"
+import { NAV_ITEMS, SUBMENU_DATA } from "../data/navData"
 import { pauseScroll, resumeScroll } from "../SmoothScroll"
 import styles from "./SidePanel.module.css"
 
@@ -159,7 +159,7 @@ export default function SidePanel({ isOpen, onClose }: SidePanelProps) {
               {/* Logo on the left */}
               <Link href="/" onClick={onClose} className={styles.panelLogo}>
                 <Image
-                  src="/assets/logos/main-logo-cropped.png"
+                  src="/assets/logos/main-logo.png"
                   alt="AR&CO Law Associates"
                   width={100}
                   height={40}
@@ -175,7 +175,7 @@ export default function SidePanel({ isOpen, onClose }: SidePanelProps) {
                   arrowStyle="diagonal"
                   className={styles.ctaButton}
                 >
-                  Schedule a Call
+                  Book Consultation
                 </NavButton>
                 <motion.button
                   className={styles.closeButton}
@@ -248,7 +248,6 @@ export default function SidePanel({ isOpen, onClose }: SidePanelProps) {
                       exit={{ opacity: 0 }}
                       transition={{ duration: 0.4 }}
                     >
-                      <h3 className={styles.megaTitle}>{currentSubmenu.title}</h3>
                       <div className={styles.megaGrid}>
                         {currentSubmenu.categories.map((category) => (
                           <div
@@ -267,7 +266,7 @@ export default function SidePanel({ isOpen, onClose }: SidePanelProps) {
                                     className={styles.categoryLink}
                                     onClick={onClose}
                                   >
-                                    {link.label}
+                                    <SlotMachineText>{link.label}</SlotMachineText>
                                   </Link>
                                 </li>
                               ))}

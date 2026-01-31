@@ -35,4 +35,4 @@ export type {
 } from './types/nav.types'
 
 // Data
-export { NAV_ITEMS, NAV_SECTIONS, PRACTICE_AREAS_DATA, FACILITATION_DATA, SUBMENU_DATA } from './data/navData'
+export { NAV_ITEMS, NAV_SECTIONS, PRACTICE_AREAS_DATA, FACILITATION_DATA, SUBMENU_DATA } from '../data/navData'

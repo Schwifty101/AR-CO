@@ -5,7 +5,7 @@ import { useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import gsap from "gsap"
 import NavButton from "./components/NavButton"
-import { NAV_SECTIONS } from "./data/navData"
+import { NAV_SECTIONS } from "../data/navData"
 import styles from "./FullScreenDropdown.module.css"
 
 /**
