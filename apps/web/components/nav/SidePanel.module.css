@@ -210,8 +210,63 @@
   overflow-y: auto;
   display: flex;
   flex-direction: column;
+  position: relative;
   /* Prevent scroll from leaking to main page */
   overscroll-behavior: contain;
+}
+
+.megaZoneInner {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Scroll Indicator */
+.scrollIndicator {
+  position: sticky;
+  bottom: 2rem;
+  align-self: flex-end;
+  margin-top: -48px;
+  margin-bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  min-height: 48px;
+  max-width: 48px;
+  max-height: 48px;
+  padding: 0;
+  background: var(--wood-espresso);
+  color: var(--heritage-cream);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow:
+    0 4px 16px rgba(58, 38, 24, 0.15),
+    0 2px 8px rgba(58, 38, 24, 0.2);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 10;
+  pointer-events: auto;
+  flex-shrink: 0;
+  aspect-ratio: 1 / 1;
+}
+
+.scrollIndicator:hover {
+  background: var(--wood-mahogany);
+  box-shadow:
+    0 6px 20px rgba(58, 38, 24, 0.2),
+    0 3px 10px rgba(58, 38, 24, 0.25);
+}
+
+.scrollIndicator:focus-visible {
+  outline: 2px solid var(--heritage-gold);
+  outline-offset: 4px;
+}
+
+.scrollText {
+  white-space: nowrap;
 }
 
 .megaContent {
@@ -394,6 +449,17 @@
   .navText {
     font-size: clamp(1.25rem, 2.5vw, 1.75rem);
   }
+
+  .scrollIndicator {
+    bottom: 1.5rem;
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+    max-width: 44px;
+    max-height: 44px;
+    margin-top: -44px;
+  }
 }
 
 /* Responsive - Mobile (Side panel shouldn't show on mobile, but fallback) */
@@ -407,6 +473,10 @@
   }
 
   .megaZone {
+    display: none;
+  }
+
+  .scrollIndicator {
     display: none;
   }
 
@@ -429,7 +499,8 @@
   .ctaButton,
   .navText,
   .navArrow,
-  .categoryLink {
+  .categoryLink,
+  .scrollIndicator {
     transition: none;
   }
 
@@ -443,6 +514,10 @@
   }
 
   .ctaButton:hover {
+    transform: none;
+  }
+
+  .scrollIndicator:hover {
     transform: none;
   }
 }

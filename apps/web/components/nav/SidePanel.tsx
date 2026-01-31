@@ -43,8 +43,10 @@ const submenuData = SUBMENU_DATA
 
 export default function SidePanel({ isOpen, onClose }: SidePanelProps) {
   const [hoveredItem, setHoveredItem] = useState<string | null>(null)
+  const [showScrollIndicator, setShowScrollIndicator] = useState(false)
   const navLinksRef = useRef<HTMLDivElement>(null)
   const megaContentRef = useRef<HTMLDivElement>(null)
+  const megaZoneRef = useRef<HTMLDivElement>(null)
 
   // Lock body scroll and pause ScrollSmoother when panel is open
   useEffect(() => {
@@ -121,6 +123,47 @@ export default function SidePanel({ isOpen, onClose }: SidePanelProps) {
     document.addEventListener('keydown', handleEscape)
     return () => document.removeEventListener('keydown', handleEscape)
   }, [isOpen, onClose])
+
+  // Scroll indicator detection - only for practice areas
+  useEffect(() => {
+    const megaZone = megaZoneRef.current
+    if (!megaZone) return
+
+    const checkScroll = () => {
+      // Only show for practice areas
+      if (activeHoveredItem !== 'practice-areas') {
+        setShowScrollIndicator(false)
+        return
+      }
+
+      const { scrollTop, scrollHeight, clientHeight } = megaZone
+      const hasMoreContent = scrollHeight > clientHeight
+      const isNotAtBottom = scrollTop < scrollHeight - clientHeight - 50 // 50px threshold
+      setShowScrollIndicator(hasMoreContent && isNotAtBottom)
+    }
+
+    // Delay check to wait for AnimatePresence and content rendering
+    const initialCheckTimer = setTimeout(() => {
+      checkScroll()
+    }, 500) // Wait for AnimatePresence transition (400ms) + buffer
+
+    megaZone.addEventListener('scroll', checkScroll)
+    window.addEventListener('resize', checkScroll)
+
+    return () => {
+      clearTimeout(initialCheckTimer)
+      megaZone.removeEventListener('scroll', checkScroll)
+      window.removeEventListener('resize', checkScroll)
+    }
+  }, [activeHoveredItem])
+
+  // Scroll down handler
+  const handleScrollDown = () => {
+    megaZoneRef.current?.scrollBy({
+      top: 200,
+      behavior: 'smooth'
+    })
+  }
 
   const currentSubmenu = activeHoveredItem ? submenuData[activeHoveredItem] : null
 
@@ -235,9 +278,10 @@ export default function SidePanel({ isOpen, onClose }: SidePanelProps) {
 
               {/* Right Zone - Mega Menu Content */}
               <div
-                ref={megaContentRef}
+                ref={megaZoneRef}
                 className={styles.megaZone}
               >
+                <div ref={megaContentRef} className={styles.megaZoneInner}>
                 <AnimatePresence mode="wait">
                   {currentSubmenu ? (
                     <motion.div
@@ -266,7 +310,7 @@ export default function SidePanel({ isOpen, onClose }: SidePanelProps) {
                                     className={styles.categoryLink}
                                     onClick={onClose}
                                   >
-                                    <SlotMachineText>{link.label}</SlotMachineText>
+                                    {link.label}
                                   </Link>
                                 </li>
                               ))}
@@ -294,6 +338,42 @@ export default function SidePanel({ isOpen, onClose }: SidePanelProps) {
                         Hover over <strong>Practice Areas</strong> or <strong>Facilitation Centre</strong> to explore services
                       </p>
                     </motion.div>
+                  )}
+                </AnimatePresence>
+                </div>
+
+                {/* Scroll Indicator */}
+                <AnimatePresence>
+                  {showScrollIndicator && (
+                    <motion.button
+                      className={styles.scrollIndicator}
+                      onClick={handleScrollDown}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 10 }}
+                      transition={{ duration: 0.3 }}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      aria-label="Scroll for more"
+                    >
+                      {/* <span className={styles.scrollText}></span> */}
+                      <motion.svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 16 16"
+                        fill="none"
+                        animate={{ y: [0, 3, 0] }}
+                        transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
+                      >
+                        <path
+                          d="M8 3V13M8 13L12 9M8 13L4 9"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </motion.svg>
+                    </motion.button>
                   )}
                 </AnimatePresence>
               </div>
