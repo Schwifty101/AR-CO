@@ -17,7 +17,7 @@ export default function LogoSection() {
       aria-label="AR&CO Law Firm - Return to homepage"
     >
       <Image
-        src="/assets/logos/main-logo-cropped.png"
+        src="/assets/logos/main-logo.png"
         alt="AR&CO Law Associates"
         width={120}
         height={100}

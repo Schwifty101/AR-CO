@@ -10,7 +10,7 @@ import styles from './NavButton.module.css'
  * NavButton Component
  *
  * Unified CTA button component with consistent styling across all nav contexts.
- * Matches "Book Consultation" / "Schedule a Call" design pattern.
+ * Matches "Book Consultation" / "Book Consultation" design pattern.
  * Supports ref forwarding for GSAP animations.
  *
  * @example
@@ -19,7 +19,7 @@ import styles from './NavButton.module.css'
  *   Book Consultation
  * </NavButton>
  * <NavButton href="/contact" arrowStyle="diagonal" animated>
- *   Schedule a Call
+ *   Book Consultation
  * </NavButton>
  * ```
  */

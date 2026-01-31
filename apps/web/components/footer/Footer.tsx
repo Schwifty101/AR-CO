@@ -102,7 +102,17 @@ export default function Footer() {
               {/* Placeholder for 4:3 image */}
             </div>
             <div className={styles.logoContainer}>
-              <h2 className={styles.logo}>AR <br />&CO</h2>
+              <h2 className={`${styles.logo} cursor-pointer`}>
+                {/* <SlotMachineText className={styles.logo1}>
+                AR
+                </SlotMachineText>
+                  <br />
+                <SlotMachineText className={styles.logo2}>
+                &CO
+                </SlotMachineText> */}
+                {/* <SlotMachineText>AR&CO</SlotMachineText> */}
+                AR <br /> &CO
+              </h2>
             </div>
           </div>
 
@@ -231,7 +241,7 @@ export default function Footer() {
               rel="noopener noreferrer"
               className={styles.socialLink}
             >
-              Facebook
+              <SlotMachineText>Facebook</SlotMachineText>
             </a>
             <span className={`${styles.credits} cursor-pointer`}>SITE BY <SlotMachineText>SCHWIFTY</SlotMachineText></span>
           </div>
