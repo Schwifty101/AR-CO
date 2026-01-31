@@ -295,6 +295,7 @@
 
 .megaCategory {
   /* Animation handled by GSAP */
+  opacity: 0;
 }
 
 .megaCategoryHighlight {

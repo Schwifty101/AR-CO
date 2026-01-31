@@ -47,6 +47,7 @@ export default function SidePanel({ isOpen, onClose }: SidePanelProps) {
   const navLinksRef = useRef<HTMLDivElement>(null)
   const megaContentRef = useRef<HTMLDivElement>(null)
   const megaZoneRef = useRef<HTMLDivElement>(null)
+  const megaAnimationRef = useRef<gsap.core.Tween | null>(null)
 
   // Lock body scroll and pause ScrollSmoother when panel is open
   useEffect(() => {
@@ -89,27 +90,53 @@ export default function SidePanel({ isOpen, onClose }: SidePanelProps) {
   // GSAP animation for mega menu content change - premium timing
   useEffect(() => {
     if (activeHoveredItem && megaContentRef.current) {
-      // Delay to wait for AnimatePresence to finish rendering new content
-      const timer = setTimeout(() => {
-        if (megaContentRef.current) {
-          const categories = megaContentRef.current.querySelectorAll(`.${styles.megaCategory}`)
-          if (categories && categories.length > 0) {
-            gsap.fromTo(
-              categories,
-              { opacity: 0, y: 20 },
-              {
-                opacity: 1,
-                y: 0,
-                duration: 0.6,
-                stagger: 0.12,
-                ease: 'power2.out',
-              }
-            )
-          }
-        }
-      }, 450) // Wait for AnimatePresence transition (400ms) + buffer
+      // Kill any existing animation to ensure clean state
+      if (megaAnimationRef.current) {
+        megaAnimationRef.current.kill()
+        megaAnimationRef.current = null
+      }
 
-      return () => clearTimeout(timer)
+      // Poll for DOM elements to be ready (handles AnimatePresence mode="wait")
+      let attempts = 0
+      const maxAttempts = 20
+      const checkInterval = 20 // Check every 20ms
+
+      const tryAnimate = () => {
+        if (!megaContentRef.current || attempts >= maxAttempts) return
+
+        const categories = megaContentRef.current.querySelectorAll(`.${styles.megaCategory}`)
+
+        if (categories && categories.length > 0) {
+          // Elements found - animate them
+          gsap.set(categories, { opacity: 0, y: 20 })
+          megaAnimationRef.current = gsap.to(
+            categories,
+            {
+              opacity: 1,
+              y: 0,
+              duration: 0.7,
+              stagger: 0.1,
+              ease: 'power3.out',
+            }
+          )
+        } else {
+          // Elements not ready yet - try again
+          attempts++
+          setTimeout(tryAnimate, checkInterval)
+        }
+      }
+
+      // Start checking after AnimatePresence exit duration
+      const timer = setTimeout(tryAnimate, 220)
+
+      return () => {
+        clearTimeout(timer)
+        // Kill animation on cleanup
+        if (megaAnimationRef.current) {
+          megaAnimationRef.current.kill()
+          megaAnimationRef.current = null
+        }
+      }
     }
   }, [activeHoveredItem])
 
@@ -145,7 +172,7 @@ export default function SidePanel({ isOpen, onClose }: SidePanelProps) {
     // Delay check to wait for AnimatePresence and content rendering
     const initialCheckTimer = setTimeout(() => {
       checkScroll()
-    }, 500) // Wait for AnimatePresence transition (400ms) + buffer
+    }, 200) // Wait for AnimatePresence transition (150ms) + buffer
 
     megaZone.addEventListener('scroll', checkScroll)
     window.addEventListener('resize', checkScroll)
@@ -287,10 +314,10 @@ export default function SidePanel({ isOpen, onClose }: SidePanelProps) {
                     <motion.div
                       key={activeHoveredItem}
                       className={styles.megaContent}
-                      initial={{ opacity: 0 }}
+                      initial={{ opacity: 1 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
-                      transition={{ duration: 0.4 }}
+                      transition={{ duration: 0.2, ease: 'easeOut' }}
                     >
                       <div className={styles.megaGrid}>
                         {currentSubmenu.categories.map((category) => (
@@ -326,7 +353,7 @@ export default function SidePanel({ isOpen, onClose }: SidePanelProps) {
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
-                      transition={{ duration: 0.4 }}
+                      transition={{ duration: 0.15, ease: 'easeOut' }}
                     >
                       <div className={styles.placeholderIcon}>
                         <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
