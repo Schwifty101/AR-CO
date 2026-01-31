@@ -169,10 +169,31 @@ export default function SidePanel({ isOpen, onClose }: SidePanelProps) {
       setShowScrollIndicator(hasMoreContent && isNotAtBottom)
     }
 
-    // Delay check to wait for AnimatePresence and content rendering
-    const initialCheckTimer = setTimeout(() => {
-      checkScroll()
-    }, 200) // Wait for AnimatePresence transition (150ms) + buffer
+    // Poll for content to be mounted before checking scroll
+    let attempts = 0
+    const maxAttempts = 15
+    const checkInterval = 20
+
+    const tryCheckScroll = () => {
+      if (!megaContentRef.current || attempts >= maxAttempts) {
+        setShowScrollIndicator(false)
+        return
+      }
+
+      const categories = megaContentRef.current.querySelectorAll(`.${styles.megaCategory}`)
+
+      if (categories && categories.length > 0) {
+        // Content is mounted - check scroll
+        checkScroll()
+      } else {
+        // Content not ready yet - try again
+        attempts++
+        setTimeout(tryCheckScroll, checkInterval)
+      }
+    }
+
+    // Start checking after AnimatePresence exit duration
+    const initialCheckTimer = setTimeout(tryCheckScroll, 220)
 
     megaZone.addEventListener('scroll', checkScroll)
     window.addEventListener('resize', checkScroll)
