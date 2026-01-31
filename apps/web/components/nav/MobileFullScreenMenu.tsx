@@ -7,6 +7,7 @@ import gsap from "gsap"
 import SlotMachineText from "../shared/animations/SlotMachineText"
 import NavButton from "./components/NavButton"
 import { NAV_ITEMS } from "./data/navData"
+import { pauseScroll, resumeScroll } from "../SmoothScroll"
 import styles from "./MobileFullScreenMenu.module.css"
 
 /**
@@ -59,15 +60,18 @@ export default function MobileFullScreenMenu({ isOpen, onClose }: MobileFullScre
     return () => clearInterval(interval)
   }, [])
 
-  // Lock body scroll when menu is open
+  // Lock body scroll and pause ScrollSmoother when menu is open
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden'
+      pauseScroll()
     } else {
       document.body.style.overflow = ''
+      resumeScroll()
     }
     return () => {
       document.body.style.overflow = ''
+      resumeScroll()
     }
   }, [isOpen])
 

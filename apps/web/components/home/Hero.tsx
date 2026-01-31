@@ -7,7 +7,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger"
 import { useGSAP } from "@gsap/react"
 import styles from "./Hero.module.css"
 import LoadingScreen from "../LoadingScreen"
-import { setSlowScroll } from "../SmoothScroll"
+import { setSlowScroll, setNormalScroll } from "../SmoothScroll"
 
 // Register GSAP plugins
 if (typeof window !== "undefined") {

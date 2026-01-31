@@ -52,10 +52,16 @@ export const setOverlapScroll = () => {
   setSmoothness(4)       // Medium smoothness for natural parallax feel
 }
 
-// Preset: Normal scroll for rest of website (matches base SmoothScroll config)
+// Preset: Normal scroll for rest of website (fast, minimal delay)
 export const setNormalScroll = () => {
-  setScrollSpeed(0.6)   // Matches base speed
-  setSmoothness(4)       // Matches base smooth value
+  setScrollSpeed(0.6)      // Full speed for snappy scrolling
+  setSmoothness(2)     // Low smoothness for responsive feel
+}
+
+// Preset: Fast scroll for content sections (even less delay)
+export const setFastScroll = () => {
+  setScrollSpeed(1.2)    // Slightly faster than normal
+  setSmoothness(1)       // Minimal smoothing for immediate response
 }
 
 // Pause scrolling completely (used when frames need to catch up)
@@ -90,16 +96,16 @@ export default function SmoothScroll({ children }: SmoothScrollProps) {
   useEffect(() => {
     if (!wrapperRef.current || !contentRef.current) return
 
-    // Initialize ScrollSmoother with damped, flowy scrolling
+    // Initialize ScrollSmoother with fast, responsive scrolling
     const smoother = ScrollSmoother.create({
       wrapper: wrapperRef.current,
       content: contentRef.current,
-      smooth: 2,                // Lower value for less aggressive, more organic easing
+      smooth: 1.5,              // Lower smoothing for more responsive feel
       effects: true,            // Enable data-speed and data-lag attributes
-      smoothTouch: 0.15,        // Slightly higher for better mobile feel
+      smoothTouch: 0.1,         // Minimal touch smoothing for responsiveness
       normalizeScroll: true,    // CRITICAL: Normalizes scroll behavior, prevents acceleration spikes
       ignoreMobileResize: true, // Prevent issues with mobile address bar
-      speed: 0.85,              // Slightly faster to prevent sluggishness while staying smooth
+      speed: 1,                 // Full speed by default - Hero/Quote will override when needed
     })
 
     // Store globally for dynamic updates

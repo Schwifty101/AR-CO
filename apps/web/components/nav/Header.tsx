@@ -9,6 +9,7 @@ import LogoSection from "./LogoSection"
 import FullScreenDropdown from "./FullScreenDropdown"
 import SidePanel from "./SidePanel"
 import MobileFullScreenMenu from "./MobileFullScreenMenu"
+import SlotMachineText from "../shared/animations/SlotMachineText"
 import styles from "./Header.module.css"
 
 // Register GSAP plugins
@@ -28,6 +29,7 @@ export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isHidden, setIsHidden] = useState(false)
   const [quotationReached, setQuotationReached] = useState(false)
+  const [onDarkSection, setOnDarkSection] = useState(false)
   const [dropdownSection, setDropdownSection] = useState<'practice-areas' | 'facilitation' | null>(null)
   const [sidePanelOpen, setSidePanelOpen] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -38,7 +40,34 @@ export default function Header() {
   useEffect(() => {
     // Find the hero section
     const heroSection = document.querySelector('section[class*="hero"]') as HTMLElement
-    if (!heroSection) return
+    if (!heroSection || !headerRef.current) return
+
+    const header = headerRef.current
+    let currentlyHidden = false
+
+    // Helper to animate header visibility with GSAP
+    const animateHeader = (hide: boolean) => {
+      if (hide === currentlyHidden) return // Avoid redundant animations
+      currentlyHidden = hide
+
+      gsap.to(header, {
+        y: hide ? '-100%' : '0%',
+        opacity: hide ? 0 : 1,
+        duration: 0.4,
+        ease: 'power2.out',
+        onStart: () => {
+          if (!hide) {
+            header.style.pointerEvents = 'auto'
+          }
+        },
+        onComplete: () => {
+          if (hide) {
+            header.style.pointerEvents = 'none'
+          }
+          setIsHidden(hide)
+        }
+      })
+    }
 
     // Create ScrollTrigger to track hero section
     const st = ScrollTrigger.create({
@@ -47,27 +76,24 @@ export default function Header() {
       end: "bottom top",
       onUpdate: (self) => {
         // Hide header when scrolling within hero section (after initial scroll)
-        if (self.progress > 0.05 && self.progress < 1) {
-          setIsHidden(true)
-        } else {
-          setIsHidden(false)
-        }
+        const shouldHide = self.progress > 0.05 && self.progress < 1
+        animateHeader(shouldHide)
 
         // Update scrolled state
         setIsScrolled(self.progress > 0.05)
       },
       onLeave: () => {
         // Hero section ended - show header
-        setIsHidden(false)
+        animateHeader(false)
         setIsScrolled(true)
       },
       onEnterBack: () => {
         // Scrolled back into hero - hide header
-        setIsHidden(true)
+        animateHeader(true)
       },
       onLeaveBack: () => {
         // Back at top - show header
-        setIsHidden(false)
+        animateHeader(false)
         setIsScrolled(false)
       }
     })
@@ -80,24 +106,116 @@ export default function Header() {
   // Quotation section scroll detection - trigger CTA and hamburger visibility
   useEffect(() => {
     const quotationSection = document.getElementById('quote-section')
-    if (!quotationSection) return
+    if (!quotationSection || !headerRef.current) return
+
+    const header = headerRef.current
+    let currentQuotationState = false
+
+    // Helper to animate header when quotation section is reached
+    const animateSecondHeader = (show: boolean) => {
+      if (show === currentQuotationState) return // Avoid redundant animations
+      currentQuotationState = show
+
+      if (show) {
+        // Header reappears - animate in from top
+        gsap.fromTo(header,
+          { y: '-100%', opacity: 0 },
+          {
+            y: '0%',
+            opacity: 1,
+            duration: 0.4,
+            ease: 'power2.out',
+            onStart: () => {
+              header.style.pointerEvents = 'auto'
+            },
+            onComplete: () => {
+              setQuotationReached(true)
+            }
+          }
+        )
+      } else {
+        // Header hides - animate out to top
+        gsap.to(header, {
+          y: '-100%',
+          opacity: 0,
+          duration: 0.4,
+          ease: 'power2.out',
+          onComplete: () => {
+            header.style.pointerEvents = 'none'
+            setQuotationReached(false)
+          }
+        })
+      }
+    }
 
     const st = ScrollTrigger.create({
       trigger: quotationSection,
       start: "top bottom", // When quotation enters viewport from bottom
       end: "bottom top", // When quotation leaves viewport from top
       onEnter: () => {
-        // Quotation section reached - enable CTA and hamburger
-        setQuotationReached(true)
+        // Quotation section reached - animate header in
+        animateSecondHeader(true)
       },
       onLeaveBack: () => {
-        // Scrolled back above quotation - hide CTA and hamburger
-        setQuotationReached(false)
+        // Scrolled back above quotation - animate header out
+        animateSecondHeader(false)
       }
     })
 
     return () => {
       st.kill()
+    }
+  }, [])
+
+  // Dark section detection - change header colors when over dark backgrounds
+  useEffect(() => {
+    const triggers: ScrollTrigger[] = []
+
+    const setupDarkSectionTriggers = () => {
+      // Kill existing triggers first
+      triggers.forEach((st) => st.kill())
+      triggers.length = 0
+
+      // Find all sections with dark backgrounds
+      const darkSections = document.querySelectorAll(
+        '.section-dark, .section-wood, .section-wood-light, [data-theme="dark"]'
+      )
+
+      if (darkSections.length === 0) return
+
+      darkSections.forEach((section) => {
+        // Check if this section has a GSAP pin spacer (indicates it's pinned)
+        const pinSpacer = section.parentElement?.classList.contains('pin-spacer')
+          ? section.parentElement
+          : null
+
+        // For pinned sections, use the pin spacer's dimensions
+        // Pin spacer represents the full scroll distance of the pinned element
+        const trigger = pinSpacer || section
+
+        const st = ScrollTrigger.create({
+          trigger: trigger,
+          start: 'top 88px', // When section top reaches header bottom
+          end: 'bottom 0px', // When section bottom passes header top
+          onEnter: () => setOnDarkSection(true),
+          onLeave: () => setOnDarkSection(false),
+          onEnterBack: () => setOnDarkSection(true),
+          onLeaveBack: () => setOnDarkSection(false),
+        })
+        triggers.push(st)
+      })
+    }
+
+    // Initial setup after GSAP pins are ready
+    const initTimeout = setTimeout(setupDarkSectionTriggers, 800)
+
+    // Re-setup when ScrollTrigger refreshes (pins may have changed)
+    ScrollTrigger.addEventListener('refresh', setupDarkSectionTriggers)
+
+    return () => {
+      clearTimeout(initTimeout)
+      ScrollTrigger.removeEventListener('refresh', setupDarkSectionTriggers)
+      triggers.forEach((st) => st.kill())
     }
   }, [])
 
@@ -151,21 +269,24 @@ export default function Header() {
         onKeyDown={handleKeyDown}
       >
         <div className={styles.gridContainer}>
-          {/* LEFT SECTION - Logo (hidden once scrolled) */}
-          <motion.div
-            className={styles.logoSection}
-            animate={{
-              opacity: isScrolled ? 0 : 1,
-              y: isScrolled ? -10 : 0
-            }}
-            transition={{
-              duration: 0.15,
-              ease: [0.22, 1, 0.36, 1]
-            }}
-            style={{ pointerEvents: isScrolled ? 'none' : 'auto' }}
-          >
-            <LogoSection />
-          </motion.div>
+          {/* LEFT SECTION - Logo (visible at top and when quotation reached) */}
+          <AnimatePresence mode="wait">
+            {((!isScrolled || quotationReached) && !isHidden) && (
+              <motion.div
+                key="logo-section"
+                className={styles.logoSection}
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 10 }}
+                transition={{
+                  duration: 0.15,
+                  ease: [0.22, 1, 0.36, 1]
+                }}
+              >
+                <LogoSection />
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* CENTER SECTION - Navigation Links (Desktop, Non-scrolled) */}
           <AnimatePresence>
@@ -175,17 +296,17 @@ export default function Header() {
                 aria-label="Main navigation"
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
+                exit={{ opacity: 0, y: 10 }}
                 transition={{
                   duration: 0.15,
                   ease: [0.22, 1, 0.36, 1]
                 }}
               >
                 <Link href="/" className={styles.navLink}>
-                  HOME
+                  <SlotMachineText>HOME</SlotMachineText>
                 </Link>
                 <Link href="/team" className={styles.navLink}>
-                  OUR TEAM
+                  <SlotMachineText>OUR TEAM</SlotMachineText>
                 </Link>
 
                 {/* Practice Areas - Click Trigger */}
@@ -195,7 +316,7 @@ export default function Header() {
                   aria-expanded={dropdownSection === 'practice-areas'}
                   aria-haspopup="true"
                 >
-                  PRACTICE AREAS
+                  <SlotMachineText>PRACTICE AREAS</SlotMachineText>
                   <svg
                     className={`${styles.chevron} ${dropdownSection === 'practice-areas' ? styles.chevronOpen : ''}`}
                     width="12"
@@ -221,7 +342,7 @@ export default function Header() {
                   aria-expanded={dropdownSection === 'facilitation'}
                   aria-haspopup="true"
                 >
-                  FACILITATION CENTRE
+                  <SlotMachineText>FACILITATION CENTRE</SlotMachineText>
                   <svg
                     className={`${styles.chevron} ${dropdownSection === 'facilitation' ? styles.chevronOpen : ''}`}
                     width="12"
@@ -241,7 +362,7 @@ export default function Header() {
                 </button>
 
                 <Link href="/contact" className={styles.navLink}>
-                  CONTACT US
+                  <SlotMachineText>CONTACT US</SlotMachineText>
                 </Link>
               </motion.nav>
             )}
@@ -256,13 +377,16 @@ export default function Header() {
                   key="cta-button"
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
+                  exit={{ opacity: 0, y: 10 }}
                   transition={{
                     duration: 0.15,
                     ease: [0.22, 1, 0.36, 1]
                   }}
                 >
-                  <Link href="/contact?consultation=true" className={styles.btnPrimary}>
+                  <Link
+                    href="/contact?consultation=true"
+                    className={`${styles.btnPrimary} ${onDarkSection ? styles.btnPrimaryLight : ''}`}
+                  >
                     BOOK CONSULTATION
                   </Link>
                 </motion.div>
@@ -274,7 +398,7 @@ export default function Header() {
               {((quotationReached || isMobile) && !isHidden) && (
                 <motion.button
                   key="hamburger-menu"
-                  className={styles.menuToggle}
+                  className={`${styles.menuToggle} ${!onDarkSection ? styles.menuToggleLight : ''}`}
                   onClick={() => {
                     if (isMobile) {
                       setMobileMenuOpen(!mobileMenuOpen)
@@ -286,7 +410,7 @@ export default function Header() {
                   aria-expanded={sidePanelOpen || mobileMenuOpen}
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
+                  exit={{ opacity: 0, y: 10 }}
                   transition={{
                     duration: 0.15,
                     ease: [0.22, 1, 0.36, 1]

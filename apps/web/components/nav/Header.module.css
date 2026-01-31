@@ -10,7 +10,10 @@
   -webkit-backdrop-filter: none;
   isolation: isolate;
   border-bottom: none;
-  /* Removed transform transition - GSAP handles smooth animation via JS */
+  /* GSAP handles show/hide animations - no CSS transitions to avoid conflicts */
+  transform: translateY(0);
+  opacity: 1;
+  will-change: transform, opacity;
 }
 
 .header.scrolled {
@@ -19,8 +22,8 @@
   -webkit-backdrop-filter: none;
 }
 
+/* Hidden state is managed by GSAP animation, this is fallback only */
 .header.hidden {
-  /* Removed transform - GSAP handles smooth animation via JS */
   pointer-events: none;
 }
 
@@ -34,7 +37,7 @@
 .gridContainer {
   max-width: 1600px;
   margin: 0 auto;
-  padding: 0 3rem;
+  padding: 1.5rem 3.5rem 0;
   height: 88px;
   display: grid;
   grid-template-columns: auto 1fr auto;
@@ -58,10 +61,11 @@
 .navButton,
 .navLink {
   font-family: 'Cabinet Grotesk', sans-serif;
-  font-size: 0.8125rem;
-  font-weight: 500;
-  letter-spacing: 0.06em;
-  color: var(--wood-sandalwood);
+  font-size: 0.9375rem;
+  font-weight: 300;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--heritage-cream);
   background: none;
   border: none;
   padding: 0.5rem 0;
@@ -71,31 +75,12 @@
   align-items: center;
   gap: 0.375rem;
   position: relative;
-  transition: color 0.4s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.navButton::after,
-.navLink::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 0;
-  height: 2px;
-  background: linear-gradient(90deg, var(--heritage-gold) 0%, var(--heritage-gold) 100%);
-  transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1);
-  color: white;
-  border-radius: 2px;
+  transition: color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .navButton:hover,
 .navLink:hover {
-  color: var(--heritage-cream);
-}
-
-.navButton:hover::after,
-.navLink:hover::after {
-  width: 100%;
+  color: var(--heritage-gold);
 }
 
 .navButton:focus-visible,
@@ -107,11 +92,7 @@
 
 /* Active state for nav buttons when dropdown is open */
 .navButtonActive {
-  color: var(--heritage-cream);
-}
-
-.navButtonActive::after {
-  width: 100%;
+  color: var(--heritage-gold);
 }
 
 .chevron {
@@ -129,8 +110,6 @@
   justify-content: flex-start;
   align-items: center;
   justify-self: start;
-  transform: scale(0.75);
-  transform-origin: left center;
 }
 
 /* ========== RIGHT SECTION - Action Buttons ========== */
@@ -155,7 +134,7 @@
   border: none;
   border-radius: 100px;
   text-decoration: none;
-  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1), background 0.4s cubic-bezier(0.4, 0, 0.2, 1), color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
   box-shadow:
@@ -199,6 +178,23 @@
   transform: translateX(4px);
 }
 
+/* ========== Dark Section Variant - Light button on dark background ========== */
+.btnPrimaryLight {
+  background: var(--heritage-cream);
+  color: var(--wood-espresso);
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.15),
+    0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.btnPrimaryLight:hover {
+  background: #fff;
+  color: var(--wood-espresso);
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.2),
+    0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
 /* ========== Menu Toggle Button (Hamburger) ========== */
 /* Positioned within header grid on desktop, always visible on mobile */
 /* Framer Motion AnimatePresence controls visibility animation */
@@ -214,7 +210,7 @@
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 50%;
   cursor: pointer;
-  transition: background 0.5s ease, border-color 0.5s ease;
+  transition: background 0.4s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .menuToggle:hover {
@@ -232,7 +228,22 @@
   height: 2px;
   background: var(--heritage-cream);
   border-radius: 2px;
-  transition: transform 0.4s ease, opacity 0.4s ease;
+  transition: transform 0.4s ease, opacity 0.4s ease, background 0.4s ease;
+}
+
+/* ========== Dark Section Variant - Light menu toggle ========== */
+.menuToggleLight {
+  background: rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.menuToggleLight:hover {
+  background: rgba(0, 0, 0, 0.12);
+  border-color: rgba(0, 0, 0, 0.2);
+}
+
+.menuToggleLight .menuLine {
+  background: var(--wood-espresso);
 }
 
 /* ========== Floating Actions (CTA + Menu Button) ========== */
@@ -440,7 +451,7 @@
 
   .navButton,
   .navLink {
-    font-size: 0.75rem;
+    font-size: 0.875rem;
   }
 }
 

@@ -196,6 +196,53 @@
   flex-shrink: 0;
 }
 
+/* Scroll to Top Button */
+.scrollTopButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+  padding: 0.875rem 1.5rem;
+  background: transparent;
+  border: 1px solid rgba(250, 248, 244, 0.3);
+  border-radius: 100px;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.scrollTopButton:hover {
+  background: var(--heritage-gold);
+  border-color: var(--heritage-gold);
+}
+
+.scrollTopButton:hover .scrollTopText {
+  color: var(--wood-espresso);
+}
+
+.scrollTopButton:hover .scrollTopIcon {
+  color: var(--wood-espresso);
+  transform: translateY(-2px);
+}
+
+.scrollTopText {
+  font-family: 'Cabinet Grotesk', sans-serif;
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--heritage-cream);
+  transition: color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.scrollTopIcon {
+  color: var(--heritage-gold);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.scrollTopButton:focus-visible {
+  outline: 2px solid var(--heritage-gold);
+  outline-offset: 4px;
+}
+
 /* ============================================
    BOTTOM ROW - Copyright, Time, Status, Links
    ============================================ */

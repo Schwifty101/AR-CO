@@ -1,8 +1,9 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
 import SlotMachineText from '../shared/animations/SlotMachineText'
+import { getSmoother } from '../SmoothScroll'
 import styles from './Footer.module.css'
 
 /**
@@ -47,6 +48,19 @@ export default function Footer() {
   }
 
   /**
+   * Scroll to top of the page using ScrollSmoother
+   */
+  const scrollToTop = useCallback(() => {
+    const smoother = getSmoother()
+    if (smoother) {
+      smoother.scrollTo(0, true) // Smooth scroll to top
+    } else {
+      // Fallback if ScrollSmoother isn't available
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+  }, [])
+
+  /**
    * Live clock effect - updates every second with Pakistan timezone
    */
   useEffect(() => {
@@ -78,7 +92,7 @@ export default function Footer() {
   }, [])
 
   return (
-    <footer className={styles.footer}>
+    <footer className={styles.footer} data-theme="dark">
       <div className={styles.container}>
         {/* Main 3-Column Grid */}
         <div className={styles.mainGrid}>
@@ -140,6 +154,30 @@ export default function Footer() {
                   Monday to Friday, 9:00am - 5:00pm
                 </p>
               </div>
+              <button
+                className={styles.scrollTopButton}
+                onClick={scrollToTop}
+                aria-label="Scroll to top"
+              >
+                <span className={styles.scrollTopText}>
+                  <SlotMachineText>Back to Top</SlotMachineText>
+                </span>
+                <svg
+                  className={styles.scrollTopIcon}
+                  width="16"
+                  height="16"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                >
+                  <path
+                    d="M8 13V3M8 3L3 8M8 3L13 8"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </button>
             </div>
           </div>
         </div>

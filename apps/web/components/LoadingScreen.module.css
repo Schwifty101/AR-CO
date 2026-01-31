@@ -1,17 +1,25 @@
 .loadingScreen {
   position: fixed;
-  top: 0;
-  left: 0;
+  inset: 0;
   width: 100vw;
   height: 100vh;
+  height: 100dvh; /* Dynamic viewport height for mobile */
   background: #000;
   z-index: 9999;
-  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
   transform: translateY(0);
   transition: transform 1.2s cubic-bezier(0.76, 0, 0.24, 1);
+  /* Prevent any scroll interaction */
+  overflow: hidden;
+  overscroll-behavior: none;
+  touch-action: none;
+  /* Ensure it captures all pointer events */
+  pointer-events: all;
+  /* Prevent text selection during loading */
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .fadeOut {

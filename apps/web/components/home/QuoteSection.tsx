@@ -6,7 +6,7 @@ import gsap from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
 import { useGSAP } from "@gsap/react"
 import ScrollRevealText from "@/components/shared/animations/ScrollRevealText"
-import { setOverlapScroll, setNormalScroll } from "@/components/SmoothScroll"
+import { setSlowScroll, setNormalScroll, pauseScroll, resumeScroll } from "../SmoothScroll"
 import styles from "./QuoteSection.module.css"
 
 // Register GSAP plugins
@@ -18,70 +18,69 @@ export default function QuoteSection() {
   const sectionRef = useRef<HTMLElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
 
-  // GSAP parallax overlap animation
+  // GSAP subtle entrance animation
   useGSAP(() => {
     if (!sectionRef.current || !contentRef.current) return
 
     const section = sectionRef.current
     const content = contentRef.current
 
-    // Create the overlap animation timeline
-    const tl = gsap.timeline({
-      scrollTrigger: {
-        trigger: section,
-        start: "top bottom", // Start when section enters viewport from bottom
-        end: "top top", // End when section reaches top
-        scrub: 1, // Smooth scrubbing
-        // markers: true, // Enable for debugging
+    // Scroll speed control - pause when quote section fully enters frame
+    let hasTriggeredPause = false
 
-        // Use overlap scroll preset for smoother transition
-        onEnter: () => setOverlapScroll(),
-        onLeave: () => setNormalScroll(),
-        onEnterBack: () => setOverlapScroll(),
-        onLeaveBack: () => setNormalScroll(),
-      }
-    })
-
-    // Animate section sliding up
-    tl.fromTo(
-      section,
-      {
-        y: "50vh", // Start slightly below for parallax effect
-      },
-      {
-        y: 0, // Slide to normal position
-        ease: "none", // Linear easing for scrub
-        duration: 1,
-      }
-    )
-
-    // Subtle scale and blur on content for depth
-    tl.fromTo(
-      content,
-      {
-        scale: 0.95,
-        filter: "blur(4px)",
-      },
-      {
-        scale: 1,
-        filter: "blur(0px)",
-        ease: "none",
-        duration: 1,
-      },
-      0 // Start at same time as section animation
-    )
-
-    // Second ScrollTrigger: Keep scroll slow while IN the section content
-    // This prevents users from scrolling too fast and missing the section
     ScrollTrigger.create({
       trigger: section,
-      start: "top top",      // When section reaches top
-      end: "bottom 80%",     // Until bottom of section is near viewport bottom
-      onEnter: () => setNormalScroll(),      // Slow scroll when in section
-      onLeave: () => setNormalScroll(),      // Reset when leaving (will be overridden by Practice Areas if needed)
-      onEnterBack: () => setNormalScroll(),  // Slow scroll when scrolling back in
-      onLeaveBack: () => setOverlapScroll(), // Set overlap for reverse transition
+      start: "top bottom",
+      end: "bottom top",
+      onEnter: () => setSlowScroll(),
+      onLeave: () => {
+        setNormalScroll()
+        hasTriggeredPause = false // Reset for next time
+      },
+      onEnterBack: () => setNormalScroll(),
+      onLeaveBack: () => {
+        setSlowScroll() // Going back to Hero, keep slow
+        hasTriggeredPause = false
+      },
     })
+
+    // Auto-pause when quote section is fully in frame
+    ScrollTrigger.create({
+      trigger: section,
+      start: "top top", // When top of quote reaches top of viewport
+      end: "top top",
+      onEnter: () => {
+        if (!hasTriggeredPause) {
+          hasTriggeredPause = true
+          pauseScroll()
+          // Resume after a brief moment (800ms) with normal scroll
+          setTimeout(() => {
+            resumeScroll()
+            setNormalScroll()
+          }, 800)
+        }
+      },
+    })
+
+    // Subtle entrance animation - no blur, minimal parallax
+    gsap.fromTo(
+      content,
+      {
+        opacity: 0.8,
+        y: 30,
+      },
+      {
+        opacity: 1,
+        y: 0,
+        ease: "power2.out",
+        scrollTrigger: {
+          trigger: section,
+          start: "top 80%",
+          end: "top 30%",
+          scrub: 0.5,
+        }
+      }
+    )
 
   }, [])
 

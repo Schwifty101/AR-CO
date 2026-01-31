@@ -40,8 +40,6 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# Design assets (large binary files)
-/public/assets/
 
 # Banner
 banner

@@ -1,12 +1,14 @@
 "use client"
 
 import Link from "next/link"
+import Image from "next/image"
 import { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import gsap from "gsap"
 import SlotMachineText from "../shared/animations/SlotMachineText"
 import NavButton from "./components/NavButton"
 import { NAV_ITEMS, SUBMENU_DATA } from "./data/navData"
+import { pauseScroll, resumeScroll } from "../SmoothScroll"
 import styles from "./SidePanel.module.css"
 
 /**
@@ -44,15 +46,18 @@ export default function SidePanel({ isOpen, onClose }: SidePanelProps) {
   const navLinksRef = useRef<HTMLDivElement>(null)
   const megaContentRef = useRef<HTMLDivElement>(null)
 
-  // Lock body scroll when panel is open
+  // Lock body scroll and pause ScrollSmoother when panel is open
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden'
+      pauseScroll()
     } else {
       document.body.style.overflow = ''
+      resumeScroll()
     }
     return () => {
       document.body.style.overflow = ''
+      resumeScroll()
     }
   }, [isOpen])
 
@@ -149,34 +154,48 @@ export default function SidePanel({ isOpen, onClose }: SidePanelProps) {
             aria-modal="true"
             aria-label="Navigation panel"
           >
-            {/* Header with Close Button */}
+            {/* Header with Logo and Close Button */}
             <div className={styles.panelHeader}>
-              <NavButton
-                href="/contact?consultation=true"
-                onClick={onClose}
-                arrowStyle="diagonal"
-                className={styles.ctaButton}
-              >
-                Schedule a Call
-              </NavButton>
-              <motion.button
-                className={styles.closeButton}
-                onClick={onClose}
-                aria-label="Close menu"
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.4, duration: 0.6 }}
-              >
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                  <path
-                    d="M15 5L5 15M5 5L15 15"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </motion.button>
+              {/* Logo on the left */}
+              <Link href="/" onClick={onClose} className={styles.panelLogo}>
+                <Image
+                  src="/assets/logos/main-logo-cropped.png"
+                  alt="AR&CO Law Associates"
+                  width={100}
+                  height={40}
+                  className={styles.logoImage}
+                />
+              </Link>
+
+              {/* Right side: CTA + Close */}
+              <div className={styles.headerActions}>
+                <NavButton
+                  href="/contact?consultation=true"
+                  onClick={onClose}
+                  arrowStyle="diagonal"
+                  className={styles.ctaButton}
+                >
+                  Schedule a Call
+                </NavButton>
+                <motion.button
+                  className={styles.closeButton}
+                  onClick={onClose}
+                  aria-label="Close menu"
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.4, duration: 0.6 }}
+                >
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <path
+                      d="M15 5L5 15M5 5L15 15"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </motion.button>
+              </div>
             </div>
 
             {/* Split Content Area */}
