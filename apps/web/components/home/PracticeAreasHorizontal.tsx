@@ -100,17 +100,18 @@ const ACTIVATION_THRESHOLD = 22 // vw units - card must be within this distance 
 
 // Hardcoded navigation progress for each card (0 to 1)
 // Adjust these values to fine-tune where clicking each menu item scrolls to
+// Values calibrated for scroll speed 0.6 and smoothness 2
 const CARD_NAV_PROGRESS = [
-  0.15,   // Card 0 - IP & Innovation
-  0.30,   // Card 1 - Power & Energy
-  0.50,   // Card 2 - Oil & Gas
-  0.65,   // Card 3 - Renewable Energy
-  0.80,   // Card 4 - Dispute Resolution
-  0.95,   // Card 5 - Banking & Finance
-  1.10,   // Card 6 - Corporate & M&A
-  1.25,   // Card 7 - Tech & Telecom
-  1.40,   // Card 8 - Construction
-  1.55,   // Card 9 - Nuclear & Regulatory
+  0.08,   // Card 0 - IP & Innovation
+  0.15,   // Card 1 - Power & Energy
+  0.27,   // Card 2 - Oil & Gas
+  0.36,   // Card 3 - Renewable Energy
+  0.48,   // Card 4 - Dispute Resolution
+  0.58,   // Card 5 - Banking & Finance
+  0.68,   // Card 6 - Corporate & M&A
+  0.78,   // Card 7 - Tech & Telecom
+  0.88,   // Card 8 - Construction
+  0.98,   // Card 9 - Nuclear & Regulatory
 ]
 
 
@@ -322,7 +323,7 @@ export default function PracticeAreasHorizontal() {
   }
 
   return (
-    <section ref={sectionRef} className={styles.section}>
+    <section ref={sectionRef} className={styles.section} data-theme="dark">
       <div ref={triggerRef} className={styles.pinContainer}>
         {/* Left Column - Typography List (1/3) */}
         <div className={styles.leftColumn}>

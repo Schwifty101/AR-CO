@@ -10,6 +10,8 @@
   flex-direction: column;
   padding: 1.5rem;
   overflow-y: auto;
+  /* Prevent scroll from leaking to main page */
+  overscroll-behavior: contain;
 }
 
 /* Header */
