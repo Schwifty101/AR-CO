@@ -27,7 +27,7 @@
   display: grid;
   grid-template-columns: minmax(0, 25%) minmax(0, 45%) minmax(0, 30%);
   gap: clamp(1rem, 1.5vw, 2rem);
-  align-items: start;
+  align-items: stretch;
   flex: 1;
   width: 100%;
 }
@@ -56,9 +56,11 @@
   filter: grayscale(60%);
   transition: filter 0.5s ease, transform 0.5s ease;
 }
+
 .imageContainer:hover img {
   filter: grayscale(0%);
-  transform: scale(1.01); /* Added a subtle zoom for extra polish */
+  transform: scale(1.01);
+  /* Added a subtle zoom for extra polish */
 }
 
 .logoContainer {
@@ -151,10 +153,18 @@
 .rightColumn {
   display: flex;
   flex-direction: column;
+  justify-content: flex-start;
   gap: 2rem;
   padding-top: 0.5rem;
   min-width: 0;
+  align-self: stretch;
   /* Prevent overflow */
+}
+
+.rightColumnContent {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
 }
 
 .acknowledgement {
@@ -205,18 +215,36 @@
   flex-shrink: 0;
 }
 
+/* Scroll to Top Button Container */
+.scrollTopContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex: 1;
+  margin-top: auto;
+  /* Wiggle detection area */
+  width: 100px;
+  height: 100px;
+  align-self: flex-end;
+  position: relative;
+}
+
 /* Scroll to Top Button */
 .scrollTopButton {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 0.75rem;
-  margin-top: 1.5rem;
-  padding: 0.875rem 1.5rem;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  padding: 0;
   background: transparent;
   border: 1px solid rgba(250, 248, 244, 0.3);
-  border-radius: 100px;
+  border-radius: 50%;
   cursor: pointer;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  /* Only transition colors, not transform (GSAP handles that) */
+  transition: background 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
 }
 
 .scrollTopButton:hover {
@@ -234,12 +262,7 @@
 }
 
 .scrollTopText {
-  font-family: 'Cabinet Grotesk', sans-serif;
-  font-size: 0.875rem;
-  font-weight: 500;
-  letter-spacing: 0.02em;
-  color: var(--heritage-cream);
-  transition: color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  display: none;
 }
 
 .scrollTopIcon {
