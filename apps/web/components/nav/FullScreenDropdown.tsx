@@ -194,7 +194,7 @@ export default function FullScreenDropdown({
                   arrowStyle="diagonal"
                   className={styles.ctaButton}
                 >
-                  Book Consultation
+                  BOOK CONSULTATION
                 </NavButton>
               </motion.div>
             </div>

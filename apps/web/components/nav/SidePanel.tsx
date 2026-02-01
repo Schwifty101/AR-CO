@@ -266,7 +266,7 @@ export default function SidePanel({ isOpen, onClose }: SidePanelProps) {
                   arrowStyle="diagonal"
                   className={styles.ctaButton}
                 >
-                  Book Consultation
+                  BOOK CONSULTATION
                 </NavButton>
                 <motion.button
                   className={styles.closeButton}
@@ -330,64 +330,64 @@ export default function SidePanel({ isOpen, onClose }: SidePanelProps) {
                 className={styles.megaZone}
               >
                 <div ref={megaContentRef} className={styles.megaZoneInner}>
-                <AnimatePresence mode="wait">
-                  {currentSubmenu ? (
-                    <motion.div
-                      key={activeHoveredItem}
-                      className={styles.megaContent}
-                      initial={{ opacity: 1 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.2, ease: 'easeOut' }}
-                    >
-                      <div className={styles.megaGrid}>
-                        {currentSubmenu.categories.map((category) => (
-                          <div
-                            key={category.title}
-                            className={`${styles.megaCategory} ${category.highlight ? styles.megaCategoryHighlight : ''}`}
-                          >
-                            <h4 className={styles.categoryTitle}>
-                              {category.highlight && <span className={styles.highlightBadge}>★</span>}
-                              {category.title}
-                            </h4>
-                            <ul className={styles.categoryLinks}>
-                              {category.links.map((link) => (
-                                <li key={link.href}>
-                                  <Link
-                                    href={link.href}
-                                    className={styles.categoryLink}
-                                    onClick={onClose}
-                                  >
-                                    {link.label}
-                                  </Link>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        ))}
-                      </div>
-                    </motion.div>
-                  ) : (
-                    <motion.div
-                      key="placeholder"
-                      className={styles.megaPlaceholder}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.15, ease: 'easeOut' }}
-                    >
-                      <div className={styles.placeholderIcon}>
-                        <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-                          <rect x="8" y="8" width="32" height="32" rx="4" stroke="currentColor" strokeWidth="2" strokeDasharray="4 4" />
-                          <path d="M18 24h12M24 18v12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                        </svg>
-                      </div>
-                      <p className={styles.placeholderText}>
-                        Hover over <strong>Practice Areas</strong> or <strong>Facilitation Centre</strong> to explore services
-                      </p>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                  <AnimatePresence mode="wait">
+                    {currentSubmenu ? (
+                      <motion.div
+                        key={activeHoveredItem}
+                        className={styles.megaContent}
+                        initial={{ opacity: 1 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.2, ease: 'easeOut' }}
+                      >
+                        <div className={styles.megaGrid}>
+                          {currentSubmenu.categories.map((category) => (
+                            <div
+                              key={category.title}
+                              className={`${styles.megaCategory} ${category.highlight ? styles.megaCategoryHighlight : ''}`}
+                            >
+                              <h4 className={styles.categoryTitle}>
+                                {category.highlight && <span className={styles.highlightBadge}>★</span>}
+                                {category.title}
+                              </h4>
+                              <ul className={styles.categoryLinks}>
+                                {category.links.map((link) => (
+                                  <li key={link.href}>
+                                    <Link
+                                      href={link.href}
+                                      className={styles.categoryLink}
+                                      onClick={onClose}
+                                    >
+                                      {link.label}
+                                    </Link>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          ))}
+                        </div>
+                      </motion.div>
+                    ) : (
+                      <motion.div
+                        key="placeholder"
+                        className={styles.megaPlaceholder}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.15, ease: 'easeOut' }}
+                      >
+                        <div className={styles.placeholderIcon}>
+                          <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                            <rect x="8" y="8" width="32" height="32" rx="4" stroke="currentColor" strokeWidth="2" strokeDasharray="4 4" />
+                            <path d="M18 24h12M24 18v12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                          </svg>
+                        </div>
+                        <p className={styles.placeholderText}>
+                          Hover over <strong>Practice Areas</strong> or <strong>Facilitation Centre</strong> to explore services
+                        </p>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
 
                 {/* Scroll Indicator */}
