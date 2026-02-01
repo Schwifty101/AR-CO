@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
 import SlotMachineText from '../shared/animations/SlotMachineText'
 import { getSmoother } from '../SmoothScroll'
+import { SIDEPANEL_FOOTER_NAV_ITEMS } from '../data/navData'
 import styles from './Footer.module.css'
 
 /**
@@ -18,17 +19,6 @@ import styles from './Footer.module.css'
 export default function Footer() {
   const [currentTime, setCurrentTime] = useState<string>('')
   const [isOfficeOpen, setIsOfficeOpen] = useState<boolean>(false)
-
-  const navigationLinks = [
-    { label: 'Home', href: '/' },
-    { label: 'Our Team', href: '/team' },
-    { label: 'About Us', href: '/about' },
-    { label: 'Case Studies', href: '/case-studies' },
-    { label: 'Practice Areas', href: '/practice-areas' },
-    { label: 'Facilitation', href: '/facilitation' },
-    { label: 'Contact Us', href: '/contact' },
-    { label: 'Blog', href: '/blog' },
-  ]
 
   /**
    * Calculates if the office is currently open
@@ -121,7 +111,7 @@ export default function Footer() {
             <span className={styles.columnLabel}>(NAVIGATION)</span>
             <nav className={styles.navigation}>
               <ul className={styles.navList}>
-                {navigationLinks.map((link, index) => (
+                {SIDEPANEL_FOOTER_NAV_ITEMS.map((link, index) => (
                   <li key={index} className={styles.navItem}>
                     <Link href={link.href} className={styles.navLink}>
                       <SlotMachineText>{link.label}</SlotMachineText>

@@ -11,13 +11,29 @@ import type { INavItem, INavSection, INavCategory } from '../nav/types/nav.types
 
 /**
  * Main navigation items (top-level links)
+ * Used in Header component for clean, minimal navigation
  */
 export const NAV_ITEMS: INavItem[] = [
     { id: 'home', label: 'Home', href: '/', hasSubmenu: false },
     { id: 'team', label: 'Our Team', href: '/team', hasSubmenu: false },
-    { id: 'practice-areas', label: 'Practice Areas', href: '/practice-areas', hasSubmenu: false },
+    { id: 'practice-areas', label: 'Practice Areas', href: '/practice-areas', hasSubmenu: true },
     { id: 'facilitation', label: 'Facilitation Centre', href: '/facilitation', hasSubmenu: true },
     { id: 'contact', label: 'Contact Us', href: '/contact', hasSubmenu: false },
+]
+
+/**
+ * Extended navigation items for SidePanel and Footer
+ * Includes additional pages (About Us, Case Studies, Blog)
+ */
+export const SIDEPANEL_FOOTER_NAV_ITEMS: INavItem[] = [
+    { id: 'home', label: 'Home', href: '/', hasSubmenu: false },
+    { id: 'team', label: 'Our Team', href: '/team', hasSubmenu: false },
+    { id: 'about', label: 'About Us', href: '/about', hasSubmenu: false },
+    { id: 'case-studies', label: 'Case Studies', href: '/case-studies', hasSubmenu: false },
+    { id: 'practice-areas', label: 'Practice Areas', href: '/practice-areas', hasSubmenu: true },
+    { id: 'facilitation', label: 'Facilitation Centre', href: '/facilitation', hasSubmenu: true },
+    { id: 'contact', label: 'Contact Us', href: '/contact', hasSubmenu: false },
+    { id: 'blog', label: 'Blog', href: '/blog', hasSubmenu: false },
 ]
 
 /**

@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import gsap from "gsap"
 import SlotMachineText from "../shared/animations/SlotMachineText"
 import NavButton from "./components/NavButton"
-import { NAV_ITEMS, SUBMENU_DATA } from "../data/navData"
+import { SIDEPANEL_FOOTER_NAV_ITEMS, SUBMENU_DATA } from "../data/navData"
 import { pauseScroll, resumeScroll } from "../SmoothScroll"
 import styles from "./SidePanel.module.css"
 
@@ -35,8 +35,8 @@ interface SidePanelProps {
   onClose: () => void
 }
 
-// Navigation items with potential sub-content - using shared data
-const navItems = NAV_ITEMS
+// Navigation items with potential sub-content - using extended shared data
+const navItems = SIDEPANEL_FOOTER_NAV_ITEMS
 
 // Submenu data for items with hasSubmenu: true - using shared data
 const submenuData = SUBMENU_DATA
