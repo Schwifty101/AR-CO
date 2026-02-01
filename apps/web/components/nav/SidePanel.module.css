@@ -17,7 +17,7 @@
   right: 0;
   bottom: 0;
   width: 100%;
-  max-width: 1200px;
+  /* max-width: 1200px; */
   background: #F9F8F6;
   z-index: 150;
   display: flex;
@@ -32,7 +32,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1.25rem 2rem;
+  padding: 2rem 4rem;
 }
 
 /* Logo in panel header */
@@ -48,10 +48,9 @@
 }
 
 .panelLogo .logoImage {
-  height: 150px;
+  max-height: 100px;
   width: auto;
   object-fit: contain;
-  margin-bottom: -100px;
 }
 
 /* Header right side actions */
@@ -159,7 +158,8 @@
 }
 
 .navItem {
-  opacity: 0; /* Will be animated by GSAP */
+  opacity: 0;
+  /* Will be animated by GSAP */
 }
 
 .navLink {
@@ -173,8 +173,8 @@
 
 .navText {
   font-family: 'Cabinet Grotesk', sans-serif;
-  font-size: clamp(1.75rem, 3vw, 2.5rem);
-  font-weight: 400;
+  font-size: clamp(2rem, 3.75vw, 3rem);
+  font-weight: 700;
   color: var(--wood-mahogany);
   transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   line-height: 1.15;
@@ -496,6 +496,7 @@
 
 /* Reduced Motion */
 @media (prefers-reduced-motion: reduce) {
+
   .closeButton,
   .ctaButton,
   .navText,
