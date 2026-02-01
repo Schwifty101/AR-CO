@@ -139,7 +139,7 @@ export default function MobileFullScreenMenu({ isOpen, onClose }: MobileFullScre
               arrowStyle="diagonal"
               className={styles.ctaButton}
             >
-              Book Consultation
+              BOOK CONSULTATION
             </NavButton>
             <button
               className={styles.closeButton}

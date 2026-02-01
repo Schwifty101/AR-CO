@@ -10,16 +10,16 @@ import styles from './NavButton.module.css'
  * NavButton Component
  *
  * Unified CTA button component with consistent styling across all nav contexts.
- * Matches "Book Consultation" / "Book Consultation" design pattern.
+ * Matches "BOOK CONSULTATION" / "BOOK CONSULTATION" design pattern.
  * Supports ref forwarding for GSAP animations.
  *
  * @example
  * ```tsx
  * <NavButton href="/contact?consultation=true" showArrow>
- *   Book Consultation
+ *   BOOK CONSULTATION
  * </NavButton>
  * <NavButton href="/contact" arrowStyle="diagonal" animated>
- *   Book Consultation
+ *   BOOK CONSULTATION
  * </NavButton>
  * ```
  */
