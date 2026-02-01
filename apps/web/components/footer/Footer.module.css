@@ -52,6 +52,15 @@
   position: relative;
 }
 
+.imageContainer img {
+  filter: grayscale(60%);
+  transition: filter 0.5s ease, transform 0.5s ease;
+}
+.imageContainer:hover img {
+  filter: grayscale(0%);
+  transform: scale(1.01); /* Added a subtle zoom for extra polish */
+}
+
 .logoContainer {
   width: 100%;
   display: flex;
@@ -71,27 +80,7 @@
   margin: 0;
   max-width: 100%;
 }
-/*  
-.logo1 {
-  /* Adjust as needed for spacing 
-  margin-bottom: -2rem;
-  content: "";
-}
 
-.logo1:hover {
-  color: var(--heritage-gold);
-}
-
-.logo2 {
-  /* Adjust as needed for spacing */
-  /* margin-bottom: -2rem; 
-  content: "";
-}
-
-.logo2:hover {
-  color: var(--heritage-gold);
-}
-*/
 /* ============================================
    MIDDLE COLUMN - Navigation
    ============================================ */

@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import SlotMachineText from '../shared/animations/SlotMachineText'
 import { getSmoother } from '../SmoothScroll'
 import { SIDEPANEL_FOOTER_NAV_ITEMS } from '../data/navData'
@@ -90,6 +91,15 @@ export default function Footer() {
           <div className={styles.leftColumn}>
             <div className={styles.imageContainer}>
               {/* Placeholder for 4:3 image */}
+              <Image
+                className='cursor-pointer'
+                src='/our_team/shoaib_razaq_footer.webp'
+                alt="Shoaib Razaq"
+                fill
+                sizes="(max-width: 768px) 100vw, (max-width: 1024px) 360px, 25vw"
+                style={{ objectFit: 'cover' }}
+                priority={false}
+              />
             </div>
             <div className={styles.logoContainer}>
               <h2 className={`${styles.logo} cursor-pointer`}>
