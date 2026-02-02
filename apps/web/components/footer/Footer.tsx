@@ -1,9 +1,12 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
+import gsap from 'gsap'
 import SlotMachineText from '../shared/animations/SlotMachineText'
 import { getSmoother } from '../SmoothScroll'
+import { SIDEPANEL_FOOTER_NAV_ITEMS } from '../data/navData'
 import styles from './Footer.module.css'
 
 /**
@@ -18,17 +21,8 @@ import styles from './Footer.module.css'
 export default function Footer() {
   const [currentTime, setCurrentTime] = useState<string>('')
   const [isOfficeOpen, setIsOfficeOpen] = useState<boolean>(false)
-
-  const navigationLinks = [
-    { label: 'Home', href: '/' },
-    { label: 'Our Team', href: '/team' },
-    { label: 'About Us', href: '/about' },
-    { label: 'Case Studies', href: '/case-studies' },
-    { label: 'Practice Areas', href: '/practice-areas' },
-    { label: 'Facilitation', href: '/facilitation' },
-    { label: 'Contact Us', href: '/contact' },
-    { label: 'Blog', href: '/blog' },
-  ]
+  const buttonRef = useRef<HTMLButtonElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
 
   /**
    * Calculates if the office is currently open
@@ -58,6 +52,51 @@ export default function Footer() {
       // Fallback if ScrollSmoother isn't available
       window.scrollTo({ top: 0, behavior: 'smooth' })
     }
+  }, [])
+
+  /**
+   * Smooth wiggle effect - button follows cursor within small radius
+   */
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if (!buttonRef.current || !containerRef.current) return
+
+    const containerRect = containerRef.current.getBoundingClientRect()
+    
+    // Small wiggle radius (max 10px in any direction)
+    const maxOffset = 10
+    
+    // Calculate offset from container center
+    const containerCenterX = containerRect.left + containerRect.width / 2
+    const containerCenterY = containerRect.top + containerRect.height / 2
+    const offsetX = e.clientX - containerCenterX
+    const offsetY = e.clientY - containerCenterY
+    
+    // Normalize and scale to small radius
+    const distance = Math.sqrt(offsetX * offsetX + offsetY * offsetY)
+    const maxContainerDistance = Math.min(containerRect.width, containerRect.height) / 2
+    const normalizedDistance = Math.min(distance / maxContainerDistance, 1)
+    
+    // Calculate smooth offset within small radius
+    const angle = Math.atan2(offsetY, offsetX)
+    const smoothOffset = normalizedDistance * maxOffset
+    const x = Math.cos(angle) * smoothOffset
+    const y = Math.sin(angle) * smoothOffset
+    
+    // Immediate response with gsap.set for no delay
+    gsap.set(buttonRef.current, {
+      x: x,
+      y: y,
+    })
+  }, [])
+
+  const handleMouseLeave = useCallback(() => {
+    if (!buttonRef.current) return
+    gsap.to(buttonRef.current, {
+      x: 0,
+      y: 0,
+      ease: 'power2.out',
+      duration: 0.0001,
+    })
   }, [])
 
   /**
@@ -100,6 +139,15 @@ export default function Footer() {
           <div className={styles.leftColumn}>
             <div className={styles.imageContainer}>
               {/* Placeholder for 4:3 image */}
+              <Image
+                className='cursor-pointer'
+                src='/our_team/shoaib_razaq_footer.webp'
+                alt="Shoaib Razaq"
+                fill
+                sizes="(max-width: 768px) 100vw, (max-width: 1024px) 360px, 25vw"
+                style={{ objectFit: 'cover' }}
+                priority={false}
+              />
             </div>
             <div className={styles.logoContainer}>
               <h2 className={`${styles.logo} cursor-pointer`}>
@@ -121,7 +169,7 @@ export default function Footer() {
             <span className={styles.columnLabel}>(NAVIGATION)</span>
             <nav className={styles.navigation}>
               <ul className={styles.navList}>
-                {navigationLinks.map((link, index) => (
+                {SIDEPANEL_FOOTER_NAV_ITEMS.map((link, index) => (
                   <li key={index} className={styles.navItem}>
                     <Link href={link.href} className={styles.navLink}>
                       <SlotMachineText>{link.label}</SlotMachineText>
@@ -134,37 +182,48 @@ export default function Footer() {
 
           {/* Right Column - About & Contact Info */}
           <div className={styles.rightColumn}>
-            <div className={styles.acknowledgement}>
-              <span className={styles.columnLabel}>(ABOUT)</span>
-              <p className={styles.acknowledgementText}>
-                AR&CO is a premier law firm specializing in intellectual
-                property, energy regulation, and corporate law. With decades of
-                experience, we provide strategic legal counsel to businesses
-                across Pakistan and beyond.
-              </p>
-            </div>
-
-            <div className={styles.contactInfo}>
-              <span className={styles.columnLabel}>(INFO)</span>
-              <div className={styles.contactContent}>
-                <p className={styles.contactItem}>
-                  <span className={styles.contactPrefix}>A:</span>
-                  Islamabad, Pakistan
-                </p>
-                <p className={styles.contactItem}>
-                  <span className={styles.contactPrefix}>E:</span>
-                  info@arco.law
-                </p>
-                <p className={styles.contactItem}>
-                  <span className={styles.contactPrefix}>P:</span>
-                  +92 51 XXX XXXX
-                </p>
-                <p className={styles.contactItem}>
-                  <span className={styles.contactPrefix}>H:</span>
-                  Monday to Friday, 9:00am - 5:00pm
+            <div className={styles.rightColumnContent}>
+              <div className={styles.acknowledgement}>
+                <span className={styles.columnLabel}>(ABOUT)</span>
+                <p className={styles.acknowledgementText}>
+                  AR&CO is a premier law firm specializing in intellectual
+                  property, energy regulation, and corporate law. With decades of
+                  experience, we provide strategic legal counsel to businesses
+                  across Pakistan and beyond.
                 </p>
               </div>
+
+              <div className={styles.contactInfo}>
+                <span className={styles.columnLabel}>(INFO)</span>
+                <div className={styles.contactContent}>
+                  <p className={styles.contactItem}>
+                    <span className={styles.contactPrefix}>A:</span>
+                    Islamabad, Pakistan
+                  </p>
+                  <p className={styles.contactItem}>
+                    <span className={styles.contactPrefix}>E:</span>
+                    info@arco.law
+                  </p>
+                  <p className={styles.contactItem}>
+                    <span className={styles.contactPrefix}>P:</span>
+                    +92 51 XXX XXXX
+                  </p>
+                  <p className={styles.contactItem}>
+                    <span className={styles.contactPrefix}>H:</span>
+                    Monday to Friday, 9:00am - 5:00pm
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div 
+              ref={containerRef}
+              className={styles.scrollTopContainer}
+              onMouseMove={handleMouseMove}
+              onMouseLeave={handleMouseLeave}
+            >
               <button
+                ref={buttonRef}
                 className={styles.scrollTopButton}
                 onClick={scrollToTop}
                 aria-label="Scroll to top"

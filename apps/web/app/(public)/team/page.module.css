@@ -1,0 +1,154 @@
+/* ===========================
+   Our Team Page Styles
+   =========================== */
+
+.pageContainer {
+  min-height: 100vh;
+  background: var(--heritage-cream);
+}
+
+/* ===========================
+   Hero Section
+   =========================== */
+
+.hero {
+  position: relative;
+  height: 65vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-image: url('/our_team/Group_photo.webp');
+  background-size: cover;
+  background-position: 50% 20%;
+  background-repeat: no-repeat;
+}
+
+.heroOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(26, 17, 10, 0.75) 0%,
+    rgba(26, 17, 10, 0.65) 100%
+  );
+  z-index: 1;
+}
+
+.heroContent {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  padding: 0 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.heroTitle {
+  font-family: 'Cabinet Grotesk', sans-serif;
+  font-size: clamp(3rem, 8vw, 6rem);
+  font-weight: 250;
+  color: var(--heritage-cream);
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+  line-height: 1.1;
+  margin: 0 0 1rem;
+}
+
+.heroSubtitle {
+  font-family: 'Cabinet Grotesk', sans-serif;
+  font-size: clamp(1rem, 2vw, 1.5rem);
+  color: var(--heritage-gold);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  line-height: 1.4;
+  margin: 0;
+}
+
+/* ===========================
+   Team Grid Section
+   =========================== */
+
+.teamSection {
+  padding: 6rem 2rem;
+  background: var(--heritage-cream);
+}
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.teamGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 2rem;
+  margin-top: 0;
+}
+
+/* ===========================
+   Responsive Design
+   =========================== */
+
+/* Tablet */
+@media (max-width: 1024px) {
+  .teamGrid {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.75rem;
+  }
+
+  .teamSection {
+    padding: 5rem 1.5rem;
+  }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .hero {
+    height: 50vh;
+  }
+
+  .heroTitle {
+    font-size: clamp(2.5rem, 10vw, 3.5rem);
+  }
+
+  .heroSubtitle {
+    font-size: clamp(0.875rem, 3vw, 1.125rem);
+  }
+
+  .teamSection {
+    padding: 4rem 1.5rem;
+  }
+
+  .teamGrid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+}
+
+/* Small Mobile */
+@media (max-width: 480px) {
+  .hero {
+    height: 45vh;
+  }
+
+  .heroContent {
+    padding: 0 1rem;
+  }
+
+  .heroTitle {
+    font-size: 2.25rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .heroSubtitle {
+    font-size: 0.875rem;
+  }
+
+  .teamSection {
+    padding: 3rem 1rem;
+  }
+
+  .teamGrid {
+    gap: 1.25rem;
+  }
+}

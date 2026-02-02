@@ -9,12 +9,12 @@
   "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "/assets/favicon.png",
+      "src": "/assets/Favicon/FAVICON.png",
       "sizes": "32x32",
       "type": "image/png"
     },
     {
-      "src": "/apple-icon.png",
+      "src": "/assets/Favicon/FAVICON.png",
       "sizes": "180x180",
       "type": "image/png",
       "purpose": "any maskable"

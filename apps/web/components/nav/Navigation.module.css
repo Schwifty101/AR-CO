@@ -1,0 +1,826 @@
+/**
+ * Navigation Module Styles
+ *
+ * CSS Module for the unified Navigation component.
+ * Uses heritage color system from globals.css for brand consistency.
+ *
+ * Three-state navigation system:
+ * 1. HeroNavbar - Full navbar with links (before scroll)
+ * 2. StickyNavbar - Minimal CTA + hamburger (after scroll)
+ * 3. FullScreenMenu - Overlay menu (when hamburger clicked)
+ */
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Hero Navbar - Initial state before scroll
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.heroNavbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    width: 100%;
+    padding: 1.5rem 3rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    mix-blend-mode: difference;
+    color: #fff;
+    will-change: transform;
+}
+
+.heroNavbarInner {
+    max-width: 1600px;
+    margin: 0 auto;
+    width: 100%;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 2rem;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Logo Styles
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.logo {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: inherit;
+    text-decoration: none;
+    z-index: 50;
+    transition: color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.logo:hover {
+    opacity: 0.8;
+}
+
+.logoImage {
+    height: 3.5rem;
+    width: auto;
+    object-fit: contain;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Center Navigation Links - Desktop Only
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.centerNav {
+    display: none;
+    gap: 2.5rem;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.navLink {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: inherit;
+    text-decoration: none;
+    padding: 0.5rem 0;
+    position: relative;
+    transition: color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.navLink::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 1px;
+    background: var(--heritage-gold);
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.navLink:hover {
+    color: var(--heritage-gold);
+}
+
+.navLink:hover::after {
+    width: 100%;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   CTA Button Styles
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.ctaButton {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.875rem 1.75rem;
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-decoration: none;
+    border-radius: 100px;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+}
+
+.ctaButtonFilled {
+    background: var(--heritage-cream);
+    color: var(--wood-espresso);
+    border: none;
+    box-shadow:
+        0 4px 16px rgba(58, 38, 24, 0.08),
+        0 2px 8px rgba(58, 38, 24, 0.12);
+}
+
+.ctaButtonFilled:hover {
+    background: var(--heritage-gold);
+    transform: translateY(-2px);
+    box-shadow:
+        0 8px 24px rgba(58, 38, 24, 0.12),
+        0 4px 12px rgba(58, 38, 24, 0.2);
+}
+
+.ctaButtonOutline {
+    background: transparent;
+    color: inherit;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.ctaButtonOutline:hover {
+    background: var(--heritage-cream);
+    color: var(--wood-espresso);
+    border-color: var(--heritage-cream);
+}
+
+.ctaIcon {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.ctaButton:hover .ctaIcon {
+    transform: translate(2px, -2px);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Mobile Menu Indicator
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.mobileMenuIndicator {
+    display: block;
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Sticky Navbar - After scroll state
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.stickyNavbar {
+    position: fixed;
+    top: 0;
+    right: 0;
+    z-index: 100;
+    width: 100%;
+    padding: 1.25rem 3rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    justify-content: flex-end;
+    pointer-events: none;
+    will-change: transform;
+}
+
+.stickyContent {
+    pointer-events: auto;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Menu Toggle Button (Hamburger)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.menuToggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 3rem;
+    height: 3rem;
+    background: var(--heritage-cream);
+    color: var(--wood-espresso);
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    pointer-events: auto;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow:
+        0 4px 16px rgba(58, 38, 24, 0.08),
+        0 2px 8px rgba(58, 38, 24, 0.12);
+}
+
+.menuToggle:hover {
+    background: var(--heritage-gold);
+    transform: scale(1.05);
+    box-shadow:
+        0 8px 24px rgba(58, 38, 24, 0.12),
+        0 4px 12px rgba(58, 38, 24, 0.2);
+}
+
+.menuToggle:active {
+    transform: scale(0.95);
+}
+
+.menuToggle:focus-visible {
+    outline: 2px solid var(--heritage-gold);
+    outline-offset: 4px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Full Screen Menu Overlay
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.fullScreenMenu {
+    position: fixed;
+    inset: 0;
+    z-index: 150;
+    background: var(--wood-espresso);
+    color: var(--heritage-cream);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    will-change: clip-path, opacity;
+}
+
+.menuHeader {
+    width: 100%;
+    padding: 1.25rem 3rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.menuHeaderActions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.closeButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 3rem;
+    height: 3rem;
+    background: transparent;
+    color: var(--heritage-cream);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.closeButton:hover {
+    background: var(--heritage-cream);
+    color: var(--wood-espresso);
+    border-color: var(--heritage-cream);
+}
+
+.closeButton:focus-visible {
+    outline: 2px solid var(--heritage-gold);
+    outline-offset: 4px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Menu Navigation Links
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.menuContent {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    align-items: stretch;
+    padding: 1.5rem 3rem 3rem 3rem;
+    gap: 4rem;
+    overflow-y: hidden;
+    position: relative;
+    max-height: none;
+}
+
+.menuNav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
+}
+
+.menuLinkWrapper {
+    overflow: hidden;
+}
+
+.menuLink {
+    display: block;
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-size: clamp(1.75rem, 5vw, 4rem);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    color: var(--heritage-cream);
+    text-decoration: none;
+    transition: color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.menuLink:hover {
+    color: var(--heritage-gold);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Right Column Container
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.rightColumn {
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-end;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Facilitation Dropdown Panel
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.facilitationDropdown {
+    align-self: flex-start;
+    margin-left: auto;
+    width: 100%;
+    max-width: 720px;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    background: var(--wood-mahogany);
+    border-radius: 1rem;
+    padding: 1.75rem 1.75rem 1.5rem 1.75rem;
+    box-shadow:
+        0 20px 60px rgba(0, 0, 0, 0.4),
+        0 0 0 1px rgba(249, 248, 246, 0.08);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+}
+
+.dropdownContent {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    flex: 1;
+    overflow: hidden;
+}
+
+.dropdownTitle {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-size: 1.75rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    color: var(--heritage-cream);
+    margin-bottom: 0.25rem;
+    padding-bottom: 0.875rem;
+    border-bottom: 2px solid rgba(249, 248, 246, 0.2);
+    background: linear-gradient(90deg, var(--heritage-gold) 0%, var(--heritage-cream) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.dropdownGrid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem 1.5rem;
+    flex: 1;
+    align-content: start;
+}
+
+.dropdownCategory {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+    padding: 0.875rem 0.875rem 0.75rem 0.875rem;
+    border-radius: 0.5rem;
+    background: rgba(249, 248, 246, 0.02);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dropdownCategory:hover {
+    background: rgba(249, 248, 246, 0.05);
+    transform: translateY(-2px);
+}
+
+.categorySpanTwo {
+    grid-column: span 2;
+}
+
+.categoryTitle {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--heritage-gold);
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(249, 248, 246, 0.1);
+    margin-bottom: 0.125rem;
+}
+
+.categoryHighlight {
+    color: var(--heritage-cream);
+}
+
+.categoryLinks {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding-left: 0;
+    margin: 0;
+}
+
+.categoryLink {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-size: 0.875rem;
+    font-weight: 400;
+    color: rgba(249, 248, 246, 0.75);
+    text-decoration: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    padding-left: 0.75rem;
+}
+
+.categoryLink::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 0;
+    background: var(--heritage-gold);
+    transition: height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.categoryLink:hover {
+    color: var(--heritage-cream);
+    padding-left: 1rem;
+}
+
+.categoryLink:hover::before {
+    height: 100%;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Menu Footer - Matches Footer.tsx layout
+   ═══════════════════════════════════════════════════════════════════════════ */
+.bottomRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    /* padding-top: 1.5rem; */
+    padding: 1rem 2rem;
+    border-top: 1px solid rgba(250, 248, 244, 0.12);
+    gap: 2rem;
+    flex-wrap: wrap;
+}
+
+.bottomLeft {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.timeStatusRow {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.copyright {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--heritage-cream);
+}
+
+.clockTime {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-size: 0.8125rem;
+    font-weight: 400;
+    color: rgba(250, 248, 244, 0.7);
+}
+
+.officeStatus {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.officeStatus::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.statusOpen {
+    color: #2d7a3a;
+}
+
+.statusOpen::before {
+    background-color: #2d7a3a;
+    box-shadow: 0 0 8px rgba(45, 122, 58, 0.5);
+}
+
+.statusClosed {
+    color: #a83232;
+}
+
+.statusClosed::before {
+    background-color: #a83232;
+    box-shadow: 0 0 8px rgba(168, 50, 50, 0.5);
+}
+
+.bottomCenter {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.legalLink {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-size: 0.8125rem;
+    font-weight: 400;
+    color: rgba(250, 248, 244, 0.7);
+    text-decoration: none;
+    transition: color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.legalLink:hover {
+    color: var(--heritage-gold);
+}
+
+.bottomRight {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+}
+
+.socialLink {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--heritage-cream);
+    text-decoration: none;
+    transition: color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.socialLink:hover {
+    color: var(--heritage-gold);
+}
+
+.credits {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    color: rgba(250, 248, 244, 0.5);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Responsive Breakpoints
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Large Desktop (1440px+) */
+@media (min-width: 1024px) {
+    .centerNav {
+        display: flex;
+    }
+
+    .mobileMenuIndicator {
+        display: none;
+    }
+}
+
+/* Laptop (1280px - 1440px) */
+@media (max-width: 1440px) {
+    .heroNavbar {
+        padding: 1.25rem 2.5rem;
+    }
+
+    .stickyNavbar {
+        padding: 1.25rem 2.5rem;
+    }
+
+    .menuHeader {
+        padding: 1.25rem 2.5rem;
+    }
+
+    .menuContent {
+        padding: 0 2.5rem;
+    }
+
+    .menuFooter {
+        padding: 1.5rem 2.5rem 2rem;
+    }
+
+    .centerNav {
+        gap: 2rem;
+    }
+
+    .dropdownGrid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+/* Tablet / Small Laptop (1024px - 1279px) */
+@media (max-width: 1279px) {
+    .heroNavbar {
+        padding: 1rem 2rem;
+    }
+
+    .stickyNavbar {
+        padding: 1rem 2rem;
+    }
+
+    .menuHeader {
+        padding: 1rem 2rem;
+    }
+
+    .menuContent {
+        padding: 0 2rem;
+    }
+
+    .menuFooter {
+        padding: 1.25rem 2rem 1.5rem;
+    }
+
+    .navLink {
+        font-size: 0.6875rem;
+    }
+
+    .centerNav {
+        gap: 1.5rem;
+    }
+}
+
+/* Tablet (768px - 1024px) */
+@media (max-width: 1024px) {
+    .heroNavbar {
+        padding: 1rem 1.5rem;
+    }
+
+    .stickyNavbar {
+        padding: 1rem 1.5rem;
+    }
+
+    .menuHeader {
+        padding: 1rem 1.5rem;
+    }
+
+    .menuContent {
+        padding: 0 1.5rem;
+    }
+
+    .menuFooter {
+        padding: 1rem 1.5rem 1.5rem;
+    }
+
+    .menuLink {
+        font-size: clamp(2rem, 7vw, 4.5rem);
+    }
+}
+
+/* Mobile (768px and below) */
+@media (max-width: 768px) {
+    .heroNavbar {
+        padding: 1rem;
+    }
+
+    .stickyNavbar {
+        padding: 1rem;
+    }
+
+    .menuHeader {
+        padding: 1rem;
+    }
+
+    .menuContent {
+        padding: 0 1rem;
+    }
+
+    .menuFooter {
+        padding: 1rem;
+    }
+
+    .menuToggle {
+        width: 2.75rem;
+        height: 2.75rem;
+    }
+
+    .closeButton {
+        width: 2.75rem;
+        height: 2.75rem;
+    }
+
+    .menuNav {
+        gap: 0.25rem;
+    }
+
+    .menuLink {
+        font-size: clamp(1.75rem, 10vw, 3rem);
+    }
+
+    .menuFooterRow {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .footerCenter,
+    .footerRight {
+        flex-direction: column;
+        gap: 0.75rem;
+        align-items: flex-start;
+    }
+
+    .ctaButton {
+        padding: 0.75rem 1.25rem;
+        font-size: 0.6875rem;
+    }
+}
+
+/* Small Mobile (375px and below) */
+@media (max-width: 375px) {
+    .heroNavbar {
+        padding: 0.75rem;
+    }
+
+    .stickyNavbar {
+        padding: 0.75rem;
+    }
+
+    .menuToggle {
+        width: 2.5rem;
+        height: 2.5rem;
+    }
+
+    .closeButton {
+        width: 2.5rem;
+        height: 2.5rem;
+    }
+
+    .logo {
+        font-size: 1.25rem;
+    }
+
+    .footerLinks {
+        gap: 1rem;
+    }
+
+    .footerInfo {
+        gap: 1rem;
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Reduced Motion Preferences
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+
+    .heroNavbar,
+    .stickyNavbar,
+    .fullScreenMenu,
+    .navLink,
+    .ctaButton,
+    .menuToggle,
+    .closeButton,
+    .menuLink,
+    .footerLink {
+        transition: none;
+    }
+
+    .navLink::after {
+        transition: none;
+    }
+}
