@@ -717,3 +717,147 @@ body.app-loaded header {
   color: var(--heritage-cream);
   border-color: var(--wood-espresso);
 }
+/* ═══════════════════════════════════════════════════════════════════════════
+   Team Page Typography Utilities
+   OH Architecture-inspired bold typography system
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Hero Typography - Massive billboard-sized text */
+.hero-statement {
+  font-size: clamp(4rem, 18vw, 22rem); /* 64px → 352px */
+  font-weight: 100; /* Ultra-thin */
+  line-height: 0.9;
+  letter-spacing: -0.06em; /* Extremely tight tracking */
+  text-transform: uppercase;
+  color: var(--heritage-walnut);
+}
+
+/* Section Labels - Small uppercase labels */
+.section-label {
+  font-size: clamp(0.75rem, 1.5vw, 1rem); /* 12px → 16px */
+  font-weight: 700;
+  letter-spacing: 0.15em; /* Wide tracking */
+  text-transform: uppercase;
+  color: var(--heritage-gold);
+}
+
+/* Section Titles - Large editorial headers */
+.section-title-large {
+  font-size: clamp(3rem, 6vw, 5.5rem); /* 48px → 88px */
+  font-weight: 300;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  color: var(--heritage-walnut);
+}
+
+.section-title-medium {
+  font-size: clamp(2rem, 5vw, 4rem); /* 32px → 64px */
+  font-weight: 300;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  color: var(--heritage-walnut);
+}
+
+/* Team Member Names - Bold editorial list typography */
+.member-name-primary {
+  font-size: clamp(2.5rem, 5vw, 4rem); /* 40px → 64px */
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: var(--heritage-walnut);
+  transition: color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.member-name-standard {
+  font-size: clamp(2rem, 4vw, 3.5rem); /* 32px → 56px */
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: var(--heritage-walnut);
+  transition: color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.member-name-primary:hover,
+.member-name-standard:hover {
+  color: var(--heritage-gold);
+}
+
+/* Role Titles - Uppercase supporting text */
+.member-role {
+  font-size: clamp(1rem, 1.5vw, 1.25rem); /* 16px → 20px */
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--heritage-charcoal);
+  opacity: 0.7;
+}
+
+/* Body Text - Generous reading experience */
+.editorial-body {
+  font-size: clamp(1rem, 1.2vw, 1.125rem); /* 16px → 18px */
+  font-weight: 400;
+  line-height: 1.7;
+  color: var(--heritage-charcoal);
+  max-width: 65ch; /* Optimal reading length */
+}
+
+/* Closing Statement Typography */
+.closing-statement {
+  font-size: clamp(2.5rem, 8vw, 6rem); /* 40px → 96px */
+  font-weight: 300;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: var(--heritage-walnut);
+}
+
+/* Expertise Tags */
+.expertise-tag {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background-color: rgba(212, 175, 55, 0.1);
+  color: var(--heritage-walnut);
+  font-weight: 500;
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.125rem;
+}
+
+/* Image Effects */
+.grayscale-hover {
+  filter: grayscale(100%);
+  transition: filter 0.7s ease-out;
+}
+
+.grayscale-hover:hover {
+  filter: grayscale(0%);
+}
+
+/* Responsive Typography Adjustments */
+@media (max-width: 1024px) {
+  .hero-statement {
+    font-size: clamp(6rem, 14vw, 14rem); /* 96px → 224px */
+    letter-spacing: -0.04em; /* Less tight on tablets */
+  }
+}
+
+@media (max-width: 768px) {
+  .hero-statement {
+    font-size: clamp(4rem, 12vw, 8rem); /* 64px → 128px */
+    line-height: 0.95; /* Slightly more space on mobile */
+  }
+
+  .member-name-primary {
+    font-size: clamp(2rem, 6vw, 2.5rem); /* 32px → 40px */
+  }
+
+  .member-name-standard {
+    font-size: clamp(1.75rem, 5vw, 2rem); /* 28px → 32px */
+  }
+}
+
+/* Performance: Reduced Motion Preferences */
+@media (prefers-reduced-motion: reduce) {
+  .grayscale-hover {
+    transition-duration: 0.01ms;
+  }
+}
