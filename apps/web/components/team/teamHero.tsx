@@ -35,6 +35,7 @@ export default function TeamHero({
 
   return (
     <section
+      data-hero-section="true"
       className={`
         relative
         h-screen
