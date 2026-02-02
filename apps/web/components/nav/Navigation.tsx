@@ -84,10 +84,10 @@ interface ICtaButtonProps {
 }
 
 const CtaButton: React.FC<ICtaButtonProps> = ({
-    text = "CONTACT US",
+    text = "BOOK CONSULTATION",
     onClick,
     variant = "filled",
-    href = "/contact",
+    href = "/consultation",
     className = ""
 }) => {
     const buttonClasses = `${styles.ctaButton} ${variant === "filled" ? styles.ctaButtonFilled : styles.ctaButtonOutline} ${className}`
