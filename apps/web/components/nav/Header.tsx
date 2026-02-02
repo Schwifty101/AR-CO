@@ -34,15 +34,25 @@ export default function Header() {
   const [sidePanelOpen, setSidePanelOpen] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
+  const [isLightThemePage, setIsLightThemePage] = useState(false)
   const headerRef = useRef<HTMLElement>(null)
 
   // Hero section scroll detection - hide during hero, show after
   useEffect(() => {
     // Find the hero section
     const heroSection = document.querySelector('section[class*="hero"]') as HTMLElement
-    if (!heroSection || !headerRef.current) return
-
     const header = headerRef.current
+    if (!header) return
+
+    // If no hero section exists (e.g., practice areas page), ensure header is visible
+    if (!heroSection) {
+      gsap.set(header, { y: '0%', opacity: 1 })
+      header.style.pointerEvents = 'auto'
+      setIsHidden(false)
+      setIsScrolled(false)
+      return
+    }
+
     let currentlyHidden = false
 
     // Helper to animate header visibility with GSAP
@@ -230,6 +240,27 @@ export default function Header() {
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
+  // Detect light theme pages (like practice-areas) that need dark header styling
+  useEffect(() => {
+    const checkLightThemePage = () => {
+      // Check for pages with data-page-theme="light" attribute
+      const lightThemePage = document.querySelector('[data-page-theme="light"]')
+      setIsLightThemePage(!!lightThemePage)
+    }
+
+    // Initial check after DOM is ready
+    const timer = setTimeout(checkLightThemePage, 100)
+
+    // Also observe for dynamic page changes
+    const observer = new MutationObserver(checkLightThemePage)
+    observer.observe(document.body, { childList: true, subtree: true, attributes: true })
+
+    return () => {
+      clearTimeout(timer)
+      observer.disconnect()
+    }
+  }, [])
+
   // Close all menus on window resize to desktop
   useEffect(() => {
     const handleResize = () => {
@@ -265,7 +296,7 @@ export default function Header() {
       {/* Main Header */}
       <header
         ref={headerRef}
-        className={`${styles.header} ${isScrolled ? styles.scrolled : ''} ${isHidden ? styles.hidden : ''} ${isMenuOpen ? styles.menuOpen : ''}`}
+        className={`${styles.header} ${isScrolled ? styles.scrolled : ''} ${isHidden ? styles.hidden : ''} ${isMenuOpen ? styles.menuOpen : ''} ${isLightThemePage ? styles.lightTheme : ''}`}
         onKeyDown={handleKeyDown}
       >
         <div className={styles.gridContainer}>
@@ -288,9 +319,9 @@ export default function Header() {
             )}
           </AnimatePresence>
 
-          {/* CENTER SECTION - Navigation Links (Desktop, Non-scrolled) */}
+          {/* CENTER SECTION - Navigation Links (Desktop, Non-scrolled, Non-light-theme-pages) */}
           <AnimatePresence>
-            {!isScrolled && !isMobile && (
+            {!isScrolled && !isMobile && !isLightThemePage && (
               <motion.nav
                 className={styles.navSection}
                 aria-label="Main navigation"
@@ -363,7 +394,7 @@ export default function Header() {
                 >
                   <Link
                     href="/contact?consultation=true"
-                    className={`${styles.btnPrimary} ${onDarkSection ? styles.btnPrimaryLight : ''}`}
+                    className={`${styles.btnPrimary} ${(onDarkSection && !isLightThemePage) ? styles.btnPrimaryLight : ''}`}
                   >
                     BOOK CONSULTATION
                   </Link>
@@ -371,12 +402,12 @@ export default function Header() {
               )}
             </AnimatePresence>
 
-            {/* Hamburger Menu Button - appears when quotation reached or always on mobile */}
+            {/* Hamburger Menu Button - appears when quotation reached, on mobile, or on light theme pages */}
             <AnimatePresence mode="wait">
-              {((quotationReached || isMobile) && !isHidden) && (
+              {((quotationReached || isMobile || isLightThemePage) && !isHidden) && (
                 <motion.button
                   key="hamburger-menu"
-                  className={`${styles.menuToggle} ${!onDarkSection ? styles.menuToggleLight : ''}`}
+                  className={`${styles.menuToggle} ${(!onDarkSection || isLightThemePage) ? styles.menuToggleLight : ''}`}
                   onClick={() => {
                     if (isMobile) {
                       setMobileMenuOpen(!mobileMenuOpen)
