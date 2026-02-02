@@ -40,6 +40,8 @@ const getFramePath = (frameIndex: number) => {
   return `/banner/frames/Web%20image%20${paddedNumber}.jpg`
 }
 
+const FRAMES_LOADED_KEY = 'arco_frames_loaded'
+
 export default function Hero() {
   const heroRef = useRef<HTMLElement>(null)
   const stickyWrapperRef = useRef<HTMLDivElement>(null)
@@ -49,6 +51,11 @@ export default function Hero() {
   const titleSubRef = useRef<HTMLSpanElement>(null)
   const logosRef = useRef<HTMLDivElement>(null)
   const overlayRef = useRef<HTMLDivElement>(null)
+  // Check if frames were already loaded in this session (browser cache will have them)
+  const [showLoadingScreen, setShowLoadingScreen] = useState(() => {
+    if (typeof window === 'undefined') return true
+    return !sessionStorage.getItem(FRAMES_LOADED_KEY)
+  })
   const [imagesLoaded, setImagesLoaded] = useState(false)
   const [loadingProgress, setLoadingProgress] = useState(0)
   const imagesRef = useRef<HTMLImageElement[]>([])
@@ -123,6 +130,9 @@ export default function Hero() {
 
       imagesRef.current = loadedImages
       setImagesLoaded(true)
+
+      // Mark frames as loaded in session storage for subsequent visits
+      sessionStorage.setItem(FRAMES_LOADED_KEY, 'true')
 
       // Draw first frame with proper dimensions
       const canvas = canvasRef.current
@@ -259,8 +269,10 @@ export default function Hero() {
 
   return (
     <>
-      {/* Loading Screen - placed outside hero section */}
-      <LoadingScreen progress={loadingProgress} isComplete={imagesLoaded} />
+      {/* Loading Screen - only shown on first visit, skipped on subsequent visits */}
+      {showLoadingScreen && (
+        <LoadingScreen progress={loadingProgress} isComplete={imagesLoaded} />
+      )}
 
       <section ref={heroRef} className={styles.hero}>
         {/* Sticky wrapper keeps content visible while scrolling */}

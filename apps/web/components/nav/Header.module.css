@@ -95,6 +95,21 @@
   color: var(--heritage-gold);
 }
 
+/* ========== Light Theme Page Variant - Dark text on light backgrounds ========== */
+.lightTheme .navButton,
+.lightTheme .navLink {
+  color: var(--wood-espresso);
+}
+
+.lightTheme .navButton:hover,
+.lightTheme .navLink:hover {
+  color: var(--heritage-gold);
+}
+
+.lightTheme .navButtonActive {
+  color: var(--heritage-gold);
+}
+
 .chevron {
   transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
   color: var(--heritage-gold);
