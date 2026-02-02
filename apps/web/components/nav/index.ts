@@ -14,15 +14,10 @@
 export { default as Navigation } from './Navigation'
 
 // Legacy components (deprecated - will be removed in future)
-export { default as Header } from './Header'
-export { default as SidePanel } from './SidePanel'
-export { default as FullScreenDropdown } from './FullScreenDropdown'
-export { default as MobileFullScreenMenu } from './MobileFullScreenMenu'
-export { default as LogoSection } from './LogoSection'
+// Header, SidePanel, FullScreenDropdown, MobileFullScreenMenu, LogoSection removed
 
 // Shared components
-export { default as NavLink } from './components/NavLink'
-export { default as NavButton } from './components/NavButton'
+// NavLink, NavButton removed
 
 // Animations (re-exported from shared)
 export { default as SlotMachineText } from '../shared/animations/SlotMachineText'

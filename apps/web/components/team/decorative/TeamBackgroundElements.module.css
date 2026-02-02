@@ -1,0 +1,160 @@
+/**
+ * Styles for TeamBackgroundElements component
+ * OH-inspired: Minimal, purposeful positioning at low opacity
+ */
+
+.container {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* Flowing lines - gentle curves */
+.lines {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  opacity: 0.08;
+}
+
+.lines.minimal {
+  opacity: 0.06;
+}
+
+/* Grid pattern overlay */
+.grid {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  opacity: 0.03;
+  background-image: linear-gradient(rgba(212, 175, 55, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(212, 175, 55, 0.1) 1px, transparent 1px);
+  background-size: 50px 50px;
+}
+
+/* Decorative dots */
+.dots {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+.dot {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background-color: var(--heritage-gold);
+  border-radius: 50%;
+  opacity: 0.15;
+}
+
+/* Corner accents */
+.corners {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+.corner {
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  border-color: var(--heritage-gold);
+  opacity: 0.1;
+}
+
+.corner.topLeft {
+  top: 2rem;
+  left: 2rem;
+  border-top: 1px solid;
+  border-left: 1px solid;
+}
+
+.corner.topRight {
+  top: 2rem;
+  right: 2rem;
+  border-top: 1px solid;
+  border-right: 1px solid;
+}
+
+.corner.bottomLeft {
+  bottom: 2rem;
+  left: 2rem;
+  border-bottom: 1px solid;
+  border-left: 1px solid;
+}
+
+.corner.bottomRight {
+  bottom: 2rem;
+  right: 2rem;
+  border-bottom: 1px solid;
+  border-right: 1px solid;
+}
+
+/* Floating geometric shapes */
+.shapes {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+.shape {
+  position: absolute;
+  opacity: 0.06;
+  will-change: transform;
+}
+
+.shape.circle {
+  border-radius: 50%;
+  border: 1px solid var(--heritage-gold);
+}
+
+.shape.square {
+  border: 1px solid var(--heritage-gold);
+}
+
+/* Color variants */
+.cream .lines,
+.cream .grid,
+.cream .dot,
+.cream .corner,
+.cream .shape {
+  color: var(--heritage-walnut);
+}
+
+.white .lines,
+.white .grid,
+.white .dot,
+.white .corner,
+.white .shape {
+  color: var(--heritage-gold);
+}
+
+.dark .lines,
+.dark .grid,
+.dark .dot,
+.dark .corner,
+.dark .shape {
+  color: var(--heritage-gold);
+}
+
+/* Responsive: Hide decorative elements on mobile */
+@media (max-width: 768px) {
+  .shapes,
+  .corners {
+    display: none;
+  }
+
+  .lines,
+  .grid {
+    opacity: 0.04;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .shape {
+    animation: none !important;
+  }
+}

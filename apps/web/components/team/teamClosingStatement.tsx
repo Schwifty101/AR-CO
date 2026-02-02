@@ -30,6 +30,7 @@ export default function TeamClosingStatement({
   return (
     <section
       className={`
+        relative
         min-h-[60vh]
         flex
         items-center
@@ -42,32 +43,78 @@ export default function TeamClosingStatement({
       `}
       style={{ background: 'var(--heritage-cream)' }}
     >
-      <div className="max-w-5xl mx-auto text-center">
-        {/* Main statement */}
-        <motion.h2
-          className="leading-tight"
-          style={{
-            fontSize: 'clamp(2.5rem, 8vw, 6rem)',
-            fontWeight: 300,
-            letterSpacing: '-0.02em',
-            color: 'var(--heritage-walnut)'
-          }}
-          initial={{ opacity: 0, scale: 0.95 }}
+      {/* Optional: Very subtle texture overlay */}
+      <div
+        className="absolute inset-0 opacity-[0.02] mix-blend-multiply pointer-events-none"
+        style={{
+          backgroundImage:
+            'url("data:image/svg+xml,%3Csvg width="100" height="100" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="noise"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" /%3E%3C/filter%3E%3Crect width="100" height="100" filter="url(%23noise)" opacity="0.05" /%3E%3C/svg%3E")'
+        }}
+        aria-hidden="true"
+      />
+
+      <div className="max-w-5xl mx-auto text-center relative z-10">
+        {/* Simple horizontal accent lines */}
+        <div className="flex items-center justify-center gap-6 mb-8">
+          <div
+            className="w-16 h-px"
+            style={{
+              background:
+                'linear-gradient(to right, transparent, rgba(212, 175, 55, 0.6))'
+            }}
+          />
+          <div
+            className="w-1.5 h-1.5 rounded-full"
+            style={{ background: 'var(--heritage-gold)' }}
+          />
+          <div
+            className="w-16 h-px"
+            style={{
+              background:
+                'linear-gradient(to left, transparent, rgba(212, 175, 55, 0.6))'
+            }}
+          />
+        </div>
+        {/* Main statement with refined animated underline */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.98 }}
           whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true, margin: '-100px' }}
-          transition={{
-            duration: 1,
-            ease: [0.25, 0.46, 0.45, 0.94]
-          }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
+          className="relative inline-block"
         >
-          {/* Split by newlines or render as-is */}
-          {statement.split('\n').map((line, index) => (
-            <span key={index}>
-              {line}
-              {index < statement.split('\n').length - 1 && <br />}
-            </span>
-          ))}
-        </motion.h2>
+          <h2
+            className="leading-tight"
+            style={{
+              fontSize: 'clamp(2.5rem, 8vw, 6rem)',
+              fontWeight: 300,
+              letterSpacing: '-0.02em',
+              color: 'var(--heritage-walnut)'
+            }}
+          >
+            {/* Split by newlines or render as-is */}
+            {statement.split('\n').map((line, index) => (
+              <span key={index}>
+                {line}
+                {index < statement.split('\n').length - 1 && <br />}
+              </span>
+            ))}
+          </h2>
+
+          {/* Refined animated underline - subtle and elegant */}
+          <motion.div
+            initial={{ width: 0 }}
+            whileInView={{ width: '100%' }}
+            viewport={{ once: true }}
+            transition={{
+              duration: 1,
+              delay: 0.4,
+              ease: [0.25, 0.46, 0.45, 0.94]
+            }}
+            className="absolute bottom-0 left-0 h-0.5"
+            style={{ background: 'var(--heritage-gold)' }}
+          />
+        </motion.div>
 
         {/* Subtext */}
         {subtext && (
