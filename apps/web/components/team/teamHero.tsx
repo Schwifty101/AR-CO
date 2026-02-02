@@ -2,6 +2,9 @@
 
 import { motion } from 'framer-motion'
 import Image from 'next/image'
+import { useEffect } from 'react'
+import { ChevronDown } from 'lucide-react'
+import { initTeamParallax } from './animations/teamScrollAnimations'
 import type { ITeamHeroProps } from './types/teamInterfaces'
 
 /**
@@ -33,6 +36,13 @@ export default function TeamHero({
   // Split statement into words for stagger animation
   const words = brandStatement.split(' ')
 
+  // Initialize parallax effect on background image
+  useEffect(() => {
+    if (!backgroundImage) return
+    const cleanup = initTeamParallax('.heroBackgroundImage', 0.3)
+    return cleanup
+  }, [backgroundImage])
+
   return (
     <section
       data-hero-section="true"
@@ -57,7 +67,7 @@ export default function TeamHero({
             priority
             quality={85}
             sizes="100vw"
-            className="object-cover"
+            className="object-cover heroBackgroundImage"
             style={{ objectPosition: '50% 20%' }}
           />
           {/* Overlay for text readability */}
@@ -71,30 +81,29 @@ export default function TeamHero({
         </>
       )}
 
-      {/* Content */}
-      <div className="relative z-20 text-center px-4 md:px-8 max-w-[1600px] mx-auto">
+      {/* Content - Updated to fix overflow */}
+      <div className="relative z-20 text-center px-4 md:px-8 max-w-[1700px] mx-auto w-full">
         {/* Massive brand statement */}
-        <div className="overflow-hidden">
+        <div className="overflow-visible flex flex-wrap justify-center gap-x-[0.2em] md:gap-x-[0.25em] leading-[0.85]">
           {words.map((word, index) => (
             <motion.h1
               key={index}
               className="inline-block"
               style={{
-                fontSize: 'clamp(4rem, 18vw, 22rem)',
+                fontSize: 'clamp(3.5rem, 13vw, 15rem)', // Reduced from 18vw/22rem to prevent overflow
                 fontWeight: 100,
-                lineHeight: 0.9,
-                letterSpacing: '-0.06em',
+                lineHeight: 0.85,
+                letterSpacing: '-0.04em',
                 textTransform: 'uppercase',
                 color: backgroundImage
                   ? 'var(--heritage-cream)'
                   : 'var(--heritage-walnut)',
-                marginRight: '0.2em'
               }}
               initial={{ y: 100, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{
                 duration: 1.2,
-                delay: index * 0.2,
+                delay: index * 0.15,
                 ease: [0.25, 0.46, 0.45, 0.94]
               }}
             >
@@ -103,31 +112,80 @@ export default function TeamHero({
           ))}
         </div>
 
-        {/* Subtitle */}
+        {/* Subtitle with bracket decorations */}
         {subtitle && (
-          <motion.p
-            className="mt-8"
-            style={{
-              fontSize: 'clamp(1rem, 2vw, 1.5rem)',
-              fontWeight: 500,
-              letterSpacing: '0.05em',
-              textTransform: 'uppercase',
-              color: backgroundImage
-                ? 'var(--heritage-gold)'
-                : 'var(--heritage-walnut)'
-            }}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{
-              duration: 0.8,
-              delay: words.length * 0.2 + 0.3,
-              ease: [0.25, 0.46, 0.45, 0.94]
-            }}
-          >
-            {subtitle}
-          </motion.p>
+          <div className="relative inline-block mt-8">
+            {/* Left bracket */}
+            <motion.div
+              className="absolute -left-12 top-1/2 h-0.5 bg-heritage-gold"
+              style={{ width: '2rem' }}
+              initial={{ width: 0, opacity: 0 }}
+              animate={{ width: '2rem', opacity: 1 }}
+              transition={{
+                duration: 0.8,
+                delay: words.length * 0.2 + 0.5,
+                ease: [0.25, 0.46, 0.45, 0.94]
+              }}
+            />
+
+            {/* Right bracket */}
+            <motion.div
+              className="absolute -right-12 top-1/2 h-0.5 bg-heritage-gold"
+              style={{ width: '2rem' }}
+              initial={{ width: 0, opacity: 0 }}
+              animate={{ width: '2rem', opacity: 1 }}
+              transition={{
+                duration: 0.8,
+                delay: words.length * 0.2 + 0.5,
+                ease: [0.25, 0.46, 0.45, 0.94]
+              }}
+            />
+
+            <motion.p
+              style={{
+                fontSize: 'clamp(1rem, 2vw, 1.5rem)',
+                fontWeight: 500,
+                letterSpacing: '0.05em',
+                textTransform: 'uppercase',
+                color: backgroundImage
+                  ? 'var(--heritage-gold)'
+                  : 'var(--heritage-walnut)'
+              }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{
+                duration: 0.8,
+                delay: words.length * 0.2 + 0.3,
+                ease: [0.25, 0.46, 0.45, 0.94]
+              }}
+            >
+              {subtitle}
+            </motion.p>
+          </div>
         )}
       </div>
+
+      {/* Scroll indicator */}
+      <motion.div
+        className="absolute bottom-[5%] left-1/2 -translate-x-1/2 z-30"
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{
+          duration: 0.8,
+          delay: words.length * 0.2 + 0.8,
+          ease: [0.25, 0.46, 0.45, 0.94]
+        }}
+        style={{
+          animation: 'chevronBounce 2s ease-in-out infinite'
+        }}
+      >
+        <ChevronDown
+          className="w-6 h-6"
+          style={{
+            color: backgroundImage ? 'var(--heritage-gold)' : 'var(--heritage-walnut)'
+          }}
+        />
+      </motion.div>
     </section>
   )
 }
