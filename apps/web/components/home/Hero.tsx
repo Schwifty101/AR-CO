@@ -7,7 +7,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger"
 import { useGSAP } from "@gsap/react"
 import styles from "./Hero.module.css"
 import LoadingScreen from "../LoadingScreen"
-import { setSlowScroll, setNormalScroll } from "../SmoothScroll"
+import { setSlowScroll } from "../SmoothScroll"
 
 // Register GSAP plugins
 if (typeof window !== "undefined") {
@@ -37,7 +37,7 @@ const FRAME_START = 1000
 const getFramePath = (frameIndex: number) => {
   const frameNumber = FRAME_START + frameIndex
   const paddedNumber = String(frameNumber).padStart(5, '0')
-  return `/banner/frames/Web%20image%20${paddedNumber}.jpg`
+  return `/banner/frames/Web%20image%20${paddedNumber}.webp`
 }
 
 const FRAMES_LOADED_KEY = 'arco_frames_loaded'
@@ -274,7 +274,7 @@ export default function Hero() {
         <LoadingScreen progress={loadingProgress} isComplete={imagesLoaded} />
       )}
 
-      <section ref={heroRef} className={styles.hero}>
+      <section ref={heroRef} data-hero-section="true" className={styles.hero}>
         {/* Sticky wrapper keeps content visible while scrolling */}
         <div ref={stickyWrapperRef} className={styles.stickyWrapper}>
           {/* Frame-based Background */}
