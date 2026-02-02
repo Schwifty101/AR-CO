@@ -1,7 +1,8 @@
 "use client"
 
 import SmoothScroll from "@/components/SmoothScroll"
-import Header from "@/components/nav/Header"
+import Navigation from "@/components/nav/Navigation"
+import Footer from "@/components/footer/Footer"
 
 export default function PublicLayout({
     children,
@@ -10,9 +11,10 @@ export default function PublicLayout({
 }) {
     return (
         <>
-            <Header />
+            <Navigation />
             <SmoothScroll>
                 {children}
+                <Footer />
             </SmoothScroll>
         </>
     )

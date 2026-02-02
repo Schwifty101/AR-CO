@@ -262,7 +262,7 @@ export default function Hero() {
       {/* Loading Screen - placed outside hero section */}
       <LoadingScreen progress={loadingProgress} isComplete={imagesLoaded} />
 
-      <section ref={heroRef} className={styles.hero}>
+      <section ref={heroRef} data-hero-section="true" className={styles.hero}>
         {/* Sticky wrapper keeps content visible while scrolling */}
         <div ref={stickyWrapperRef} className={styles.stickyWrapper}>
           {/* Frame-based Background */}
