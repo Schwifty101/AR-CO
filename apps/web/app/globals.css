@@ -855,9 +855,73 @@ body.app-loaded header {
   }
 }
 
+/* Team Page Animations */
+@keyframes chevronBounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(10px);
+  }
+}
+
+@keyframes bracketExpand {
+  0%,
+  100% {
+    width: 2rem;
+    opacity: 1;
+  }
+  50% {
+    width: 3rem;
+    opacity: 0.6;
+  }
+}
+
+@keyframes gradientShift {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.2;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Achievement card hover effect */
+.achievementCard:hover {
+  box-shadow: 0 0 12px rgba(212, 175, 55, 0.2),
+    0 4px 12px rgba(58, 38, 24, 0.12);
+}
+
 /* Performance: Reduced Motion Preferences */
 @media (prefers-reduced-motion: reduce) {
   .grayscale-hover {
     transition-duration: 0.01ms;
+  }
+
+  @keyframes chevronBounce {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes bracketExpand {
+    0%,
+    100% {
+      width: 2rem;
+      opacity: 1;
+    }
   }
 }

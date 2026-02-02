@@ -49,7 +49,7 @@ export default function ScrollRevealText({
 
   return (
     <Component
-      ref={ref as React.RefObject<HTMLElement>['current']}
+      ref={ref as any}
       className={`${styles.scrollRevealText} ${isVisible ? styles.visible : ''} ${className}`}
       style={{
         transitionDelay: `${delay}ms`,
