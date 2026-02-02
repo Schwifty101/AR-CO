@@ -34,7 +34,13 @@ export default function Header() {
   const [sidePanelOpen, setSidePanelOpen] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
+  const [isMounted, setIsMounted] = useState(false)
   const headerRef = useRef<HTMLElement>(null)
+
+  // Set mounted state to prevent initial animations
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
 
   // Hero section scroll detection - hide during hero, show after
   useEffect(() => {
@@ -44,6 +50,7 @@ export default function Header() {
 
     const header = headerRef.current
     let currentlyHidden = false
+    let currentScrollState = false
 
     // Helper to animate header visibility with GSAP
     const animateHeader = (hide: boolean) => {
@@ -53,7 +60,7 @@ export default function Header() {
       gsap.to(header, {
         y: hide ? '-100%' : '0%',
         opacity: hide ? 0 : 1,
-        duration: 0.4,
+        duration: 0.3,
         ease: 'power2.out',
         onStart: () => {
           if (!hide) {
@@ -75,17 +82,22 @@ export default function Header() {
       start: "top top",
       end: "bottom top",
       onUpdate: (self) => {
+        // Only update when crossing threshold to reduce jitter
+        const shouldBeScrolled = self.progress > 0.05
+        if (shouldBeScrolled !== currentScrollState) {
+          currentScrollState = shouldBeScrolled
+          setIsScrolled(shouldBeScrolled)
+        }
+
         // Hide header when scrolling within hero section (after initial scroll)
         const shouldHide = self.progress > 0.05 && self.progress < 1
         animateHeader(shouldHide)
-
-        // Update scrolled state
-        setIsScrolled(self.progress > 0.05)
       },
       onLeave: () => {
         // Hero section ended - show header
         animateHeader(false)
         setIsScrolled(true)
+        currentScrollState = true
       },
       onEnterBack: () => {
         // Scrolled back into hero - hide header
@@ -95,7 +107,10 @@ export default function Header() {
         // Back at top - show header
         animateHeader(false)
         setIsScrolled(false)
-      }
+        currentScrollState = false
+      },
+      // Reduce update frequency to prevent jitter
+      invalidateOnRefresh: false
     })
 
     return () => {
@@ -275,11 +290,11 @@ export default function Header() {
               <motion.div
                 key="logo-section"
                 className={styles.logoSection}
-                initial={{ opacity: 0, y: -10 }}
+                initial={isMounted ? { opacity: 0, y: -10 } : { opacity: 1, y: 0 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 10 }}
                 transition={{
-                  duration: 0.15,
+                  duration: isMounted ? 0.15 : 0,
                   ease: [0.22, 1, 0.36, 1]
                 }}
               >
@@ -294,11 +309,11 @@ export default function Header() {
               <motion.nav
                 className={styles.navSection}
                 aria-label="Main navigation"
-                initial={{ opacity: 0, y: -10 }}
+                initial={isMounted ? { opacity: 0, y: -10 } : { opacity: 1, y: 0 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 10 }}
                 transition={{
-                  duration: 0.15,
+                  duration: isMounted ? 0.15 : 0,
                   ease: [0.22, 1, 0.36, 1]
                 }}
               >
@@ -353,11 +368,11 @@ export default function Header() {
               {((!isScrolled || quotationReached) && !isHidden) && (
                 <motion.div
                   key="cta-button"
-                  initial={{ opacity: 0, y: -10 }}
+                  initial={isMounted ? { opacity: 0, y: -10 } : { opacity: 1, y: 0 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 10 }}
                   transition={{
-                    duration: 0.15,
+                    duration: isMounted ? 0.15 : 0,
                     ease: [0.22, 1, 0.36, 1]
                   }}
                 >
