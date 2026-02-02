@@ -6,7 +6,6 @@ import TeamSectionHeader from '@/components/team/teamSectionHeader'
 import TeamMemberList from '@/components/team/teamMemberList'
 import TeamShowcase from '@/components/team/teamShowcase'
 import TeamClosingStatement from '@/components/team/teamClosingStatement'
-import Footer from '@/components/footer/Footer'
 import { teamMembersExtended } from './teamData'
 
 /**
@@ -128,9 +127,6 @@ export default function TeamPage() {
         statement="Your Partner in Legal Excellence"
         subtext="Building lasting relationships through exceptional representation and unwavering commitment to our clients' success"
       />
-
-      {/* Footer */}
-      <Footer />
     </div>
   )
 }

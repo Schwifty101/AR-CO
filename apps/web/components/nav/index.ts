@@ -6,11 +6,14 @@
  *
  * @example
  * ```tsx
- * import { Header, SidePanel, NavButton } from '@/components/nav'
+ * import { Navigation, LogoSection, NavButton } from '@/components/nav'
  * ```
  */
 
-// Main navigation components
+// Main navigation component (new simplified implementation)
+export { default as Navigation } from './Navigation'
+
+// Legacy components (deprecated - will be removed in future)
 export { default as Header } from './Header'
 export { default as SidePanel } from './SidePanel'
 export { default as FullScreenDropdown } from './FullScreenDropdown'
@@ -35,4 +38,4 @@ export type {
 } from './types/nav.types'
 
 // Data
-export { NAV_ITEMS, NAV_SECTIONS, PRACTICE_AREAS_DATA, FACILITATION_DATA, SUBMENU_DATA } from '../data/navData'
+export { NAV_ITEMS, SIDEPANEL_FOOTER_NAV_ITEMS, NAV_SECTIONS, PRACTICE_AREAS_DATA, FACILITATION_DATA, SUBMENU_DATA } from '../data/navData'
