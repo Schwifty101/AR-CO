@@ -2,6 +2,8 @@ import type React from "react"
 import type { Metadata } from "next"
 import { Analytics } from "@vercel/analytics/next"
 import { AuthProvider } from "@/lib/auth/auth-context"
+import { PracticeAreasProvider } from "@/components/practice-areas"
+import PracticeAreasOverlayWrapper from "@/components/practice-areas/PracticeAreasOverlayWrapper"
 import "./globals.css"
 
 export const metadata: Metadata = {
@@ -47,7 +49,10 @@ export default function RootLayout({
     <html lang="en">
       <body suppressHydrationWarning>
         <AuthProvider>
-          {children}
+          <PracticeAreasProvider>
+            {children}
+            <PracticeAreasOverlayWrapper />
+          </PracticeAreasProvider>
         </AuthProvider>
         <Analytics />
       </body>

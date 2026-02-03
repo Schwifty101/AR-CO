@@ -8,10 +8,11 @@ import { Menu, X, ArrowUpRight } from 'lucide-react'
 import { useGSAP } from '@gsap/react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { NAV_ITEMS, SIDEPANEL_FOOTER_NAV_ITEMS, FACILITATION_DATA } from '../data/navData'
+import { NAV_ITEMS, SIDEPANEL_FOOTER_NAV_ITEMS, FACILITATION_DATA, PRACTICE_AREAS_DATA } from '../data/navData'
 import type { INavItem, INavCategory } from './types/nav.types'
 import styles from './Navigation.module.css'
 import SlotMachineText from "@/components/shared/animations/SlotMachineText"
+import { usePracticeAreasOverlay } from '../practice-areas'
 
 // Register GSAP plugins
 if (typeof window !== 'undefined') {
@@ -123,9 +124,11 @@ interface IHeroNavbarProps {
     navItems: INavItem[]
     /** Handler for menu button click (mobile) */
     onMenuClick: () => void
+    /** Handler to open practice areas overlay */
+    onOpenPracticeAreas: () => void
 }
 
-const HeroNavbar: React.FC<IHeroNavbarProps> = ({ isHidden, navItems, onMenuClick }) => {
+const HeroNavbar: React.FC<IHeroNavbarProps> = ({ isHidden, navItems, onMenuClick, onOpenPracticeAreas }) => {
     return (
         <motion.nav
             initial={{ y: 0 }}
@@ -139,13 +142,23 @@ const HeroNavbar: React.FC<IHeroNavbarProps> = ({ isHidden, navItems, onMenuClic
                 {/* Center Links - Desktop Only */}
                 <div className={styles.centerNav}>
                     {navItems.map((link) => (
-                        <Link
-                            key={link.id}
-                            href={link.href}
-                            className={styles.navLink}
-                        >
-                            {link.label}
-                        </Link>
+                        link.id === 'practice-areas' ? (
+                            <button
+                                key={link.id}
+                                onClick={onOpenPracticeAreas}
+                                className={styles.navLink}
+                            >
+                                {link.label}
+                            </button>
+                        ) : (
+                            <Link
+                                key={link.id}
+                                href={link.href}
+                                className={styles.navLink}
+                            >
+                                {link.label}
+                            </Link>
+                        )
                     ))}
                 </div>
 
@@ -208,9 +221,11 @@ interface IFullScreenMenuProps {
     onClose: () => void
     /** Navigation items to display */
     navItems: INavItem[]
+    /** Handler to open practice areas overlay */
+    onOpenPracticeAreas: () => void
 }
 
-const FullScreenMenu: React.FC<IFullScreenMenuProps> = ({ onClose, navItems }) => {
+const FullScreenMenu: React.FC<IFullScreenMenuProps> = ({ onClose, navItems, onOpenPracticeAreas }) => {
     const [isMobile, setIsMobile] = useState(false)
     const [hoveredLink, setHoveredLink] = useState<string | null>(null)
     const [currentTime, setCurrentTime] = useState<string>('')
@@ -357,17 +372,29 @@ const FullScreenMenu: React.FC<IFullScreenMenuProps> = ({ onClose, navItems }) =
                         <div
                             key={link.id}
                             className={styles.menuLinkWrapper}
-                            onMouseEnter={() => link.id === 'facilitation' && setHoveredLink('facilitation')}
-                            onMouseLeave={() => link.id === 'facilitation' && setHoveredLink(null)}
+                            onMouseEnter={() => (link.id === 'facilitation' || link.id === 'practice-areas') && setHoveredLink(link.id)}
+                            onMouseLeave={() => (link.id === 'facilitation' || link.id === 'practice-areas') && setHoveredLink(null)}
                         >
                             <motion.div variants={linkVariants}>
-                                <Link
-                                    href={link.href}
-                                    className={styles.menuLink}
-                                    onClick={onClose}
-                                >
-                                    <SlotMachineText>{link.label}</SlotMachineText>
-                                </Link>
+                                {link.id === 'practice-areas' ? (
+                                    <button
+                                        className={styles.menuLink}
+                                        onClick={() => {
+                                            onClose()
+                                            onOpenPracticeAreas()
+                                        }}
+                                    >
+                                        <SlotMachineText>{link.label}</SlotMachineText>
+                                    </button>
+                                ) : (
+                                    <Link
+                                        href={link.href}
+                                        className={styles.menuLink}
+                                        onClick={onClose}
+                                    >
+                                        <SlotMachineText>{link.label}</SlotMachineText>
+                                    </Link>
+                                )}
                             </motion.div>
                         </div>
                     ))}
@@ -375,21 +402,27 @@ const FullScreenMenu: React.FC<IFullScreenMenuProps> = ({ onClose, navItems }) =
 
                 {/* Right Column - Dropdown Content */}
                 <div className={styles.rightColumn}>
-                    <AnimatePresence>
-                        {hoveredLink === 'facilitation' && (
+                    <AnimatePresence mode="wait">
+                        {(hoveredLink === 'facilitation' || hoveredLink === 'practice-areas') && (
                             <motion.div
+                                key={hoveredLink}
                                 initial={{ opacity: 0, scale: 0.95 }}
                                 animate={{ opacity: 1, scale: 1 }}
                                 exit={{ opacity: 0, scale: 0.95 }}
                                 transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
                                 className={styles.facilitationDropdown}
-                                onMouseEnter={() => setHoveredLink('facilitation')}
+                                onMouseEnter={() => setHoveredLink(hoveredLink)}
                                 onMouseLeave={() => setHoveredLink(null)}
                             >
                                 <div className={styles.dropdownContent}>
-                                    <h3 className={styles.dropdownTitle}>{FACILITATION_DATA.title}</h3>
+                                    <h3 className={styles.dropdownTitle}>
+                                        {hoveredLink === 'practice-areas' ? PRACTICE_AREAS_DATA.title : FACILITATION_DATA.title}
+                                    </h3>
+                                    <p className={styles.dropdownDescription}>
+                                        {hoveredLink === 'practice-areas' ? PRACTICE_AREAS_DATA.description : FACILITATION_DATA.description}
+                                    </p>
                                     <div className={styles.dropdownGrid}>
-                                        {FACILITATION_DATA.categories.map((category: INavCategory, idx: number) => (
+                                        {(hoveredLink === 'practice-areas' ? PRACTICE_AREAS_DATA.categories : FACILITATION_DATA.categories).map((category: INavCategory, idx: number) => (
                                             <div
                                                 key={idx}
                                                 className={`${styles.dropdownCategory} ${category.title === "Women's Legal Desk" ? styles.categorySpanTwo : ''}`}
@@ -500,6 +533,7 @@ const FullScreenMenu: React.FC<IFullScreenMenuProps> = ({ onClose, navItems }) =
 export default function Navigation() {
     const [isScrolled, setIsScrolled] = useState(false)
     const [isMenuOpen, setIsMenuOpen] = useState(false)
+    const { openOverlay: openPracticeAreasOverlay } = usePracticeAreasOverlay()
 
     /**
      * Toggle menu open/close with body scroll lock
@@ -566,6 +600,7 @@ export default function Navigation() {
                 isHidden={isScrolled}
                 navItems={NAV_ITEMS}
                 onMenuClick={handleMenuToggle}
+                onOpenPracticeAreas={openPracticeAreasOverlay}
             />
             <StickyNavbar
                 isVisible={isScrolled}
@@ -576,6 +611,7 @@ export default function Navigation() {
                     <FullScreenMenu
                         onClose={handleMenuClose}
                         navItems={SIDEPANEL_FOOTER_NAV_ITEMS}
+                        onOpenPracticeAreas={openPracticeAreasOverlay}
                     />
                 )}
             </AnimatePresence>

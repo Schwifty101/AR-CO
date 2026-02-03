@@ -6,7 +6,8 @@ import Image from 'next/image'
 import gsap from 'gsap'
 import SlotMachineText from '../shared/animations/SlotMachineText'
 import { getSmoother } from '../SmoothScroll'
-import { SIDEPANEL_FOOTER_NAV_ITEMS } from '../data/navData'
+import { SIDEPANEL_FOOTER_NAV_ITEMS, PRACTICE_AREAS_LIST } from '../data/navData'
+import { usePracticeAreasOverlay } from '../practice-areas'
 import styles from './Footer.module.css'
 
 /**
@@ -23,6 +24,7 @@ export default function Footer() {
   const [isOfficeOpen, setIsOfficeOpen] = useState<boolean>(false)
   const buttonRef = useRef<HTMLButtonElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
+  const { openOverlay } = usePracticeAreasOverlay()
 
   /**
    * Calculates if the office is currently open
@@ -176,6 +178,11 @@ export default function Footer() {
                     </Link>
                   </li>
                 ))}
+                <li className={styles.navItem}>
+                  <button onClick={openOverlay} className={styles.navLink}>
+                    <SlotMachineText>Practice Areas</SlotMachineText>
+                  </button>
+                </li>
               </ul>
             </nav>
           </div>
