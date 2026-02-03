@@ -8,6 +8,7 @@
  */
 
 import type { INavItem, INavSection, INavCategory } from '../nav/types/nav.types'
+import { practiceAreas } from '@/app/(public)/practice-areas/practiceAreasData'
 
 /**
  * Main navigation items (top-level links)
@@ -37,105 +38,92 @@ export const SIDEPANEL_FOOTER_NAV_ITEMS: INavItem[] = [
 ]
 
 /**
- * Practice Areas navigation section data
- * Updated to match all 10 practice areas from PracticeAreasHorizontal component
+ * Generate practice areas navigation from actual data
+ * Groups practice areas into logical categories for the dropdown
  */
-export const PRACTICE_AREAS_DATA: INavSection = {
-    title: 'Practice Areas',
-    description: 'Our comprehensive legal services',
-    categories: [
+const generatePracticeAreasCategories = (): INavCategory[] => {
+    // Group 1: Intellectual Property & Corporate
+    const corporateIP = practiceAreas.filter(pa =>
+        ['intellectual-property', 'corporate-commercial', 'banking-financial'].includes(pa.slug)
+    )
+
+    // Group 2: Energy Sector
+    const energy = practiceAreas.filter(pa =>
+        ['generation-sector', 'petroleum-energy-law', 'renewable-energy-environmental', 'nuclear-law'].includes(pa.slug)
+    )
+
+    // Group 3: Dispute Resolution & Litigation
+    const litigation = practiceAreas.filter(pa =>
+        ['alternative-dispute-resolution', 'public-international-extradition'].includes(pa.slug)
+    )
+
+    // Group 4: Industry Specific
+    const industry = practiceAreas.filter(pa =>
+        ['telecommunication-technology-media', 'construction-real-estate', 'engineering-building'].includes(pa.slug)
+    )
+
+    // Group 5: Specialized Services
+    const specialized = practiceAreas.filter(pa =>
+        ['charities-trusts-ngos', 'immigration-law', 'taxation-customs'].includes(pa.slug)
+    )
+
+    return [
         {
-            title: 'IP & Innovation',
-            links: [
-                { label: 'Trademark Registration', href: '/practice-areas/trademark-registration' },
-                { label: 'Patent Protection', href: '/practice-areas/patent-protection' },
-                { label: 'Copyright Law', href: '/practice-areas/copyright-law' },
-                { label: 'IP Enforcement', href: '/practice-areas/ip-enforcement' },
-            ]
+            title: 'Corporate & Finance',
+            links: corporateIP.map(pa => ({
+                label: pa.title,
+                href: `/practice-areas/${pa.slug}`
+            }))
         },
         {
-            title: 'Power & Energy',
-            links: [
-                { label: 'NEPRA Licensing', href: '/practice-areas/nepra-licensing' },
-                { label: 'Power Purchase Agreements', href: '/practice-areas/power-purchase-agreements' },
-                { label: 'Energy Regulation', href: '/practice-areas/energy-regulation' },
-                { label: 'Tariff Matters', href: '/practice-areas/tariff-matters' },
-            ]
-        },
-        {
-            title: 'Oil & Gas',
-            links: [
-                { label: 'E&P Licensing', href: '/practice-areas/exploration-production-licensing' },
-                { label: 'LNG Projects', href: '/practice-areas/lng-projects' },
-                { label: 'Pipeline Infrastructure', href: '/practice-areas/pipeline-infrastructure' },
-                { label: 'Petroleum Concessions', href: '/practice-areas/petroleum-concessions' },
-            ]
-        },
-        {
-            title: 'Renewable Energy',
-            links: [
-                { label: 'Solar Projects', href: '/practice-areas/solar-projects' },
-                { label: 'Wind Power', href: '/practice-areas/wind-power' },
-                { label: 'Environmental Compliance', href: '/practice-areas/environmental-compliance' },
-                { label: 'Climate Law', href: '/practice-areas/climate-law' },
-            ]
+            title: 'Energy & Power',
+            links: energy.map(pa => ({
+                label: pa.title,
+                href: `/practice-areas/${pa.slug}`
+            }))
         },
         {
             title: 'Dispute Resolution',
-            links: [
-                { label: 'International Arbitration', href: '/practice-areas/international-arbitration' },
-                { label: 'Commercial Litigation', href: '/practice-areas/commercial-litigation' },
-                { label: 'FIDIC Disputes', href: '/practice-areas/fidic-disputes' },
-                { label: 'Alternative Dispute Resolution', href: '/practice-areas/adr' },
-            ]
+            links: litigation.map(pa => ({
+                label: pa.title,
+                href: `/practice-areas/${pa.slug}`
+            }))
         },
         {
-            title: 'Banking & Finance',
-            links: [
-                { label: 'Project Finance', href: '/practice-areas/project-finance' },
-                { label: 'Corporate Lending', href: '/practice-areas/corporate-lending' },
-                { label: 'Debt Restructuring', href: '/practice-areas/debt-restructuring' },
-                { label: 'Banking Regulations', href: '/practice-areas/banking-regulations' },
-            ]
+            title: 'Industry Sectors',
+            links: industry.map(pa => ({
+                label: pa.title,
+                href: `/practice-areas/${pa.slug}`
+            }))
         },
         {
-            title: 'Corporate & M&A',
-            links: [
-                { label: 'Company Incorporation', href: '/practice-areas/company-incorporation' },
-                { label: 'Mergers & Acquisitions', href: '/practice-areas/mergers-acquisitions' },
-                { label: 'Joint Ventures', href: '/practice-areas/joint-ventures' },
-                { label: 'Corporate Governance', href: '/practice-areas/corporate-governance' },
-            ]
-        },
-        {
-            title: 'Tech & Telecom',
-            links: [
-                { label: 'Telecom Licensing', href: '/practice-areas/telecom-licensing' },
-                { label: 'Data Protection', href: '/practice-areas/data-protection' },
-                { label: 'Media Law', href: '/practice-areas/media-law' },
-                { label: 'Digital Operations', href: '/practice-areas/digital-operations' },
-            ]
-        },
-        {
-            title: 'Construction',
-            links: [
-                { label: 'Construction Contracts', href: '/practice-areas/construction-contracts' },
-                { label: 'Real Estate Development', href: '/practice-areas/real-estate-development' },
-                { label: 'Infrastructure Projects', href: '/practice-areas/infrastructure-projects' },
-                { label: 'Project Management', href: '/practice-areas/project-management' },
-            ]
-        },
-        {
-            title: 'Nuclear & Regulatory',
-            links: [
-                { label: 'Nuclear Licensing', href: '/practice-areas/nuclear-licensing' },
-                { label: 'Public International Law', href: '/practice-areas/public-international-law' },
-                { label: 'State Liability', href: '/practice-areas/state-liability' },
-                { label: 'Regulatory Compliance', href: '/practice-areas/regulatory-compliance' },
-            ]
+            title: 'Specialized Services',
+            links: specialized.map(pa => ({
+                label: pa.title,
+                href: `/practice-areas/${pa.slug}`
+            }))
         },
     ]
 }
+
+/**
+ * Practice Areas navigation section data
+ * Dynamically generated from actual practice areas data
+ */
+export const PRACTICE_AREAS_DATA: INavSection = {
+    title: 'Practice Areas',
+    description: 'Our comprehensive legal services across 15 specialized practice areas',
+    categories: generatePracticeAreasCategories(),
+}
+
+/**
+ * Simple list of all practice areas for footer/mobile menu
+ */
+export const PRACTICE_AREAS_LIST = practiceAreas.map(pa => ({
+    id: pa.slug,
+    label: pa.title,
+    href: `/practice-areas/${pa.slug}`
+}))
 
 /**
  * Facilitation Centre navigation section data

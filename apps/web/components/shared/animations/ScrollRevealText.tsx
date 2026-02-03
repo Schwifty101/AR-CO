@@ -7,14 +7,16 @@ interface ScrollRevealTextProps {
   children: React.ReactNode
   className?: string
   delay?: number
-  as?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'p' | 'span'
+  as?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'p' | 'span' | 'div'
+  style?: React.CSSProperties
 }
 
 export default function ScrollRevealText({
   children,
   className = '',
   delay = 0,
-  as: Component = 'h2'
+  as: Component = 'h2',
+  style
 }: ScrollRevealTextProps) {
   const ref = useRef<HTMLElement>(null)
   const [isVisible, setIsVisible] = useState(false)
@@ -52,6 +54,7 @@ export default function ScrollRevealText({
       ref={ref as any}
       className={`${styles.scrollRevealText} ${isVisible ? styles.visible : ''} ${className}`}
       style={{
+        ...style,
         transitionDelay: `${delay}ms`,
         '--reveal-delay': `${delay}ms`
       } as React.CSSProperties & { '--reveal-delay': string }}

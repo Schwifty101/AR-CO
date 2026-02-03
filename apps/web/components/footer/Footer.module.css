@@ -147,6 +147,64 @@
   color: var(--heritage-gold);
 }
 
+/* Practice Areas Section */
+.practiceAreasSection {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(250, 248, 244, 0.1);
+}
+
+.practiceAreasNav {
+  width: 100%;
+}
+
+.practiceAreasList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem 2rem;
+}
+
+.practiceAreaItem {
+  margin: 0;
+}
+
+.practiceAreaLink {
+  font-family: 'Cabinet Grotesk', sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  line-height: 1.5;
+  color: rgba(250, 248, 244, 0.7);
+  text-decoration: none;
+  transition: color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: inline-block;
+}
+
+.practiceAreaLink:hover {
+  color: var(--heritage-gold);
+}
+
+.viewAllLink {
+  font-family: 'Cabinet Grotesk', sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--heritage-gold);
+  text-decoration: none;
+  display: inline-block;
+  margin-top: 1rem;
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.viewAllLink:hover {
+  opacity: 0.8;
+}
+
 /* ============================================
    RIGHT COLUMN - Acknowledgement + Info
    ============================================ */
@@ -500,6 +558,15 @@
   .acknowledgementText,
   .contactItem {
     font-size: 0.9375rem;
+  }
+
+  .practiceAreasList {
+    grid-template-columns: 1fr;
+    gap: 0.375rem;
+  }
+
+  .practiceAreaLink {
+    font-size: 0.875rem;
   }
 
   .bottomRow {
