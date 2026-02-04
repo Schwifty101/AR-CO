@@ -51,8 +51,8 @@ export default function TeamPage() {
                 className="text-heritage-cream relative z-10"
             />
 
-            {/* 1.5 Transition Thread */}
-            <TeamTransition />
+            {/* 1.5 Transition Thread - The Collective */}
+            <TeamTransition label="The Collective" />
 
             {/* 1.75 Team Leader Showcase */}
             {teamMembers.filter(m => m.isPrimary).map(leader => (
@@ -65,6 +65,9 @@ export default function TeamPage() {
             <div className="relative z-20">
                 <TeamInteractiveList members={teamMembers.filter(m => !m.isPrimary)} />
             </div>
+
+            {/* 2.5 Transition Thread - The Philosophy */}
+            <TeamTransition label="The Philosophy" />
 
             {/* 3. Philosophy Section - Abstract Layout */}
             <div className="relative pb-16">
