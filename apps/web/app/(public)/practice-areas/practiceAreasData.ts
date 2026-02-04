@@ -265,7 +265,7 @@ export const practiceAreas: PracticeArea[] = [
   {
     id: 7,
     slug: 'corporate-commercial',
-    title: 'Corporate & Commercial',
+    title: 'Commercial',
     image: '/practic-areas/corporate.jpg',
     overview:
       'Corporate and commercial law forms part of the firm\'s core practice with particular expertise in a broad range of corporate commercial matters for both Pakistan-based and foreign corporations.',
