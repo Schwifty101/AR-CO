@@ -198,34 +198,32 @@ export default function Testimonials() {
     )
 
     // Calculate scroll distance based on column heights
-    // We want to scroll enough to reveal all cards
     const scrollDistance = column1.scrollHeight * 0.6
 
-    // Create timeline for synchronized scroll animations
+    // Create parallax scroll effect - left/right columns move faster than middle
+    // No pinning - everything scrolls naturally but at different speeds
     const tl = gsap.timeline({
       scrollTrigger: {
         trigger: section,
-        start: "top top",
-        end: `+=${scrollDistance * 3}`, // Extend scroll range
-        pin: stickyWrapperRef.current,
+        start: "top bottom",
+        end: "bottom top",
         scrub: 1,
-        anticipatePin: 1,
         invalidateOnRefresh: true,
-        // markers: true,
       }
     })
 
-    // Animate columns with different directions
+    // Left and right columns scroll faster (larger negative Y movement)
+    // Middle column scrolls slower (smaller negative Y movement)
     tl.to(column1, {
-      y: -scrollDistance,
+      y: -scrollDistance * 1.3, // 30% faster
       ease: "none"
     }, 0)
     .to(column2, {
-      y: scrollDistance,
+      y: -scrollDistance * 0.7, // 30% slower (middle column)
       ease: "none"
     }, 0)
     .to(column3, {
-      y: -scrollDistance,
+      y: -scrollDistance * 1.3, // 30% faster
       ease: "none"
     }, 0)
 
