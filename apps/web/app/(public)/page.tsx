@@ -1,7 +1,7 @@
-import Hero from "@/components/home/Hero"
-import QuoteSection from "@/components/home/QuoteSection"
-import PracticeAreasHorizontal from "@/components/home/PracticeAreasHorizontal"
-import Testimonials from "@/components/home/Testimonials"
+import Hero from "@/components/home/hero/Hero"
+import QuoteSection from "@/components/home/quote/QuoteSection"
+import PracticeAreasHorizontal from "@/components/home/practice-areas/PracticeAreasHorizontal"
+import Testimonials from "@/components/home/testimonials/Testimonials"
 
 import styles from "./page.module.css"
 

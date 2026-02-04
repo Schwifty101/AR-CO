@@ -6,8 +6,8 @@ import gsap from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
 import { useGSAP } from "@gsap/react"
 import styles from "./Hero.module.css"
-import LoadingScreen from "../LoadingScreen"
-import { setSlowScroll } from "../SmoothScroll"
+import LoadingScreen from "../../LoadingScreen"
+import { setSlowScroll } from "../../SmoothScroll"
 
 // Register GSAP plugins
 if (typeof window !== "undefined") {
@@ -51,11 +51,9 @@ export default function Hero() {
   const titleSubRef = useRef<HTMLSpanElement>(null)
   const logosRef = useRef<HTMLDivElement>(null)
   const overlayRef = useRef<HTMLDivElement>(null)
-  // Check if frames were already loaded in this session (browser cache will have them)
-  const [showLoadingScreen, setShowLoadingScreen] = useState(() => {
-    if (typeof window === 'undefined') return true
-    return !sessionStorage.getItem(FRAMES_LOADED_KEY)
-  })
+  // Always start with loading screen to avoid hydration mismatch.
+  // sessionStorage check happens in useEffect after hydration.
+  const [showLoadingScreen, setShowLoadingScreen] = useState(true)
   const [imagesLoaded, setImagesLoaded] = useState(false)
   const [loadingProgress, setLoadingProgress] = useState(0)
   const imagesRef = useRef<HTMLImageElement[]>([])
@@ -94,6 +92,13 @@ export default function Hero() {
 
     ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight)
   }
+
+  // Check sessionStorage after hydration to skip loading screen on repeat visits
+  useEffect(() => {
+    if (sessionStorage.getItem(FRAMES_LOADED_KEY)) {
+      setShowLoadingScreen(false)
+    }
+  }, [])
 
   // Preload all frames with progress tracking
   useEffect(() => {
