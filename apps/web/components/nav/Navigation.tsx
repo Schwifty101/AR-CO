@@ -1,8 +1,9 @@
 "use client"
 
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useLayoutEffect, useCallback } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { usePathname } from 'next/navigation'
 import { motion, Variants, AnimatePresence } from 'framer-motion'
 import { Menu, X, ArrowUpRight } from 'lucide-react'
 import { useGSAP } from '@gsap/react'
@@ -120,6 +121,8 @@ const CtaButton: React.FC<ICtaButtonProps> = ({
 interface IHeroNavbarProps {
     /** Whether the navbar should be hidden */
     isHidden: boolean
+    /** Whether the navbar has completed entrance animation */
+    hasEntered: boolean
     /** Navigation items to display */
     navItems: INavItem[]
     /** Handler for menu button click (mobile) */
@@ -128,12 +131,15 @@ interface IHeroNavbarProps {
     onOpenPracticeAreas: () => void
 }
 
-const HeroNavbar: React.FC<IHeroNavbarProps> = ({ isHidden, navItems, onMenuClick, onOpenPracticeAreas }) => {
+const HeroNavbar: React.FC<IHeroNavbarProps> = ({ isHidden, hasEntered, navItems, onMenuClick, onOpenPracticeAreas }) => {
     return (
         <motion.nav
-            initial={{ y: 0 }}
-            animate={{ y: isHidden ? "-100%" : "0%" }}
-            transition={TRANSITION_SMOOTH}
+            initial={{ y: "-100%", opacity: 0 }}
+            animate={{
+                y: (isHidden || !hasEntered) ? "-100%" : "0%",
+                opacity: (isHidden || !hasEntered) ? 0 : 1
+            }}
+            transition={hasEntered ? TRANSITION_SMOOTH : { duration: 0.8, ease: [0.33, 1, 0.68, 1] }}
             className={styles.heroNavbar}
         >
             <div className={styles.heroNavbarInner}>
@@ -192,8 +198,11 @@ interface IStickyNavbarProps {
 const StickyNavbar: React.FC<IStickyNavbarProps> = ({ isVisible, onMenuClick }) => {
     return (
         <motion.div
-            initial={{ y: "-100%" }}
-            animate={{ y: isVisible ? "0%" : "-100%" }}
+            initial={{ y: "-100%", opacity: 0 }}
+            animate={{
+                y: isVisible ? "0%" : "-100%",
+                opacity: isVisible ? 1 : 0
+            }}
             transition={{ ...TRANSITION_SMOOTH, duration: 0.5 }}
             className={styles.stickyNavbar}
         >
@@ -455,58 +464,58 @@ const FullScreenMenu: React.FC<IFullScreenMenuProps> = ({ onClose, navItems, onO
 
             {/* Menu Footer - Matches Footer.tsx layout */}
             <div className={styles.bottomRow}>
-          {/* Left Group - Copyright, Time, Status */}
-          <div className={styles.bottomLeft}>
-            <SlotMachineText className={`${styles.copyright} cursor-pointer`}>{"© 2026 AR&CO"}</SlotMachineText>
-            <div className={styles.timeStatusRow}>
-              <span className={styles.clockTime}>{currentTime}</span>
-              <span
-                className={`${styles.officeStatus} ${isOfficeOpen ? styles.statusOpen : styles.statusClosed}`}
-              >
-                {isOfficeOpen ? 'WE ARE OPEN' : 'WE ARE CLOSED'}
-              </span>
+                {/* Left Group - Copyright, Time, Status */}
+                <div className={styles.bottomLeft}>
+                    <SlotMachineText className={`${styles.copyright} cursor-pointer`}>{"© 2026 AR&CO"}</SlotMachineText>
+                    <div className={styles.timeStatusRow}>
+                        <span className={styles.clockTime}>{currentTime}</span>
+                        <span
+                            className={`${styles.officeStatus} ${isOfficeOpen ? styles.statusOpen : styles.statusClosed}`}
+                        >
+                            {isOfficeOpen ? 'WE ARE OPEN' : 'WE ARE CLOSED'}
+                        </span>
+                    </div>
+                </div>
+
+                {/* Center Group - Legal Links */}
+                <div className={styles.bottomCenter}>
+                    <Link href="/privacy" className={styles.legalLink}>
+                        <SlotMachineText>Privacy Policy</SlotMachineText>
+                    </Link>
+                    <Link href="/terms" className={styles.legalLink}>
+                        <SlotMachineText>Terms of Service</SlotMachineText>
+                    </Link>
+                </div>
+
+                {/* Right Group - Social & Credits */}
+                <div className={styles.bottomRight}>
+                    <a
+                        href="https://instagram.com/arco.law"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={styles.socialLink}
+                    >
+                        <SlotMachineText>Instagram</SlotMachineText>
+                    </a>
+                    <a
+                        href="https://Linkedin.com/arco.law"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={styles.socialLink}
+                    >
+                        <SlotMachineText>LinkedIn</SlotMachineText>
+                    </a>
+                    <a
+                        href="https://Facebook.com/arco.law"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={styles.socialLink}
+                    >
+                        <SlotMachineText>Facebook</SlotMachineText>
+                    </a>
+                    <span className={`${styles.credits} cursor-pointer`}>SITE BY <SlotMachineText>SCHWIFTY</SlotMachineText></span>
+                </div>
             </div>
-          </div>
-
-          {/* Center Group - Legal Links */}
-          <div className={styles.bottomCenter}>
-            <Link href="/privacy" className={styles.legalLink}>
-              <SlotMachineText>Privacy Policy</SlotMachineText>
-            </Link>
-            <Link href="/terms" className={styles.legalLink}>
-              <SlotMachineText>Terms of Service</SlotMachineText>
-            </Link>
-          </div>
-
-          {/* Right Group - Social & Credits */}
-          <div className={styles.bottomRight}>
-            <a
-              href="https://instagram.com/arco.law"
-              target="_blank"
-              rel="noopener noreferrer"
-              className={styles.socialLink}
-            >
-              <SlotMachineText>Instagram</SlotMachineText>
-            </a>
-            <a
-              href="https://Linkedin.com/arco.law"
-              target="_blank"
-              rel="noopener noreferrer"
-              className={styles.socialLink}
-            >
-              <SlotMachineText>LinkedIn</SlotMachineText>
-            </a>
-            <a
-              href="https://Facebook.com/arco.law"
-              target="_blank"
-              rel="noopener noreferrer"
-              className={styles.socialLink}
-            >
-              <SlotMachineText>Facebook</SlotMachineText>
-            </a>
-            <span className={`${styles.credits} cursor-pointer`}>SITE BY <SlotMachineText>SCHWIFTY</SlotMachineText></span>
-          </div>
-        </div>
         </motion.div>
     )
 }
@@ -533,7 +542,48 @@ const FullScreenMenu: React.FC<IFullScreenMenuProps> = ({ onClose, navItems, onO
 export default function Navigation() {
     const [isScrolled, setIsScrolled] = useState(false)
     const [isMenuOpen, setIsMenuOpen] = useState(false)
+    // Track which pathname has completed entrance animation
+    // hasEntered is derived: true only when enteredPathname matches current pathname
+    const [enteredPathname, setEnteredPathname] = useState<string | null>(null)
     const { openOverlay: openPracticeAreasOverlay } = usePracticeAreasOverlay()
+    const pathname = usePathname()
+
+    // Derived state: hasEntered is true when current pathname has completed entrance
+    const hasEntered = enteredPathname === pathname
+
+    /**
+     * Ensure app-loaded class is present on all pages
+     * Home page: Wait for LoadingScreen to add it
+     * Other pages: Add immediately and trigger entrance animation
+     * Using useLayoutEffect for synchronous DOM updates before paint
+     */
+    useLayoutEffect(() => {
+        const isHomePage = pathname === '/'
+
+        if (isHomePage) {
+            // On home page, remove app-loaded class to hide navbar during loading
+            // LoadingScreen will add it back when loading completes
+            document.body.classList.remove('app-loaded')
+
+            // Wait for LoadingScreen to add app-loaded class back
+            const observer = new MutationObserver(() => {
+                if (document.body.classList.contains('app-loaded')) {
+                    // Delay matches LoadingScreen's 1.2s fadeOut transition duration
+                    setTimeout(() => setEnteredPathname(pathname), 1200)
+                    observer.disconnect()
+                }
+            })
+            observer.observe(document.body, { attributes: true, attributeFilter: ['class'] })
+            return () => observer.disconnect()
+        } else {
+            // On non-home pages, add app-loaded immediately
+            if (!document.body.classList.contains('app-loaded')) {
+                document.body.classList.add('app-loaded')
+            }
+            const timer = setTimeout(() => setEnteredPathname(pathname), 50)
+            return () => clearTimeout(timer)
+        }
+    }, [pathname])
 
     /**
      * Toggle menu open/close with body scroll lock
@@ -552,52 +602,53 @@ export default function Navigation() {
     /**
      * GSAP ScrollTrigger for hero section detection
      * Accounts for 700vh hero height with frame-based animation
+     * Re-runs when pathname changes to detect new page's hero section
      */
     useGSAP(() => {
-        // Find hero section by data attribute
-        const heroSection = document.querySelector('[data-hero-section="true"]')
+        // Kill existing ScrollTriggers before creating new ones
+        ScrollTrigger.getAll().forEach(st => st.kill())
 
-        if (heroSection) {
-            // Hero section exists - use ScrollTrigger for precise control
-            ScrollTrigger.create({
-                trigger: heroSection,
-                start: "top top",
-                end: "bottom top",
-                onUpdate: (self) => {
-                    // Show sticky navbar after 5% scroll through hero
-                    const shouldBeScrolled = self.progress > 0.05
-                    setIsScrolled(shouldBeScrolled)
-                },
-                onLeave: () => {
-                    setIsScrolled(true)
-                },
-                onEnterBack: () => {
-                    // Hero section re-entered from below
-                },
-                onLeaveBack: () => {
-                    setIsScrolled(false)
-                }
-            })
-        } else {
-            // No hero section - use simple scroll threshold
-            ScrollTrigger.create({
-                start: "top -100",
-                end: "max",
-                onUpdate: (self) => {
-                    setIsScrolled(self.progress > 0)
-                }
-            })
+        const setupTrigger = () => {
+            // Find hero section by data attribute
+            const heroSection = document.querySelector('[data-hero-section="true"]')
+
+            if (heroSection) {
+                // Page HAS hero section - show HeroNavbar initially
+                setIsScrolled(false)
+
+                ScrollTrigger.create({
+                    trigger: heroSection,
+                    start: "top top",
+                    end: "bottom top",
+                    onUpdate: (self) => {
+                        // Show sticky navbar after 5% scroll through hero
+                        const shouldBeScrolled = self.progress > 0.05
+                        setIsScrolled(shouldBeScrolled)
+                    },
+                    onLeave: () => setIsScrolled(true),
+                    onEnterBack: () => { },
+                    onLeaveBack: () => setIsScrolled(false)
+                })
+            } else {
+                // Page has NO hero section - show StickyNavbar (CTA+hamburger) immediately
+                setIsScrolled(true)
+            }
         }
+
+        // Small delay to ensure DOM is ready after route change
+        const timer = setTimeout(setupTrigger, 100)
 
         return () => {
+            clearTimeout(timer)
             ScrollTrigger.getAll().forEach(st => st.kill())
         }
-    }, [])
+    }, [pathname])
 
     return (
-        <>
+        <header>
             <HeroNavbar
                 isHidden={isScrolled}
+                hasEntered={hasEntered}
                 navItems={NAV_ITEMS}
                 onMenuClick={handleMenuToggle}
                 onOpenPracticeAreas={openPracticeAreasOverlay}
@@ -615,6 +666,6 @@ export default function Navigation() {
                     />
                 )}
             </AnimatePresence>
-        </>
+        </header>
     )
 }

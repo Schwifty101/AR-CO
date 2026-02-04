@@ -1,7 +1,13 @@
 'use client'
 
+import { useRef, useEffect } from 'react'
 import { motion } from 'framer-motion'
+import gsap from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import type { ITeamClosingStatementProps } from './types/teamInterfaces'
+import { getSmoother } from '../SmoothScroll'
+
+gsap.registerPlugin(ScrollTrigger)
 
 /**
  * TeamClosingStatement Component
@@ -13,6 +19,7 @@ import type { ITeamClosingStatementProps } from './types/teamInterfaces'
  * - Center-aligned layout
  * - Scale + fade entrance animation
  * - 60vh minimum height for impact
+ * - Sticky/Parallax scroll effect with footer
  *
  * @example
  * ```tsx
@@ -27,8 +34,41 @@ export default function TeamClosingStatement({
   subtext,
   className = ''
 }: ITeamClosingStatementProps) {
+  const containerRef = useRef<HTMLElement>(null)
+
+  useEffect(() => {
+    // Force a refresh when window loads to ensure correct start positions
+    const handleLoad = () => {
+      ScrollTrigger.refresh()
+    }
+
+    window.addEventListener('load', handleLoad)
+
+    // Also refresh after a short delay to catch any late layout shifts
+    const timeout = setTimeout(() => {
+      ScrollTrigger.refresh()
+    }, 500)
+
+    const ctx = gsap.context(() => {
+      ScrollTrigger.create({
+        trigger: containerRef.current,
+        start: 'top top',
+        end: '+=150%', // Pin for enough distance for footer to overlap
+        pin: true,
+        pinSpacing: false,
+      })
+    }, containerRef)
+
+    return () => {
+      window.removeEventListener('load', handleLoad)
+      clearTimeout(timeout)
+      ctx.revert()
+    }
+  }, [])
+
   return (
     <section
+      ref={containerRef}
       className={`
         relative
         min-h-[60vh]
