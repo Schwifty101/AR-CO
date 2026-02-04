@@ -107,7 +107,7 @@ export default function LoadingScreen({ progress, isComplete }: LoadingScreenPro
           <span className={styles.titleSub}>Law Associates</span>
         </h1>
       </div>
-      
+
       <div className={styles.counter}>
         <span className={styles.number}>{progress}</span>
         <span className={styles.percent}>%</span>
