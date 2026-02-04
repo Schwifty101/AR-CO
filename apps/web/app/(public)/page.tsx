@@ -1,7 +1,7 @@
 import Hero from "@/components/home/Hero"
 import QuoteSection from "@/components/home/QuoteSection"
 import PracticeAreasHorizontal from "@/components/home/PracticeAreasHorizontal"
-import CTASection from "@/components/home/CTASection"
+import Testimonials from "@/components/home/Testimonials"
 
 import styles from "./page.module.css"
 
@@ -14,10 +14,8 @@ export default function Home() {
 
             {/* Practice Areas Horizontal Scroll with Abstract Layout */}
             <PracticeAreasHorizontal />
-            {/* CTA Section */}
-            <div className={styles.ctaWrapper}>
-                <CTASection />
-            </div>
+            {/* Testimonials Section */}
+            <Testimonials />
         </main>
     )
 }

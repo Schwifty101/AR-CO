@@ -1,0 +1,300 @@
+/* Testimonials Section */
+.testimonials {
+  position: relative;
+  min-height: 300vh; /* Extended height for scroll range */
+  background: var(--wood-espresso);
+  overflow: hidden;
+}
+
+.stickyWrapper {
+  position: relative;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 4rem 2rem 2rem;
+  overflow: hidden;
+}
+
+/* Title */
+.titleContainer {
+  text-align: center;
+  margin-bottom: 3rem;
+  z-index: 2;
+}
+
+.title {
+  font-family: 'Cabinet Grotesk', sans-serif;
+  font-size: clamp(4rem, 8vw, 8rem);
+  font-weight: 100;
+  letter-spacing: -0.02em;
+  color: var(--heritage-cream);
+  margin: 0;
+  text-transform: uppercase;
+  opacity: 0; /* Initial hidden state for reveal animation */
+}
+
+/* Columns Container */
+.columnsContainer {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+  max-width: 1600px;
+  margin: 0 auto;
+  width: 100%;
+  flex: 1;
+  align-items: start;
+  position: relative;
+  z-index: 1;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  will-change: transform;
+}
+
+/* Middle column starts offset */
+.middleColumn {
+  margin-top: 4rem;
+}
+
+/* Testimonial Card */
+.card {
+  position: relative;
+  background: rgba(92, 61, 46, 0.3);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(249, 248, 246, 0.1);
+  border-radius: 12px;
+  padding: 2rem;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+  opacity: 0; /* Initial hidden state for reveal animation */
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--heritage-gold), transparent);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.card:hover {
+  background: rgba(92, 61, 46, 0.5);
+  border-color: rgba(212, 175, 55, 0.3);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+}
+
+.card:hover::before {
+  opacity: 1;
+}
+
+/* Card Header */
+.cardHeader {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(249, 248, 246, 0.1);
+}
+
+.company {
+  font-family: 'Cabinet Grotesk', sans-serif;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--heritage-cream);
+  margin: 0 0 0.5rem 0;
+  line-height: 1.3;
+}
+
+.person {
+  font-family: 'Cabinet Grotesk', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--heritage-gold);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.role {
+  color: rgba(249, 248, 246, 0.6);
+  font-weight: 400;
+}
+
+/* Quote Container */
+.quoteContainer {
+  position: relative;
+}
+
+.openQuote {
+  position: absolute;
+  top: -0.5rem;
+  left: -0.5rem;
+  font-family: 'Lora', Georgia, serif;
+  font-size: 3rem;
+  font-weight: 300;
+  color: var(--heritage-gold);
+  opacity: 0.3;
+  line-height: 1;
+}
+
+.closeQuote {
+  display: inline;
+  font-family: 'Lora', Georgia, serif;
+  font-size: 1.5rem;
+  font-weight: 300;
+  color: var(--heritage-gold);
+  opacity: 0.3;
+  margin-left: 0.25rem;
+}
+
+.quote {
+  font-family: 'Lora', serif;
+  font-size: 0.95rem;
+  font-weight: 400;
+  line-height: 1.7;
+  color: rgba(249, 248, 246, 0.85);
+  margin: 0;
+  padding-left: 1.5rem;
+  font-style: italic;
+}
+
+/* Decorative Elements */
+.decorativeElements {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.gradientOrb {
+  position: absolute;
+  top: 20%;
+  right: 10%;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(
+    circle,
+    rgba(212, 175, 55, 0.08) 0%,
+    transparent 70%
+  );
+  border-radius: 50%;
+  filter: blur(60px);
+  animation: orbFloat 20s ease-in-out infinite;
+}
+
+@keyframes orbFloat {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(50px, -50px) scale(1.1);
+  }
+}
+
+.gridOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image:
+    linear-gradient(rgba(249, 248, 246, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(249, 248, 246, 0.02) 1px, transparent 1px);
+  background-size: 60px 60px;
+  opacity: 0.5;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .title {
+    font-size: clamp(3rem, 7vw, 6rem);
+  }
+
+  .columnsContainer {
+    gap: 1.5rem;
+  }
+
+  .card {
+    padding: 1.75rem;
+  }
+
+  .company {
+    font-size: 1.125rem;
+  }
+
+  .quote {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .stickyWrapper {
+    padding: 3rem 1.5rem 2rem;
+  }
+
+  .title {
+    font-size: clamp(2.5rem, 10vw, 4rem);
+    margin-bottom: 2rem;
+  }
+
+  .titleContainer {
+    margin-bottom: 2rem;
+  }
+
+  .columnsContainer {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .middleColumn {
+    margin-top: 0;
+  }
+
+  .card {
+    padding: 1.5rem;
+  }
+
+  .company {
+    font-size: 1rem;
+  }
+
+  .person {
+    font-size: 0.875rem;
+  }
+
+  .quote {
+    font-size: 0.875rem;
+    padding-left: 1rem;
+  }
+
+  .openQuote {
+    font-size: 2.5rem;
+    top: -0.25rem;
+    left: -0.25rem;
+  }
+
+  .gradientOrb {
+    width: 400px;
+    height: 400px;
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    transition: none;
+  }
+
+  .card:hover {
+    transform: none;
+  }
+
+  .gradientOrb {
+    animation: none;
+  }
+}

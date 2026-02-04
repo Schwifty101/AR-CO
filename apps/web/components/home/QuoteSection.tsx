@@ -99,16 +99,16 @@ export default function QuoteSection() {
           <path
             d="M0,100 Q100,20 200,80 T400,60"
             fill="none"
-            stroke="var(--wood-oak, #8B6F47)"
+            stroke="var(--heritage-gold, #D4AF37)"
             strokeWidth="1"
-            opacity="0.35"
+            opacity="0.3"
           />
           <path
             d="M0,120 Q150,40 250,100 T400,80"
             fill="none"
-            stroke="var(--wood-espresso, #3D2817)"
+            stroke="var(--heritage-cream, #F9F8F6)"
             strokeWidth="0.5"
-            opacity="0.2"
+            opacity="0.15"
           />
         </svg>
 
