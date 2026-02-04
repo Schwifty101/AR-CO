@@ -30,14 +30,14 @@ const logos = [
   "westminister-logo.png",
 ]
 
-const TOTAL_FRAMES = 712
-const FRAME_START = 1
+const TOTAL_FRAMES = 772
+const FRAME_START = 1000
 
 // Generate frame paths
 const getFramePath = (frameIndex: number) => {
   const frameNumber = FRAME_START + frameIndex
   const paddedNumber = String(frameNumber).padStart(5, '0')
-  return `/banner/frames/Sequence%20${paddedNumber}.webp`
+  return `/banner/frames/Web%20image%20${paddedNumber}.webp`
 }
 
 const FRAMES_LOADED_KEY = 'arco_frames_loaded'
