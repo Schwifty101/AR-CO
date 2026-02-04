@@ -94,7 +94,7 @@ const practiceAreas: PracticeArea[] = [
 ]
 
 // Card spacing configuration - cards placed in horizontal sequence
-const CARD_SPACING = 70 // vw units between each card center
+const CARD_SPACING = 40 // vw units between each card center
 const CARD_INITIAL_OFFSET = 80 // vw units - where first card starts (higher = enters from further right)
 const ACTIVATION_THRESHOLD = 22 // vw units - card must be within this distance of center to expand
 

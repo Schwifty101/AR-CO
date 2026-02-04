@@ -6,7 +6,7 @@ import gsap from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
 import { useGSAP } from "@gsap/react"
 import ScrollRevealText from "@/components/shared/animations/ScrollRevealText"
-import { setSlowScroll, setNormalScroll, pauseScroll, resumeScroll } from "../SmoothScroll"
+import { setSlowScroll, setNormalScroll, pauseScroll, resumeScroll } from "../../SmoothScroll"
 import styles from "./QuoteSection.module.css"
 
 // Register GSAP plugins

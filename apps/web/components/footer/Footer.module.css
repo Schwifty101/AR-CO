@@ -4,6 +4,7 @@
   background: var(--wood-espresso);
   padding: 4rem 0 1rem;
   position: relative;
+  z-index: 50;
   display: flex;
   align-items: flex-start;
   box-sizing: border-box;

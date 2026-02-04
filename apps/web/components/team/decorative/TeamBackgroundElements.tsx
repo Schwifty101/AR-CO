@@ -64,6 +64,13 @@ export const TeamBackgroundElements: React.FC<TeamBackgroundElementsProps> = ({
 
   const renderGrid = () => <div className={styles.grid} aria-hidden="true" />;
 
+  // Deterministic random number generator to prevent hydration mismatches
+  // uses a simple sine-based hash to generate stable values from an index
+  const stableRandom = (seed: number) => {
+    const x = Math.sin(seed) * 10000;
+    return x - Math.floor(x);
+  };
+
   const renderDots = () => {
     const dotCount = density === 'minimal' ? 15 : 30;
     return (
@@ -73,8 +80,8 @@ export const TeamBackgroundElements: React.FC<TeamBackgroundElementsProps> = ({
             key={i}
             className={styles.dot}
             style={{
-              top: `${Math.random() * 100}%`,
-              left: `${Math.random() * 100}%`,
+              top: `${stableRandom(i + 1) * 100}%`,
+              left: `${stableRandom(i + 100) * 100}%`,
             }}
           />
         ))}
@@ -97,7 +104,7 @@ export const TeamBackgroundElements: React.FC<TeamBackgroundElementsProps> = ({
       <div className={styles.shapes} aria-hidden="true">
         {Array.from({ length: shapeCount }).map((_, i) => {
           const isCircle = i % 2 === 0;
-          const size = 80 + Math.random() * 60;
+          const size = 80 + stableRandom(i * 10) * 60;
           return (
             <div
               key={i}
@@ -105,10 +112,10 @@ export const TeamBackgroundElements: React.FC<TeamBackgroundElementsProps> = ({
               style={{
                 width: `${size}px`,
                 height: `${size}px`,
-                top: `${20 + Math.random() * 60}%`,
-                left: `${10 + Math.random() * 80}%`,
-                animation: `float-slow ${15 + Math.random() * 10}s ease-in-out infinite`,
-                animationDelay: `${Math.random() * 5}s`,
+                top: `${20 + stableRandom(i * 20) * 60}%`,
+                left: `${10 + stableRandom(i * 30) * 80}%`,
+                animation: `float-slow ${15 + stableRandom(i * 40) * 10}s ease-in-out infinite`,
+                animationDelay: `${stableRandom(i * 50) * 5}s`,
               }}
             />
           );

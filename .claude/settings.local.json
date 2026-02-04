@@ -3,7 +3,9 @@
     "allow": [
       "Bash(git commit:*)",
       "Bash(powershell -Command:*)",
-      "Bash(del \"c:\\\\Users\\\\abdul\\\\Desktop\\\\arco\\\\app\\\\AR-CO\\\\apps\\\\web\\\\app\\\\\\(public\\)\\\\practice-areas\\\\page.tsx\")"
+      "Bash(del \"c:\\\\Users\\\\abdul\\\\Desktop\\\\arco\\\\app\\\\AR-CO\\\\apps\\\\web\\\\app\\\\\\(public\\)\\\\practice-areas\\\\page.tsx\")",
+      "Bash(find:*)",
+      "Bash(cat:*)"
     ]
   }
 }
