@@ -19,7 +19,7 @@ export default function TeamLeaderShowcase({ leader }: TeamLeaderShowcaseProps) 
     // Parallax effects
     const yImage = useTransform(scrollYProgress, [0, 1], [50, -50])
     const yText = useTransform(scrollYProgress, [0, 1], [100, -100])
-    const opacity = useTransform(scrollYProgress, [0, 0.2, 0.8, 1], [0, 1, 1, 0])
+    const opacity = useTransform(scrollYProgress, [0, 0.3], [0, 1])
 
     return (
         <section ref={sectionRef} className="relative w-full py-32 px-4 md:px-8 lg:px-16 max-w-[1800px] mx-auto overflow-hidden">
