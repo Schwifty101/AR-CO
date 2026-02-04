@@ -111,6 +111,9 @@ export default function SmoothScroll({ children }: SmoothScrollProps) {
     // Store globally for dynamic updates
     smootherInstance = smoother
 
+    // Dispatch event to notify dependent components (like TeamClosingStatement)
+    window.dispatchEvent(new CustomEvent('scroll-smoother-ready', { detail: smoother }))
+
     // Cleanup
     return () => {
       smoother.kill()

@@ -967,3 +967,28 @@ body.app-loaded header {
   display: none;
   /* Chrome, Safari and Opera */
 }
+
+/* Gold Gradient Shine Animation */
+@keyframes text-shine {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  100% {
+    background-position: 200% 50%;
+  }
+}
+
+.text-gradient-gold-shine {
+  background: linear-gradient(to right,
+      var(--heritage-walnut) 0%,
+      var(--heritage-walnut) 40%,
+      var(--heritage-gold) 50%,
+      var(--heritage-walnut) 60%,
+      var(--heritage-walnut) 100%);
+  background-size: 200% auto;
+  color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: text-shine 4s linear infinite;
+}
