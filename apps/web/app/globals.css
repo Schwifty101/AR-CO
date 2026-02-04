@@ -402,7 +402,6 @@ body:not(.app-loaded) header {
 body.app-loaded header {
   opacity: 1;
   pointer-events: auto;
-  transition: opacity 1.5s ease-out;
 }
 
 /* Hover Effects - Change hover details here to apply across all elements */
@@ -717,6 +716,7 @@ body.app-loaded header {
   color: var(--heritage-cream);
   border-color: var(--wood-espresso);
 }
+
 /* ═══════════════════════════════════════════════════════════════════════════
    Team Page Typography Utilities
    OH Architecture-inspired bold typography system
@@ -724,26 +724,32 @@ body.app-loaded header {
 
 /* Hero Typography - Massive billboard-sized text */
 .hero-statement {
-  font-size: clamp(4rem, 18vw, 22rem); /* 64px → 352px */
-  font-weight: 100; /* Ultra-thin */
+  font-size: clamp(4rem, 18vw, 22rem);
+  /* 64px → 352px */
+  font-weight: 100;
+  /* Ultra-thin */
   line-height: 0.9;
-  letter-spacing: -0.06em; /* Extremely tight tracking */
+  letter-spacing: -0.06em;
+  /* Extremely tight tracking */
   text-transform: uppercase;
   color: var(--heritage-walnut);
 }
 
 /* Section Labels - Small uppercase labels */
 .section-label {
-  font-size: clamp(0.75rem, 1.5vw, 1rem); /* 12px → 16px */
+  font-size: clamp(0.75rem, 1.5vw, 1rem);
+  /* 12px → 16px */
   font-weight: 700;
-  letter-spacing: 0.15em; /* Wide tracking */
+  letter-spacing: 0.15em;
+  /* Wide tracking */
   text-transform: uppercase;
   color: var(--heritage-gold);
 }
 
 /* Section Titles - Large editorial headers */
 .section-title-large {
-  font-size: clamp(3rem, 6vw, 5.5rem); /* 48px → 88px */
+  font-size: clamp(3rem, 6vw, 5.5rem);
+  /* 48px → 88px */
   font-weight: 300;
   line-height: 1.1;
   letter-spacing: -0.03em;
@@ -751,7 +757,8 @@ body.app-loaded header {
 }
 
 .section-title-medium {
-  font-size: clamp(2rem, 5vw, 4rem); /* 32px → 64px */
+  font-size: clamp(2rem, 5vw, 4rem);
+  /* 32px → 64px */
   font-weight: 300;
   line-height: 1.1;
   letter-spacing: -0.03em;
@@ -760,7 +767,8 @@ body.app-loaded header {
 
 /* Team Member Names - Bold editorial list typography */
 .member-name-primary {
-  font-size: clamp(2.5rem, 5vw, 4rem); /* 40px → 64px */
+  font-size: clamp(2.5rem, 5vw, 4rem);
+  /* 40px → 64px */
   font-weight: 600;
   line-height: 1.2;
   letter-spacing: -0.02em;
@@ -769,7 +777,8 @@ body.app-loaded header {
 }
 
 .member-name-standard {
-  font-size: clamp(2rem, 4vw, 3.5rem); /* 32px → 56px */
+  font-size: clamp(2rem, 4vw, 3.5rem);
+  /* 32px → 56px */
   font-weight: 600;
   line-height: 1.2;
   letter-spacing: -0.02em;
@@ -784,7 +793,8 @@ body.app-loaded header {
 
 /* Role Titles - Uppercase supporting text */
 .member-role {
-  font-size: clamp(1rem, 1.5vw, 1.25rem); /* 16px → 20px */
+  font-size: clamp(1rem, 1.5vw, 1.25rem);
+  /* 16px → 20px */
   font-weight: 500;
   letter-spacing: 0.02em;
   text-transform: uppercase;
@@ -794,16 +804,19 @@ body.app-loaded header {
 
 /* Body Text - Generous reading experience */
 .editorial-body {
-  font-size: clamp(1rem, 1.2vw, 1.125rem); /* 16px → 18px */
+  font-size: clamp(1rem, 1.2vw, 1.125rem);
+  /* 16px → 18px */
   font-weight: 400;
   line-height: 1.7;
   color: var(--heritage-charcoal);
-  max-width: 65ch; /* Optimal reading length */
+  max-width: 65ch;
+  /* Optimal reading length */
 }
 
 /* Closing Statement Typography */
 .closing-statement {
-  font-size: clamp(2.5rem, 8vw, 6rem); /* 40px → 96px */
+  font-size: clamp(2.5rem, 8vw, 6rem);
+  /* 40px → 96px */
   font-weight: 300;
   line-height: 1.2;
   letter-spacing: -0.02em;
@@ -835,43 +848,53 @@ body.app-loaded header {
 /* Responsive Typography Adjustments */
 @media (max-width: 1024px) {
   .hero-statement {
-    font-size: clamp(6rem, 14vw, 14rem); /* 96px → 224px */
-    letter-spacing: -0.04em; /* Less tight on tablets */
+    font-size: clamp(6rem, 14vw, 14rem);
+    /* 96px → 224px */
+    letter-spacing: -0.04em;
+    /* Less tight on tablets */
   }
 }
 
 @media (max-width: 768px) {
   .hero-statement {
-    font-size: clamp(4rem, 12vw, 8rem); /* 64px → 128px */
-    line-height: 0.95; /* Slightly more space on mobile */
+    font-size: clamp(4rem, 12vw, 8rem);
+    /* 64px → 128px */
+    line-height: 0.95;
+    /* Slightly more space on mobile */
   }
 
   .member-name-primary {
-    font-size: clamp(2rem, 6vw, 2.5rem); /* 32px → 40px */
+    font-size: clamp(2rem, 6vw, 2.5rem);
+    /* 32px → 40px */
   }
 
   .member-name-standard {
-    font-size: clamp(1.75rem, 5vw, 2rem); /* 28px → 32px */
+    font-size: clamp(1.75rem, 5vw, 2rem);
+    /* 28px → 32px */
   }
 }
 
 /* Team Page Animations */
 @keyframes chevronBounce {
+
   0%,
   100% {
     transform: translateY(0);
   }
+
   50% {
     transform: translateY(10px);
   }
 }
 
 @keyframes bracketExpand {
+
   0%,
   100% {
     width: 2rem;
     opacity: 1;
   }
+
   50% {
     width: 3rem;
     opacity: 0.6;
@@ -879,20 +902,24 @@ body.app-loaded header {
 }
 
 @keyframes gradientShift {
+
   0%,
   100% {
     background-position: 0% 50%;
   }
+
   50% {
     background-position: 100% 50%;
   }
 }
 
 @keyframes twinkle {
+
   0%,
   100% {
     opacity: 0.2;
   }
+
   50% {
     opacity: 0.5;
   }
@@ -911,6 +938,7 @@ body.app-loaded header {
   }
 
   @keyframes chevronBounce {
+
     0%,
     100% {
       transform: translateY(0);
@@ -918,6 +946,7 @@ body.app-loaded header {
   }
 
   @keyframes bracketExpand {
+
     0%,
     100% {
       width: 2rem;
@@ -928,11 +957,13 @@ body.app-loaded header {
 
 /* Hide scrollbar utility */
 .scrollbar-hide {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
 }
 
 .scrollbar-hide::-webkit-scrollbar {
-  display: none;  /* Chrome, Safari and Opera */
+  display: none;
+  /* Chrome, Safari and Opera */
 }
-
