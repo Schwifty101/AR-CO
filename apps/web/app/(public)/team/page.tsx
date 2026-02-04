@@ -2,6 +2,7 @@
 
 import TeamHero from '@/components/team/teamHero'
 import TeamPhilosophyAbstract from '@/components/team/TeamPhilosophyAbstract'
+import TeamLeaderShowcase from '@/components/team/TeamLeaderShowcase'
 import TeamInteractiveList from '@/components/team/TeamInteractiveList'
 import TeamTransition from '@/components/team/TeamTransition'
 import { teamMembers } from '@/components/data/teamData'
@@ -50,13 +51,23 @@ export default function TeamPage() {
                 className="text-heritage-cream relative z-10"
             />
 
-            {/* 1.5 Transition Thread */}
-            <TeamTransition />
+            {/* 1.5 Transition Thread - The Collective */}
+            <TeamTransition label="The Collective" />
+
+            {/* 1.75 Team Leader Showcase */}
+            {teamMembers.filter(m => m.isPrimary).map(leader => (
+                <div key={leader.id} className="relative z-20 mb-24 lg:mb-32">
+                    <TeamLeaderShowcase leader={leader} />
+                </div>
+            ))}
 
             {/* 2. Team Interactive List - Dark Accordion Style */}
             <div className="relative z-20">
-                <TeamInteractiveList members={teamMembers} />
+                <TeamInteractiveList members={teamMembers.filter(m => !m.isPrimary)} />
             </div>
+
+            {/* 2.5 Transition Thread - The Philosophy */}
+            <TeamTransition label="The Philosophy" />
 
             {/* 3. Philosophy Section - Abstract Layout */}
             <div className="relative pb-16">

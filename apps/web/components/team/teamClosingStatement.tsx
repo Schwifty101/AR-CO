@@ -1,145 +1,218 @@
 'use client'
 
-import { motion } from 'framer-motion'
+import { useRef, useEffect, useState } from 'react'
+import { motion, useScroll, useTransform, useSpring } from 'framer-motion'
+import gsap from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import type { ITeamClosingStatementProps } from './types/teamInterfaces'
+import { getSmoother } from '../SmoothScroll'
+
+gsap.registerPlugin(ScrollTrigger)
 
 /**
  * TeamClosingStatement Component
- * Bold typography closing section for team page
+ * "The Blueprint of Excellence" - Dark, Architectural, Bold.
  *
- * Features:
- * - Large display typography
- * - Optional supporting subtext
- * - Center-aligned layout
- * - Scale + fade entrance animation
- * - 60vh minimum height for impact
- *
- * @example
- * ```tsx
- * <TeamClosingStatement
- *   statement="FOCUSED ON QUALITY DRIVEN BY EXCELLENCE"
- *   subtext="Building lasting relationships through legal excellence"
- * />
- * ```
+ * Design Direction: Refined Editorial / Luxury Industrial.
+ * Context: Dark "Wood Espresso" background with thin "Cedar" lines (Blueprint).
+ * Animation: Staggered reveal of text, drawing of lines, subtle gold shine.
  */
 export default function TeamClosingStatement({
   statement,
   subtext,
   className = ''
 }: ITeamClosingStatementProps) {
+  const containerRef = useRef<HTMLElement>(null)
+  const textRef = useRef<HTMLDivElement>(null)
+  const [isMounted, setIsMounted] = useState(false)
+
+  // Split statement into words for staggered animation
+  const words = statement.split(' ')
+
+  useEffect(() => {
+    setIsMounted(true)
+    let ctx: gsap.Context | undefined
+    let resizeObserver: ResizeObserver | undefined
+    let refreshTimeout: NodeJS.Timeout
+
+    const initScrollTrigger = () => {
+      if (ctx) return
+
+      ctx = gsap.context(() => {
+        ScrollTrigger.create({
+          trigger: containerRef.current,
+          start: 'top top',
+          end: '+=100%',
+          pin: true,
+          pinSpacing: false, // Keep false to allow footer to scroll over (parallax)
+          onUpdate: (self) => {
+            // Optional: Parallax or other GSAP specific updates
+          }
+        })
+      }, containerRef)
+
+      ScrollTrigger.refresh()
+    }
+
+    // ScrollSmoother Integration Logic
+    if (getSmoother()) {
+      initScrollTrigger()
+    } else {
+      const onSmootherReady = () => {
+        initScrollTrigger()
+        window.removeEventListener('scroll-smoother-ready', onSmootherReady)
+      }
+      window.addEventListener('scroll-smoother-ready', onSmootherReady)
+      setTimeout(() => {
+        if (!ctx) initScrollTrigger()
+        window.removeEventListener('scroll-smoother-ready', onSmootherReady)
+      }, 1000)
+    }
+
+    return () => {
+      ctx?.revert()
+      window.removeEventListener('scroll-smoother-ready', () => { })
+    }
+  }, [])
+
   return (
     <section
+      ref={containerRef}
       className={`
         relative
-        min-h-[60vh]
+        min-h-[100vh]
         flex
         items-center
         justify-center
-        px-4
-        md:px-8
-        py-16
-        md:py-24
+        px-6
+        py-24
+        overflow-hidden
         ${className}
       `}
-      style={{ background: 'var(--heritage-cream)' }}
+      style={{ background: 'var(--wood-espresso)' }}
     >
-      {/* Optional: Very subtle texture overlay */}
+      {/* 1. Atmosphere: Noise & Vignette */}
       <div
-        className="absolute inset-0 opacity-[0.02] mix-blend-multiply pointer-events-none"
+        className="absolute inset-0 opacity-[0.07] pointer-events-none mix-blend-overlay"
         style={{
-          backgroundImage:
-            'url("data:image/svg+xml,%3Csvg width="100" height="100" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="noise"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" /%3E%3C/filter%3E%3Crect width="100" height="100" filter="url(%23noise)" opacity="0.05" /%3E%3C/svg%3E")'
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
         }}
-        aria-hidden="true"
       />
 
-      <div className="max-w-5xl mx-auto text-center relative z-10">
-        {/* Simple horizontal accent lines */}
-        <div className="flex items-center justify-center gap-6 mb-8">
-          <div
-            className="w-16 h-px"
-            style={{
-              background:
-                'linear-gradient(to right, transparent, rgba(212, 175, 55, 0.6))'
-            }}
-          />
-          <div
-            className="w-1.5 h-1.5 rounded-full"
-            style={{ background: 'var(--heritage-gold)' }}
-          />
-          <div
-            className="w-16 h-px"
-            style={{
-              background:
-                'linear-gradient(to left, transparent, rgba(212, 175, 55, 0.6))'
-            }}
-          />
-        </div>
-        {/* Main statement with refined animated underline */}
+      {/* 2. Architectural Grid Lines - "The Blueprint" */}
+      <div className="absolute inset-0 pointer-events-none">
+        {/* Vertical Line */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.98 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
-          className="relative inline-block"
+          initial={{ height: 0 }}
+          whileInView={{ height: '100%' }}
+          transition={{ duration: 1.5, ease: 'circOut' }}
+          className="absolute left-1/2 top-0 w-px -translate-x-1/2 opacity-20"
+          style={{ background: 'var(--wood-cedar)' }}
+        />
+        {/* Horizontal Line */}
+        <motion.div
+          initial={{ width: 0 }}
+          whileInView={{ width: '100%' }}
+          transition={{ duration: 1.5, ease: 'circOut', delay: 0.2 }}
+          className="absolute top-1/2 left-0 h-px -translate-y-1/2 opacity-20"
+          style={{ background: 'var(--wood-cedar)' }}
+        />
+        {/* Decorative Circle */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.5 }}
+          whileInView={{ opacity: 0.1, scale: 1 }}
+          transition={{ duration: 2, ease: "easeOut" }}
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60vh] h-[60vh] border border-[var(--wood-cedar)] rounded-full"
+        />
+      </div>
+
+      <div className="relative z-10 max-w-7xl mx-auto flex flex-col items-center justify-center text-center">
+
+        {/* decorative label */}
+        <motion.span
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.1 }}
+          className="inline-block mb-12 text-xs md:text-sm tracking-[0.3em] uppercase text-[var(--heritage-gold)] font-medium"
         >
-          <h2
-            className="leading-tight"
-            style={{
-              fontSize: 'clamp(2.5rem, 8vw, 6rem)',
-              fontWeight: 300,
-              letterSpacing: '-0.02em',
-              color: 'var(--heritage-walnut)'
-            }}
+          Our Philosophy
+        </motion.span>
+
+        {/* 3. Main Statement - "Cinematic Typography" */}
+        <div ref={textRef} className="relative mix-blend-screen perspective-1000">
+          <h2 className="sr-only">{statement}</h2>
+          <div
+            className="flex flex-wrap justify-center gap-x-[0.25em] gap-y-[0.1em] leading-[0.9]"
+            aria-hidden="true"
           >
-            {/* Split by newlines or render as-is */}
-            {statement.split('\n').map((line, index) => (
-              <span key={index}>
-                {line}
-                {index < statement.split('\n').length - 1 && <br />}
-              </span>
+            {words.map((word, i) => (
+              <motion.span
+                key={i}
+                className="inline-block relative overflow-hidden"
+                initial={{ opacity: 0, y: 100, rotateX: 20 }}
+                whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
+                viewport={{ margin: "-10%" }}
+                transition={{
+                  duration: 0.9,
+                  ease: [0.16, 1, 0.3, 1], // Custom ease for "luxury" feel
+                  delay: i * 0.08
+                }}
+              >
+                <span
+                  className="block font-[300] tracking-tighter"
+                  style={{
+                    fontSize: 'clamp(3rem, 9vw, 8rem)',
+                    fontFamily: "'Cabinet Grotesk', sans-serif",
+                    // Custom Gold Shine for Dark Mode
+                    background: `linear-gradient(to right, 
+                      var(--heritage-cream) 0%, 
+                      var(--heritage-cream) 40%, 
+                      var(--heritage-gold) 50%, 
+                      var(--heritage-cream) 60%, 
+                      var(--heritage-cream) 100%)`,
+                    backgroundSize: '200% auto',
+                    WebkitBackgroundClip: 'text',
+                    backgroundClip: 'text',
+                    color: 'transparent',
+                    animation: isMounted ? 'text-shine 6s cubic-bezier(0.4, 0, 0.2, 1) infinite' : 'none'
+                  }}
+                >
+                  {word}
+                </span>
+              </motion.span>
             ))}
-          </h2>
+          </div>
+        </div>
 
-          {/* Refined animated underline - subtle and elegant */}
-          <motion.div
-            initial={{ width: 0 }}
-            whileInView={{ width: '100%' }}
-            viewport={{ once: true }}
-            transition={{
-              duration: 1,
-              delay: 0.4,
-              ease: [0.25, 0.46, 0.45, 0.94]
-            }}
-            className="absolute bottom-0 left-0 h-0.5"
-            style={{ background: 'var(--heritage-gold)' }}
-          />
-        </motion.div>
-
-        {/* Subtext */}
+        {/* 4. Subtext - "Refined Detail" */}
         {subtext && (
-          <motion.p
-            className="mt-8"
-            style={{
-              fontSize: 'clamp(1rem, 2vw, 1.25rem)',
-              fontWeight: 400,
-              lineHeight: 1.6,
-              color: 'var(--heritage-charcoal)',
-              opacity: 0.8
-            }}
+          <motion.div
             initial={{ opacity: 0 }}
-            whileInView={{ opacity: 0.8 }}
-            viewport={{ once: true }}
-            transition={{
-              duration: 0.8,
-              delay: 0.3,
-              ease: [0.25, 0.46, 0.45, 0.94]
-            }}
+            whileInView={{ opacity: 1 }}
+            transition={{ duration: 1, delay: 0.8 }}
+            className="mt-12 max-w-2xl mx-auto"
           >
-            {subtext}
-          </motion.p>
+            <p
+              className="text-lg md:text-xl font-light italic"
+              style={{
+                fontFamily: "'Boska', serif",
+                color: 'rgba(249, 248, 246, 0.7)'
+              }}
+            >
+              {subtext}
+            </p>
+
+            {/* Decorative separator */}
+            <motion.div
+              initial={{ scaleX: 0 }}
+              whileInView={{ scaleX: 1 }}
+              transition={{ duration: 1, delay: 1 }}
+              className="h-px w-24 mx-auto mt-8 bg-[var(--heritage-gold)] opacity-50"
+            />
+          </motion.div>
         )}
       </div>
     </section>
   )
 }
+

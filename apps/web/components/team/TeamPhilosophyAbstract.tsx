@@ -1,10 +1,9 @@
 'use client'
 
-import React from 'react'
+import React, { useRef } from 'react'
 import { motion, useScroll, useTransform } from 'framer-motion'
 import Image from 'next/image'
-import TeamSectionHeader from './teamSectionHeader'
-import type { ITeamPhilosophyProps } from './types/teamInterfaces'
+import { ITeamPhilosophyProps } from './types/teamInterfaces'
 
 export default function TeamPhilosophyAbstract({
     title,
@@ -12,141 +11,117 @@ export default function TeamPhilosophyAbstract({
     images,
     className = ''
 }: ITeamPhilosophyProps) {
-    const containerRef = React.useRef<HTMLDivElement>(null)
+    const containerRef = useRef<HTMLDivElement>(null)
     const { scrollYProgress } = useScroll({
         target: containerRef,
         offset: ["start end", "end start"]
     })
 
-    const y1 = useTransform(scrollYProgress, [0, 1], [0, -50])
-    const y2 = useTransform(scrollYProgress, [0, 1], [50, -50])
-    const y3 = useTransform(scrollYProgress, [0, 1], [0, 50])
+    const y = useTransform(scrollYProgress, [0, 1], [0, -100])
+    const opacity = useTransform(scrollYProgress, [0.1, 0.3], [0, 1])
 
     return (
-        <section ref={containerRef} className={`py-40 px-4 md:px-8 lg:px-16 max-w-[1800px] mx-auto overflow-hidden ${className}`}>
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-8 lg:gap-12 auto-rows-min">
+        <section ref={containerRef} className={`relative py-32 px-4 md:px-8 lg:px-16 max-w-[1900px] mx-auto min-h-screen flex flex-col justify-center ${className}`}>
 
-                {/* 1. Header Area (Top Left) - Spanning more columns */}
-                <div className="md:col-span-8 lg:col-span-6 mb-16 md:mb-0 relative z-10">
-                    <TeamSectionHeader
-                        text={title}
-                        size="small"
-                        className="mb-8"
-                    />
-                    <motion.h2
-                        className="text-3xl md:text-5xl lg:text-6xl font-light leading-[1.1] tracking-tight"
-                        style={{ color: 'var(--heritage-cream)' }}
-                        initial={{ opacity: 0, y: 30 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.8 }}
-                    >
-                        {statement}
-                    </motion.h2>
-                </div>
+            {/* Background Texture */}
+            <div className="absolute inset-0 z-0 opacity-20 pointer-events-none bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-heritage-walnut/10 via-transparent to-transparent" />
 
-                {/* 2. Decorative/Placeholder Block (Top Right) */}
-                <div className="hidden md:block md:col-span-4 lg:col-span-6 relative mt-12">
-                    <motion.div
-                        className="w-full h-full border-l pl-8 flex flex-col justify-end pb-8"
-                        style={{ borderColor: 'rgba(212, 175, 55, 0.1)' }}
-                        initial={{ opacity: 0 }}
-                        whileInView={{ opacity: 1 }}
-                        transition={{ delay: 0.3 }}
-                    >
-                        <p className="text-xs uppercase tracking-widest max-w-[200px]" style={{ color: 'rgba(212, 175, 55, 0.4)' }}>
-                            [ Future Perspective ]
-                        </p>
-                    </motion.div>
-                </div>
+            <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
 
-                {/* 3. Image 1 - Large Portrait (Left aligned, slightly offset) */}
-                {images[0] && (
-                    <motion.div
-                        style={{ y: y1 }}
-                        className="md:col-span-5 lg:col-span-4 md:row-start-2 pt-20"
-                    >
-                        <div className="relative aspect-[3/4] w-full overflow-hidden grayscale hover:grayscale-0 transition-all duration-700">
-                            <Image
-                                src={images[0].src}
-                                alt={images[0].alt}
-                                fill
-                                className="object-cover"
-                                sizes="(max-width: 768px) 100vw, 33vw"
-                            />
-                            <div className="absolute bottom-4 left-4 text-[10px] uppercase tracking-widest text-white/50 bg-black/20 backdrop-blur-sm px-2 py-1">
-                                01. Leadership
+                {/* Visual Side (Left) - Overlapping Images */}
+                <div className="lg:col-span-5 h-full min-h-[600px] relative hidden lg:block">
+                    {/* Image 1 - Main Portrait */}
+                    {images[0] && (
+                        <motion.div
+                            style={{ y }}
+                            className="absolute top-0 left-0 w-[70%] aspect-[3/4] z-10"
+                        >
+                            <div className="relative w-full h-full overflow-hidden shadow-2xl shadow-heritage-walnut/20">
+                                <Image
+                                    src={images[0].src}
+                                    alt={images[0].alt}
+                                    fill
+                                    className="object-cover grayscale hover:grayscale-0 transition-all duration-700"
+                                />
+                            </div>
+                        </motion.div>
+                    )}
+
+                    {/* Image 2 - Supporting Detail */}
+                    {images[1] && (
+                        <div className="absolute bottom-20 right-0 w-[55%] aspect-square z-20">
+                            <div className="relative w-full h-full overflow-hidden border-4 border-heritage-cream shadow-xl">
+                                <Image
+                                    src={images[1].src}
+                                    alt={images[1].alt}
+                                    fill
+                                    className="object-cover contrast-125"
+                                />
                             </div>
                         </div>
-                    </motion.div>
-                )}
+                    )}
 
-                {/* 4. Text/Placeholder Block (Center) */}
-                <motion.div
-                    className="md:col-span-7 lg:col-span-4 md:row-start-2 flex items-center p-8 lg:p-16"
-                    initial={{ opacity: 0 }}
-                    whileInView={{ opacity: 1 }}
-                    transition={{ delay: 0.4 }}
-                >
-                    <div className="border p-8 w-full h-full min-h-[300px] flex items-center justify-center relative group" style={{ borderColor: 'rgba(212, 175, 55, 0.2)' }}>
-                        <div className="absolute inset-0 scale-0 group-hover:scale-100 transition-transform duration-500 ease-out origin-center" style={{ backgroundColor: 'rgba(212, 175, 55, 0.05)' }} />
-                        <p className="text-center font-light italic relative z-10" style={{ color: 'rgba(249, 248, 246, 0.6)' }}>
-                            "Innovation is not just about technology, but about the human connection in legal practice."
-                        </p>
-
-                        {/* Corner Accents */}
-                        <div className="absolute top-0 left-0 w-2 h-2 border-l border-t" style={{ borderColor: 'var(--heritage-gold)' }} />
-                        <div className="absolute top-0 right-0 w-2 h-2 border-r border-t" style={{ borderColor: 'var(--heritage-gold)' }} />
-                        <div className="absolute bottom-0 right-0 w-2 h-2 border-r border-b" style={{ borderColor: 'var(--heritage-gold)' }} />
-                        <div className="absolute bottom-0 left-0 w-2 h-2 border-l border-b" style={{ borderColor: 'var(--heritage-gold)' }} />
-                    </div>
-                </motion.div>
-
-                {/* 5. Image 2 - Square (Right aligned) */}
-                {images[1] && (
-                    <motion.div
-                        style={{ y: y2 }}
-                        className="md:col-span-4 lg:col-span-4 md:row-start-2 w-full flex flex-col justify-end"
-                    >
-                        <div className="relative aspect-square w-full max-w-[300px] ml-auto overflow-hidden grayscale hover:grayscale-0 transition-all duration-700 mt-12 md:mt-0">
-                            <Image
-                                src={images[1].src}
-                                alt={images[1].alt}
-                                fill
-                                className="object-cover"
-                                sizes="(max-width: 768px) 100vw, 25vw"
-                            />
-                        </div>
-                    </motion.div>
-                )}
-
-                {/* 6. Placeholder for Content (Bottom Left) */}
-                <div className="md:col-span-3 lg:col-span-3 md:row-start-3 h-full min-h-[200px] relative mt-12 md:mt-0 border-t" style={{ borderColor: 'rgba(212, 175, 55, 0.1)' }}>
-                    <div className="absolute top-4 left-0 text-[10px]" style={{ color: 'rgba(249, 248, 246, 0.2)' }}>
-                        + ADD CONTENT
-                    </div>
+                    {/* Decorative Elements */}
+                    <div className="absolute top-1/2 left-1/4 w-[1px] h-32 bg-heritage-gold/30" />
+                    <div className="absolute bottom-10 right-1/3 w-32 h-[1px] bg-heritage-gold/30" />
                 </div>
 
-                {/* 7. Image 3 - Landscape (Bottom Right spanning) */}
-                {images[2] && (
+                {/* Content Side (Right) - Editorial Text */}
+                <div className="lg:col-span-1 lg:col-start-7 lg:col-end-13 flex flex-col justify-center relative">
+                    {/* Section Label */}
                     <motion.div
-                        style={{ y: y3 }}
-                        className="md:col-span-7 lg:col-span-6 md:col-start-6 md:row-start-3 pt-12"
+                        className="mb-8 flex items-center gap-4"
+                        initial={{ opacity: 0, x: -20 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.6 }}
                     >
-                        <div className="relative aspect-[16/9] w-full overflow-hidden grayscale hover:grayscale-0 transition-all duration-700">
-                            <Image
-                                src={images[2].src}
-                                alt={images[2].alt}
-                                fill
-                                className="object-cover"
-                                sizes="(max-width: 768px) 100vw, 50vw"
-                            />
-                        </div>
-                        <p className="mt-4 text-xs text-right" style={{ color: 'rgba(249, 248, 246, 0.4)' }}>
-                            Collaborative Excellence &mdash; 2024
+                        <div className="h-[1px] w-12 bg-heritage-gold" />
+                        <span className="text-xs font-mono uppercase tracking-widest text-heritage-gold">
+                            {title}
+                        </span>
+                    </motion.div>
+
+                    {/* Main Statement */}
+                    <motion.h2
+                        className="text-4xl md:text-5xl lg:text-7xl font-light leading-tight mb-12"
+                        initial={{ opacity: 0, y: 30 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.8, delay: 0.2 }}
+                        style={{ color: 'var(--heritage-cream)' }}
+                    >
+                        {statement.split(',').map((part, i) => (
+                            <span key={i} className="block mb-2">
+                                {part}{i < statement.split(',').length - 1 ? ',' : ''}
+                            </span>
+                        ))}
+                    </motion.h2>
+
+                    {/* Supporting Text/Detail */}
+                    <motion.div
+                        className="pl-8 border-l border-heritage-gold/20"
+                        initial={{ opacity: 0 }}
+                        whileInView={{ opacity: 1 }}
+                        transition={{ duration: 0.8, delay: 0.4 }}
+                    >
+                        <p className="text-lg leading-relaxed font-light max-w-xl" style={{ color: 'var(--heritage-cream)', opacity: 0.6 }}>
+                            Our practice is built on the understanding that true legal excellence requires more than just knowledge—it demands creativity, empathy, and an unwavering commitment to the human element of law.
                         </p>
                     </motion.div>
-                )}
+                </div>
+            </div>
+
+            {/* Mobile Image Stack */}
+            <div className="lg:hidden grid grid-cols-2 gap-4 mt-16 px-4">
+                {images.slice(0, 2).map((img, i) => (
+                    <div key={i} className={`relative aspect-[3/4] w-full ${i === 1 ? 'mt-12' : ''}`}>
+                        <Image
+                            src={img.src}
+                            alt={img.alt}
+                            fill
+                            className="object-cover grayscale"
+                        />
+                    </div>
+                ))}
             </div>
         </section>
     )

@@ -1,9 +1,10 @@
 'use client'
 
-import React, { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import React, { useState, useRef } from 'react'
+import { motion, AnimatePresence, useScroll, useTransform, useSpring, useMotionValue } from 'framer-motion'
 import { ITeamMemberExtended } from './types/teamInterfaces'
 import Image from 'next/image'
+import { ArrowUpRight } from 'lucide-react'
 
 interface TeamInteractiveListProps {
     members: ITeamMemberExtended[]
@@ -12,126 +13,195 @@ interface TeamInteractiveListProps {
 export default function TeamInteractiveList({ members }: TeamInteractiveListProps) {
     const [activeMemberId, setActiveMemberId] = useState<number | null>(null)
     const [hoveredY, setHoveredY] = useState<number>(0)
-    const listRef = React.useRef<HTMLDivElement>(null)
+    const containerRef = useRef<HTMLDivElement>(null)
+
+    // Smooth mouse follow for the image
+    const springConfig = { damping: 20, stiffness: 300, mass: 0.5 }
+    const x = useMotionValue(0)
+    const y = useMotionValue(0)
+
+    // Handle mouse move for parallax effect
+    const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+        const rect = containerRef.current?.getBoundingClientRect()
+        if (rect) {
+            const centerX = rect.left + rect.width / 2
+            const centerY = rect.top + rect.height / 2
+            x.set(e.clientX - centerX)
+            y.set(e.clientY - centerY)
+        }
+    }
 
     const handleMouseEnter = (id: number, e: React.MouseEvent<HTMLDivElement>) => {
         setActiveMemberId(id)
-        if (listRef.current) {
-            const listRect = listRef.current.getBoundingClientRect()
-            const itemRect = e.currentTarget.getBoundingClientRect()
-            // Track relative Y position
-            setHoveredY(itemRect.top - listRect.top)
+        const rect = e.currentTarget.getBoundingClientRect()
+        const containerRect = containerRef.current?.getBoundingClientRect()
+
+        if (containerRect) {
+            // Calculate relative Y position for the image to follow, centered on the row
+            const relativeY = rect.top - containerRect.top + (rect.height / 2)
+            setHoveredY(relativeY)
         }
     }
 
     const activeMember = members.find((m) => m.id === activeMemberId)
 
     return (
-        <section className="px-4 md:px-8 lg:px-16 mb-24 max-w-[1800px] mx-auto w-full relative">
-            <div
-                className="grid grid-cols-1 lg:grid-cols-12 gap-x-8 relative"
-                ref={listRef}
-                onMouseLeave={() => setActiveMemberId(null)}
-            >
+        <section
+            ref={containerRef}
+            className="py-32 px-4 md:px-8 lg:px-16 max-w-[1900px] mx-auto w-full relative min-h-screen mb-16"
+            onMouseLeave={() => setActiveMemberId(null)}
+            onMouseMove={handleMouseMove}
+        >
+            <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-x-12">
 
-                {/* LEFT & CENTER COLUMNS: Roles & Names List */}
-                <div className="lg:col-span-8 flex flex-col">
-                    {members.map((member) => (
+                {/* List Column */}
+                <div className="lg:col-span-8 flex flex-col space-y-0 cursor-pointer">
+                    {members.map((member, index) => (
                         <div
                             key={member.id}
-                            className="group flex flex-row items-baseline cursor-pointer py-6 md:py-8 transition-all duration-500 ease-out border-b border-heritage-gold/10 hover:border-heritage-gold/30"
+                            className="group relative border-t border-heritage-walnut/10 hover:border-heritage-gold/50 transition-colors duration-500"
                             onMouseEnter={(e) => handleMouseEnter(member.id, e)}
                         >
-                            {/* Column 1: Role (Abstract - Hidden until hover) */}
-                            <div className="w-[30%] md:w-[35%] pr-6 md:pr-12 flex justify-end overflow-hidden">
-                                <span
-                                    className={`text-[10px] md:text-sm font-medium text-right transition-all duration-500 transform ${activeMemberId === member.id
-                                        ? 'opacity-100 translate-y-0'
-                                        : 'opacity-0 translate-y-full'
-                                        }`}
-                                    style={{ color: activeMemberId === member.id ? 'var(--heritage-gold)' : 'rgba(249, 248, 246, 0.3)' }}
-                                >
-                                    {member.role.split(',')[0]}
-                                </span>
-                            </div>
+                            <div className="relative py-12 md:py-16 flex flex-col md:flex-row md:items-baseline justify-between transition-all duration-500">
 
-                            {/* Column 2: Name (Left Aligned, Big) */}
-                            <div className="flex-1 overflow-hidden relative z-10">
-                                <h2
-                                    className={`text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight leading-[0.85] transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] ${activeMemberId === member.id
-                                        ? 'opacity-100 translate-x-4'
-                                        : activeMemberId !== null
-                                            ? 'opacity-20 blur-[2px]'
-                                            : 'opacity-100'
-                                        }`}
-                                    style={{
-                                        fontFamily: 'var(--font-cabinet-grotesk, sans-serif)',
-                                        color: activeMemberId === member.id ? 'var(--heritage-gold)' : 'var(--heritage-cream)'
-                                    }}
-                                >
-                                    {member.name}
-                                </h2>
+                                {/* Index Number - Abstract Decoration */}
+                                <div className="hidden md:block absolute left-0 top-16 -translate-x-12 opacity-0 group-hover:opacity-100 transition-all duration-500 text-xs font-mono text-heritage-gold">
+                                    {(index + 1).toString().padStart(2, '0')}
+                                </div>
+
+                                {/* Main Content */}
+                                <div className="flex-1 z-10 w-full">
+                                    <div className="flex items-baseline justify-between w-full group overflow-hidden">
+                                        <h2
+                                            className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tighter transition-all duration-500 ease-out origin-left group-hover:text-heritage-walnut"
+                                            style={{
+                                                fontFamily: 'var(--font-cabinet-grotesk, sans-serif)',
+                                                color: activeMemberId === member.id ? 'var(--heritage-gold)' : 'var(--heritage-walnut)'
+                                            }}
+                                        >
+                                            <span className="inline-block transition-transform duration-500 group-hover:translate-x-4">
+                                                {member.name}
+                                            </span>
+                                        </h2>
+
+                                        {/* Abstract Arrow */}
+                                        <span className={`hidden md:block text-4xl transition-all duration-500 transform ${activeMemberId === member.id ? 'opacity-100 translate-x-0 rotate-45' : 'opacity-0 -translate-x-8 rotate-0'} text-heritage-gold`}>
+                                            <ArrowUpRight size={48} strokeWidth={1} />
+                                        </span>
+                                    </div>
+
+                                    {/* Role - Always visible but enhanced on hover */}
+                                    <p className={`mt-4 text-sm md:text-base font-medium tracking-widest uppercase transition-all duration-500 ${activeMemberId === member.id ? 'text-heritage-walnut translate-x-4' : 'text-heritage-walnut/40'}`}>
+                                        {member.role}
+                                    </p>
+
+                                    {/* Expanded Details - Animate Height */}
+                                    <motion.div
+                                        initial={false}
+                                        animate={{
+                                            height: activeMemberId === member.id ? 'auto' : 0,
+                                            opacity: activeMemberId === member.id ? 1 : 0
+                                        }}
+                                        transition={{ duration: 0.5, ease: [0.32, 0.72, 0, 1] }}
+                                        className="overflow-hidden"
+                                    >
+                                        <div className="pt-8 pb-4 grid grid-cols-1 md:grid-cols-2 gap-8 pl-4 border-l border-heritage-gold/20 ml-2">
+
+                                            {/* Education */}
+                                            {member.education && (
+                                                <div>
+                                                    <h4 className="text-xs uppercase tracking-widest text-heritage-gold mb-3 font-bold">Education</h4>
+                                                    <ul className="space-y-1">
+                                                        {member.education.map((edu, i) => (
+                                                            <li key={i} className="text-sm text-heritage-walnut/70 leading-relaxed font-light">{edu}</li>
+                                                        ))}
+                                                    </ul>
+                                                </div>
+                                            )}
+
+                                            {/* Expertise */}
+                                            {member.expertise && (
+                                                <div>
+                                                    <h4 className="text-xs uppercase tracking-widest text-heritage-gold mb-3 font-bold">Expertise</h4>
+                                                    <div className="flex flex-wrap gap-2">
+                                                        {member.expertise.map((exp, i) => (
+                                                            <span key={i} className="text-xs border border-heritage-walnut/10 px-2 py-1 rounded-full text-heritage-walnut/60 bg-heritage-walnut/5">
+                                                                {exp}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </motion.div>
+                                </div>
                             </div>
                         </div>
                     ))}
                 </div>
 
-                {/* RIGHT COLUMN: Floating Image */}
+                {/* Floating Image Column - Fixed/Sticky behavior handled via absolute positioning + translate */}
                 <div className="hidden lg:block lg:col-span-4 relative pointer-events-none">
-                    {/* 
-                        Use absolute positioning within the relative container to track Y.
-                        We add a transition to 'top' or 'transform' for smooth following.
-                     */}
+                    {/* CORRECTED IMAGE CONTAINER */}
                     <div
-                        className="absolute right-0 w-full max-w-sm transition-transform duration-500 ease-[cubic-bezier(0.25,1,0.5,1)]"
-                        style={{
-                            top: 0,
-                            transform: `translateY(${hoveredY}px) translateY(-25%)` // -25% to align better with text baseline
-                        }}
+                        className="absolute top-0 right-0 w-full h-full pointer-events-none hidden lg:block"
+                        style={{ height: '100%' }}
                     >
-                        <AnimatePresence mode="wait">
-                            {activeMember && (
-                                <motion.div
-                                    key={activeMember.id}
-                                    initial={{ opacity: 0, scale: 0.9, x: 20 }}
-                                    animate={{ opacity: 1, scale: 1, x: 0 }}
-                                    exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
-                                    transition={{ duration: 0.4, ease: [0.25, 1, 0.5, 1] }}
-                                >
-                                    {/* Image Card */}
-                                    <div className="aspect-[3/4] w-full overflow-hidden mb-6 bg-heritage-walnut/20 relative rounded-sm shadow-2xl shadow-black/20">
-                                        <Image
-                                            src={activeMember.image}
-                                            alt={activeMember.name}
-                                            fill
-                                            sizes="(max-width: 1024px) 100vw, 400px"
-                                            className="object-cover"
-                                            priority={true}
-                                        />
-                                    </div>
-
-                                    {/* Sidebar Details - Only show on hover */}
+                        <motion.div
+                            className="absolute right-0 w-[400px] aspect-[3/4]"
+                            animate={{
+                                top: hoveredY,
+                                translateY: "-50%"
+                            }}
+                            transition={{ type: "spring", stiffness: 300, damping: 30, mass: 0.8 }}
+                        >
+                            {members.map((member) => {
+                                const isActive = activeMemberId === member.id
+                                return (
                                     <motion.div
-                                        initial={{ opacity: 0 }}
-                                        animate={{ opacity: 1 }}
-                                        transition={{ delay: 0.1, duration: 0.4 }}
-                                        className="space-y-4"
+                                        key={member.id}
+                                        initial={false}
+                                        animate={{
+                                            opacity: isActive ? 1 : 0,
+                                            scale: isActive ? 1 : 0.9,
+                                            rotate: isActive ? 0 : -2,
+                                            filter: isActive ? 'blur(0px)' : 'blur(10px)',
+                                            zIndex: isActive ? 10 : 0
+                                        }}
+                                        transition={{ duration: 0.4, ease: "easeOut" }}
+                                        className="absolute inset-0 w-full h-full"
                                     >
-                                        {activeMember.education && (
-                                            <div className="text-sm text-heritage-cream/70 space-y-1">
-                                                {activeMember.education.map((edu, i) => (
-                                                    <p key={i} className="leading-snug">{edu}</p>
-                                                ))}
+                                        <div className="absolute inset-0 bg-heritage-gold/10 transform translate-x-4 translate-y-4" />
+                                        <div className="relative w-full h-full overflow-hidden shadow-2xl bg-heritage-walnut">
+                                            <Image
+                                                src={member.image}
+                                                alt={member.name}
+                                                fill
+                                                className="object-cover opacity-90 grayscale contrast-125 hover:grayscale-0 transition-all duration-700"
+                                                sizes="(max-width: 768px) 100vw, 400px"
+                                                priority={true}
+                                            />
+
+                                            {/* Artistic Overlay */}
+                                            <div className="absolute inset-0 bg-gradient-to-t from-heritage-walnut/80 via-transparent to-transparent opacity-60" />
+
+                                            {/* Name Overlay on Image */}
+                                            <div className="absolute bottom-6 left-6 right-6">
+                                                <div className="h-[1px] w-12 bg-heritage-gold mb-4" />
+                                                <p className="text-heritage-cream text-2xl font-light italic leading-tight">
+                                                    {member.role.split('&')[0]}
+                                                </p>
                                             </div>
-                                        )}
+                                        </div>
                                     </motion.div>
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
+                                )
+                            })}
+                        </motion.div>
                     </div>
                 </div>
-
             </div>
+
+            {/* Background Texture/Grain could be added here globally or per section */}
         </section>
     )
 }
