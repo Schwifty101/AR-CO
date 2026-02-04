@@ -56,6 +56,8 @@ export default function Hero() {
   const [showLoadingScreen, setShowLoadingScreen] = useState(true)
   const [imagesLoaded, setImagesLoaded] = useState(false)
   const [loadingProgress, setLoadingProgress] = useState(0)
+  // Track if this is a cached visit for fast animation (separate from skipping)
+  const [isCachedVisit, setIsCachedVisit] = useState(false)
   const imagesRef = useRef<HTMLImageElement[]>([])
   const currentFrameRef = useRef(0)
   const scrollTriggerRef = useRef<ScrollTrigger | null>(null)
@@ -93,12 +95,37 @@ export default function Hero() {
     ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight)
   }
 
-  // Check sessionStorage after hydration to skip loading screen on repeat visits
+  // Check sessionStorage after hydration to detect cached visits
+  // Loading screen always shows, but completes quickly when cached
   useEffect(() => {
     if (sessionStorage.getItem(FRAMES_LOADED_KEY)) {
-      setShowLoadingScreen(false)
+      setIsCachedVisit(true)
     }
   }, [])
+
+  // Fast progress animation for cached visits (~1.5 seconds)
+  // Browser will load images from cache while animation plays
+  useEffect(() => {
+    if (!isCachedVisit || imagesLoaded) return
+
+    let progress = 0
+    const targetDuration = 1500 // 1.5 seconds total
+    const steps = 30 // Number of steps for smooth animation
+    const stepInterval = targetDuration / steps
+    const stepIncrement = 100 / steps
+
+    const interval = setInterval(() => {
+      progress += stepIncrement
+      const clampedProgress = Math.min(Math.round(progress), 100)
+      setLoadingProgress(clampedProgress)
+
+      if (clampedProgress >= 100) {
+        clearInterval(interval)
+      }
+    }, stepInterval)
+
+    return () => clearInterval(interval)
+  }, [isCachedVisit, imagesLoaded])
 
   // Preload all frames with progress tracking
   useEffect(() => {
@@ -272,11 +299,16 @@ export default function Hero() {
     return () => window.removeEventListener('resize', handleResize)
   }, [imagesLoaded])
 
+  // Loading is complete when either:
+  // - Frames actually finished loading (first visit)
+  // - Fast animation completed for cached visit (progress reached 100%)
+  const isLoadingComplete = imagesLoaded || (isCachedVisit && loadingProgress >= 100)
+
   return (
     <>
-      {/* Loading Screen - only shown on first visit, skipped on subsequent visits */}
+      {/* Loading Screen - always shown on home page, completes quickly when cached */}
       {showLoadingScreen && (
-        <LoadingScreen progress={loadingProgress} isComplete={imagesLoaded} />
+        <LoadingScreen progress={loadingProgress} isComplete={isLoadingComplete} />
       )}
 
       <section ref={heroRef} data-hero-section="true" className={styles.hero}>
