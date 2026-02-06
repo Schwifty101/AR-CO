@@ -346,6 +346,15 @@ Complete database architecture with 20+ tables, Row-Level Security, comprehensiv
 - [ ] **5.4.1**: Create `apps/api/src/users/users.module.ts`
   - Register UsersService, UsersController
 
+### Sub-task 5.5: Frontend Users & Profiles (web)
+
+- [ ] **5.5.1**: Add users API client helpers in `apps/web/lib` (get profile, update profile, list users)
+- [ ] **5.5.2**: Create profile page for authenticated users (client + attorney + staff) under dashboards
+- [ ] **5.5.3**: Build profile edit form (full_name, phone_number, client/attorney fields)
+- [ ] **5.5.4**: Create admin/staff users list page with pagination/search in admin dashboard
+- [ ] **5.5.5**: Add loading, empty, and error states + toast feedback for profile updates
+- [ ] **5.5.6**: Update dashboard sidebar navigation to include Profile and Users links
+
 ---
 
 ## HEAD TASK 6: Clients Module
