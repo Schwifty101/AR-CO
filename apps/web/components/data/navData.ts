@@ -17,8 +17,8 @@ import { practiceAreas } from '@/app/(public)/practice-areas/practiceAreasData'
 export const NAV_ITEMS: INavItem[] = [
     { id: 'home', label: 'Home', href: '/', hasSubmenu: false },
     { id: 'team', label: 'Our Team', href: '/team', hasSubmenu: false },
-    { id: 'practice-areas', label: 'Practice Areas', href: '/practice-areas', hasSubmenu: true },
-    { id: 'facilitation', label: 'Facilitation Centre', href: '/facilitation', hasSubmenu: true },
+    { id: 'practice-areas', label: 'Practice Areas', href: '', hasSubmenu: true },
+    { id: 'facilitation', label: 'Facilitation Centre', href: '', hasSubmenu: true },
     { id: 'contact', label: 'Contact Us', href: '/contact', hasSubmenu: false },
 ]
 
@@ -31,8 +31,8 @@ export const SIDEPANEL_FOOTER_NAV_ITEMS: INavItem[] = [
     { id: 'team', label: 'Our Team', href: '/team', hasSubmenu: false },
     { id: 'about', label: 'About Us', href: '/about', hasSubmenu: false },
     { id: 'case-studies', label: 'Case Studies', href: '/case-studies', hasSubmenu: false },
-    { id: 'practice-areas', label: 'Practice Areas', href: '/practice-areas', hasSubmenu: true },
-    { id: 'facilitation', label: 'Facilitation Centre', href: '/facilitation', hasSubmenu: true },
+    { id: 'practice-areas', label: 'Practice Areas', href: '', hasSubmenu: true },
+    { id: 'facilitation', label: 'Facilitation Centre', href: '', hasSubmenu: true },
     { id: 'contact', label: 'Contact Us', href: '/contact', hasSubmenu: false },
     { id: 'blog', label: 'Blog', href: '/blog', hasSubmenu: false },
 ]
