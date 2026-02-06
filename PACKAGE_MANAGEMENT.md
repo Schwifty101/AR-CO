@@ -130,7 +130,7 @@ Ensure you're running commands from the monorepo root, not from individual app d
 ```json
 {
   "installCommand": "pnpm install --frozen-lockfile",
-  "buildCommand": "pnpm turbo run build --filter=my-v0-project"
+  "buildCommand": "pnpm turbo run build --filter=web"
 }
 ```
 
