@@ -398,26 +398,10 @@ const FullScreenMenu: React.FC<IFullScreenMenuProps> = ({ onClose, navItems, onO
                             onMouseLeave={() => (link.id === 'facilitation' || link.id === 'practice-areas') && setHoveredLink(null)}
                         >
                             <motion.div variants={linkVariants}>
-                                {link.id === 'practice-areas' ? (
-                                    <button
-                                        className={styles.menuLink}
-                                        onClick={() => {
-                                            onClose()
-                                            onOpenPracticeAreas()
-                                        }}
-                                    >
+                                {link.id === 'practice-areas' || link.id === 'facilitation' ? (
+                                    <span className={styles.menuLink}>
                                         <SlotMachineText>{link.label}</SlotMachineText>
-                                    </button>
-                                ) : link.id === 'facilitation' ? (
-                                    <button
-                                        className={styles.menuLink}
-                                        onClick={() => {
-                                            onClose()
-                                            onOpenFacilitation()
-                                        }}
-                                    >
-                                        <SlotMachineText>{link.label}</SlotMachineText>
-                                    </button>
+                                    </span>
                                 ) : (
                                     <Link
                                         href={link.href}
