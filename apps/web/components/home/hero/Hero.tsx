@@ -32,12 +32,16 @@ const logos = [
 
 const TOTAL_FRAMES = 772
 const FRAME_START = 1000
+const CLOUDINARY_CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'du5famewu'
+const INITIAL_LOAD_COUNT = 100 // Load first 100 images before showing content
 
-// Generate frame paths
+// Generate frame paths from Cloudinary
+// Images available: Web_image_01000 through Web_image_01517
 const getFramePath = (frameIndex: number) => {
   const frameNumber = FRAME_START + frameIndex
   const paddedNumber = String(frameNumber).padStart(5, '0')
-  return `/banner/frames/Web%20image%20${paddedNumber}.webp`
+  // f_auto = auto format, q_auto = auto quality optimization
+  return `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/image/upload/f_auto,q_auto/Web_image_${paddedNumber}`
 }
 
 const FRAMES_LOADED_KEY = 'arco_frames_loaded'
@@ -54,7 +58,8 @@ export default function Hero() {
   // Always start with loading screen to avoid hydration mismatch.
   // sessionStorage check happens in useEffect after hydration.
   const [showLoadingScreen, setShowLoadingScreen] = useState(true)
-  const [imagesLoaded, setImagesLoaded] = useState(false)
+  const [initialImagesLoaded, setInitialImagesLoaded] = useState(false) // First 100 images
+  const [allImagesLoaded, setAllImagesLoaded] = useState(false) // All 518 images
   const [loadingProgress, setLoadingProgress] = useState(0)
   // Track if this is a cached visit for fast animation (separate from skipping)
   const [isCachedVisit, setIsCachedVisit] = useState(false)
@@ -106,7 +111,7 @@ export default function Hero() {
   // Fast progress animation for cached visits (~1.5 seconds)
   // Browser will load images from cache while animation plays
   useEffect(() => {
-    if (!isCachedVisit || imagesLoaded) return
+    if (!isCachedVisit || initialImagesLoaded) return
 
     let progress = 0
     const targetDuration = 1500 // 1.5 seconds total
@@ -125,60 +130,85 @@ export default function Hero() {
     }, stepInterval)
 
     return () => clearInterval(interval)
-  }, [isCachedVisit, imagesLoaded])
+  }, [isCachedVisit, initialImagesLoaded])
 
-  // Preload all frames with progress tracking
+  // Preload frames: First 100 for initial load, then rest in background
   useEffect(() => {
     const loadImages = async () => {
-      const loadedImages: HTMLImageElement[] = []
+      const loadedImages: HTMLImageElement[] = new Array(TOTAL_FRAMES)
       let loadedCount = 0
 
-      // Load images one batch at a time for smoother progress
-      const batchSize = 10
+      // Helper to load a single image
+      const loadImage = (index: number): Promise<void> => {
+        return new Promise((resolve, reject) => {
+          const img = new window.Image()
+          img.onload = () => {
+            loadedImages[index] = img
+            loadedCount++
 
-      for (let i = 0; i < TOTAL_FRAMES; i += batchSize) {
-        const batch = []
-        for (let j = i; j < Math.min(i + batchSize, TOTAL_FRAMES); j++) {
-          const promise = new Promise<HTMLImageElement>((resolve, reject) => {
-            const img = new window.Image()
-            img.onload = () => {
-              loadedCount++
-              setLoadingProgress(Math.floor((loadedCount / TOTAL_FRAMES) * 100))
-              resolve(img)
+            // Update progress based on initial load count (first 100 images = 100%)
+            if (loadedCount <= INITIAL_LOAD_COUNT) {
+              setLoadingProgress(Math.floor((loadedCount / INITIAL_LOAD_COUNT) * 100))
             }
-            img.onerror = reject
-            img.src = getFramePath(j)
-          })
-          batch.push(promise)
-        }
 
+            // Mark initial load complete after first 100 images
+            if (loadedCount === INITIAL_LOAD_COUNT) {
+              imagesRef.current = loadedImages
+              setInitialImagesLoaded(true)
+
+              // Draw first frame
+              const canvas = canvasRef.current
+              if (canvas && loadedImages[0]) {
+                const ctx = canvas.getContext('2d')
+                if (ctx) {
+                  canvas.width = window.innerWidth
+                  canvas.height = window.innerHeight
+                  canvas.style.width = '100%'
+                  canvas.style.height = '100%'
+                  drawImageCover(ctx, loadedImages[0], canvas.width, canvas.height)
+                }
+              }
+            }
+
+            // Mark all images loaded
+            if (loadedCount === TOTAL_FRAMES) {
+              setAllImagesLoaded(true)
+              sessionStorage.setItem(FRAMES_LOADED_KEY, 'true')
+              console.log('✅ All frames loaded in background')
+            }
+
+            resolve()
+          }
+          img.onerror = () => {
+            console.error(`Failed to load frame ${index}`)
+            reject()
+          }
+          img.src = getFramePath(index)
+        })
+      }
+
+      // Load first 100 images sequentially in small batches for smooth progress
+      const batchSize = 5
+      for (let i = 0; i < INITIAL_LOAD_COUNT; i += batchSize) {
+        const batch = []
+        for (let j = i; j < Math.min(i + batchSize, INITIAL_LOAD_COUNT); j++) {
+          batch.push(loadImage(j))
+        }
         try {
-          const batchResults = await Promise.all(batch)
-          loadedImages.push(...batchResults)
+          await Promise.all(batch)
         } catch (error) {
-          console.error('Error loading frames:', error)
+          console.error('Error loading initial frames:', error)
         }
       }
 
-      imagesRef.current = loadedImages
-      setImagesLoaded(true)
+      // Load remaining images in background (fire and forget, no await between images)
+      console.log('🔄 Loading remaining frames in background...')
+      for (let i = INITIAL_LOAD_COUNT; i < TOTAL_FRAMES; i++) {
+        loadImage(i).catch(() => { }) // Fire and forget
 
-      // Mark frames as loaded in session storage for subsequent visits
-      sessionStorage.setItem(FRAMES_LOADED_KEY, 'true')
-
-      // Draw first frame with proper dimensions
-      const canvas = canvasRef.current
-      if (canvas && loadedImages[0]) {
-        const ctx = canvas.getContext('2d')
-        if (ctx) {
-          // Set canvas to viewport dimensions
-          canvas.width = window.innerWidth
-          canvas.height = window.innerHeight
-          canvas.style.width = '100%'
-          canvas.style.height = '100%'
-
-          // Draw first frame with proper aspect ratio
-          drawImageCover(ctx, loadedImages[0], canvas.width, canvas.height)
+        // Small delay every 20 images to avoid overwhelming the browser
+        if ((i - INITIAL_LOAD_COUNT) % 20 === 0) {
+          await new Promise(resolve => setTimeout(resolve, 10))
         }
       }
     }
@@ -227,7 +257,7 @@ export default function Hero() {
 
   // ScrollTrigger setup - direct frame rendering from smoothed scroll progress
   useGSAP(() => {
-    if (!heroRef.current || !stickyWrapperRef.current || !imagesLoaded) return
+    if (!heroRef.current || !stickyWrapperRef.current || !initialImagesLoaded) return
 
     const canvas = canvasRef.current
     const ctx = canvas?.getContext('2d')
@@ -272,11 +302,11 @@ export default function Hero() {
     return () => {
       ScrollTrigger.getAll().forEach(trigger => trigger.kill())
     }
-  }, [imagesLoaded])
+  }, [initialImagesLoaded])
 
   // Handle window resize to update canvas dimensions
   useEffect(() => {
-    if (!canvasRef.current || !imagesLoaded) return
+    if (!canvasRef.current || !initialImagesLoaded) return
 
     const handleResize = () => {
       const canvas = canvasRef.current
@@ -297,12 +327,12 @@ export default function Hero() {
 
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
-  }, [imagesLoaded])
+  }, [initialImagesLoaded])
 
   // Loading is complete when either:
-  // - Frames actually finished loading (first visit)
+  // - First 100 frames loaded (first visit)
   // - Fast animation completed for cached visit (progress reached 100%)
-  const isLoadingComplete = imagesLoaded || (isCachedVisit && loadingProgress >= 100)
+  const isLoadingComplete = initialImagesLoaded || (isCachedVisit && loadingProgress >= 100)
 
   return (
     <>
