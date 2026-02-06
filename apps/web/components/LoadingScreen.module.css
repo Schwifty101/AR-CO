@@ -3,7 +3,8 @@
   inset: 0;
   width: 100vw;
   height: 100vh;
-  height: 100dvh; /* Dynamic viewport height for mobile */
+  height: 100dvh;
+  /* Dynamic viewport height for mobile */
   background: #000;
   z-index: 9999;
   display: flex;
@@ -94,11 +95,11 @@
     bottom: 2rem;
     left: 2rem;
   }
-  
+
   .number {
     font-size: clamp(3rem, 15vw, 6rem);
   }
-  
+
   .percent {
     font-size: clamp(1.5rem, 5vw, 2.5rem);
   }
