@@ -32,7 +32,7 @@ The monorepo had inconsistent package manager usage:
 ```json
 {
   "installCommand": "pnpm install --frozen-lockfile",
-  "buildCommand": "pnpm turbo run build --filter=my-v0-project"
+  "buildCommand": "pnpm turbo run build --filter=web"
 }
 ```
 
@@ -41,7 +41,7 @@ The monorepo had inconsistent package manager usage:
 ```json
 {
   "installCommand": "pnpm install --frozen-lockfile",
-  "buildCommand": "pnpm turbo run build --filter=my-v0-project",
+  "buildCommand": "pnpm turbo run build --filter=web",
   "rewrites": [...]
 }
 ```
