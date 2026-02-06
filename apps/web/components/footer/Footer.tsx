@@ -145,7 +145,7 @@ export default function Footer() {
               {/* Placeholder for 4:3 image */}
               <Image
                 className='cursor-pointer'
-                src='/our_team/shoaib_razaq_footer.webp'
+                src='/our_team/Shoaib_Razaq_footer.webp'
                 alt="Shoaib Razaq"
                 fill
                 sizes="(max-width: 768px) 100vw, (max-width: 1024px) 360px, 25vw"
