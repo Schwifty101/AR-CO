@@ -4,6 +4,7 @@ import { Analytics } from "@vercel/analytics/next"
 import { AuthProvider } from "@/lib/auth/auth-context"
 import { PracticeAreasProvider } from "@/components/practice-areas"
 import PracticeAreasOverlayWrapper from "@/components/practice-areas/PracticeAreasOverlayWrapper"
+import { FacilitationProvider, FacilitationOverlayWrapper } from "@/components/facilitation"
 import "./globals.css"
 
 export const metadata: Metadata = {
@@ -50,8 +51,11 @@ export default function RootLayout({
       <body suppressHydrationWarning>
         <AuthProvider>
           <PracticeAreasProvider>
-            {children}
-            <PracticeAreasOverlayWrapper />
+            <FacilitationProvider>
+              {children}
+              <PracticeAreasOverlayWrapper />
+              <FacilitationOverlayWrapper />
+            </FacilitationProvider>
           </PracticeAreasProvider>
         </AuthProvider>
         <Analytics />

@@ -6,7 +6,10 @@
       "Bash(del \"c:\\\\Users\\\\abdul\\\\Desktop\\\\arco\\\\app\\\\AR-CO\\\\apps\\\\web\\\\app\\\\\\(public\\)\\\\practice-areas\\\\page.tsx\")",
       "Bash(find:*)",
       "Bash(cat:*)",
-      "Bash(pnpm tsc:*)"
+      "Bash(pnpm tsc:*)",
+      "Bash(ls:*)",
+      "Bash(grep:*)",
+      "Bash(pnpm --filter web tsc:*)"
     ]
   }
 }

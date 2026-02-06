@@ -14,6 +14,7 @@ import type { INavItem, INavCategory } from './types/nav.types'
 import styles from './Navigation.module.css'
 import SlotMachineText from "@/components/shared/animations/SlotMachineText"
 import { usePracticeAreasOverlay } from '../practice-areas'
+import { useFacilitationOverlay } from '../facilitation'
 
 // Register GSAP plugins
 if (typeof window !== 'undefined') {
@@ -129,9 +130,11 @@ interface IHeroNavbarProps {
     onMenuClick: () => void
     /** Handler to open practice areas overlay */
     onOpenPracticeAreas: () => void
+    /** Handler to open facilitation services overlay */
+    onOpenFacilitation: () => void
 }
 
-const HeroNavbar: React.FC<IHeroNavbarProps> = ({ isHidden, hasEntered, navItems, onMenuClick, onOpenPracticeAreas }) => {
+const HeroNavbar: React.FC<IHeroNavbarProps> = ({ isHidden, hasEntered, navItems, onMenuClick, onOpenPracticeAreas, onOpenFacilitation }) => {
     return (
         <motion.nav
             initial={{ y: "-100%", opacity: 0 }}
@@ -152,6 +155,14 @@ const HeroNavbar: React.FC<IHeroNavbarProps> = ({ isHidden, hasEntered, navItems
                             <button
                                 key={link.id}
                                 onClick={onOpenPracticeAreas}
+                                className={styles.navLink}
+                            >
+                                {link.label}
+                            </button>
+                        ) : link.id === 'facilitation' ? (
+                            <button
+                                key={link.id}
+                                onClick={onOpenFacilitation}
                                 className={styles.navLink}
                             >
                                 {link.label}
@@ -232,9 +243,11 @@ interface IFullScreenMenuProps {
     navItems: INavItem[]
     /** Handler to open practice areas overlay */
     onOpenPracticeAreas: () => void
+    /** Handler to open facilitation services overlay */
+    onOpenFacilitation: () => void
 }
 
-const FullScreenMenu: React.FC<IFullScreenMenuProps> = ({ onClose, navItems, onOpenPracticeAreas }) => {
+const FullScreenMenu: React.FC<IFullScreenMenuProps> = ({ onClose, navItems, onOpenPracticeAreas, onOpenFacilitation }) => {
     const [isMobile, setIsMobile] = useState(false)
     const [hoveredLink, setHoveredLink] = useState<string | null>(null)
     const [currentTime, setCurrentTime] = useState<string>('')
@@ -395,6 +408,16 @@ const FullScreenMenu: React.FC<IFullScreenMenuProps> = ({ onClose, navItems, onO
                                     >
                                         <SlotMachineText>{link.label}</SlotMachineText>
                                     </button>
+                                ) : link.id === 'facilitation' ? (
+                                    <button
+                                        className={styles.menuLink}
+                                        onClick={() => {
+                                            onClose()
+                                            onOpenFacilitation()
+                                        }}
+                                    >
+                                        <SlotMachineText>{link.label}</SlotMachineText>
+                                    </button>
                                 ) : (
                                     <Link
                                         href={link.href}
@@ -546,6 +569,7 @@ export default function Navigation() {
     // hasEntered is derived: true only when enteredPathname matches current pathname
     const [enteredPathname, setEnteredPathname] = useState<string | null>(null)
     const { openOverlay: openPracticeAreasOverlay } = usePracticeAreasOverlay()
+    const { openOverlay: openFacilitationOverlay } = useFacilitationOverlay()
     const pathname = usePathname()
 
     // Derived state: hasEntered is true when current pathname has completed entrance
@@ -652,6 +676,7 @@ export default function Navigation() {
                 navItems={NAV_ITEMS}
                 onMenuClick={handleMenuToggle}
                 onOpenPracticeAreas={openPracticeAreasOverlay}
+                onOpenFacilitation={openFacilitationOverlay}
             />
             <StickyNavbar
                 isVisible={isScrolled}
@@ -663,6 +688,7 @@ export default function Navigation() {
                         onClose={handleMenuClose}
                         navItems={SIDEPANEL_FOOTER_NAV_ITEMS}
                         onOpenPracticeAreas={openPracticeAreasOverlay}
+                        onOpenFacilitation={openFacilitationOverlay}
                     />
                 )}
             </AnimatePresence>

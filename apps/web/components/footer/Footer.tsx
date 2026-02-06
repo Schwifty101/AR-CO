@@ -8,6 +8,7 @@ import SlotMachineText from '../shared/animations/SlotMachineText'
 import { getSmoother } from '../SmoothScroll'
 import { SIDEPANEL_FOOTER_NAV_ITEMS } from '../data/navData'
 import { usePracticeAreasOverlay } from '../practice-areas'
+import { useFacilitationOverlay } from '../facilitation'
 import styles from './Footer.module.css'
 
 /**
@@ -25,6 +26,7 @@ export default function Footer() {
   const buttonRef = useRef<HTMLButtonElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const { openOverlay } = usePracticeAreasOverlay()
+  const { openOverlay: openFacilitationOverlay } = useFacilitationOverlay()
 
   /**
    * Calculates if the office is currently open
@@ -173,9 +175,27 @@ export default function Footer() {
               <ul className={styles.navList}>
                 {SIDEPANEL_FOOTER_NAV_ITEMS.map((link, index) => (
                   <li key={index} className={styles.navItem}>
-                    <Link href={link.href} className={styles.navLink}>
-                      <SlotMachineText>{link.label}</SlotMachineText>
-                    </Link>
+                    {link.id === 'practice-areas' ? (
+                      <button
+                        className={styles.navLink}
+                        onClick={openOverlay}
+                        aria-label="Open practice areas overlay"
+                      >
+                        <SlotMachineText>{link.label}</SlotMachineText>
+                      </button>
+                    ) : link.id === 'facilitation' ? (
+                      <button
+                        className={styles.navLink}
+                        onClick={openFacilitationOverlay}
+                        aria-label="Open facilitation services overlay"
+                      >
+                        <SlotMachineText>{link.label}</SlotMachineText>
+                      </button>
+                    ) : (
+                      <Link href={link.href} className={styles.navLink}>
+                        <SlotMachineText>{link.label}</SlotMachineText>
+                      </Link>
+                    )}
                   </li>
                 ))}
               </ul>

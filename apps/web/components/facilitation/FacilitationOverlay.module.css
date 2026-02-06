@@ -1,0 +1,30 @@
+/* Facilitation Overlay Styles */
+
+.categoryLink {
+  color: rgba(249, 248, 246, 0.75);
+  transition: color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  text-decoration: none;
+}
+
+.categoryLink:hover {
+  color: var(--heritage-gold);
+}
+
+.linkArrow {
+  opacity: 0;
+  transform: translateX(-8px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  color: var(--heritage-gold);
+  flex-shrink: 0;
+}
+
+.categoryLink:hover .linkArrow {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.categoryLink:focus-visible {
+  outline: 2px solid var(--heritage-gold);
+  outline-offset: 2px;
+  border-radius: 2px;
+}

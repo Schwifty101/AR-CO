@@ -148,6 +148,37 @@
   color: var(--heritage-gold);
 }
 
+/* Button reset for interactive nav items */
+button.navLink {
+  all: unset;
+  /* Re-apply all .navLink styles explicitly */
+  font-family: 'Cabinet Grotesk', sans-serif;
+  font-size: clamp(2.25rem, 4vw, 4rem);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  color: var(--heritage-cream);
+  text-decoration: none;
+  transition: color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: inline-block;
+  text-transform: uppercase;
+  max-width: 100%;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+  cursor: pointer;
+  text-align: left;
+}
+
+button.navLink:hover {
+  color: var(--heritage-gold);
+}
+
+button.navLink:focus-visible {
+  outline: 2px solid var(--heritage-gold);
+  outline-offset: 2px;
+}
+
 /* Practice Areas Section */
 .practiceAreasSection {
   margin-top: 2rem;
