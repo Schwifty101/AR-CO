@@ -1,6 +1,7 @@
 "use client"
 
 import SmoothScroll from "@/components/SmoothScroll"
+import ScrollRestoration from "@/components/ScrollRestoration"
 import Navigation from "@/components/nav/Navigation"
 import Footer from "@/components/footer/Footer"
 
@@ -13,6 +14,7 @@ export default function PublicLayout({
         <>
             <Navigation />
             <SmoothScroll>
+                <ScrollRestoration />
                 {children}
                 <Footer />
             </SmoothScroll>
