@@ -64,7 +64,6 @@ export default function FacilitationOverlay({ isOpen, onClose }: FacilitationOve
             overflowY: 'auto',
             overflowX: 'hidden',
             WebkitOverflowScrolling: 'touch',
-            height: '100vh',
             height: '100dvh',
             width: '100vw'
           }}
