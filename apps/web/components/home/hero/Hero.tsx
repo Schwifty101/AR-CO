@@ -31,7 +31,7 @@ const logos = [
 ]
 
 const TOTAL_FRAMES = 772
-const FRAME_START = 0o1
+const FRAME_START = 1000
 
 // Generate frame paths
 const getFramePath = (frameIndex: number) => {
