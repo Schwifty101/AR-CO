@@ -135,45 +135,60 @@ export const FACILITATION_DATA: INavSection = {
         {
             title: 'Business & Corporate',
             links: [
-                { label: 'NTN / STRN', href: '/facilitation/ntn-strn' },
-                { label: 'SECP Registration', href: '/facilitation/secp-registration' },
-                { label: 'Partnership Deeds', href: '/facilitation/partnership-deeds' },
-                { label: 'Agreements', href: '/facilitation/agreements' },
-                { label: 'Bank Documents', href: '/facilitation/bank-documents' },
+                { label: 'NTN Registration', href: '/facilitation-service/ntn-registration' },
+                { label: 'Sales Tax Registration (STRN)', href: '/facilitation-service/sales-tax-registration' },
+                { label: 'SECP Registration', href: '/facilitation-service/secp-registration' },
+                { label: 'Agreement Drafting', href: '/facilitation-service/agreement-drafting' },
+                { label: 'Import / Export License', href: '/facilitation-service/import-export-license' },
+                { label: 'Chamber of Commerce Registration', href: '/facilitation-service/chamber-of-commerce-registration' },
             ]
         },
         {
-            title: 'Compliance Certificates',
+            title: 'Compliance & Licensing',
             links: [
-                { label: 'AML / CFT Certificate', href: '/facilitation/aml-cft' },
-                { label: 'Food Authority Licensing', href: '/facilitation/food-authority' },
-                { label: 'Environmental Clearance', href: '/facilitation/environmental' },
-                { label: 'Fire Compliance', href: '/facilitation/fire-compliance' },
-                { label: 'Labour Registration', href: '/facilitation/labour' },
+                { label: 'Food Authority License', href: '/facilitation-service/pakistan-food-authority-license' },
+                { label: 'DRAP Licensing', href: '/facilitation-service/drap-licensing' },
+                { label: 'IHRA Registration', href: '/facilitation-service/ihra-registration' },
+                { label: 'IP Registration (Trademark)', href: '/facilitation-service/ip-registration-trademark' },
+                { label: 'TV Channel Registration', href: '/facilitation-service/tv-channel-registration' },
+                { label: 'Restaurant License', href: '/facilitation-service/restaurant-license-registration' },
             ]
         },
         {
-            title: 'Real Estate Documentation',
+            title: 'Real Estate & Property',
             links: [
-                { label: 'Property Transfer', href: '/facilitation/property-transfer' },
-                { label: 'Fard Verification', href: '/facilitation/fard-verification' },
-                { label: 'Rent Agreements', href: '/facilitation/rent-agreements' },
+                { label: 'Property Transfer', href: '/facilitation-service/property-transfer' },
+                { label: 'Tax Filing', href: '/facilitation-service/tax-filing' },
             ]
         },
         {
             title: 'Personal Certificates',
             links: [
-                { label: 'Character Certificate', href: '/facilitation/character-certificate' },
-                { label: 'Succession Certificate', href: '/facilitation/succession-certificate' },
+                { label: 'Succession Certificate', href: '/facilitation-service/succession-certificate' },
+                { label: 'Family Registration Certificate', href: '/facilitation-service/family-registration-certificate' },
+                { label: 'Child Registration (B-Form)', href: '/facilitation-service/child-registration-certificate-b-form' },
             ]
         },
         {
             title: "Women's Legal Desk",
             highlight: true,
             links: [
-                { label: 'Khula / Divorce', href: '/facilitation/khula-divorce' },
-                { label: 'Harassment Complaints', href: '/facilitation/harassment' },
-                { label: 'Inheritance Documentation', href: '/facilitation/inheritance' },
+                { label: 'Harassment Cases', href: '/facilitation-service/harassment-cases' },
+                { label: 'Family Law (Divorce, Custody)', href: '/facilitation-service/family-law-divorce-custody-maintenance' },
+                { label: 'Inheritance & Succession', href: '/facilitation-service/inheritance-succession-matters' },
+            ]
+        },
+        {
+            title: 'Overseas Pakistanis',
+            highlight: true,
+            links: [
+                { label: 'Property Verification & Due Diligence', href: '/facilitation-service/property-verification-due-diligence' },
+                { label: 'Sale, Purchase & Transfer of Property', href: '/facilitation-service/sale-purchase-transfer-property' },
+                { label: 'Property Disputes & Illegal Possession', href: '/facilitation-service/property-disputes-illegal-possession' },
+                { label: 'Power of Attorney (POA) Services', href: '/facilitation-service/power-of-attorney-services' },
+                { label: 'Family Law (Divorce, Custody, Maintenance)', href: '/facilitation-service/family-law-divorce-custody-maintenance' },
+                { label: 'Inheritance & Succession Matters', href: '/facilitation-service/inheritance-succession-matters' },
+                { label: 'Civil Litigation & Court Representation', href: '/facilitation-service/civil-litigation-court-representation' },
             ]
         },
     ]

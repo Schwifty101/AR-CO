@@ -9,7 +9,9 @@
       "Bash(pnpm tsc:*)",
       "Bash(ls:*)",
       "Bash(grep:*)",
-      "Bash(pnpm --filter web tsc:*)"
+      "Bash(pnpm --filter web tsc:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npx next build:*)"
     ]
   }
 }
