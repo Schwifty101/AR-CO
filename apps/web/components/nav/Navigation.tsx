@@ -132,9 +132,11 @@ interface IHeroNavbarProps {
     onOpenPracticeAreas: () => void
     /** Handler to open facilitation services overlay */
     onOpenFacilitation: () => void
+    /** Whether to hide the CTA button */
+    hideCta?: boolean
 }
 
-const HeroNavbar: React.FC<IHeroNavbarProps> = ({ isHidden, hasEntered, navItems, onMenuClick, onOpenPracticeAreas, onOpenFacilitation }) => {
+const HeroNavbar: React.FC<IHeroNavbarProps> = ({ isHidden, hasEntered, navItems, onMenuClick, onOpenPracticeAreas, onOpenFacilitation, hideCta }) => {
     return (
         <motion.nav
             initial={{ y: "-100%", opacity: 0 }}
@@ -180,9 +182,11 @@ const HeroNavbar: React.FC<IHeroNavbarProps> = ({ isHidden, hasEntered, navItems
                 </div>
 
                 {/* Right CTA - Desktop Only */}
-                <div className="hidden lg:block">
-                    <CtaButton variant="outline" />
-                </div>
+                {!hideCta && (
+                    <div className="hidden lg:block">
+                        <CtaButton variant="outline" />
+                    </div>
+                )}
 
                 {/* Mobile Menu Indicator - shows on smaller screens */}
                 <button
@@ -204,9 +208,11 @@ interface IStickyNavbarProps {
     isVisible: boolean
     /** Handler for menu button click */
     onMenuClick: () => void
+    /** Whether to hide the CTA button */
+    hideCta?: boolean
 }
 
-const StickyNavbar: React.FC<IStickyNavbarProps> = ({ isVisible, onMenuClick }) => {
+const StickyNavbar: React.FC<IStickyNavbarProps> = ({ isVisible, onMenuClick, hideCta }) => {
     return (
         <motion.div
             initial={{ y: "-100%", opacity: 0 }}
@@ -217,9 +223,11 @@ const StickyNavbar: React.FC<IStickyNavbarProps> = ({ isVisible, onMenuClick }) 
             transition={{ ...TRANSITION_SMOOTH, duration: 0.5 }}
             className={styles.stickyNavbar}
         >
-            <div className={`${styles.stickyContent} hidden md:block`}>
-                <CtaButton variant="filled" />
-            </div>
+            {!hideCta && (
+                <div className={`${styles.stickyContent} hidden md:block`}>
+                    <CtaButton variant="filled" />
+                </div>
+            )}
 
             <motion.button
                 onClick={onMenuClick}
@@ -652,6 +660,8 @@ export default function Navigation() {
         }
     }, [pathname])
 
+    const hideCta = pathname.startsWith('/facilitation-service/')
+
     return (
         <header>
             <HeroNavbar
@@ -661,10 +671,12 @@ export default function Navigation() {
                 onMenuClick={handleMenuToggle}
                 onOpenPracticeAreas={openPracticeAreasOverlay}
                 onOpenFacilitation={openFacilitationOverlay}
+                hideCta={hideCta}
             />
             <StickyNavbar
                 isVisible={isScrolled}
                 onMenuClick={handleMenuToggle}
+                hideCta={hideCta}
             />
             <AnimatePresence mode="wait">
                 {isMenuOpen && (

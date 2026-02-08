@@ -119,7 +119,9 @@ export default function FacilitationOverlay({ isOpen, onClose }: FacilitationOve
               transition={{ delay: 0.5, duration: 0.6 }}
               className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-8 md:gap-y-10"
             >
-              {FACILITATION_DATA.categories.map((category, categoryIndex) => (
+              {FACILITATION_DATA.categories
+                .filter((category) => category.title !== 'Overseas Pakistanis')
+                .map((category, categoryIndex) => (
                 <motion.div
                   key={category.title}
                   initial={{ opacity: 0, y: 20 }}
@@ -176,6 +178,104 @@ export default function FacilitationOverlay({ isOpen, onClose }: FacilitationOve
                 </motion.div>
               ))}
             </motion.div>
+
+            {/* Overseas Pakistanis Section - Full Width with Two Columns */}
+            {(() => {
+              const overseasCategory = FACILITATION_DATA.categories.find(
+                (c) => c.title === 'Overseas Pakistanis'
+              )
+              if (!overseasCategory) return null
+              const midpoint = Math.ceil(overseasCategory.links.length / 2)
+              const leftColumn = overseasCategory.links.slice(0, midpoint)
+              const rightColumn = overseasCategory.links.slice(midpoint)
+              const baseIndex = FACILITATION_DATA.categories.length - 1
+
+              return (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.7, duration: 0.5 }}
+                  className="mt-8 md:mt-10 border-t pt-6"
+                  style={{ borderColor: 'rgba(249, 248, 246, 0.15)' }}
+                >
+                  <h3
+                    className="text-xl md:text-2xl font-semibold mb-5 flex items-center gap-2"
+                    style={{ color: 'var(--heritage-gold)' }}
+                  >
+                    {overseasCategory.title}
+                    <span style={{ color: 'var(--heritage-gold)' }}>★</span>
+                  </h3>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6">
+                    {/* Left Column */}
+                    <ul className="space-y-2.5">
+                      {leftColumn.map((link, linkIndex) => (
+                        <motion.li
+                          key={link.href}
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{
+                            delay: 0.8 + linkIndex * 0.03,
+                            duration: 0.3
+                          }}
+                        >
+                          <Link
+                            href={link.href}
+                            onClick={onClose}
+                            className={`${styles.categoryLink} flex items-center justify-between py-1.5`}
+                          >
+                            <span className="text-sm md:text-base">
+                              {link.label}
+                            </span>
+                            <svg
+                              className={`${styles.linkArrow} w-4 h-4`}
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                            </svg>
+                          </Link>
+                        </motion.li>
+                      ))}
+                    </ul>
+
+                    {/* Right Column */}
+                    <ul className="space-y-2.5">
+                      {rightColumn.map((link, linkIndex) => (
+                        <motion.li
+                          key={link.href}
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{
+                            delay: 0.8 + (midpoint + linkIndex) * 0.03,
+                            duration: 0.3
+                          }}
+                        >
+                          <Link
+                            href={link.href}
+                            onClick={onClose}
+                            className={`${styles.categoryLink} flex items-center justify-between py-1.5`}
+                          >
+                            <span className="text-sm md:text-base">
+                              {link.label}
+                            </span>
+                            <svg
+                              className={`${styles.linkArrow} w-4 h-4`}
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                            </svg>
+                          </Link>
+                        </motion.li>
+                      ))}
+                    </ul>
+                  </div>
+                </motion.div>
+              )
+            })()}
 
             {/* Bottom Decorative Line */}
             <motion.div
