@@ -35,6 +35,9 @@ importers:
       '@nestjs/platform-express':
         specifier: ^11.0.1
         version: 11.1.12(@nestjs/common@11.1.12(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.12)
+      '@repo/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
       '@sendgrid/mail':
         specifier: ^8.1.6
         version: 8.1.6
@@ -56,12 +59,6 @@ importers:
       bcrypt:
         specifier: ^6.0.0
         version: 6.0.0
-      class-transformer:
-        specifier: ^0.5.1
-        version: 0.5.1
-      class-validator:
-        specifier: ^0.14.3
-        version: 0.14.3
       dayjs:
         specifier: ^1.11.19
         version: 1.11.19
@@ -92,6 +89,9 @@ importers:
       winston:
         specifier: ^3.19.0
         version: 3.19.0
+      zod:
+        specifier: 3.25.76
+        version: 3.25.76
     devDependencies:
       '@eslint/eslintrc':
         specifier: ^3.2.0
@@ -255,6 +255,9 @@ importers:
       '@radix-ui/react-tooltip':
         specifier: 1.1.6
         version: 1.1.6(@types/react-dom@19.2.3(@types/react@19.2.10))(@types/react@19.2.10)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      '@repo/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
       '@supabase/ssr':
         specifier: ^0.8.0
         version: 0.8.0(@supabase/supabase-js@2.93.3)
@@ -368,22 +371,14 @@ importers:
         specifier: ^5
         version: 5.9.3
 
-  packages/ui:
+  packages/shared:
+    dependencies:
+      zod:
+        specifier: 3.25.76
+        version: 3.25.76
     devDependencies:
-      '@types/react':
-        specifier: ^19.0.0
-        version: 19.2.10
-      '@types/react-dom':
-        specifier: ^19.0.0
-        version: 19.2.3(@types/react@19.2.10)
-      eslint:
-        specifier: ^9.0.0
-        version: 9.39.2(jiti@2.6.1)
-      react:
-        specifier: ^19.0.0
-        version: 19.2.0
       typescript:
-        specifier: ^5.0.0
+        specifier: ^5.7.3
         version: 5.9.3
 
 packages:
@@ -7786,7 +7781,8 @@ snapshots:
 
   '@types/triple-beam@1.3.5': {}
 
-  '@types/validator@13.15.10': {}
+  '@types/validator@13.15.10':
+    optional: true
 
   '@types/ws@8.18.1':
     dependencies:
@@ -8417,13 +8413,15 @@ snapshots:
 
   cjs-module-lexer@2.2.0: {}
 
-  class-transformer@0.5.1: {}
+  class-transformer@0.5.1:
+    optional: true
 
   class-validator@0.14.3:
     dependencies:
       '@types/validator': 13.15.10
       libphonenumber-js: 1.12.36
       validator: 13.15.26
+    optional: true
 
   class-variance-authority@0.7.1:
     dependencies:
@@ -10093,7 +10091,8 @@ snapshots:
       prelude-ls: 1.2.1
       type-check: 0.4.0
 
-  libphonenumber-js@1.12.36: {}
+  libphonenumber-js@1.12.36:
+    optional: true
 
   lightningcss-android-arm64@1.30.2:
     optional: true
@@ -11487,7 +11486,8 @@ snapshots:
       '@types/istanbul-lib-coverage': 2.0.6
       convert-source-map: 2.0.0
 
-  validator@13.15.26: {}
+  validator@13.15.26:
+    optional: true
 
   vary@1.1.2: {}
 

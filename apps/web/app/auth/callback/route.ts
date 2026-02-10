@@ -4,6 +4,7 @@
  * Processes the OAuth redirect from Supabase/Google.
  * Exchanges the auth code for a session, then notifies the backend
  * to create/fetch the user profile and determine the user type.
+ * Falls back to querying user_profiles directly if backend is unavailable.
  *
  * @module OAuthCallbackRoute
  *
@@ -34,7 +35,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(`${origin}/auth/signin?error=exchange_failed`);
   }
 
-  // Notify backend to create/fetch profile and determine user type
+  // 1. Try backend call first (creates profile if needed + logs event)
+  let userType: string | null = null;
   try {
     const backendUrl =
       process.env.API_BACKEND_URL || 'http://localhost:4000';
@@ -52,18 +54,29 @@ export async function GET(request: NextRequest) {
       const data = (await response.json()) as {
         user: { userType: string };
       };
-
-      const dashboard =
-        data.user.userType === 'admin' || data.user.userType === 'staff'
-          ? '/admin/dashboard'
-          : '/client/dashboard';
-
-      return NextResponse.redirect(`${origin}${dashboard}`);
+      userType = data.user.userType;
+    } else {
+      console.error('[OAuth Callback] Backend returned:', response.status);
     }
-  } catch {
-    // If backend call fails, redirect to a default dashboard
+  } catch (err) {
+    console.error('[OAuth Callback] Backend call failed:', err);
   }
 
-  // Fallback: redirect to client dashboard
-  return NextResponse.redirect(`${origin}/client/dashboard`);
+  // 2. Fallback: check user_profiles directly via Supabase
+  if (!userType) {
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('user_type')
+      .eq('id', sessionData.user.id)
+      .single();
+    userType = (profile as { user_type: string } | null)?.user_type ?? null;
+  }
+
+  // 3. Redirect based on userType
+  const dashboard =
+    userType === 'admin' || userType === 'staff'
+      ? '/admin/dashboard'
+      : '/client/dashboard';
+
+  return NextResponse.redirect(`${origin}${dashboard}`);
 }

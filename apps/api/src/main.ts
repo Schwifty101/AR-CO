@@ -1,6 +1,5 @@
 import { NestFactory, Reflector } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
-import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { SupabaseExceptionFilter } from './common/filters/supabase-exception.filter';
@@ -20,15 +19,6 @@ async function bootstrap() {
   const reflector = app.get(Reflector);
   const supabaseService = app.get(SupabaseService);
   const adminWhitelistService = app.get(AdminWhitelistService);
-
-  // Register global validation pipe
-  app.useGlobalPipes(
-    new ValidationPipe({
-      whitelist: true,
-      forbidNonWhitelisted: true,
-      transform: true,
-    }),
-  );
 
   // Register global exception filters
   app.useGlobalFilters(

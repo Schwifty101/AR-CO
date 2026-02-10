@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-enum-comparison */
 /**
  * Supabase Service
  *
@@ -93,21 +94,15 @@ export class SupabaseService {
    */
 
   getClient(accessToken?: string): SupabaseClient<any, 'public', any> {
-    const client = createClient(this.supabaseUrl, this.supabaseAnonKey, {
+    return createClient(this.supabaseUrl, this.supabaseAnonKey, {
       auth: {
         persistSession: false,
         autoRefreshToken: false,
       },
+      global: {
+        headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {},
+      },
     });
-
-    if (accessToken) {
-      void client.auth.setSession({
-        access_token: accessToken,
-        refresh_token: '',
-      });
-    }
-
-    return client;
   }
 
   /**
@@ -169,7 +164,7 @@ export class SupabaseService {
    */
   async getUserFromToken(accessToken: string): Promise<AuthUser> {
     try {
-      const client = this.getClient();
+      const client = this.getClient(accessToken);
 
       // Validate JWT with Supabase Auth
       const {
@@ -215,7 +210,9 @@ export class SupabaseService {
           .eq('user_profile_id', authUser.id)
           .single();
         if (clientProfile) {
-          authenticatedUser.clientProfileId = (clientProfile as { id: string }).id;
+          authenticatedUser.clientProfileId = (
+            clientProfile as { id: string }
+          ).id;
         }
       }
 

@@ -19,31 +19,30 @@ Complete database architecture with 20+ tables, Row-Level Security, comprehensiv
 
 ### Sub-task 1.1: Install Dependencies
 
-- [X] **1.1.1**: Install Supabase client (`@supabase/supabase-js`)
-- [X] **1.1.2**: Install validation packages (`class-validator`, `class-transformer`, `joi`)
-- [X] 
-      **1.1.3**: Install authentication packages (`@nestjs/passport`, `passport`, `passport-jwt`, `@nestjs/jwt`)
-- [X] **1.1.4**: Install security packages (`bcrypt`, `@types/bcrypt`)
-- [X] **1.1.5**: Install file upload packages (`multer`, `@types/multer`, `@nestjs/platform-express`)
-- [X] **1.1.6**: Install utility packages (`axios`, `dayjs`, `uuid`)
-- [X] **1.1.7**: Install email service packages (`@sendgrid/mail`)
-- [X] **1.1.8**: Install logging packages (`winston`, `nest-winston`)
+- [x] **1.1.1**: Install Supabase client (`@supabase/supabase-js`)
+- [x] **1.1.2**: Install validation packages (`class-validator`, `class-transformer`, `joi`)
+- [x]     **1.1.3**: Install authentication packages (`@nestjs/passport`, `passport`, `passport-jwt`, `@nestjs/jwt`)
+- [x] **1.1.4**: Install security packages (`bcrypt`, `@types/bcrypt`)
+- [x] **1.1.5**: Install file upload packages (`multer`, `@types/multer`, `@nestjs/platform-express`)
+- [x] **1.1.6**: Install utility packages (`axios`, `dayjs`, `uuid`)
+- [x] **1.1.7**: Install email service packages (`@sendgrid/mail`)
+- [x] **1.1.8**: Install logging packages (`winston`, `nest-winston`)
 
 ### Sub-task 1.2: Create Environment Configuration
 
-- [X] **1.2.1**: Create `.env` file with Supabase credentials (URL, anon key, service role key)
-- [X] **1.2.2**: Add JWT configuration (secret, access token expiration, refresh token expiration)
-- [X] **1.2.3**: Add Safepay configuration (API key, environment, webhook secret)
-- [X] **1.2.4**: Add email service configuration (SendGrid API key, from email)
-- [X] **1.2.5**: Add application configuration (PORT, NODE_ENV, CORS origins)
-- [X] **1.2.6**: Create `.env.example` template file
+- [x] **1.2.1**: Create `.env` file with Supabase credentials (URL, anon key, service role key)
+- [x] **1.2.2**: Add JWT configuration (secret, access token expiration, refresh token expiration)
+- [x] **1.2.3**: Add Safepay configuration (API key, environment, webhook secret)
+- [x] **1.2.4**: Add email service configuration (SendGrid API key, from email)
+- [x] **1.2.5**: Add application configuration (PORT, NODE_ENV, CORS origins)
+- [x] **1.2.6**: Create `.env.example` template file
 
 ### Sub-task 1.3: Setup Configuration Module
 
-- [X] **1.3.1**: Create `apps/api/src/config/configuration.ts` with typed config object
-- [X] **1.3.2**: Create `apps/api/src/config/validation.schema.ts` with Joi validation schema
-- [X] **1.3.3**: Create `apps/api/src/config/config.module.ts` using NestJS ConfigModule
-- [X] **1.3.4**: Import ConfigModule in `apps/api/src/app.module.ts`
+- [x] **1.3.1**: Create `apps/api/src/config/configuration.ts` with typed config object
+- [x] **1.3.2**: Create `apps/api/src/config/validation.schema.ts` with Joi validation schema
+- [x] **1.3.3**: Create `apps/api/src/config/config.module.ts` using NestJS ConfigModule
+- [x] **1.3.4**: Import ConfigModule in `apps/api/src/app.module.ts`
 
 ---
 
@@ -51,114 +50,114 @@ Complete database architecture with 20+ tables, Row-Level Security, comprehensiv
 
 ### Sub-task 2.1: Create User Management Tables
 
-- [X] **2.1.1**: Create `user_profiles` table (extends Supabase auth.users)
+- [x] **2.1.1**: Create `user_profiles` table (extends Supabase auth.users)
   - Columns: id (uuid, FK to auth.users), full_name, phone_number, user_type (enum), created_at, updated_at
-- [X] **2.1.2**: Create `client_profiles` table with company info
+- [x] **2.1.2**: Create `client_profiles` table with company info
   - Columns: id (uuid), user_profile_id (FK), company_name, company_type, tax_id, address, city, country, created_at, updated_at
-- [X] **2.1.3**: Create `attorney_profiles` table with specializations
+- [x] **2.1.3**: Create `attorney_profiles` table with specializations
   - Columns: id (uuid), user_profile_id (FK), bar_number, specializations (text[]), education, experience_years, hourly_rate, created_at, updated_at
 
 ### Sub-task 2.2: Create Core Business Tables
 
-- [X] **2.2.1**: Create `practice_areas` table
+- [x] **2.2.1**: Create `practice_areas` table
   - Columns: id (uuid), name, slug, description, icon, is_active, created_at, updated_at
-- [X] **2.2.2**: Create `services` table
+- [x] **2.2.2**: Create `services` table
   - Columns: id (uuid), practice_area_id (FK), name, slug, description, base_fee, estimated_duration, is_active, created_at, updated_at
-- [X] **2.2.3**: Create `cases` table with case_number auto-generation
+- [x] **2.2.3**: Create `cases` table with case_number auto-generation
   - Columns: id (uuid), case_number (auto-generated, unique), client_profile_id (FK), attorney_profile_id (FK), practice_area_id (FK), service_id (FK), title, description, status (enum), priority (enum), case_type, filing_date, closing_date, created_at, updated_at
-- [X] **2.2.4**: Create `case_activities` table for timeline
+- [x] **2.2.4**: Create `case_activities` table for timeline
   - Columns: id (uuid), case_id (FK), activity_type (enum), title, description, created_by (FK to user_profiles), attachments (jsonb), created_at
 
 ### Sub-task 2.3: Create Appointment Tables
 
-- [X] **2.3.1**: Create `appointments` table with double-booking prevention
+- [x] **2.3.1**: Create `appointments` table with double-booking prevention
   - Columns: id (uuid), client_profile_id (FK), attorney_profile_id (FK), appointment_date, start_time, end_time, duration_minutes, appointment_type (enum), status (enum), subject, notes, meeting_link, created_at, updated_at
   - Unique constraint: (attorney_profile_id, appointment_date, start_time) to prevent double-booking
-- [X] **2.3.2**: Create `availability_slots` table for attorney scheduling
+- [x] **2.3.2**: Create `availability_slots` table for attorney scheduling
   - Columns: id (uuid), attorney_profile_id (FK), day_of_week (int), start_time, end_time, is_available, created_at, updated_at
 
 ### Sub-task 2.4: Create Financial Tables
 
-- [X] **2.4.1**: Create `invoices` table with auto invoice_number
+- [x] **2.4.1**: Create `invoices` table with auto invoice_number
   - Columns: id (uuid), invoice_number (auto-generated), client_profile_id (FK), case_id (FK, optional), issue_date, due_date, subtotal, tax_amount, discount_amount, total_amount, status (enum), payment_terms, notes, created_at, updated_at
-- [X] **2.4.2**: Create `invoice_items` table
+- [x] **2.4.2**: Create `invoice_items` table
   - Columns: id (uuid), invoice_id (FK), description, quantity, unit_price, amount, created_at
-- [X] **2.4.3**: Create `payments` table with Safepay integration
+- [x] **2.4.3**: Create `payments` table with Safepay integration
   - Columns: id (uuid), invoice_id (FK), client_profile_id (FK), amount, payment_method (enum), safepay_transaction_id, safepay_tracker_id, status (enum), payment_date, metadata (jsonb), created_at, updated_at
 
 ### Sub-task 2.5: Create Document Tables
 
-- [X] **2.5.1**: Create `documents` table with encryption metadata
+- [x] **2.5.1**: Create `documents` table with encryption metadata
   - Columns: id (uuid), name, description, file_path (Supabase Storage path), file_size, file_type, uploaded_by (FK to user_profiles), case_id (FK, optional), client_profile_id (FK, optional), document_type (enum), is_encrypted, encryption_metadata (jsonb), created_at, updated_at
 
 ### Sub-task 2.6: Create Content Tables
 
-- [X] **2.6.1**: Create `blog_categories` table
+- [x] **2.6.1**: Create `blog_categories` table
   - Columns: id (uuid), name, slug, description, created_at, updated_at
-- [X] **2.6.2**: Create `blog_posts` table
+- [x] **2.6.2**: Create `blog_posts` table
   - Columns: id (uuid), title, slug, excerpt, content, featured_image, author_id (FK to user_profiles), category_id (FK), status (enum), published_at, view_count, created_at, updated_at
-- [X] **2.6.3**: Create `testimonials` table
+- [x] **2.6.3**: Create `testimonials` table
   - Columns: id (uuid), client_profile_id (FK), content, rating (int), is_approved, approved_by (FK to user_profiles), approved_at, created_at, updated_at
-- [X] **2.6.4**: Create `legal_news` table for news ticker
+- [x] **2.6.4**: Create `legal_news` table for news ticker
   - Columns: id (uuid), title, source, url, published_at, created_at
 
 ### Sub-task 2.7: Create Admin & Tracking Tables
 
-- [X] **2.7.1**: Create `client_interactions` table for CRM
+- [x] **2.7.1**: Create `client_interactions` table for CRM
   - Columns: id (uuid), client_profile_id (FK), staff_user_id (FK to user_profiles), interaction_type (enum), subject, notes, scheduled_at, completed_at, created_at, updated_at
-- [X] **2.7.2**: Create `activity_logs` table for audit trail
+- [x] **2.7.2**: Create `activity_logs` table for audit trail
   - Columns: id (uuid), user_id (FK to user_profiles), action, entity_type, entity_id, metadata (jsonb), ip_address, user_agent, created_at
 
 ### Sub-task 2.8: Create Private Schema Utility Functions
 
-- [X] **2.8.1**: Create `private.get_user_type(user_id uuid)` function
+- [x] **2.8.1**: Create `private.get_user_type(user_id uuid)` function
   - Returns user_type from user_profiles table
-- [X] **2.8.2**: Create `private.is_admin(user_id uuid)` function
+- [x] **2.8.2**: Create `private.is_admin(user_id uuid)` function
   - Returns boolean, checks if user_type = 'admin'
-- [X] **2.8.3**: Create `private.is_staff(user_id uuid)` function
+- [x] **2.8.3**: Create `private.is_staff(user_id uuid)` function
   - Returns boolean, checks if user_type IN ('admin', 'attorney', 'staff')
-- [X] **2.8.4**: Create `private.get_client_profile_id(user_id uuid)` function
+- [x] **2.8.4**: Create `private.get_client_profile_id(user_id uuid)` function
   - Returns client_profile_id for given user_id
-- [X] **2.8.5**: Create `private.get_attorney_profile_id(user_id uuid)` function
+- [x] **2.8.5**: Create `private.get_attorney_profile_id(user_id uuid)` function
   - Returns attorney_profile_id for given user_id
-- [X] **2.8.6**: Test all utility functions with sample data
+- [x] **2.8.6**: Test all utility functions with sample data
 
 ### Sub-task 2.9: Apply RLS Policies
 
-- [X] **2.9.1**: Enable RLS on all tables
-- [X] **2.9.2**: Create RLS policies for `user_profiles`
+- [x] **2.9.1**: Enable RLS on all tables
+- [x] **2.9.2**: Create RLS policies for `user_profiles`
   - Users can read their own profile
   - Staff can read all profiles
   - Users can update their own profile
   - Admin can update any profile
-- [X] **2.9.3**: Create RLS policies for `client_profiles`
+- [x] **2.9.3**: Create RLS policies for `client_profiles`
   - Clients can read their own profile
   - Staff can read all client profiles
   - Staff can update client profiles
-- [X] **2.9.4**: Create RLS policies for `attorney_profiles`
+- [x] **2.9.4**: Create RLS policies for `attorney_profiles`
   - Attorneys can read their own profile
   - Staff can read all attorney profiles
   - Admin can update attorney profiles
-- [X] **2.9.5**: Create RLS policies for `cases`
+- [x] **2.9.5**: Create RLS policies for `cases`
   - Clients can read their own cases
   - Attorneys can read cases assigned to them
   - Staff can read all cases
   - Staff can create/update/delete cases
-- [X] **2.9.6**: Create RLS policies for `documents`
+- [x] **2.9.6**: Create RLS policies for `documents`
   - Clients can read documents linked to their cases/profile
   - Attorneys can read documents for assigned cases
   - Staff can read all documents
   - Document uploader and staff can delete documents
-- [X] **2.9.7**: Create RLS policies for `appointments`
+- [x] **2.9.7**: Create RLS policies for `appointments`
   - Clients can read their own appointments
   - Attorneys can read their assigned appointments
   - Staff can read all appointments
   - Staff can create/update appointments
-- [X] **2.9.8**: Create RLS policies for `invoices` and `payments`
+- [x] **2.9.8**: Create RLS policies for `invoices` and `payments`
   - Clients can read their own invoices/payments
   - Staff can read all invoices/payments
   - Staff can create/update invoices
-- [X] **2.9.9**: Create RLS policies for content tables (blog_posts, testimonials)
+- [x] **2.9.9**: Create RLS policies for content tables (blog_posts, testimonials)
   - All users can read published blog posts
   - Staff can create/update blog posts
   - Clients can submit testimonials
@@ -166,16 +165,16 @@ Complete database architecture with 20+ tables, Row-Level Security, comprehensiv
 
 ### Sub-task 2.10: Create Database Triggers
 
-- [X] **2.10.1**: Create `generate_case_number()` trigger function
+- [x] **2.10.1**: Create `generate_case_number()` trigger function
   - Format: "CASE-YYYY-NNNN" (e.g., CASE-2025-0001)
   - Auto-increment per year
-- [X] **2.10.2**: Apply case_number trigger to `cases` table
-- [X] **2.10.3**: Create `generate_invoice_number()` trigger function
+- [x] **2.10.2**: Apply case_number trigger to `cases` table
+- [x] **2.10.3**: Create `generate_invoice_number()` trigger function
   - Format: "INV-YYYY-NNNN" (e.g., INV-2025-0001)
-- [X] **2.10.4**: Apply invoice_number trigger to `invoices` table
-- [X] **2.10.5**: Create `update_updated_at_column()` trigger function
+- [x] **2.10.4**: Apply invoice_number trigger to `invoices` table
+- [x] **2.10.5**: Create `update_updated_at_column()` trigger function
   - Automatically updates updated_at timestamp
-- [X] **2.10.6**: Apply updated_at trigger to all tables with updated_at column
+- [x] **2.10.6**: Apply updated_at trigger to all tables with updated_at column
 
 ---
 
@@ -183,62 +182,62 @@ Complete database architecture with 20+ tables, Row-Level Security, comprehensiv
 
 ### Sub-task 3.1: Create Database Module
 
-- [X] **3.1.1**: Create `apps/api/src/database/supabase.service.ts` with SupabaseService class
+- [x] **3.1.1**: Create `apps/api/src/database/supabase.service.ts` with SupabaseService class
   - Method: `getClient(accessToken?: string)` - Returns authenticated Supabase client
   - Method: `getAdminClient()` - Returns service role client (bypasses RLS)
   - Method: `getUserFromToken(token)` - Validates JWT and retrieves user profile
-- [X] **3.1.2**: Create `apps/api/src/database/admin-whitelist.service.ts`
+- [x] **3.1.2**: Create `apps/api/src/database/admin-whitelist.service.ts`
   - Method: `isAdminEmail(email)` - Checks admin whitelist
-- [X] **3.1.3**: Create `apps/api/src/database/database.module.ts`
+- [x] **3.1.3**: Create `apps/api/src/database/database.module.ts`
   - Register SupabaseService and AdminWhitelistService as global providers
-- [X] **3.1.4**: Import DatabaseModule in `app.module.ts`
+- [x] **3.1.4**: Import DatabaseModule in `app.module.ts`
 
 ### Sub-task 3.2: Create Common Guards
 
-- [X] **3.2.1**: Create `apps/api/src/common/guards/jwt-auth.guard.ts`
+- [x] **3.2.1**: Create `apps/api/src/common/guards/jwt-auth.guard.ts`
   - Extract JWT from Authorization header
   - Validate token with Supabase via getUserFromToken()
   - Attach user to request object
   - Respect @Public() decorator
-- [X] **3.2.2**: Create `apps/api/src/common/guards/roles.guard.ts`
+- [x] **3.2.2**: Create `apps/api/src/common/guards/roles.guard.ts`
   - Check user_type against required roles from @Roles() decorator
   - Check admin whitelist for bypass
-- [X] **3.2.3**: Register guards globally in `main.ts` with proper execution order
+- [x] **3.2.3**: Register guards globally in `main.ts` with proper execution order
 
 ### Sub-task 3.3: Create Common Decorators
 
-- [X] **3.3.1**: Create `apps/api/src/common/decorators/current-user.decorator.ts`
+- [x] **3.3.1**: Create `apps/api/src/common/decorators/current-user.decorator.ts`
   - Extracts user from request object
   - Supports extracting specific properties
-- [X] **3.3.2**: Create `apps/api/src/common/decorators/roles.decorator.ts`
+- [x] **3.3.2**: Create `apps/api/src/common/decorators/roles.decorator.ts`
   - Decorator to specify required roles for endpoints
-- [X] **3.3.3**: Create `apps/api/src/common/decorators/public.decorator.ts`
+- [x] **3.3.3**: Create `apps/api/src/common/decorators/public.decorator.ts`
   - Decorator to mark endpoints as public (skip authentication)
 
 ### Sub-task 3.4: Create Common DTOs and Interfaces
 
-- [X] **3.4.1**: Create `apps/api/src/common/dto/pagination.dto.ts`
+- [x] **3.4.1**: Create `apps/api/src/common/dto/pagination.dto.ts`
   - PaginationDto with page, limit, sort, order
   - Full class-validator validation
-- [X] **3.4.2**: Create `apps/api/src/common/interfaces/auth-user.interface.ts`
+- [x] **3.4.2**: Create `apps/api/src/common/interfaces/auth-user.interface.ts`
   - AuthUser interface with id, email, userType, fullName, phoneNumber
   - Optional: clientProfileId, attorneyProfileId
-- [X] **3.4.3**: Create `apps/api/src/common/enums/user-type.enum.ts`
+- [x] **3.4.3**: Create `apps/api/src/common/enums/user-type.enum.ts`
   - UserType enum: CLIENT, ATTORNEY, STAFF, ADMIN
 
 ### Sub-task 3.5: Create Exception Filters
 
-- [X] **3.5.1**: Create `apps/api/src/common/filters/http-exception.filter.ts`
+- [x] **3.5.1**: Create `apps/api/src/common/filters/http-exception.filter.ts`
   - Standardizes HTTP error responses
-- [X] **3.5.2**: Create `apps/api/src/common/filters/supabase-exception.filter.ts`
+- [x] **3.5.2**: Create `apps/api/src/common/filters/supabase-exception.filter.ts`
   - Maps Supabase errors to HTTP status codes
 
 ### Sub-task 3.6: Application Integration
 
-- [X] **3.6.1**: Update `main.ts` with global guards and filters
-- [X] **3.6.2**: Extend `configuration.ts` with AdminConfig
-- [X] **3.6.3**: Update `validation.schema.ts` with ADMIN_EMAILS
-- [X] **3.6.4**: Update `.env` and `.env.example` with ADMIN_EMAILS
+- [x] **3.6.1**: Update `main.ts` with global guards and filters
+- [x] **3.6.2**: Extend `configuration.ts` with AdminConfig
+- [x] **3.6.3**: Update `validation.schema.ts` with ADMIN_EMAILS
+- [x] **3.6.4**: Update `.env` and `.env.example` with ADMIN_EMAILS
 
 ---
 
@@ -246,23 +245,23 @@ Complete database architecture with 20+ tables, Row-Level Security, comprehensiv
 
 ### Sub-task 4.1: Create Auth DTOs & Validation (7/7) ✅
 
-- [X] **4.1.1**: Create `apps/api/src/auth/dto/signup.dto.ts`
+- [x] **4.1.1**: Create `apps/api/src/auth/dto/signup.dto.ts`
   - Fields: email (@IsEmail), password (@MinLength(8), @MaxLength(72), @Matches for complexity), fullName, phoneNumber (optional)
-- [X] **4.1.2**: Create `apps/api/src/auth/dto/signin.dto.ts`
+- [x] **4.1.2**: Create `apps/api/src/auth/dto/signin.dto.ts`
   - Fields: email, password
-- [X] **4.1.3**: Create `apps/api/src/auth/dto/oauth-callback.dto.ts`
+- [x] **4.1.3**: Create `apps/api/src/auth/dto/oauth-callback.dto.ts`
   - Fields: accessToken, refreshToken
-- [X] **4.1.4**: Create `apps/api/src/auth/dto/refresh-token.dto.ts`
+- [x] **4.1.4**: Create `apps/api/src/auth/dto/refresh-token.dto.ts`
   - Fields: refreshToken
-- [X] **4.1.5**: Create `apps/api/src/auth/dto/password-reset.dto.ts`
+- [x] **4.1.5**: Create `apps/api/src/auth/dto/password-reset.dto.ts`
   - PasswordResetRequestDto (email), PasswordResetConfirmDto (accessToken, newPassword)
-- [X] **4.1.6**: Create `apps/api/src/auth/dto/auth-response.dto.ts`
+- [x] **4.1.6**: Create `apps/api/src/auth/dto/auth-response.dto.ts`
   - AuthResponseDto (user, accessToken, refreshToken), AuthMessageDto (message)
-- [X] **4.1.7**: Create `apps/api/src/auth/dto/index.ts` (barrel export)
+- [x] **4.1.7**: Create `apps/api/src/auth/dto/index.ts` (barrel export)
 
 ### Sub-task 4.2: Create Auth Service (1/1) ✅
 
-- [X] **4.2.1**: Create `apps/api/src/auth/auth.service.ts`
+- [x] **4.2.1**: Create `apps/api/src/auth/auth.service.ts`
   - `signup(dto)` - Email/password signup (clients only, blocks admin emails)
   - `signin(dto)` - Email/password signin
   - `processOAuthCallback(dto)` - Handle OAuth tokens, create/fetch profile, detect user type
@@ -274,39 +273,39 @@ Complete database architecture with 20+ tables, Row-Level Security, comprehensiv
 
 ### Sub-task 4.3: Create Auth Controller (1/1) ✅
 
-- [X] **4.3.1**: Create `apps/api/src/auth/auth.controller.ts`
+- [x] **4.3.1**: Create `apps/api/src/auth/auth.controller.ts`
   - POST /api/auth/signup, signin, oauth/callback, refresh, password-reset/request, password-reset/confirm (all @Public)
   - GET /api/auth/me, POST /api/auth/signout (protected)
 
 ### Sub-task 4.4: Create Auth Module & Integration (2/2) ✅
 
-- [X] **4.4.1**: Create `apps/api/src/auth/auth.module.ts`
-- [X] **4.4.2**: Import AuthModule in app.module.ts, add global ValidationPipe in main.ts
+- [x] **4.4.1**: Create `apps/api/src/auth/auth.module.ts`
+- [x] **4.4.2**: Import AuthModule in app.module.ts, add global ValidationPipe in main.ts
 
 ### Sub-task 4.5: Frontend Auth Infrastructure (5/5) ✅
 
-- [X] **4.5.1**: Install @supabase/supabase-js and @supabase/ssr
-- [X] **4.5.2**: Create Supabase client configuration (browser, server, middleware)
-- [X] **4.5.3**: Create Auth Context & Hooks (AuthProvider, useAuth, auth-actions)
-- [X] **4.5.4**: Create Next.js middleware (session refresh, route protection, user type routing)
-- [X] **4.5.5**: Wrap root layout with AuthProvider
+- [x] **4.5.1**: Install @supabase/supabase-js and @supabase/ssr
+- [x] **4.5.2**: Create Supabase client configuration (browser, server, middleware)
+- [x] **4.5.3**: Create Auth Context & Hooks (AuthProvider, useAuth, auth-actions)
+- [x] **4.5.4**: Create Next.js middleware (session refresh, route protection, user type routing)
+- [x] **4.5.5**: Wrap root layout with AuthProvider
 
 ### Sub-task 4.6: Frontend Auth Pages (6/6) ✅
 
-- [X] **4.6.1**: Create Sign-In Page (tabbed Google OAuth + email/password)
-- [X] **4.6.2**: Create Sign-Up Page (client registration)
-- [X] **4.6.3**: Create OAuth Callback Handler (code exchange + backend POST + redirect)
-- [X] **4.6.4**: Create Password Reset Pages (request + confirm)
-- [X] **4.6.5**: Create Dashboard Layouts & Pages (admin + client with sidebar/header)
-- [X] **4.6.6**: Update .env.example with Supabase configuration
+- [x] **4.6.1**: Create Sign-In Page (tabbed Google OAuth + email/password)
+- [x] **4.6.2**: Create Sign-Up Page (client registration)
+- [x] **4.6.3**: Create OAuth Callback Handler (code exchange + backend POST + redirect)
+- [x] **4.6.4**: Create Password Reset Pages (request + confirm)
+- [x] **4.6.5**: Create Dashboard Layouts & Pages (admin + client with sidebar/header)
+- [x] **4.6.6**: Update .env.example with Supabase configuration
 
 ### Sub-task 4.7: Testing (1/1) ✅
 
-- [X] **4.7.1**: Create auth.service.spec.ts (12 unit tests, all passing)
+- [x] **4.7.1**: Create auth.service.spec.ts (12 unit tests, all passing)
 
 ### Sub-task 4.8: Bug Fixes (1/1) ✅
 
-- [X] **4.8.1**: Fix getUserFromToken() in supabase.service.ts (wrong column name + missing columns)
+- [x] **4.8.1**: Fix getUserFromToken() in supabase.service.ts (wrong column name + missing columns)
 
 ---
 

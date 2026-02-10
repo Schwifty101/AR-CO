@@ -49,6 +49,7 @@ import {
   ExceptionFilter,
   Catch,
   ArgumentsHost,
+  HttpException,
   HttpStatus,
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
@@ -101,13 +102,21 @@ export class SupabaseExceptionFilter implements ExceptionFilter {
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
 
-    // Skip if already an HTTP exception (handled by HttpExceptionFilter)
-    if (
-      typeof exception === 'object' &&
-      exception !== null &&
-      'getStatus' in exception &&
-      typeof (exception as { getStatus?: unknown }).getStatus === 'function'
-    ) {
+    // Delegate HttpExceptions: extract status/message and send response
+    if (exception instanceof HttpException) {
+      const status = exception.getStatus();
+      const exceptionResponse = exception.getResponse();
+      const message =
+        typeof exceptionResponse === 'object' && 'message' in exceptionResponse
+          ? (exceptionResponse as Record<string, unknown>).message
+          : exception.message;
+
+      response.status(status).json({
+        statusCode: status,
+        timestamp: new Date().toISOString(),
+        path: request.url,
+        message,
+      });
       return;
     }
 
