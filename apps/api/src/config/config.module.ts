@@ -61,8 +61,8 @@ import { validationSchema, validationOptions } from './validation.schema';
       // Make ConfigService available globally without importing ConfigModule everywhere
       isGlobal: true,
 
-      // Load .env file from the project root (apps/api/.env)
-      envFilePath: '.env',
+      // Load .env file from the project root (apps/api/.env or .env.local)
+      envFilePath: ['.env.local', '.env'],
 
       // Validate environment variables using Joi schema
       validationSchema,
