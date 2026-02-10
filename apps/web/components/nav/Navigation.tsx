@@ -660,7 +660,7 @@ export default function Navigation() {
         }
     }, [pathname])
 
-    const hideCta = pathname.startsWith('/facilitation-service/')
+    const hideCta = pathname.startsWith('/services/')
 
     return (
         <header>

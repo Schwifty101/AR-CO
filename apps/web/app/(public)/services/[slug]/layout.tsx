@@ -26,7 +26,7 @@ export default function FacilitationServiceLayout({ children, params }: LayoutPr
   const service = facilitationServices.find((s) => s.slug === slug)
   if (!service) return notFound()
 
-  const basePath = `/facilitation-service/${slug}`
+  const basePath = `/services/${slug}`
   const currentStepIndex = STEPS.findIndex((step) => {
     const fullPath = `${basePath}${step.path}`
     return pathname === fullPath
