@@ -1,384 +1,486 @@
-/* Quote Section */
-.quoteSection {
+/* ============================================================
+   Services Showcase — Editorial Typography-Forward Layout
+   Luxury law-firm aesthetic: large type, generous space, gold accents
+   ============================================================ */
+
+/* ─── Section ─── */
+.section {
   position: relative;
   min-height: 100vh;
   background: var(--wood-espresso);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 4rem 2rem;
+  padding: 8rem 0 6rem;
   overflow: hidden;
-  /* Overlap effect: pull section up to overlap Hero's final pinned frame */
   margin-top: -100vh;
   z-index: 10;
-  /* Layer above Hero (z-index: 1) */
   will-change: transform;
 }
 
-/* ====================================================
-   Abstract Visual Elements
-   ==================================================== */
-.abstractElements {
+/* ─── Atmosphere ─── */
+.atmosphereGlow {
   position: absolute;
   inset: 0;
+  background:
+    radial-gradient(ellipse 60% 50% at 15% 20%, rgba(212, 175, 55, 0.04) 0%, transparent 100%),
+    radial-gradient(ellipse 50% 60% at 85% 80%, rgba(249, 248, 246, 0.015) 0%, transparent 100%);
   pointer-events: none;
-  overflow: hidden;
 }
 
-/* Flowing curved SVG line */
-.flowingLine {
+/* Film-grain texture overlay for depth */
+.grainOverlay {
   position: absolute;
-  top: 8%;
-  right: 5%;
-  width: 35%;
-  height: auto;
-  opacity: 0.6;
-  animation: flowingLineFloat 20s ease-in-out infinite;
+  inset: 0;
+  opacity: 0.35;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  background-size: 256px 256px;
 }
 
-@keyframes flowingLineFloat {
-
-  0%,
-  100% {
-    transform: translateY(0) rotate(0deg);
-  }
-
-  50% {
-    transform: translateY(-10px) rotate(2deg);
-  }
-}
-
-/* Geometric circle accent */
-.geometricCircle {
+/* ─── Vertical side text ─── */
+.sideText {
   position: absolute;
-  bottom: 15%;
-  right: 8%;
-  width: clamp(120px, 15vw, 200px);
-  height: clamp(120px, 15vw, 200px);
-  border: 1px solid rgba(249, 248, 246, 0.2);
-  border-radius: 50%;
-  animation: circleExpand 15s ease-in-out infinite;
-}
-
-.geometricCircle::before {
-  content: '';
-  position: absolute;
-  inset: 20px;
-  border: 1px solid rgba(212, 175, 55, 0.15);
-  border-radius: 50%;
-}
-
-.geometricCircle::after {
-  content: '';
-  position: absolute;
+  left: 2rem;
   top: 50%;
-  left: 50%;
-  width: 8px;
-  height: 8px;
-  background: var(--heritage-gold);
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-  opacity: 0.6;
-}
-
-@keyframes circleExpand {
-
-  0%,
-  100% {
-    transform: scale(1);
-    opacity: 0.6;
-  }
-
-  50% {
-    transform: scale(1.05);
-    opacity: 0.8;
-  }
-}
-
-/* Dots cluster decoration */
-.dotsCluster {
-  position: absolute;
-  top: 20%;
-  left: 8%;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.dot {
-  width: 4px;
-  height: 4px;
-  background: var(--heritage-gold);
-  border-radius: 50%;
-  opacity: 0.5;
-  animation: dotPulse 3s ease-in-out infinite;
-}
-
-.dot:nth-child(2) {
-  margin-left: 8px;
-  animation-delay: 0.5s;
-  opacity: 0.6;
-}
-
-.dot:nth-child(3) {
-  margin-left: 4px;
-  animation-delay: 1s;
-  opacity: 0.3;
-}
-
-@keyframes dotPulse {
-
-  0%,
-  100% {
-    transform: scale(1);
-  }
-
-  50% {
-    transform: scale(1.5);
-  }
-}
-
-/* Corner accent - minimal L-shape */
-.cornerAccent {
-  position: absolute;
-  bottom: 10%;
-  left: 5%;
-}
-
-.cornerLine {
-  width: 60px;
-  height: 1px;
-  background: linear-gradient(90deg, var(--heritage-gold), transparent);
-  opacity: 0.4;
-}
-
-.cornerLineVertical {
-  width: 1px;
-  height: 60px;
-  background: linear-gradient(180deg, var(--heritage-gold), transparent);
-  opacity: 0.4;
-  margin-top: -1px;
-}
-
-/* Abstract floating shape */
-.floatingShape {
-  position: absolute;
-  top: 35%;
-  right: 15%;
-  width: 40px;
-  height: 40px;
-  border: 1px solid rgba(249, 248, 246, 0.2);
-  transform: rotate(45deg);
-  animation: floatShape 12s ease-in-out infinite;
-}
-
-.floatingShape::before {
-  content: '';
-  position: absolute;
-  inset: 8px;
-  border: 1px solid rgba(212, 175, 55, 0.25);
-}
-
-@keyframes floatShape {
-
-  0%,
-  100% {
-    transform: rotate(45deg) translateY(0);
-  }
-
-  50% {
-    transform: rotate(45deg) translateY(-15px);
-  }
-}
-
-/* Subtle grid pattern */
-.gridPattern {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-image:
-    linear-gradient(rgba(249, 248, 246, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(249, 248, 246, 0.03) 1px, transparent 1px);
-  background-size: 80px 80px;
-  opacity: 0.5;
-}
-
-/* Quote mark decorations */
-.quoteMarkDecor {
-  position: absolute;
-  top: 8%;
-  left: 5%;
-  z-index: 1;
-}
-
-.quoteMarkDecorEnd {
-  position: absolute;
-  bottom: 8%;
-  right: 5%;
-  z-index: 1;
-}
-
-.quoteMark {
+  transform: translateY(-50%) rotate(-90deg);
   font-family: 'Lora', Georgia, serif;
-  font-size: clamp(6rem, 12vw, 14rem);
-  font-weight: 300;
-  color: var(--heritage-cream);
-  opacity: 0.12;
-  line-height: 0.8;
-  display: block;
-}
-
-/* Signature accent at bottom of quote */
-.signatureAccent {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-top: 3rem;
-  padding-top: 2rem;
-}
-
-.accentLine {
-  width: 60px;
-  height: 1px;
-  background: var(--heritage-gold);
-  opacity: 0.6;
-}
-
-.accentText {
-  font-family: 'Lora', serif;
-  font-size: 0.85rem;
-  font-weight: 500;
-  letter-spacing: 0.2em;
+  font-size: 0.65rem;
+  letter-spacing: 0.4em;
   text-transform: uppercase;
-  color: var(--heritage-gold);
-  opacity: 0.8;
+  color: rgba(212, 175, 55, 0.2);
+  white-space: nowrap;
+  pointer-events: none;
+  transform-origin: center center;
 }
 
+/* ─── Container ─── */
 .container {
   max-width: 1400px;
   width: 100%;
   margin: 0 auto;
+  padding: 0 4rem;
+  position: relative;
+  z-index: 2;
 }
 
-.quoteContent {
-  width: 75%;
-  margin: 0;
-  overflow: visible;
+/* ============================================================
+   Header
+   ============================================================ */
+.header {
+  margin-bottom: 5rem;
+  position: relative;
 }
 
-.quoteLine {
-  font-family: 'Lora', serif;
-  font-size: clamp(3rem, 7vw, 6rem);
-  line-height: 1.2;
+.eyebrow {
+  display: block;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 0.65rem;
+  font-weight: 500;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: var(--heritage-gold);
+  opacity: 0.7;
+  margin-bottom: 1.25rem;
+}
+
+.sectionTitle {
+  font-family: 'Lora', Georgia, serif;
+  font-size: clamp(3rem, 7vw, 6.5rem);
+  font-weight: 300;
+  line-height: 0.95;
+  letter-spacing: -0.04em;
   color: var(--heritage-cream);
   margin: 0;
-  padding: 0.2rem 0;
 }
 
-/* Font weight variations */
-.quoteLine.medium {
-  font-weight: 500;
-}
-
-.quoteLine.bold,
-.quoteLine .bold {
-  font-weight: 700;
-}
-
-.quoteLine.italic,
-.quoteLine .italic {
+.sectionTitle em {
   font-style: italic;
   font-weight: 400;
+  color: var(--heritage-gold);
 }
 
-/* Responsive */
+/* Thin gold rule under header */
+.header::after {
+  content: '';
+  display: block;
+  width: 100%;
+  height: 1px;
+  margin-top: 2.5rem;
+  background: linear-gradient(
+    90deg,
+    var(--heritage-gold) 0%,
+    rgba(212, 175, 55, 0.15) 60%,
+    transparent 100%
+  );
+}
+
+/* ============================================================
+   Service Rows — The Core
+   Each row is a full-width interactive strip with huge title
+   ============================================================ */
+.servicesList {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ─── Individual Row ─── */
+.serviceRow {
+  position: relative;
+  display: grid;
+  grid-template-columns: 4rem 1fr;
+  grid-template-rows: auto auto;
+  align-items: baseline;
+  padding: 2.75rem 0;
+  border-bottom: 1px solid rgba(249, 248, 246, 0.06);
+  cursor: pointer;
+  overflow: hidden;
+  transition: border-color 0.4s ease;
+}
+
+.serviceRow:first-child {
+  border-top: 1px solid rgba(249, 248, 246, 0.06);
+}
+
+.serviceRow:hover {
+  border-color: rgba(212, 175, 55, 0.2);
+}
+
+/* Hover background fill — slides in from left */
+.rowFill {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    rgba(212, 175, 55, 0.06) 0%,
+    rgba(212, 175, 55, 0.02) 60%,
+    transparent 100%
+  );
+  transform-origin: left center;
+  pointer-events: none;
+}
+
+/* ─── Roman Numeral ─── */
+.rowNumber {
+  grid-column: 1;
+  grid-row: 1;
+  font-family: 'Lora', Georgia, serif;
+  font-size: 0.8rem;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  color: var(--heritage-gold);
+  opacity: 0.4;
+  padding-top: 0.4rem;
+  transition: opacity 0.4s ease;
+}
+
+.serviceRow:hover .rowNumber {
+  opacity: 1;
+}
+
+/* ─── Row Title — The dominant typographic element ─── */
+.rowTitle {
+  grid-column: 2;
+  grid-row: 1;
+  font-family: 'Lora', Georgia, serif;
+  font-size: clamp(2rem, 4.5vw, 4.2rem);
+  font-weight: 300;
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+  color: var(--heritage-cream);
+  margin: 0;
+  padding-right: 5rem; /* space for arrow */
+  transition: color 0.4s ease, letter-spacing 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.serviceRow:hover .rowTitle {
+  color: var(--heritage-gold);
+  letter-spacing: 0.01em;
+}
+
+/* ─── Headline Description ─── */
+.rowHeadline {
+  grid-column: 2;
+  grid-row: 2;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: clamp(0.82rem, 1.1vw, 0.95rem);
+  line-height: 1.75;
+  letter-spacing: 0.015em;
+  color: rgba(249, 248, 246, 0.4);
+  margin: 0.75rem 0 0;
+  max-width: 700px;
+  transition: color 0.4s ease;
+}
+
+.serviceRow:hover .rowHeadline {
+  color: rgba(249, 248, 246, 0.65);
+}
+
+/* ─── Arrow icon (top-right of row) ─── */
+.rowArrow {
+  position: absolute;
+  right: 0;
+  top: 2.75rem;
+  width: 3rem;
+  height: 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--heritage-gold);
+  opacity: 0;
+  transform: translate(-8px, 4px);
+  transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.rowArrow svg {
+  width: 22px;
+  height: 22px;
+}
+
+.serviceRow:hover .rowArrow {
+  opacity: 1;
+  transform: translate(0, 0);
+}
+
+/* ─── CTA text beneath headline ─── */
+.rowCta {
+  grid-column: 2;
+  grid-row: 3;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--heritage-gold);
+  opacity: 0;
+  max-height: 0;
+  overflow: hidden;
+  margin-top: 0;
+  transition:
+    opacity 0.35s ease,
+    max-height 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+    margin-top 0.4s ease;
+}
+
+.serviceRow:hover .rowCta {
+  opacity: 0.7;
+  max-height: 2.5rem;
+  margin-top: 0.9rem;
+}
+
+/* ============================================================
+   Bottom CTA Area
+   ============================================================ */
+.bottomArea {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 5rem;
+  gap: 2rem;
+}
+
+.bottomRule {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(212, 175, 55, 0.25) 50%,
+    transparent 100%
+  );
+}
+
+/* ─── CTA Button ─── */
+.ctaButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.1rem 3rem;
+  border: 1px solid var(--heritage-gold);
+  background: transparent;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: box-shadow 0.4s ease;
+}
+
+.ctaButton::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--heritage-gold);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.5s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.ctaButton:hover::before {
+  transform: scaleX(1);
+}
+
+.ctaButton:hover {
+  box-shadow: 0 8px 40px rgba(212, 175, 55, 0.2);
+}
+
+.ctaButton span {
+  position: relative;
+  z-index: 1;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--heritage-gold);
+  transition: color 0.4s ease;
+}
+
+.ctaButton:hover span {
+  color: var(--wood-espresso);
+}
+
+.ctaBtnArrow {
+  position: relative;
+  z-index: 1;
+  width: 16px;
+  height: 16px;
+  color: var(--heritage-gold);
+  transition: color 0.4s ease, transform 0.3s ease;
+}
+
+.ctaButton:hover .ctaBtnArrow {
+  color: var(--wood-espresso);
+  transform: translate(2px, -2px);
+}
+
+/* ─── Firm stamp ─── */
+.firmStamp {
+  font-family: 'Lora', Georgia, serif;
+  font-size: 0.65rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(249, 248, 246, 0.15);
+  margin: 0;
+}
+
+/* ============================================================
+   Responsive
+   ============================================================ */
 @media (max-width: 1024px) {
-  .quoteContent {
-    max-width: 85%;
+  .container {
+    padding: 0 2.5rem;
   }
 
-  .quoteLine {
-    font-size: clamp(2.5rem, 6vw, 6rem);
+  .header {
+    margin-bottom: 3.5rem;
   }
 
-  .geometricCircle {
-    width: 100px;
-    height: 100px;
-    right: 5%;
-    bottom: 10%;
-  }
-
-  .flowingLine {
-    width: 45%;
-    top: 5%;
-  }
-
-  .quoteMark {
-    font-size: clamp(5rem, 10vw, 10rem);
+  .sideText {
+    display: none;
   }
 }
 
 @media (max-width: 768px) {
-  .quoteSection {
-    padding: 1.5rem 1.5rem;
+  .section {
+    padding: 5rem 0 4rem;
   }
 
-  .quoteContent {
-    max-width: 95%;
+  .container {
+    padding: 0 1.5rem;
   }
 
-  .quoteLine {
-    font-size: clamp(2rem, 5vw, 4rem);
-    line-height: 1.3;
+  .header {
+    margin-bottom: 2.5rem;
   }
 
-  /* Simplify abstract elements on mobile */
-  .flowingLine,
-  .floatingShape,
-  .gridPattern {
+  .serviceRow {
+    grid-template-columns: 2.5rem 1fr;
+    padding: 2rem 0;
+  }
+
+  .rowTitle {
+    padding-right: 2.5rem;
+  }
+
+  .rowArrow {
+    width: 2rem;
+    height: 2rem;
+    top: 2rem;
+  }
+
+  .rowArrow svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  /* Always show CTA on mobile since no hover */
+  .rowCta {
+    opacity: 0.5;
+    max-height: 2.5rem;
+    margin-top: 0.6rem;
+  }
+
+  .grainOverlay {
     display: none;
   }
 
-  .geometricCircle {
-    width: 80px;
-    height: 80px;
-    opacity: 0.4;
+  .bottomArea {
+    margin-top: 3.5rem;
   }
 
-  .quoteMark {
-    font-size: 5rem;
-    opacity: 0.08;
-  }
-
-  .quoteMarkDecor {
-    top: 3%;
-    left: 3%;
-  }
-
-  .quoteMarkDecorEnd {
-    bottom: 3%;
-    right: 3%;
-  }
-
-  .signatureAccent {
-    margin-top: 2rem;
-    padding-top: 1.5rem;
-  }
-
-  .accentLine {
-    width: 40px;
+  .ctaButton {
+    padding: 1rem 2rem;
+    width: 100%;
+    justify-content: center;
   }
 }
 
-/* Reduced motion */
-@media (prefers-reduced-motion: reduce) {
+@media (max-width: 480px) {
+  .section {
+    padding: 4rem 0 3rem;
+  }
 
-  .flowingLine,
-  .geometricCircle,
-  .dot,
-  .floatingShape {
-    animation: none;
+  .container {
+    padding: 0 1.25rem;
+  }
+
+  .serviceRow {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .rowNumber {
+    grid-column: 1;
+    margin-bottom: 0.25rem;
+  }
+
+  .rowTitle {
+    grid-column: 1;
+    grid-row: 2;
+    padding-right: 2rem;
+  }
+
+  .rowHeadline {
+    grid-column: 1;
+    grid-row: 3;
+  }
+
+  .rowCta {
+    grid-column: 1;
+    grid-row: 4;
+  }
+
+  .rowArrow {
+    top: auto;
+    bottom: 2rem;
+  }
+}
+
+/* ─── Reduced Motion ─── */
+@media (prefers-reduced-motion: reduce) {
+  .serviceRow,
+  .rowFill,
+  .rowTitle,
+  .rowNumber,
+  .rowHeadline,
+  .rowArrow,
+  .rowCta,
+  .ctaButton::before {
+    transition: none !important;
   }
 }

@@ -54,7 +54,7 @@ export default function FacilitationServiceHome({ params }: PageProps) {
         </motion.p>
 
         <MotionLink
-          href={`/facilitation-service/${slug}/process`}
+          href={`/services/${slug}/process`}
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.6, delay: 0.3, ease: [0.32, 0.72, 0, 1] }}

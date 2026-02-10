@@ -330,7 +330,7 @@ export default function FacilitationServiceForm({ params }: PageProps) {
 
                   {/* Next / Submit button */}
                   <button
-                    onClick={isLast ? () => router.push(`/facilitation-service/${slug}/faq`) : goNext}
+                    onClick={isLast ? () => router.push(`/services/${slug}/faq`) : goNext}
                     className="inline-flex items-center gap-2 px-6 py-2 text-xs font-semibold uppercase tracking-wider rounded-full transition-all duration-300 hover:gap-4"
                     style={{
                       background: 'var(--heritage-gold)',

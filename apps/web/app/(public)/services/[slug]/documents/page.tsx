@@ -432,7 +432,7 @@ export default function FacilitationServiceDocuments({ params }: PageProps) {
                   {/* Next / Finish */}
                   {isLast ? (
                     <Link
-                      href={`/facilitation-service/${slug}/form`}
+                      href={`/services/${slug}/form`}
                       className="inline-flex items-center gap-2 px-6 py-2 text-xs font-semibold uppercase tracking-wider rounded-full transition-all duration-300 hover:gap-4"
                       style={{
                         background: 'var(--heritage-gold)',

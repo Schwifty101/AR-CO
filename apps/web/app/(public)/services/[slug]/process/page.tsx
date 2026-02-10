@@ -61,7 +61,7 @@ export default function FacilitationServiceProcess({ params }: PageProps) {
 
         {/* Start button on the line - desktop */}
         <MotionLink
-          href={`/facilitation-service/${slug}/documents`}
+          href={`/services/${slug}/documents`}
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.6, delay: 1.2, ease: [0.32, 0.72, 0, 1] }}
@@ -251,7 +251,7 @@ export default function FacilitationServiceProcess({ params }: PageProps) {
               style={{ background: 'var(--heritage-gold)' }}
             />
             <Link
-              href={`/facilitation-service/${slug}/documents`}
+              href={`/services/${slug}/documents`}
               className="inline-flex items-center gap-2 px-5 py-2 text-xs font-semibold uppercase tracking-wider rounded-full transition-all duration-300 hover:gap-4"
               style={{
                 background: 'var(--heritage-gold)',

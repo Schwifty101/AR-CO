@@ -18,7 +18,8 @@ export const NAV_ITEMS: INavItem[] = [
     { id: 'home', label: 'Home', href: '/', hasSubmenu: false },
     { id: 'team', label: 'Our Team', href: '/team', hasSubmenu: false },
     { id: 'practice-areas', label: 'Practice Areas', href: '', hasSubmenu: true },
-    { id: 'facilitation', label: 'Facilitation Centre', href: '', hasSubmenu: true },
+    { id: 'facilitation', label: 'Services', href: '', hasSubmenu: true },
+    { id: 'blogs', label: 'Blogs', href: '/blogs', hasSubmenu: false },
     { id: 'contact', label: 'Contact Us', href: '/contact', hasSubmenu: false },
 ]
 
@@ -30,11 +31,10 @@ export const SIDEPANEL_FOOTER_NAV_ITEMS: INavItem[] = [
     { id: 'home', label: 'Home', href: '/', hasSubmenu: false },
     { id: 'team', label: 'Our Team', href: '/team', hasSubmenu: false },
     { id: 'about', label: 'About Us', href: '/about', hasSubmenu: false },
-    { id: 'case-studies', label: 'Case Studies', href: '/case-studies', hasSubmenu: false },
+    { id: 'blogs', label: 'Blogs', href: '/blogs', hasSubmenu: false },
     { id: 'practice-areas', label: 'Practice Areas', href: '', hasSubmenu: true },
-    { id: 'facilitation', label: 'Facilitation Centre', href: '', hasSubmenu: true },
+    { id: 'facilitation', label: 'Services', href: '', hasSubmenu: true },
     { id: 'contact', label: 'Contact Us', href: '/contact', hasSubmenu: false },
-    { id: 'blog', label: 'Blog', href: '/blog', hasSubmenu: false },
 ]
 
 /**
@@ -126,69 +126,69 @@ export const PRACTICE_AREAS_LIST = practiceAreas.map(pa => ({
 }))
 
 /**
- * Facilitation Centre navigation section data
+ * Services navigation section data
  */
 export const FACILITATION_DATA: INavSection = {
-    title: 'Facilitation Centre',
-    description: 'Legal facilitation services',
+    title: 'Services',
+    description: 'Legal facilitation & regulatory services',
     categories: [
         {
             title: 'Business & Corporate',
             links: [
-                { label: 'NTN Registration', href: '/facilitation-service/ntn-registration' },
-                { label: 'Sales Tax Registration (STRN)', href: '/facilitation-service/sales-tax-registration' },
-                { label: 'SECP Registration', href: '/facilitation-service/secp-registration' },
-                { label: 'Agreement Drafting', href: '/facilitation-service/agreement-drafting' },
-                { label: 'Import / Export License', href: '/facilitation-service/import-export-license' },
-                { label: 'Chamber of Commerce Registration', href: '/facilitation-service/chamber-of-commerce-registration' },
+                { label: 'NTN Registration', href: '/services/ntn-registration' },
+                { label: 'Sales Tax Registration (STRN)', href: '/services/sales-tax-registration' },
+                { label: 'SECP Registration', href: '/services/secp-registration' },
+                { label: 'Agreement Drafting', href: '/services/agreement-drafting' },
+                { label: 'Import / Export License', href: '/services/import-export-license' },
+                { label: 'Chamber of Commerce Registration', href: '/services/chamber-of-commerce-registration' },
             ]
         },
         {
             title: 'Compliance & Licensing',
             links: [
-                { label: 'Food Authority License', href: '/facilitation-service/pakistan-food-authority-license' },
-                { label: 'DRAP Licensing', href: '/facilitation-service/drap-licensing' },
-                { label: 'IHRA Registration', href: '/facilitation-service/ihra-registration' },
-                { label: 'IP Registration (Trademark)', href: '/facilitation-service/ip-registration-trademark' },
-                { label: 'TV Channel Registration', href: '/facilitation-service/tv-channel-registration' },
-                { label: 'Restaurant License', href: '/facilitation-service/restaurant-license-registration' },
+                { label: 'Food Authority License', href: '/services/pakistan-food-authority-license' },
+                { label: 'DRAP Licensing', href: '/services/drap-licensing' },
+                { label: 'IHRA Registration', href: '/services/ihra-registration' },
+                { label: 'IP Registration (Trademark)', href: '/services/ip-registration-trademark' },
+                { label: 'TV Channel Registration', href: '/services/tv-channel-registration' },
+                { label: 'Restaurant License', href: '/services/restaurant-license-registration' },
             ]
         },
         {
             title: 'Real Estate & Property',
             links: [
-                { label: 'Property Transfer', href: '/facilitation-service/property-transfer' },
-                { label: 'Tax Filing', href: '/facilitation-service/tax-filing' },
+                { label: 'Property Transfer', href: '/services/property-transfer' },
+                { label: 'Tax Filing', href: '/services/tax-filing' },
             ]
         },
         {
             title: 'Personal Certificates',
             links: [
-                { label: 'Succession Certificate', href: '/facilitation-service/succession-certificate' },
-                { label: 'Family Registration Certificate', href: '/facilitation-service/family-registration-certificate' },
-                { label: 'Child Registration (B-Form)', href: '/facilitation-service/child-registration-certificate-b-form' },
+                { label: 'Succession Certificate', href: '/services/succession-certificate' },
+                { label: 'Family Registration Certificate', href: '/services/family-registration-certificate' },
+                { label: 'Child Registration (B-Form)', href: '/services/child-registration-certificate-b-form' },
             ]
         },
         {
             title: "Women's Legal Desk",
             highlight: true,
             links: [
-                { label: 'Harassment Cases', href: '/facilitation-service/harassment-cases' },
-                { label: 'Family Law (Divorce, Custody)', href: '/facilitation-service/family-law-divorce-custody-maintenance' },
-                { label: 'Inheritance & Succession', href: '/facilitation-service/inheritance-succession-matters' },
+                { label: 'Harassment Cases', href: '/services/harassment-cases' },
+                { label: 'Family Law (Divorce, Custody)', href: '/services/family-law-divorce-custody-maintenance' },
+                { label: 'Inheritance & Succession', href: '/services/inheritance-succession-matters' },
             ]
         },
         {
             title: 'Overseas Pakistanis',
             highlight: true,
             links: [
-                { label: 'Property Verification & Due Diligence', href: '/facilitation-service/property-verification-due-diligence' },
-                { label: 'Sale, Purchase & Transfer of Property', href: '/facilitation-service/sale-purchase-transfer-property' },
-                { label: 'Property Disputes & Illegal Possession', href: '/facilitation-service/property-disputes-illegal-possession' },
-                { label: 'Power of Attorney (POA) Services', href: '/facilitation-service/power-of-attorney-services' },
-                { label: 'Family Law (Divorce, Custody, Maintenance)', href: '/facilitation-service/family-law-divorce-custody-maintenance' },
-                { label: 'Inheritance & Succession Matters', href: '/facilitation-service/inheritance-succession-matters' },
-                { label: 'Civil Litigation & Court Representation', href: '/facilitation-service/civil-litigation-court-representation' },
+                { label: 'Property Verification & Due Diligence', href: '/services/property-verification-due-diligence' },
+                { label: 'Sale, Purchase & Transfer of Property', href: '/services/sale-purchase-transfer-property' },
+                { label: 'Property Disputes & Illegal Possession', href: '/services/property-disputes-illegal-possession' },
+                { label: 'Power of Attorney (POA) Services', href: '/services/power-of-attorney-services' },
+                { label: 'Family Law (Divorce, Custody, Maintenance)', href: '/services/family-law-divorce-custody-maintenance' },
+                { label: 'Inheritance & Succession Matters', href: '/services/inheritance-succession-matters' },
+                { label: 'Civil Litigation & Court Representation', href: '/services/civil-litigation-court-representation' },
             ]
         },
     ]
@@ -211,7 +211,7 @@ export const SUBMENU_DATA: Record<string, { title: string; categories: INavCateg
         categories: PRACTICE_AREAS_DATA.categories,
     },
     'facilitation': {
-        title: 'Facilitation Centre',
+        title: 'Services',
         categories: FACILITATION_DATA.categories,
     },
 }

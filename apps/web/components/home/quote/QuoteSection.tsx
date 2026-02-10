@@ -1,11 +1,12 @@
 "use client"
 
-import { useRef } from "react"
+import { useRef, useState } from "react"
 import { motion } from "framer-motion"
 import gsap from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
 import { useGSAP } from "@gsap/react"
-import ScrollRevealText from "@/components/shared/animations/ScrollRevealText"
+import { ArrowUpRight } from "lucide-react"
+import { useFacilitationOverlay } from "@/components/facilitation"
 import { setSlowScroll, setNormalScroll, pauseScroll, resumeScroll } from "../../SmoothScroll"
 import styles from "./QuoteSection.module.css"
 
@@ -14,18 +15,60 @@ if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger)
 }
 
+/**
+ * Service verticals displayed as full-width editorial rows.
+ */
+const SERVICES = [
+  {
+    id: "litigation",
+    number: "I",
+    title: "Litigation",
+    headline: "We provide strong advocacy with trusted legal representation.",
+    cta: "Explore our litigation services",
+  },
+  {
+    id: "complaint-section",
+    number: "II",
+    title: "Complaint Section",
+    headline: "Tackle your issues through us regarding regulators and public institutions — CDA, HEC, NADRA & more.",
+    cta: "File your complaint",
+  },
+  {
+    id: "facilitation",
+    number: "III",
+    title: "Facilitation Centre",
+    headline: "We simplify legal processes through effective facilitation regarding licensing, registration & certification.",
+    cta: "Explore our facilitation services",
+  },
+  {
+    id: "women-desk",
+    number: "IV",
+    title: "Women's Desk",
+    headline: "We offer dedicated legal protection and support to empower women through law.",
+    cta: "Access our women's desk",
+  },
+  {
+    id: "overseas",
+    number: "V",
+    title: "Overseas Desk",
+    headline: "We provide reliable legal solutions beyond borders for overseas Pakistanis.",
+    cta: "Access our overseas desk",
+  },
+]
+
 export default function QuoteSection() {
   const sectionRef = useRef<HTMLElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
+  const [hoveredIdx, setHoveredIdx] = useState<number | null>(null)
+  const { openOverlay } = useFacilitationOverlay()
 
-  // GSAP subtle entrance animation
+  // GSAP scroll-speed control & entrance
   useGSAP(() => {
     if (!sectionRef.current || !contentRef.current) return
 
     const section = sectionRef.current
     const content = contentRef.current
 
-    // Scroll speed control - pause when quote section fully enters frame
     let hasTriggeredPause = false
 
     ScrollTrigger.create({
@@ -35,25 +78,23 @@ export default function QuoteSection() {
       onEnter: () => setSlowScroll(),
       onLeave: () => {
         setNormalScroll()
-        hasTriggeredPause = false // Reset for next time
+        hasTriggeredPause = false
       },
       onEnterBack: () => setNormalScroll(),
       onLeaveBack: () => {
-        setSlowScroll() // Going back to Hero, keep slow
+        setSlowScroll()
         hasTriggeredPause = false
       },
     })
 
-    // Auto-pause when quote section is fully in frame
     ScrollTrigger.create({
       trigger: section,
-      start: "top top", // When top of quote reaches top of viewport
+      start: "top top",
       end: "top top",
       onEnter: () => {
         if (!hasTriggeredPause) {
           hasTriggeredPause = true
           pauseScroll()
-          // Resume after a brief moment (800ms) with normal scroll
           setTimeout(() => {
             resumeScroll()
             setNormalScroll()
@@ -62,13 +103,9 @@ export default function QuoteSection() {
       },
     })
 
-    // Subtle entrance animation - no blur, minimal parallax
     gsap.fromTo(
       content,
-      {
-        opacity: 0.8,
-        y: 30,
-      },
+      { opacity: 0.8, y: 30 },
       {
         opacity: 1,
         y: 0,
@@ -78,122 +115,120 @@ export default function QuoteSection() {
           start: "top 80%",
           end: "top 30%",
           scrub: 0.5,
-        }
+        },
       }
     )
-
   }, [])
 
   return (
-    <motion.section
-      ref={sectionRef}
-      className={styles.quoteSection}
-      data-section="quote"
-      id="quote-section"
-      viewport={{ once: false, amount: 0.3 }}
-    >
-      {/* Abstract Visual Elements */}
-      <div className={styles.abstractElements}>
-        {/* Flowing curved line - top right */}
-        <svg className={styles.flowingLine} viewBox="0 0 400 200" preserveAspectRatio="none">
-          <path
-            d="M0,100 Q100,20 200,80 T400,60"
-            fill="none"
-            stroke="var(--heritage-gold, #D4AF37)"
-            strokeWidth="1"
-            opacity="0.3"
-          />
-          <path
-            d="M0,120 Q150,40 250,100 T400,80"
-            fill="none"
-            stroke="var(--heritage-cream, #F9F8F6)"
-            strokeWidth="0.5"
-            opacity="0.15"
-          />
-        </svg>
+    <>
+      <motion.section
+        ref={sectionRef}
+        className={styles.section}
+        data-section="services-showcase"
+        id="services-showcase"
+        viewport={{ once: false, amount: 0.3 }}
+      >
+        {/* Atmosphere */}
+        <div className={styles.atmosphereGlow} />
+        <div className={styles.grainOverlay} />
 
-        {/* Geometric circle - subtle accent */}
-        <div className={styles.geometricCircle} />
+        {/* Vertical side text */}
+        <span className={styles.sideText}>Services</span>
 
-        {/* Small decorative dots cluster */}
-        <div className={styles.dotsCluster}>
-          <span className={styles.dot} />
-          <span className={styles.dot} />
-          <span className={styles.dot} />
-        </div>
-
-        {/* Minimal corner accent */}
-        <div className={styles.cornerAccent}>
-          <div className={styles.cornerLine} />
-          <div className={styles.cornerLineVertical} />
-        </div>
-
-        {/* Abstract floating shape */}
-        <div className={styles.floatingShape} />
-
-        {/* Subtle grid pattern overlay */}
-        <div className={styles.gridPattern} />
-      </div>
-
-      {/* Quote mark decoration */}
-      <div className={styles.quoteMarkDecor}>
-        <span className={styles.quoteMark}>&ldquo;</span>
-      </div>
-
-      <div className={styles.container}>
-        <div ref={contentRef} className={styles.quoteContent}>
-          <ScrollRevealText
-            as="h1"
-            className={`${styles.quoteLine} ${styles.medium}`}
-            delay={0}
+        <div ref={contentRef} className={styles.container}>
+          {/* Eyebrow + Title */}
+          <motion.header
+            className={styles.header}
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
           >
-            Where <span className={styles.italic}>expertise</span> meets
-          </ScrollRevealText>
+            <span className={styles.eyebrow}>What We Do</span>
+            <h2 className={styles.sectionTitle}>
+              Our <em>Legal</em> Services
+            </h2>
+          </motion.header>
 
-          <ScrollRevealText
-            as="h1"
-            className={`${styles.quoteLine} ${styles.bold}`}
-            delay={150}
-          >
-            dedication,
-          </ScrollRevealText>
+          {/* Service rows */}
+          <div className={styles.servicesList}>
+            {SERVICES.map((service, idx) => (
+              <motion.div
+                key={service.id}
+                className={styles.serviceRow}
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.25 }}
+                transition={{
+                  duration: 0.7,
+                  delay: idx * 0.08,
+                  ease: [0.16, 1, 0.3, 1],
+                }}
+                onMouseEnter={() => setHoveredIdx(idx)}
+                onMouseLeave={() => setHoveredIdx(null)}
+                onClick={openOverlay}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault()
+                    openOverlay()
+                  }
+                }}
+              >
+                {/* Hover fill */}
+                <motion.div
+                  className={styles.rowFill}
+                  initial={false}
+                  animate={{ scaleX: hoveredIdx === idx ? 1 : 0 }}
+                  transition={{ duration: 0.5, ease: [0.32, 0.72, 0, 1] }}
+                />
 
-          <ScrollRevealText
-            as="h1"
-            className={`${styles.quoteLine} ${styles.medium}`}
-            delay={300}
-          >
-            <span className={styles.bold}> every case</span>
-          </ScrollRevealText>
+                {/* Roman numeral */}
+                <span className={styles.rowNumber}>{service.number}</span>
 
-          <ScrollRevealText
-            as="h1"
-            className={`${styles.quoteLine} ${styles.italic}`}
-            delay={450}
-          >
-            becomes a story
-          </ScrollRevealText>
+                {/* Title — the dominant element */}
+                <h3 className={styles.rowTitle}>{service.title}</h3>
 
-          <ScrollRevealText
-            as="h1"
-            className={`${styles.quoteLine} ${styles.medium}`}
-            delay={600}
-          >
-            of <span className={styles.bold}>justice</span> <span className={styles.italic}>delivered.</span>
-          </ScrollRevealText>
+                {/* Headline description */}
+                <p className={styles.rowHeadline}>{service.headline}</p>
 
-          {/* Signature accent line */}
-          <div className={styles.signatureAccent}>
-            <span className={styles.accentLine} />
-            <span className={styles.accentText}>AR&CO</span>
+                {/* CTA arrow */}
+                <span className={styles.rowArrow}>
+                  <ArrowUpRight />
+                </span>
+
+                {/* CTA text (visible on hover / always on mobile) */}
+                <span className={styles.rowCta}>{service.cta}</span>
+              </motion.div>
+            ))}
           </div>
-        </div>
-      </div>
 
-      {/* Closing quote mark */}
-      <div className={styles.quoteMarkDecorEnd}>
-        <span className={styles.quoteMark}>&rdquo;</span>
-      </div>
-    </motion.section>
+          {/* Bottom CTA */}
+          <motion.div
+            className={styles.bottomArea}
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+          >
+            <div className={styles.bottomRule} />
+
+            <motion.button
+              onClick={openOverlay}
+              className={styles.ctaButton}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.97 }}
+            >
+              <span>Explore All Services</span>
+              <ArrowUpRight className={styles.ctaBtnArrow} />
+            </motion.button>
+
+            <p className={styles.firmStamp}>AR&CO — Trusted Legal Partners</p>
+          </motion.div>
+        </div>
+      </motion.section>
+    </>
   )
 }
