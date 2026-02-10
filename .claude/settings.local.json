@@ -19,7 +19,9 @@
       "mcp__supabase__list_tables",
       "Bash(pnpm install:*)",
       "Bash(npx tsc:*)",
-      "Bash(npx jest:*)"
+      "Bash(npx jest:*)",
+      "Bash(git -C \"/Users/sobanahmad/Work/AR&CO/AR-CO\" status)",
+      "Bash(python3:*)"
     ],
     "env": {
       "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
