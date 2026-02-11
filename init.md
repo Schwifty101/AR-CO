@@ -313,46 +313,48 @@ Complete database architecture with 20+ tables, Row-Level Security, comprehensiv
 
 ### Sub-task 5.1: Create Users Service
 
-- [ ] **5.1.1**: Create `apps/api/src/users/users.service.ts`
-- [ ] **5.1.2**: Implement `getUserProfile(userId)` method with RLS
-- [ ] **5.1.3**: Implement `updateUserProfile(userId, updateDto)` method
-- [ ] **5.1.4**: Implement `deleteUser(userId)` method (admin only)
-- [ ] **5.1.5**: Implement `getAllUsers(paginationDto)` method (staff only)
+- [x] **5.1.1**: Create `apps/api/src/users/users.service.ts`
+- [x] **5.1.2**: Implement `getUserProfile(userId)` method with RLS
+- [x] **5.1.3**: Implement `updateUserProfile(userId, updateDto)` method
+- [x] **5.1.4**: Implement `deleteUser(userId)` method (admin only)
+- [x] **5.1.5**: Implement `getAllUsers(paginationDto)` method (staff only)
 
 ### Sub-task 5.2: Create Users Controller
 
-- [ ] **5.2.1**: Create `apps/api/src/users/users.controller.ts`
-- [ ] **5.2.2**: Create endpoint: `GET /api/users/profile` (current user)
-- [ ] **5.2.3**: Create endpoint: `PATCH /api/users/profile` (update own profile)
-- [ ] **5.2.4**: Create endpoint: `GET /api/users` (staff only, with pagination)
-- [ ] **5.2.5**: Apply @UseGuards(AuthGuard, RolesGuard) and @Roles() decorators
+- [x] **5.2.1**: Create `apps/api/src/users/users.controller.ts`
+- [x] **5.2.2**: Create endpoint: `GET /api/users/profile` (current user)
+- [x] **5.2.3**: Create endpoint: `PATCH /api/users/profile` (update own profile)
+- [x] **5.2.4**: Create endpoint: `GET /api/users` (staff only, with pagination)
+- [x] **5.2.5**: Apply @UseGuards(AuthGuard, RolesGuard) and @Roles() decorators
 
 ### Sub-task 5.3: Create Profile DTOs
 
-- [ ] **5.3.1**: Create `apps/api/src/users/dto/update-user-profile.dto.ts`
+> **Note:** DTOs are implemented as Zod schemas in `packages/shared/src/schemas/users.schemas.ts` with types in `packages/shared/src/types/users.types.ts`, instead of class-validator DTOs in `apps/api/src/users/dto/`.
+
+- [x] **5.3.1**: Create `apps/api/src/users/dto/update-user-profile.dto.ts`
   - Optional fields: fullName, phoneNumber
-- [ ] **5.3.2**: Create `apps/api/src/users/dto/create-client-profile.dto.ts`
+- [x] **5.3.2**: Create `apps/api/src/users/dto/create-client-profile.dto.ts`
   - Fields: companyName, companyType, taxId, address, city, country
-- [ ] **5.3.3**: Create `apps/api/src/users/dto/update-client-profile.dto.ts`
+- [x] **5.3.3**: Create `apps/api/src/users/dto/update-client-profile.dto.ts`
   - All fields optional
-- [ ] **5.3.4**: Create `apps/api/src/users/dto/create-attorney-profile.dto.ts`
+- [x] **5.3.4**: Create `apps/api/src/users/dto/create-attorney-profile.dto.ts`
   - Fields: barNumber, specializations, education, experienceYears, hourlyRate
-- [ ] **5.3.5**: Create `apps/api/src/users/dto/update-attorney-profile.dto.ts`
+- [x] **5.3.5**: Create `apps/api/src/users/dto/update-attorney-profile.dto.ts`
   - All fields optional
 
 ### Sub-task 5.4: Create Users Module
 
-- [ ] **5.4.1**: Create `apps/api/src/users/users.module.ts`
+- [x] **5.4.1**: Create `apps/api/src/users/users.module.ts`
   - Register UsersService, UsersController
 
 ### Sub-task 5.5: Frontend Users & Profiles (web)
 
-- [ ] **5.5.1**: Add users API client helpers in `apps/web/lib` (get profile, update profile, list users)
-- [ ] **5.5.2**: Create profile page for authenticated users (client + attorney + staff) under dashboards
-- [ ] **5.5.3**: Build profile edit form (full_name, phone_number, client/attorney fields)
-- [ ] **5.5.4**: Create admin/staff users list page with pagination/search in admin dashboard
-- [ ] **5.5.5**: Add loading, empty, and error states + toast feedback for profile updates
-- [ ] **5.5.6**: Update dashboard sidebar navigation to include Profile and Users links
+- [x] **5.5.1**: Add users API client helpers in `apps/web/lib` (get profile, update profile, list users)
+- [x] **5.5.2**: Create profile page for authenticated users (client + attorney + staff) under dashboards
+- [x] **5.5.3**: Build profile edit form (full_name, phone_number, client/attorney fields)
+- [x] **5.5.4**: Create admin/staff users list page with pagination/search in admin dashboard
+- [x] **5.5.5**: Add loading, empty, and error states + toast feedback for profile updates
+- [x] **5.5.6**: Update dashboard sidebar navigation to include Profile and Users links
 
 ---
 

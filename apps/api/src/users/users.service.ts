@@ -98,7 +98,8 @@ export class UsersService {
     // If email not provided, fetch it from auth.users
     let userEmail = email;
     if (!userEmail) {
-      const { data: authUser, error: authError } = await adminClient.auth.admin.getUserById(userId);
+      const { data: authUser, error: authError } =
+        await adminClient.auth.admin.getUserById(userId);
       if (authError || !authUser?.user?.email) {
         this.logger.warn(`Could not fetch email for user: ${userId}`);
         userEmail = '';

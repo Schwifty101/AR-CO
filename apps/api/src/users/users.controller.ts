@@ -131,9 +131,7 @@ export class UsersController {
    * ```
    */
   @Get('profile')
-  async getUserProfile(
-    @CurrentUser() user: AuthUser,
-  ): Promise<UserProfile> {
+  async getUserProfile(@CurrentUser() user: AuthUser): Promise<UserProfile> {
     return this.usersService.getUserProfile(user.id, user.email);
   }
 
@@ -180,7 +178,8 @@ export class UsersController {
   @HttpCode(HttpStatus.OK)
   async updateUserProfile(
     @CurrentUser() user: AuthUser,
-    @Body(new ZodValidationPipe(UpdateUserProfileSchema)) dto: UpdateUserProfileData,
+    @Body(new ZodValidationPipe(UpdateUserProfileSchema))
+    dto: UpdateUserProfileData,
   ): Promise<UserProfile> {
     return this.usersService.updateUserProfile(user.id, dto);
   }
@@ -238,7 +237,8 @@ export class UsersController {
   @HttpCode(HttpStatus.OK)
   async updateClientProfile(
     @CurrentUser() user: AuthUser,
-    @Body(new ZodValidationPipe(UpdateClientProfileSchema)) dto: UpdateClientProfileData,
+    @Body(new ZodValidationPipe(UpdateClientProfileSchema))
+    dto: UpdateClientProfileData,
   ): Promise<UserProfile> {
     return this.usersService.updateClientProfile(user.id, dto);
   }
@@ -297,7 +297,8 @@ export class UsersController {
   @HttpCode(HttpStatus.OK)
   async updateAttorneyProfile(
     @CurrentUser() user: AuthUser,
-    @Body(new ZodValidationPipe(UpdateAttorneyProfileSchema)) dto: UpdateAttorneyProfileData,
+    @Body(new ZodValidationPipe(UpdateAttorneyProfileSchema))
+    dto: UpdateAttorneyProfileData,
   ): Promise<UserProfile> {
     return this.usersService.updateAttorneyProfile(user.id, dto);
   }
@@ -356,7 +357,8 @@ export class UsersController {
   @Get()
   @Roles(UserType.ADMIN, UserType.STAFF)
   async getAllUsers(
-    @Query(new ZodValidationPipe(PaginationSchema)) pagination: PaginationParams,
+    @Query(new ZodValidationPipe(PaginationSchema))
+    pagination: PaginationParams,
   ): Promise<PaginatedUsersResponse> {
     return this.usersService.getAllUsers(pagination);
   }

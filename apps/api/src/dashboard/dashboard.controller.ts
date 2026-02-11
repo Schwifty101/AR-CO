@@ -12,11 +12,7 @@
  * ```
  */
 
-import {
-  Controller,
-  Get,
-  ForbiddenException,
-} from '@nestjs/common';
+import { Controller, Get, ForbiddenException } from '@nestjs/common';
 import { Roles } from '../common/decorators/roles.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { UserType } from '../common/enums/user-type.enum';
