@@ -21,7 +21,9 @@
       "Bash(npx tsc:*)",
       "Bash(npx jest:*)",
       "Bash(git -C \"/Users/sobanahmad/Work/AR&CO/AR-CO\" status)",
-      "Bash(python3:*)"
+      "Bash(python3:*)",
+      "Bash(xargs ls:*)",
+      "Bash(pnpm build:*)"
     ],
     "env": {
       "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"

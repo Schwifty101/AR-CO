@@ -356,7 +356,7 @@ Complete database architecture with 20+ tables, Row-Level Security, comprehensiv
 
 ---
 
-## HEAD TASK 6: Clients Module
+## HEAD TASK 6: Clients, Subscriptions, Complaints & Service Registrations Module
 
 ### Sub-task 6.1: Create Clients Service
 
@@ -393,6 +393,142 @@ Complete database architecture with 20+ tables, Row-Level Security, comprehensiv
 ### Sub-task 6.4: Create Clients Module
 
 - [ ] **6.4.1**: Create `apps/api/src/clients/clients.module.ts`
+
+### Sub-task 6.5: Subscriptions Database & Backend (Monthly Retainer - PKR 700/month)
+
+**Context:** Civic advocacy subscription. Clients pay PKR 700/month to submit complaints against government organizations. AR&CO holds government bodies accountable.
+
+- [ ] **6.5.1**: Create `subscriptions` table via Supabase migration
+  - Columns: id (uuid, PK), client_profile_id (uuid, FK to client_profiles, UNIQUE), plan_name (text, default 'civic_retainer'), monthly_amount (decimal, default 700), currency (varchar(3), default 'PKR'), status (enum: pending, active, past_due, cancelled, expired), safepay_subscription_id (text), safepay_customer_id (text), current_period_start (timestamptz), current_period_end (timestamptz), cancelled_at (timestamptz), cancellation_reason (text), created_at (timestamptz), updated_at (timestamptz)
+- [ ] **6.5.2**: Enable RLS on subscriptions (clients read own, staff read all, staff update status)
+- [ ] **6.5.3**: Apply updated_at trigger
+- [ ] **6.5.4**: Create `apps/api/src/subscriptions/subscriptions.service.ts`
+- [ ] **6.5.5**: Implement `createSubscription(userId)` method
+  - Calls SafepayService.createSubscription() for PKR 700/month recurring
+  - Creates subscriptions record with status = 'pending'
+  - Returns Safepay checkout URL
+- [ ] **6.5.6**: Implement `getMySubscription(userId)` method
+- [ ] **6.5.7**: Implement `handleSubscriptionActivated(safepayData)` method (webhook)
+  - Sets status = 'active', sets billing cycle dates
+- [ ] **6.5.8**: Implement `handleSubscriptionRenewal(safepayData)` method (webhook)
+  - Extends current_period_end by 1 month
+- [ ] **6.5.9**: Implement `handleSubscriptionCancelled(safepayData)` method
+- [ ] **6.5.10**: Implement `cancelSubscription(userId)` method
+- [ ] **6.5.11**: Implement `isSubscriptionActive(userId)` method (used by complaints guard)
+- [ ] **6.5.12**: Create `apps/api/src/subscriptions/subscriptions.controller.ts`
+  - `POST /api/subscriptions` - Create subscription + get Safepay URL
+  - `GET /api/subscriptions/me` - Get my subscription
+  - `POST /api/subscriptions/cancel` - Cancel subscription
+  - `GET /api/subscriptions` (staff only) - List all subscriptions
+- [ ] **6.5.13**: Create subscription DTOs and enums (subscription_status)
+- [ ] **6.5.14**: Create `apps/api/src/subscriptions/subscriptions.module.ts`
+  - Import PaymentsModule for SafepayService, export SubscriptionsService
+
+### Sub-task 6.6: Complaints Database & Backend (Civic Complaints)
+
+**Context:** Subscribers submit complaints against government orgs (e.g., "CDA is not cleaning sector F8"). Complaints get reference numbers (CMP-YYYY-NNNN) and are tracked: submitted → under_review → escalated → resolved.
+
+- [ ] **6.6.1**: Create `complaints` table via Supabase migration
+  - Columns: id (uuid, PK), complaint_number (text, unique, auto-gen: CMP-YYYY-NNNN), client_profile_id (uuid, FK), title (text), description (text), target_organization (text), location (text), category (text), evidence_urls (text[]), status (enum: submitted, under_review, escalated, resolved, closed), assigned_staff_id (uuid, FK, nullable), staff_notes (text), resolution_notes (text), resolved_at (timestamptz), created_at (timestamptz), updated_at (timestamptz)
+- [ ] **6.6.2**: Create `generate_complaint_number()` trigger (CMP-YYYY-NNNN)
+- [ ] **6.6.3**: Apply trigger + RLS (clients read/create own, staff read all + update status) + updated_at trigger
+- [ ] **6.6.4**: Create `apps/api/src/complaints/complaints.service.ts`
+- [ ] **6.6.5**: Implement `submitComplaint(userId, createDto)` method
+  - Checks active subscription via SubscriptionsService.isSubscriptionActive()
+  - Creates complaint record, auto-generates CMP-YYYY-NNNN
+- [ ] **6.6.6**: Implement `getMyComplaints(userId, paginationDto)` method
+- [ ] **6.6.7**: Implement `getComplaintById(complaintId, userId)` method
+- [ ] **6.6.8**: Implement `getAllComplaints(paginationDto, filters)` method (staff only)
+  - Filter by status, target_organization, date range
+- [ ] **6.6.9**: Implement `updateComplaintStatus(complaintId, status, staffNotes)` method (staff only)
+- [ ] **6.6.10**: Implement `assignComplaint(complaintId, staffId)` method (staff only)
+- [ ] **6.6.11**: Create `apps/api/src/complaints/complaints.controller.ts`
+  - `POST /api/complaints` - Submit complaint (requires active subscription)
+  - `GET /api/complaints` - List complaints (client: own, staff: all)
+  - `GET /api/complaints/:id` - Complaint detail
+  - `PATCH /api/complaints/:id/status` (staff only) - Update status
+  - `PATCH /api/complaints/:id/assign` (staff only) - Assign to staff
+- [ ] **6.6.12**: Create complaint DTOs (create, update-status) and enums (complaint_status, complaint_category)
+- [ ] **6.6.13**: Create `apps/api/src/complaints/complaints.module.ts`
+  - Import SubscriptionsModule for active subscription check
+
+### Sub-task 6.7: Service Registrations Database & Backend (Auto Account Creation)
+
+**Context:** Each facilitation service has 1 generic form (name, contact, CNIC, docs upload). Payment + registration auto-creates a user account. No account needed to start the form. Account required only after payment completes.
+
+- [ ] **6.7.1**: Create `service_registrations` table via Supabase migration
+  - Columns: id (uuid, PK), reference_number (text, unique, auto-gen: SRV-YYYY-NNNN), service_id (uuid, FK to services), full_name (text), email (text), phone_number (text), cnic (text), address (text), description_of_need (text), payment_status (enum: pending, paid, failed, refunded), safepay_tracker_id (text), safepay_transaction_id (text), status (enum: pending_payment, paid, in_progress, completed, cancelled), client_profile_id (uuid, FK to client_profiles, nullable - set after auto account creation), assigned_staff_id (uuid, FK, nullable), staff_notes (text), created_at (timestamptz), updated_at (timestamptz)
+- [ ] **6.7.2**: Add `registration_fee` column to existing `services` table (DECIMAL(10,2))
+- [ ] **6.7.3**: Create `generate_service_registration_reference()` trigger (SRV-YYYY-NNNN)
+- [ ] **6.7.4**: Apply trigger + RLS + updated_at trigger
+  - Public can insert (guest submissions), public can read own by reference_number + email
+  - Clients can read own registrations (after account creation), staff can read all + update
+- [ ] **6.7.5**: Add `service_registration_id` nullable FK column to `documents` table
+- [ ] **6.7.6**: Create `apps/api/src/service-registrations/service-registrations.service.ts`
+- [ ] **6.7.7**: Implement `createRegistration(createDto)` method (@Public)
+  - Validates service exists and is active, creates record with status = 'pending_payment'
+- [ ] **6.7.8**: Implement `initiatePayment(registrationId)` method
+  - Fetches service.registration_fee, calls SafepayService.createCheckoutSession()
+- [ ] **6.7.9**: Implement `handlePaymentConfirmed(registrationId)` method (webhook)
+  - Updates payment_status = 'paid', status = 'paid'
+  - Calls createUserAccount() to auto-create user
+- [ ] **6.7.10**: Implement `createUserAccount(registration)` method
+  - Check if user exists by email → link to existing account if yes
+  - If no: create Supabase auth user (auto-generated password) + user_profile (client) + client_profile
+  - Link service_registration.client_profile_id
+  - Send credentials email via SendGrid
+- [ ] **6.7.11**: Implement `uploadDocuments(registrationId, files)` method
+  - Uploads to Supabase Storage, creates documents records linked via service_registration_id
+- [ ] **6.7.12**: Implement `getRegistrationStatus(referenceNumber, email)` method (@Public)
+- [ ] **6.7.13**: Implement `getMyRegistrations(userId, paginationDto)` method
+- [ ] **6.7.14**: Implement `getAllRegistrations(paginationDto, filters)` method (staff only)
+- [ ] **6.7.15**: Implement `updateRegistrationStatus(registrationId, status, staffNotes)` method (staff only)
+- [ ] **6.7.16**: Create `apps/api/src/service-registrations/service-registrations.controller.ts`
+  - `POST /api/service-registrations` (@Public) - Submit registration
+  - `POST /api/service-registrations/:id/pay` (@Public) - Initiate payment
+  - `POST /api/service-registrations/:id/documents` (@Public) - Upload docs
+  - `GET /api/service-registrations/status?ref=SRV-2026-0001&email=x` (@Public) - Guest status
+  - `GET /api/service-registrations` - List (client: own, staff: all)
+  - `GET /api/service-registrations/:id` - Detail
+  - `PATCH /api/service-registrations/:id/status` (staff only) - Update status
+  - `GET /api/services` (@Public) - List available services with fees
+- [ ] **6.7.17**: Create service registration DTOs (create, response, update-status) and enums
+- [ ] **6.7.18**: Create `apps/api/src/service-registrations/service-registrations.module.ts`
+  - Import PaymentsModule for SafepayService, AuthModule for account creation
+
+### Sub-task 6.8: Frontend - Subscribe Page & Complaints Dashboard
+
+- [ ] **6.8.1**: Create `/subscribe` landing page
+  - Explains civic retainer program (PKR 700/month), "Subscribe Now" button
+  - If not logged in → redirect to signup, then back to /subscribe
+  - If logged in → initiate Safepay subscription checkout
+- [ ] **6.8.2**: Create subscription success/cancel return pages
+- [ ] **6.8.3**: Create `/client/complaints` page - List complaints with status badges
+- [ ] **6.8.4**: Create `/client/complaints/new` page - Complaint form (title, description, target org, location, category, evidence upload)
+  - Gated: shows "Active subscription required" message if no subscription
+- [ ] **6.8.5**: Create `/client/complaints/:id` page - Complaint detail + status timeline
+- [ ] **6.8.6**: Create `/client/subscription` page - View subscription status, cancel button, payment history
+- [ ] **6.8.7**: Create `apps/web/lib/api/subscriptions.ts` and `apps/web/lib/api/complaints.ts` API client helpers
+
+### Sub-task 6.9: Frontend - Service Registration Pages
+
+- [ ] **6.9.1**: Create `/services` page - List all services with fees and "Register" buttons
+- [ ] **6.9.2**: Create `/services/:slug/register` multi-step form
+  - Step 1: Client details (full name, email, phone, CNIC, address)
+  - Step 2: Service auto-selected from URL, description of need textarea
+  - Step 3: Document upload (drag & drop, multiple files)
+  - Step 4: Review + Pay (shows fee from services table, "Pay" → Safepay)
+- [ ] **6.9.3**: Create registration success page ("Account created - check email for credentials")
+- [ ] **6.9.4**: Create `/client/services` page - List my service registrations + status
+- [ ] **6.9.5**: Create `/client/services/:id` page - Registration detail + status timeline + docs
+- [ ] **6.9.6**: Add "Register for Service" CTAs to practice area pages
+- [ ] **6.9.7**: Create `apps/web/lib/api/service-registrations.ts` API client helpers
+
+### Sub-task 6.10: Frontend - Client Dashboard Enhancements
+
+- [ ] **6.10.1**: Update client dashboard stats to include: Active Subscription badge, Open Complaints count, Service Registrations in_progress count
+- [ ] **6.10.2**: Update client sidebar: add Complaints, My Services, Subscription, Payment History links
+- [ ] **6.10.3**: Create `/client/payments` page - Payment history across all sources
 
 ---
 
@@ -441,9 +577,9 @@ Complete database architecture with 20+ tables, Row-Level Security, comprehensiv
 
 ---
 
-## HEAD TASK 8: Appointments Module
+## HEAD TASK 8: Appointments & Consultation Booking Module
 
-### Sub-task 8.1: Create Appointments Service
+### Sub-task 8.1: Create Appointments Service (Internal)
 
 - [ ] **8.1.1**: Create `apps/api/src/appointments/appointments.service.ts`
 - [ ] **8.1.2**: Implement `createAppointment(createDto)` method
@@ -471,7 +607,7 @@ Complete database architecture with 20+ tables, Row-Level Security, comprehensiv
 - [ ] **8.3.8**: Create endpoint: `GET /api/appointments/availability/:attorneyId`
 - [ ] **8.3.9**: Create endpoint: `POST /api/appointments/availability/:attorneyId`
 
-### Sub-task 8.4: Create DTOs
+### Sub-task 8.4: Create Appointment DTOs
 
 - [ ] **8.4.1**: Create `apps/api/src/appointments/dto/create-appointment.dto.ts`
 - [ ] **8.4.2**: Create `apps/api/src/appointments/dto/update-appointment.dto.ts`
@@ -481,6 +617,71 @@ Complete database architecture with 20+ tables, Row-Level Security, comprehensiv
 ### Sub-task 8.5: Create Appointments Module
 
 - [ ] **8.5.1**: Create `apps/api/src/appointments/appointments.module.ts`
+
+### Sub-task 8.6: Consultation Bookings Database (Guest, No Account)
+
+**Context:** Guest consultation booking flow. No user account created. Client fills intake form → pays PKR 50,000 → Cal.com embedded booking with Mr. Shoaib Razzaq (single event type). Cal.com only accessible after payment confirmed.
+
+- [ ] **8.6.1**: Create `consultation_bookings` table via Supabase migration
+  - Columns: id (uuid, PK), reference_number (text, unique, auto-gen: CON-YYYY-NNNN), full_name (text), email (text), phone_number (text), practice_area (text), urgency (enum: low, medium, high, urgent), issue_summary (text), relevant_dates (text), opposing_party (text), additional_notes (text), consultation_fee (decimal, default 50000), payment_status (enum: pending, paid, failed, refunded), safepay_tracker_id (text), safepay_transaction_id (text), calcom_booking_uid (text), calcom_booking_id (text), booking_date (date), booking_time (time), booking_status (enum: pending_payment, payment_confirmed, booked, completed, cancelled, no_show), created_at (timestamptz), updated_at (timestamptz)
+- [ ] **8.6.2**: Create `generate_consultation_reference()` trigger (CON-YYYY-NNNN)
+- [ ] **8.6.3**: Apply trigger + RLS + updated_at trigger
+  - Public can insert (guest submissions), public can read own by reference_number + email
+  - Staff can read all bookings
+
+### Sub-task 8.7: Consultation Bookings Backend
+
+- [ ] **8.7.1**: Create `apps/api/src/consultations/consultations.service.ts`
+- [ ] **8.7.2**: Implement `createBooking(createDto)` method
+  - Validates intake data, creates consultation_bookings record, returns reference_number
+- [ ] **8.7.3**: Implement `initiatePayment(bookingId)` method
+  - Calls SafepayService.createCheckoutSession() with metadata: `{ type: 'consultation', referenceId: bookingId }`
+  - Stores safepay_tracker_id on booking record
+- [ ] **8.7.4**: Implement `getBookingStatus(referenceNumber, email)` method (@Public)
+  - Guest status polling, verified by email match
+- [ ] **8.7.5**: Implement `handlePaymentConfirmed(bookingId)` method (called by Safepay webhook)
+  - Updates payment_status = 'paid', booking_status = 'payment_confirmed'
+- [ ] **8.7.6**: Implement `handleCalcomWebhook(payload)` method
+  - Syncs Cal.com booking details (date, time, meeting link) back to consultation_bookings
+  - Updates booking_status = 'booked'
+- [ ] **8.7.7**: Implement `getAllBookings(paginationDto, filters)` method (staff only)
+- [ ] **8.7.8**: Implement `cancelBooking(bookingId)` method (staff only)
+
+### Sub-task 8.8: Consultation Bookings Controller
+
+- [ ] **8.8.1**: Create `apps/api/src/consultations/consultations.controller.ts`
+- [ ] **8.8.2**: Create endpoint: `POST /api/consultations` (@Public) - Create booking with intake data
+- [ ] **8.8.3**: Create endpoint: `POST /api/consultations/:id/pay` (@Public) - Initiate Safepay checkout
+- [ ] **8.8.4**: Create endpoint: `GET /api/consultations/status?ref=CON-2026-0001&email=x` (@Public) - Guest status
+- [ ] **8.8.5**: Create endpoint: `POST /api/consultations/webhook/calcom` (@Public) - Cal.com webhook
+- [ ] **8.8.6**: Create endpoint: `GET /api/consultations` (staff only) - List all bookings
+- [ ] **8.8.7**: Create endpoint: `GET /api/consultations/:id` (staff only) - Booking detail
+- [ ] **8.8.8**: Create endpoint: `PATCH /api/consultations/:id/cancel` (staff only) - Cancel booking
+
+### Sub-task 8.9: Consultation DTOs & Module
+
+- [ ] **8.9.1**: Create `apps/api/src/consultations/dto/create-consultation.dto.ts`
+  - Fields: fullName, email, phoneNumber, practiceArea, urgency, issueSummary, relevantDates (opt), opposingParty (opt), additionalNotes (opt)
+- [ ] **8.9.2**: Create `apps/api/src/consultations/dto/consultation-response.dto.ts`
+- [ ] **8.9.3**: Create enums: consultation_booking_status, consultation_urgency
+- [ ] **8.9.4**: Create `apps/api/src/consultations/dto/index.ts` barrel export
+- [ ] **8.9.5**: Create `apps/api/src/consultations/consultations.module.ts`
+  - Import PaymentsModule for SafepayService
+
+### Sub-task 8.10: Frontend - Consultation Booking Page
+
+- [ ] **8.10.1**: Install Cal.com embed SDK: `pnpm add @calcom/embed-react --filter web`
+- [ ] **8.10.2**: Create `/consultation` page with multi-step form layout
+- [ ] **8.10.3**: Implement Step 1: Client Details (full name, email, phone) - React Hook Form + Zod
+- [ ] **8.10.4**: Implement Step 2: Qualification (practice area dropdown, urgency selector)
+- [ ] **8.10.5**: Implement Step 3: Intake Questions (issue summary textarea, relevant dates, opposing party)
+- [ ] **8.10.6**: Implement Step 4: Review + Pay ("Pay PKR 50,000" button → Safepay redirect)
+- [ ] **8.10.7**: Implement Step 5: Cal.com Embedded Booking (only renders after payment confirmed)
+  - Polls `/api/consultations/status`, then shows Cal.com widget
+  - Single event type: "Consultation with Mr. Shoaib Razzaq" (no attorney routing)
+- [ ] **8.10.8**: Implement Confirmation Page (reference number, booked date/time, email sent)
+- [ ] **8.10.9**: Create `apps/web/lib/api/consultations.ts` API client helpers
+- [ ] **8.10.10**: Update "BOOK CONSULTATION" button in Navigation.tsx to link to `/consultation`
 
 ---
 
@@ -526,7 +727,7 @@ Complete database architecture with 20+ tables, Row-Level Security, comprehensiv
 
 ---
 
-## HEAD TASK 10: Payments Module
+## HEAD TASK 10: Payments & Safepay Integration Module
 
 ### Sub-task 10.1: Create Invoices Service
 
@@ -539,38 +740,76 @@ Complete database architecture with 20+ tables, Row-Level Security, comprehensiv
 - [ ] **10.1.7**: Implement `addInvoiceItem(invoiceId, itemDto)` method
 - [ ] **10.1.8**: Implement `calculateInvoiceTotals(invoiceId)` method
 
-### Sub-task 10.2: Create Safepay Integration Service
+### Sub-task 10.2: Create Safepay Integration Service (Shared Layer)
+
+**Context:** Safepay handles 3 payment types: consultation fee (PKR 50,000 one-time), monthly retainer (PKR 700/month recurring), service registration fee (variable one-time). Single webhook endpoint routes by metadata.type.
 
 - [ ] **10.2.1**: Create `apps/api/src/payments/safepay.service.ts`
-- [ ] **10.2.2**: Implement `createCheckoutSession(invoiceId, amount)` method
-- [ ] **10.2.3**: Implement `verifyWebhookSignature(payload, signature)` method
-- [ ] **10.2.4**: Implement `handlePaymentSuccess(safepayData)` method
-- [ ] **10.2.5**: Implement `handlePaymentFailed(safepayData)` method
-- [ ] **10.2.6**: Implement `getPaymentStatus(trackerId)` method
+- [ ] **10.2.2**: Implement `createCheckoutSession(amount, currency, metadata, returnUrl, cancelUrl)` method
+  - metadata: `{ type: 'consultation' | 'subscription' | 'service' | 'invoice', referenceId: string }`
+  - Returns Safepay checkout URL for redirect
+- [ ] **10.2.3**: Implement `createSubscription(planId, customerEmail, metadata)` method
+  - For PKR 700/month recurring retainer payments
+  - Returns Safepay subscription checkout URL
+- [ ] **10.2.4**: Implement `verifyWebhookSignature(payload, signature)` method
+  - Validate HMAC signature using SAFEPAY_WEBHOOK_SECRET
+- [ ] **10.2.5**: Implement `getPaymentStatus(trackerId)` method
+  - Poll Safepay API for current payment status
+- [ ] **10.2.6**: Implement `cancelSubscription(safepaySubscriptionId)` method
 
-### Sub-task 10.3: Create Payments Controller
+### Sub-task 10.3: Create Webhook Controller (Central Payment Router)
 
-- [ ] **10.3.1**: Create `apps/api/src/payments/payments.controller.ts`
-- [ ] **10.3.2**: Create endpoint: `GET /api/invoices`
-- [ ] **10.3.3**: Create endpoint: `POST /api/invoices`
-- [ ] **10.3.4**: Create endpoint: `GET /api/invoices/:id`
-- [ ] **10.3.5**: Create endpoint: `PATCH /api/invoices/:id`
-- [ ] **10.3.6**: Create endpoint: `POST /api/invoices/:id/send`
-- [ ] **10.3.7**: Create endpoint: `POST /api/payments/checkout`
-- [ ] **10.3.8**: Create endpoint: `POST /api/payments/webhook`
-- [ ] **10.3.9**: Create endpoint: `GET /api/payments/:id`
+- [ ] **10.3.1**: Create `apps/api/src/payments/webhook.controller.ts`
+- [ ] **10.3.2**: Create endpoint: `POST /api/payments/webhook` (@Public)
+  - Verify signature → extract metadata.type → route to correct handler:
+    - `consultation` → ConsultationsService.handlePaymentConfirmed()
+    - `subscription` → SubscriptionsService.handleSubscriptionActivated/Renewal()
+    - `service` → ServiceRegistrationsService.handlePaymentConfirmed()
+    - `invoice` → InvoicesService.handlePaymentReceived()
+- [ ] **10.3.3**: Implement payment failure routing (same metadata.type dispatch)
+- [ ] **10.3.4**: Implement subscription lifecycle handlers (cancelled, expired, renewal_failed)
+- [ ] **10.3.5**: Add idempotency check (prevent duplicate webhook processing)
 
-### Sub-task 10.4: Create DTOs
+### Sub-task 10.4: Create Payments Controller
 
-- [ ] **10.4.1**: Create `apps/api/src/payments/dto/create-invoice.dto.ts`
-- [ ] **10.4.2**: Create `apps/api/src/payments/dto/update-invoice.dto.ts`
-- [ ] **10.4.3**: Create `apps/api/src/payments/dto/create-invoice-item.dto.ts`
-- [ ] **10.4.4**: Create `apps/api/src/payments/dto/create-checkout.dto.ts`
-- [ ] **10.4.5**: Create enums for invoice_status, payment_status, payment_method
+- [ ] **10.4.1**: Create `apps/api/src/payments/payments.controller.ts`
+- [ ] **10.4.2**: Create endpoint: `GET /api/invoices`
+- [ ] **10.4.3**: Create endpoint: `POST /api/invoices`
+- [ ] **10.4.4**: Create endpoint: `GET /api/invoices/:id`
+- [ ] **10.4.5**: Create endpoint: `PATCH /api/invoices/:id`
+- [ ] **10.4.6**: Create endpoint: `POST /api/invoices/:id/send`
+- [ ] **10.4.7**: Create endpoint: `POST /api/payments/checkout` - Generic checkout initiation
+- [ ] **10.4.8**: Create endpoint: `GET /api/payments/:id` - Payment detail
+- [ ] **10.4.9**: Create endpoint: `GET /api/payments/history` - Aggregated payment history across all sources (consultations, subscriptions, services, invoices)
 
-### Sub-task 10.5: Create Payments Module
+### Sub-task 10.5: Create Payment DTOs
 
-- [ ] **10.5.1**: Create `apps/api/src/payments/payments.module.ts`
+- [ ] **10.5.1**: Create `apps/api/src/payments/dto/create-invoice.dto.ts`
+- [ ] **10.5.2**: Create `apps/api/src/payments/dto/update-invoice.dto.ts`
+- [ ] **10.5.3**: Create `apps/api/src/payments/dto/create-invoice-item.dto.ts`
+- [ ] **10.5.4**: Create `apps/api/src/payments/dto/create-checkout.dto.ts`
+  - Fields: amount, currency (default 'PKR'), metadata (type + referenceId), returnUrl, cancelUrl
+- [ ] **10.5.5**: Create `apps/api/src/payments/dto/webhook-payload.dto.ts`
+  - Safepay webhook payload structure
+- [ ] **10.5.6**: Create enums for invoice_status, payment_status, payment_method
+
+### Sub-task 10.6: Create Payments Module
+
+- [ ] **10.6.1**: Create `apps/api/src/payments/payments.module.ts`
+  - Register SafepayService, WebhookController, PaymentsController, InvoicesService
+  - Export SafepayService for use by ConsultationsModule, SubscriptionsModule, ServiceRegistrationsModule
+
+### Sub-task 10.7: Frontend Payment Components
+
+- [ ] **10.7.1**: Create `apps/web/lib/api/payments.ts` API client helpers
+  - `createCheckoutSession(data)` → returns Safepay redirect URL
+  - `pollPaymentStatus(trackerId)` → polls until completed/failed
+  - `getPaymentHistory()` → aggregated payment list
+- [ ] **10.7.2**: Create `apps/web/components/payment/payment-status.tsx`
+  - Loading/polling state while awaiting payment confirmation
+  - Success/failure display with next-step navigation
+- [ ] **10.7.3**: Create `/payment/success` and `/payment/cancel` return pages
+  - Parse URL params to determine which flow (consultation/subscription/service) and show appropriate next step
 
 ---
 
@@ -677,6 +916,23 @@ Complete database architecture with 20+ tables, Row-Level Security, comprehensiv
 
 - [ ] **12.6.1**: Create `apps/api/src/admin/admin.module.ts`
 
+### Sub-task 12.7: Admin Dashboard Stats Enhancement
+
+- [ ] **12.7.1**: Update DashboardService with new stat queries:
+  - Total Subscribers count, Open Complaints count, Pending Service Registrations count, Pending Consultations count
+- [ ] **12.7.2**: Update `GET /api/admin/dashboard` response to include new stats
+
+### Sub-task 12.8: Frontend - Admin Management Views
+
+- [ ] **12.8.1**: Create `/admin/complaints` page - All complaints list with filters (status, org, date range)
+- [ ] **12.8.2**: Create `/admin/complaints/:id` page - Complaint detail + status update form + assign to staff
+- [ ] **12.8.3**: Create `/admin/subscriptions` page - All subscriptions list with status
+- [ ] **12.8.4**: Create `/admin/service-registrations` page - All registrations with filters
+- [ ] **12.8.5**: Create `/admin/service-registrations/:id` page - Detail + status update + assign staff
+- [ ] **12.8.6**: Create `/admin/consultations` page - All consultation bookings with filters
+- [ ] **12.8.7**: Create `/admin/consultations/:id` page - Booking detail + status
+- [ ] **12.8.8**: Update admin sidebar: add Complaints, Subscriptions, Service Registrations, Consultations links
+
 ---
 
 ## HEAD TASK 13: Testing & Validation
@@ -729,9 +985,9 @@ Complete database architecture with 20+ tables, Row-Level Security, comprehensiv
 - [ ] All dependencies installed
 - [ ] Backend starts without errors
 - [ ] Supabase connection working
-- [ ] All tables exist
+- [ ] All tables exist (including new: consultation_bookings, subscriptions, complaints, service_registrations)
 - [ ] RLS enabled on all tables
-- [ ] Triggers and functions created
+- [ ] Triggers and functions created (including CON-YYYY-NNNN, CMP-YYYY-NNNN, SRV-YYYY-NNNN)
 
 ### Phase 2: Authentication
 
@@ -748,19 +1004,43 @@ Complete database architecture with 20+ tables, Row-Level Security, comprehensiv
 - [ ] Upload document works
 - [ ] Create invoice works (invoice_number generated)
 
-### Phase 4: RLS & Security
+### Phase 4: Client-Facing Features
+
+- [ ] Consultation booking flow works end-to-end (guest → intake → pay → Cal.com → confirmation)
+- [ ] Cal.com embed only shows after payment confirmed
+- [ ] Subscription creation + Safepay recurring checkout works
+- [ ] Complaint submission gated behind active subscription
+- [ ] Complaint status tracking works (submitted → under_review → escalated → resolved)
+- [ ] Service registration form works (guest → details → docs → pay)
+- [ ] Auto account creation on service registration payment
+- [ ] Credentials email sent after auto account creation
+
+### Phase 5: Safepay Integration
+
+- [ ] One-time checkout works (consultation, service fees)
+- [ ] Recurring subscription works (monthly retainer)
+- [ ] Webhook signature verification works
+- [ ] Webhook routes correctly by metadata.type
+- [ ] Payment failure handling works
+- [ ] Subscription lifecycle (activate, renew, cancel) works
+- [ ] Idempotency prevents duplicate webhook processing
+
+### Phase 6: RLS & Security
 
 - [ ] Clients see only own data
 - [ ] Attorneys see assigned data
 - [ ] Admin sees all data
 - [ ] Access control enforced
+- [ ] Guest endpoints (@Public) don't leak data (consultation status requires email match)
+- [ ] Subscription check prevents unauthorized complaint submission
 
-### Phase 5: Testing
+### Phase 7: Testing
 
 - [ ] All unit tests pass
 - [ ] All E2E tests pass
-- [ ] Safepay webhook works
-- [ ] Email notifications work
+- [ ] Safepay webhook works for all payment types
+- [ ] Cal.com webhook syncs booking data
+- [ ] Email notifications work (credentials, confirmations)
 
 ---
 
@@ -773,15 +1053,22 @@ Complete database architecture with 20+ tables, Row-Level Security, comprehensiv
 5. **JSDoc Required**: Document exports
 6. **Test Alongside**: Don't test after
 7. **No .env Commits**: Use .env.example
+8. **Guest Endpoints**: Consultation + Service Registration endpoints are @Public - verify no data leaks
+9. **Payment Before Access**: Cal.com embed must NEVER render before payment confirmation
+10. **Subscription Guard**: Complaint submission must verify active subscription status on every request
 
 ---
 
 ## Estimated Timeline
 
-- Phase 1-2: 3-4 days
-- Phase 3-4: 2-3 days
-- Phase 5-8: 6-8 days
-- Phase 9-11: 4-5 days
-- Phase 12-13: 3-4 days
+- Phase 1-2 (Environment + Auth): 3-4 days ✅ DONE
+- Phase 3-4 (Users, Clients, Cases): 4-5 days
+- Phase 5-6 (Appointments + Consultation Booking): 4-5 days
+- Phase 7-8 (Documents + Payments/Safepay): 5-6 days
+- Phase 9 (Subscriptions + Complaints): 3-4 days
+- Phase 10 (Service Registrations): 3-4 days
+- Phase 11-12 (Content + Admin): 4-5 days
+- Phase 13 (Testing): 3-4 days
+- Frontend pages for all features: 5-7 days (parallel with backend)
 
-**Total**: 18-24 days
+**Total**: 30-40 days
