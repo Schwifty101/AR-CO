@@ -149,10 +149,7 @@ describe('ClientsService', () => {
         error: null,
       });
 
-      const result = await service.getClientById(
-        'client-uuid-456',
-        clientUser,
-      );
+      const result = await service.getClientById('client-uuid-456', clientUser);
 
       expect(result.id).toBe('client-uuid-456');
     });
