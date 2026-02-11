@@ -32,7 +32,7 @@ const AUTH_ROUTES = ['/auth/signin', '/auth/signup', '/auth/forgot-password'];
  *
  * Runs on every matched request to handle auth routing.
  */
-export async function proxy(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   try {
     const { supabaseResponse, user } = await updateSession(request);
     const { pathname } = request.nextUrl;

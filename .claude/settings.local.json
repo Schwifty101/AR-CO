@@ -9,7 +9,27 @@
       "Bash(pnpm tsc:*)",
       "Bash(ls:*)",
       "Bash(grep:*)",
-      "Bash(pnpm --filter web tsc:*)"
-    ]
+      "Bash(pnpm --filter web tsc:*)",
+      "mcp__ide__getDiagnostics",
+      "Bash(curl:*)",
+      "Bash(/Users/sobanahmad/.claude/plugins/cache/claude-plugins-official/ralph-loop/*)",
+      "\"Bash(! \\\"/Users/sobanahmad/.claude/plugins/cache/claude-plugins-official/ralph-loop/*)\"\n``*",
+      "mcp__supabase__execute_sql",
+      "Bash(pnpm test:*)",
+      "mcp__supabase__list_tables",
+      "Bash(pnpm install:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npx jest:*)",
+      "Bash(git -C \"/Users/sobanahmad/Work/AR&CO/AR-CO\" status)",
+      "Bash(python3:*)",
+      "Bash(xargs ls:*)",
+      "Bash(pnpm build:*)",
+      "Bash(pnpm lint:*)",
+      "Bash(git add:*)",
+      "Bash(git push:*)"
+    ],
+    "env": {
+      "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+    }
   }
 }

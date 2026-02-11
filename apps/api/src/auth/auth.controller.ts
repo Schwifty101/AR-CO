@@ -37,22 +37,31 @@ import { AuthService } from './auth.service';
 import { Public } from '../common/decorators/public.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import type { AuthUser } from '../common/interfaces/auth-user.interface';
+import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
 import {
-  SignupDto,
-  SigninDto,
-  OAuthCallbackDto,
-  RefreshTokenDto,
-  PasswordResetRequestDto,
-  PasswordResetConfirmDto,
-} from './dto';
-import type { AuthResponseDto, AuthMessageDto } from './dto';
+  SignupSchema,
+  SigninSchema,
+  OAuthCallbackSchema,
+  RefreshTokenSchema,
+  PasswordResetRequestSchema,
+  PasswordResetConfirmSchema,
+} from '@repo/shared';
+import type {
+  SignupData,
+  SigninData,
+  OAuthCallbackData,
+  RefreshTokenData,
+  PasswordResetRequestData,
+  PasswordResetConfirmData,
+  AuthResponse,
+  AuthResponseUser,
+  AuthMessage,
+} from '@repo/shared';
 
 /**
  * Authentication controller
  *
  * Provides REST endpoints for all authentication flows.
- *
- * @class AuthController
  */
 @Controller('auth')
 export class AuthController {
@@ -62,26 +71,24 @@ export class AuthController {
    * Register a new client with email/password
    *
    * Admin emails are blocked and must use Google OAuth.
-   *
-   * @param {SignupDto} dto - Registration data
-   * @returns {Promise<AuthResponseDto>} User profile with session tokens
    */
   @Post('signup')
   @Public()
-  async signup(@Body() dto: SignupDto): Promise<AuthResponseDto> {
+  async signup(
+    @Body(new ZodValidationPipe(SignupSchema)) dto: SignupData,
+  ): Promise<AuthResponse> {
     return this.authService.signup(dto);
   }
 
   /**
    * Sign in with email/password
-   *
-   * @param {SigninDto} dto - Login credentials
-   * @returns {Promise<AuthResponseDto>} User profile with session tokens
    */
   @Post('signin')
   @Public()
   @HttpCode(HttpStatus.OK)
-  async signin(@Body() dto: SigninDto): Promise<AuthResponseDto> {
+  async signin(
+    @Body(new ZodValidationPipe(SigninSchema)) dto: SigninData,
+  ): Promise<AuthResponse> {
     return this.authService.signin(dto);
   }
 
@@ -90,27 +97,25 @@ export class AuthController {
    *
    * Called by the frontend after exchanging the OAuth code for tokens.
    * Creates user profile on first login and determines user type.
-   *
-   * @param {OAuthCallbackDto} dto - OAuth session tokens
-   * @returns {Promise<AuthResponseDto>} User profile with session tokens
    */
   @Post('oauth/callback')
   @Public()
   @HttpCode(HttpStatus.OK)
-  async oauthCallback(@Body() dto: OAuthCallbackDto): Promise<AuthResponseDto> {
+  async oauthCallback(
+    @Body(new ZodValidationPipe(OAuthCallbackSchema)) dto: OAuthCallbackData,
+  ): Promise<AuthResponse> {
     return this.authService.processOAuthCallback(dto);
   }
 
   /**
    * Refresh an expired access token
-   *
-   * @param {RefreshTokenDto} dto - Refresh token
-   * @returns {Promise<AuthResponseDto>} New session tokens with user info
    */
   @Post('refresh')
   @Public()
   @HttpCode(HttpStatus.OK)
-  async refreshToken(@Body() dto: RefreshTokenDto): Promise<AuthResponseDto> {
+  async refreshToken(
+    @Body(new ZodValidationPipe(RefreshTokenSchema)) dto: RefreshTokenData,
+  ): Promise<AuthResponse> {
     return this.authService.refreshToken(dto);
   }
 
@@ -118,31 +123,27 @@ export class AuthController {
    * Request a password reset email
    *
    * Returns a generic message regardless of whether the email exists.
-   *
-   * @param {PasswordResetRequestDto} dto - Email address
-   * @returns {Promise<AuthMessageDto>} Generic success message
    */
   @Post('password-reset/request')
   @Public()
   @HttpCode(HttpStatus.OK)
   async requestPasswordReset(
-    @Body() dto: PasswordResetRequestDto,
-  ): Promise<AuthMessageDto> {
+    @Body(new ZodValidationPipe(PasswordResetRequestSchema))
+    dto: PasswordResetRequestData,
+  ): Promise<AuthMessage> {
     return this.authService.requestPasswordReset(dto);
   }
 
   /**
    * Confirm password reset with new password
-   *
-   * @param {PasswordResetConfirmDto} dto - Reset token and new password
-   * @returns {Promise<AuthMessageDto>} Success message
    */
   @Post('password-reset/confirm')
   @Public()
   @HttpCode(HttpStatus.OK)
   async confirmPasswordReset(
-    @Body() dto: PasswordResetConfirmDto,
-  ): Promise<AuthMessageDto> {
+    @Body(new ZodValidationPipe(PasswordResetConfirmSchema))
+    dto: PasswordResetConfirmData,
+  ): Promise<AuthMessage> {
     return this.authService.confirmPasswordReset(dto);
   }
 
@@ -150,14 +151,11 @@ export class AuthController {
    * Get the current authenticated user's profile
    *
    * Requires a valid JWT in the Authorization header.
-   *
-   * @param {AuthUser} user - Injected authenticated user
-   * @returns {Promise<AuthResponseDto['user']>} User profile info
    */
   @Get('me')
   async getCurrentUser(
     @CurrentUser() user: AuthUser,
-  ): Promise<AuthResponseDto['user']> {
+  ): Promise<AuthResponseUser> {
     return this.authService.getCurrentUser(user.id, user.email);
   }
 
@@ -165,13 +163,10 @@ export class AuthController {
    * Sign out the current user
    *
    * Logs the signout event. Frontend handles session clearing.
-   *
-   * @param {AuthUser} user - Injected authenticated user
-   * @returns {Promise<AuthMessageDto>} Success message
    */
   @Post('signout')
   @HttpCode(HttpStatus.OK)
-  async signout(@CurrentUser() user: AuthUser): Promise<AuthMessageDto> {
+  async signout(@CurrentUser() user: AuthUser): Promise<AuthMessage> {
     return this.authService.signout(user.id);
   }
 }

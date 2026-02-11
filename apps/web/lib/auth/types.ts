@@ -1,7 +1,7 @@
 /**
  * Auth Types
  *
- * Shared type definitions for the authentication system.
+ * Re-exports shared types and defines frontend-only auth state.
  *
  * @module AuthTypes
  *
@@ -11,17 +11,10 @@
  * ```
  */
 
-/** User information returned from the backend */
-export interface AuthUser {
-  /** Supabase auth.users UUID */
-  id: string;
-  /** User's email address */
-  email: string;
-  /** User's display name */
-  fullName: string;
-  /** User's role: 'client' | 'admin' | 'attorney' | 'staff' */
-  userType: string;
-}
+import type { AuthResponseUser } from '@repo/shared';
+
+/** User information returned from the backend (re-exported from shared) */
+export type AuthUser = AuthResponseUser;
 
 /** Authentication state managed by AuthContext */
 export interface AuthState {
@@ -34,29 +27,10 @@ export interface AuthState {
 }
 
 /** Auth response from backend API */
-export interface AuthResponse {
-  /** User profile info */
-  user: AuthUser;
-  /** JWT access token */
-  accessToken: string;
-  /** Refresh token */
-  refreshToken: string;
-}
+export type { AuthResponse } from '@repo/shared';
 
 /** Message-only response from backend */
-export interface AuthMessageResponse {
-  /** Status message */
-  message: string;
-}
+export type { AuthMessage as AuthMessageResponse } from '@repo/shared';
 
 /** Signup form data */
-export interface SignupData {
-  /** User's email */
-  email: string;
-  /** User's password */
-  password: string;
-  /** User's full name */
-  fullName: string;
-  /** Optional phone number */
-  phoneNumber?: string;
-}
+export type { SignupData } from '@repo/shared';

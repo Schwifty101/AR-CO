@@ -30,11 +30,14 @@ interface NavItem {
 /** Admin navigation items */
 const ADMIN_NAV: NavItem[] = [
   { label: 'Dashboard', href: '/admin/dashboard' },
+  { label: 'Profile', href: '/admin/profile' },
+  { label: 'Users', href: '/admin/users' },
 ];
 
 /** Client navigation items */
 const CLIENT_NAV: NavItem[] = [
   { label: 'Dashboard', href: '/client/dashboard' },
+  { label: 'Profile', href: '/client/profile' },
 ];
 
 /** Props for DashboardSidebar */
