@@ -148,9 +148,7 @@ export class ClientsController {
   @Delete(':id')
   @Roles(UserType.ADMIN)
   @HttpCode(HttpStatus.OK)
-  async deleteClient(
-    @Param('id') id: string,
-  ): Promise<{ message: string }> {
+  async deleteClient(@Param('id') id: string): Promise<{ message: string }> {
     return this.clientsService.deleteClient(id);
   }
 
