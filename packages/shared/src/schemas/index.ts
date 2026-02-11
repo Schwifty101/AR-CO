@@ -29,3 +29,40 @@ export {
   AdminDashboardStatsSchema,
   ClientDashboardStatsSchema,
 } from './dashboard.schemas';
+
+export {
+  CreateClientSchema,
+  UpdateClientSchema,
+  ClientFiltersSchema,
+  ClientResponseSchema,
+  PaginatedClientsResponseSchema,
+} from './clients.schemas';
+
+export {
+  SubscriptionResponseSchema,
+  CancelSubscriptionSchema,
+  PaginatedSubscriptionsResponseSchema,
+} from './subscriptions.schemas';
+
+export {
+  CreateComplaintSchema,
+  UpdateComplaintStatusSchema,
+  AssignComplaintSchema,
+  ComplaintFiltersSchema,
+  ComplaintResponseSchema,
+  PaginatedComplaintsResponseSchema,
+} from './complaints.schemas';
+
+export {
+  CreateServiceRegistrationSchema,
+  GuestStatusCheckSchema,
+  UpdateRegistrationStatusSchema,
+  ServiceRegistrationResponseSchema,
+  GuestStatusResponseSchema,
+  PaginatedServiceRegistrationsResponseSchema,
+} from './service-registrations.schemas';
+
+export {
+  ServiceResponseSchema,
+  PaginatedServicesResponseSchema,
+} from './services.schemas';
