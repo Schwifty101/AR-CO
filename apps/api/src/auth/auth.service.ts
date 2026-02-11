@@ -35,15 +35,18 @@ import {
 } from '@nestjs/common';
 import { SupabaseService } from '../database/supabase.service';
 import { AdminWhitelistService } from '../database/admin-whitelist.service';
-import {
-  SignupDto,
-  SigninDto,
-  OAuthCallbackDto,
-  RefreshTokenDto,
-  PasswordResetRequestDto,
-  PasswordResetConfirmDto,
-} from './dto';
-import type { AuthResponseDto, AuthMessageDto } from './dto';
+import { UserType } from '@repo/shared';
+import type {
+  SignupData,
+  SigninData,
+  OAuthCallbackData,
+  RefreshTokenData,
+  PasswordResetRequestData,
+  PasswordResetConfirmData,
+  AuthResponse,
+  AuthResponseUser,
+  AuthMessage,
+} from '@repo/shared';
 
 /** Metadata for activity log entries */
 interface ActivityLogMetadata {
@@ -75,8 +78,8 @@ export class AuthService {
    * Admin emails are blocked from email/password registration.
    * Creates a Supabase auth user, user_profile, and client_profile.
    *
-   * @param {SignupDto} dto - Signup credentials and profile data
-   * @returns {Promise<AuthResponseDto>} User profile with session tokens
+   * @param {SignupData} dto - Signup credentials and profile data
+   * @returns {Promise<AuthResponse>} User profile with session tokens
    * @throws {ForbiddenException} If email is in admin whitelist
    * @throws {UnauthorizedException} If Supabase signup fails
    *
@@ -90,7 +93,7 @@ export class AuthService {
    * });
    * ```
    */
-  async signup(dto: SignupDto): Promise<AuthResponseDto> {
+  async signup(dto: SignupData): Promise<AuthResponse> {
     if (this.adminWhitelistService.isAdminEmail(dto.email)) {
       throw new ForbiddenException(
         'Admin accounts must use Google OAuth. Please sign in with Google.',
@@ -134,7 +137,7 @@ export class AuthService {
         id: userId,
         email: dto.email,
         fullName: dto.fullName,
-        userType: 'client',
+        userType: UserType.CLIENT,
       },
       accessToken: authData.session?.access_token ?? '',
       refreshToken: authData.session?.refresh_token ?? '',
@@ -144,8 +147,8 @@ export class AuthService {
   /**
    * Authenticate with email and password
    *
-   * @param {SigninDto} dto - Login credentials
-   * @returns {Promise<AuthResponseDto>} User profile with session tokens
+   * @param {SigninData} dto - Login credentials
+   * @returns {Promise<AuthResponse>} User profile with session tokens
    * @throws {UnauthorizedException} If credentials are invalid
    *
    * @example
@@ -156,7 +159,7 @@ export class AuthService {
    * });
    * ```
    */
-  async signin(dto: SigninDto): Promise<AuthResponseDto> {
+  async signin(dto: SigninData): Promise<AuthResponse> {
     const adminClient = this.supabaseService.getAdminClient();
 
     const { data: authData, error: authError } =
@@ -169,7 +172,22 @@ export class AuthService {
       throw new UnauthorizedException('Invalid email or password');
     }
 
-    const profile = await this.fetchUserProfile(authData.user.id);
+    let profile = await this.fetchUserProfile(authData.user.id);
+
+    // Check if existing user should be upgraded to admin
+    const isAdminEmail = this.adminWhitelistService.isAdminEmail(dto.email);
+    if (isAdminEmail && profile.user_type !== 'admin') {
+      // Upgrade user to admin
+      const { error: updateError } = await adminClient
+        .from('user_profiles')
+        .update({ user_type: 'admin' })
+        .eq('id', authData.user.id);
+
+      if (!updateError) {
+        this.logger.log(`Upgraded user ${dto.email} to admin`);
+        profile = { ...profile, user_type: 'admin' };
+      }
+    }
 
     await this.logAuthEvent(authData.user.id, 'SIGNIN', 'user', {
       provider: 'email',
@@ -180,7 +198,7 @@ export class AuthService {
         id: authData.user.id,
         email: authData.user.email!,
         fullName: profile.full_name,
-        userType: profile.user_type,
+        userType: profile.user_type as UserType,
       },
       accessToken: authData.session.access_token,
       refreshToken: authData.session.refresh_token,
@@ -193,8 +211,8 @@ export class AuthService {
    * Validates the access token, creates user profile if first login,
    * and determines user type based on admin whitelist.
    *
-   * @param {OAuthCallbackDto} dto - OAuth session tokens from frontend
-   * @returns {Promise<AuthResponseDto>} User profile with session tokens
+   * @param {OAuthCallbackData} dto - OAuth session tokens from frontend
+   * @returns {Promise<AuthResponse>} User profile with session tokens
    * @throws {UnauthorizedException} If token is invalid
    *
    * @example
@@ -206,7 +224,7 @@ export class AuthService {
    * // result.user.userType === 'admin' if email is whitelisted
    * ```
    */
-  async processOAuthCallback(dto: OAuthCallbackDto): Promise<AuthResponseDto> {
+  async processOAuthCallback(dto: OAuthCallbackData): Promise<AuthResponse> {
     const adminClient = this.supabaseService.getAdminClient();
 
     const {
@@ -240,6 +258,23 @@ export class AuthService {
         full_name: fullName,
         user_type: userType,
       };
+    } else {
+      // Check if existing user should be upgraded to admin
+      const isAdminEmail = this.adminWhitelistService.isAdminEmail(
+        authUser.email,
+      );
+      if (isAdminEmail && profile.user_type !== 'admin') {
+        // Upgrade user to admin
+        const { error: updateError } = await adminClient
+          .from('user_profiles')
+          .update({ user_type: 'admin' })
+          .eq('id', authUser.id);
+
+        if (!updateError) {
+          this.logger.log(`Upgraded user ${authUser.email} to admin`);
+          profile.user_type = 'admin';
+        }
+      }
     }
 
     await this.logAuthEvent(authUser.id, 'OAUTH_LOGIN', 'user', {
@@ -251,7 +286,7 @@ export class AuthService {
         id: authUser.id,
         email: authUser.email,
         fullName: profile.full_name,
-        userType: profile.user_type,
+        userType: profile.user_type as UserType,
       },
       accessToken: dto.accessToken,
       refreshToken: dto.refreshToken,
@@ -261,8 +296,8 @@ export class AuthService {
   /**
    * Refresh an expired access token
    *
-   * @param {RefreshTokenDto} dto - Refresh token
-   * @returns {Promise<AuthResponseDto>} New session tokens with user info
+   * @param {RefreshTokenData} dto - Refresh token
+   * @returns {Promise<AuthResponse>} New session tokens with user info
    * @throws {UnauthorizedException} If refresh token is invalid
    *
    * @example
@@ -272,7 +307,7 @@ export class AuthService {
    * });
    * ```
    */
-  async refreshToken(dto: RefreshTokenDto): Promise<AuthResponseDto> {
+  async refreshToken(dto: RefreshTokenData): Promise<AuthResponse> {
     const adminClient = this.supabaseService.getAdminClient();
 
     const { data: sessionData, error: sessionError } =
@@ -291,7 +326,7 @@ export class AuthService {
         id: sessionData.user.id,
         email: sessionData.user.email!,
         fullName: profile.full_name,
-        userType: profile.user_type,
+        userType: profile.user_type as UserType,
       },
       accessToken: sessionData.session.access_token,
       refreshToken: sessionData.session.refresh_token,
@@ -304,8 +339,8 @@ export class AuthService {
    * Sends a password reset email via Supabase Auth.
    * Returns a generic success message regardless of whether the email exists.
    *
-   * @param {PasswordResetRequestDto} dto - Email address
-   * @returns {Promise<AuthMessageDto>} Generic success message
+   * @param {PasswordResetRequestData} dto - Email address
+   * @returns {Promise<AuthMessage>} Generic success message
    *
    * @example
    * ```typescript
@@ -316,8 +351,8 @@ export class AuthService {
    * ```
    */
   async requestPasswordReset(
-    dto: PasswordResetRequestDto,
-  ): Promise<AuthMessageDto> {
+    dto: PasswordResetRequestData,
+  ): Promise<AuthMessage> {
     const adminClient = this.supabaseService.getAdminClient();
 
     const { error } = await adminClient.auth.resetPasswordForEmail(dto.email, {
@@ -339,8 +374,8 @@ export class AuthService {
    *
    * Uses the access token from the reset link to set a new password.
    *
-   * @param {PasswordResetConfirmDto} dto - Access token and new password
-   * @returns {Promise<AuthMessageDto>} Success message
+   * @param {PasswordResetConfirmData} dto - Access token and new password
+   * @returns {Promise<AuthMessage>} Success message
    * @throws {UnauthorizedException} If reset token is invalid
    *
    * @example
@@ -352,8 +387,8 @@ export class AuthService {
    * ```
    */
   async confirmPasswordReset(
-    dto: PasswordResetConfirmDto,
-  ): Promise<AuthMessageDto> {
+    dto: PasswordResetConfirmData,
+  ): Promise<AuthMessage> {
     const adminClient = this.supabaseService.getAdminClient();
 
     const {
@@ -389,14 +424,14 @@ export class AuthService {
    * by the frontend clearing the Supabase session.
    *
    * @param {string} userId - Authenticated user's UUID
-   * @returns {Promise<AuthMessageDto>} Success message
+   * @returns {Promise<AuthMessage>} Success message
    *
    * @example
    * ```typescript
    * const result = await authService.signout(user.id);
    * ```
    */
-  async signout(userId: string): Promise<AuthMessageDto> {
+  async signout(userId: string): Promise<AuthMessage> {
     await this.logAuthEvent(userId, 'SIGNOUT', 'user');
     return { message: 'Signed out successfully.' };
   }
@@ -406,7 +441,7 @@ export class AuthService {
    *
    * @param {string} userId - Authenticated user's UUID
    * @param {string} email - User's email
-   * @returns {Promise<AuthResponseDto['user']>} User profile info
+   * @returns {Promise<AuthResponseUser>} User profile info
    *
    * @example
    * ```typescript
@@ -416,14 +451,30 @@ export class AuthService {
   async getCurrentUser(
     userId: string,
     email: string,
-  ): Promise<AuthResponseDto['user']> {
-    const profile = await this.fetchUserProfile(userId);
+  ): Promise<AuthResponseUser> {
+    const adminClient = this.supabaseService.getAdminClient();
+    let profile = await this.fetchUserProfile(userId);
+
+    // Check if existing user should be upgraded to admin
+    const isAdminEmail = this.adminWhitelistService.isAdminEmail(email);
+    if (isAdminEmail && profile.user_type !== 'admin') {
+      // Upgrade user to admin
+      const { error: updateError } = await adminClient
+        .from('user_profiles')
+        .update({ user_type: 'admin' })
+        .eq('id', userId);
+
+      if (!updateError) {
+        this.logger.log(`Upgraded user ${email} to admin`);
+        profile = { ...profile, user_type: 'admin' };
+      }
+    }
 
     return {
       id: userId,
       email,
       fullName: profile.full_name,
-      userType: profile.user_type,
+      userType: profile.user_type as UserType,
     };
   }
 

@@ -306,6 +306,71 @@
 
 ---
 
+### [2026-02-10] Middleware Fix, Database Seeding & Auth Deadlock Fix
+
+**Status**: COMPLETED
+**Date**: 2026-02-10
+
+#### Problem 1: Next.js Middleware Not Running (Critical)
+
+- **Symptom**: Admin dashboard at `/admin/dashboard` showed permanent "Loading..." with no API requests being made
+- **Root Cause**: Middleware file was named `apps/web/proxy.ts` exporting `proxy()` function. Next.js requires the file to be named `middleware.ts` exporting `middleware()`. The misnamed file was silently ignored, so Supabase sessions were never refreshed.
+- **Fix**: Renamed `apps/web/proxy.ts` to `apps/web/middleware.ts` and changed `export async function proxy(` to `export async function middleware(`
+- **Files Changed**: 1 (rename + 1-line function name change)
+
+#### Problem 2: Empty Database (No Test Data)
+
+- **Symptom**: Even after fixing middleware, dashboard would show 0 for all stats because all business tables were empty (0 clients, 0 cases, 0 appointments, 0 invoices)
+- **Root Cause**: Only 1 admin user_profile existed from OAuth signup. No seed data had been inserted.
+- **Fix**: Seeded database via Supabase MCP `execute_sql` (service role, bypasses RLS) with test data:
+  - 4 `auth.users` (3 clients + 1 attorney with @seed.test emails)
+  - 4 `user_profiles` linked to auth.users
+  - 3 `client_profiles` with company info (Khan Enterprises, Zahra Textiles, individual)
+  - 1 `attorney_profiles` (Advocate Rashid Ali, 11yr experience)
+  - 3 `practice_areas` (Corporate Law, Tax Law, Immigration)
+  - 5 `cases` (2 active, 2 pending, 1 resolved) - auto-generated CASE-2026-0001 through 0005
+  - 4 `appointments` (1 confirmed, 2 pending, 1 completed)
+  - 4 `invoices` (1 draft, 2 sent, 1 paid) - auto-generated INV-2026-0001 through 0004
+- **Verification**: DB triggers correctly auto-generated case_number and invoice_number sequences
+
+#### Problem 3: Unused `/supabase` Directory
+
+- **Symptom**: Leftover directory from `supabase init` CLI creating noise in git status
+- **Root Cause**: CLI init was run but never completed/used. Project uses cloud Supabase exclusively via MCP.
+- **Fix**: Deleted `/supabase` directory (contained only `config.toml`, `.gitignore`, `.branches/_current_branch`)
+
+#### Problem 4: AuthProvider getSession() Deadlock (Critical)
+
+- **Symptom**: After middleware fix, cookies were present and manual API calls worked perfectly, but the React dashboard still showed "Loading..." permanently
+- **Root Cause**: `AuthProvider` in `auth-context.tsx` had a **navigator.locks deadlock**. On mount, it simultaneously:
+  1. Called `initAuth()` which called `refreshUser()` which called `supabase.auth.getSession()` (acquires navigator lock)
+  2. Set up `onAuthStateChange` listener which immediately fired `SIGNED_IN` event, calling `refreshUser()` again which called `getSession()` (waits for same lock)
+
+  Both `getSession()` calls fought over the `navigator.locks` API used internally by `@supabase/supabase-js` v2+, causing an infinite deadlock. Neither call ever resolved, so `isLoading` stayed `true` forever.
+- **Diagnosis**: Added console.log instrumentation to auth-context.tsx. Logs showed `getSession()` called twice but never completing:
+  ```
+  [AuthProvider] initAuth: starting...
+  [AuthProvider] refreshUser: calling getSession...
+  [AuthProvider] refreshUser: calling getSession...
+  // (no further output — both calls deadlocked)
+  ```
+- **Fix**: Rewrote `AuthProvider` to use `onAuthStateChange` as the **single source of truth**:
+  - Removed the separate `initAuth()` + `refreshUser()` double-call pattern
+  - `onAuthStateChange` callback now receives `(event, session)` directly — the session is provided by Supabase, no `getSession()` call needed during init
+  - `INITIAL_SESSION` event fires once on mount with the current session
+  - `isLoading` set to `false` after the first event via `initDone` ref
+  - `refreshUser()` kept as a public method for manual refresh (called outside init, so no lock contention)
+- **File Changed**: `apps/web/lib/auth/auth-context.tsx` (full rewrite)
+- **Key Lesson**: Never call `getSession()` concurrently with `onAuthStateChange` in `@supabase/supabase-js` v2+ — the navigator.locks API will deadlock.
+
+#### Result
+
+- Dashboard loads correctly with seeded stats: **Total Clients: 3, Active Cases: 4, Pending Appointments: 3**
+- Auth flow works end-to-end: Google OAuth sign-in -> middleware session refresh -> AuthProvider -> dashboard data fetch
+- All 4 backend API endpoints verified: `/api/auth/me`, `/api/dashboard/admin/stats`, `/api/users/profile`, `/api/users`
+
+---
+
 ## In Progress Tasks
 
 _No tasks currently in progress_
@@ -386,6 +451,22 @@ _No tasks currently in progress_
 - **Resolution**: Used `pnpm add --filter web` to install packages
 - **Status**: ✅ Resolved
 - **Impact**: Low - Quick workaround
+
+### Issue 5: Next.js Middleware Misnamed (Silent Failure)
+
+- **Date**: 2026-02-10
+- **Description**: Middleware file was `apps/web/proxy.ts` exporting `proxy()`. Next.js silently ignores files that aren't named `middleware.ts` with a `middleware()` export. No error logged anywhere.
+- **Resolution**: Renamed file to `middleware.ts`, renamed function to `middleware`
+- **Status**: ✅ Resolved
+- **Impact**: Critical - Auth sessions were never refreshed, causing dashboard to hang
+
+### Issue 6: Supabase getSession() Navigator Lock Deadlock
+
+- **Date**: 2026-02-10
+- **Description**: `AuthProvider` called `getSession()` from both `initAuth()` and `onAuthStateChange` simultaneously. `@supabase/supabase-js` v2+ uses `navigator.locks` API internally, and concurrent `getSession()` calls deadlock — neither ever resolves.
+- **Resolution**: Rewrote AuthProvider to use `onAuthStateChange(event, session)` as single source of truth. The callback receives the session object directly, eliminating the need for a separate `getSession()` call during initialization.
+- **Status**: ✅ Resolved
+- **Impact**: Critical - Dashboard was permanently stuck on "Loading..." despite valid session cookies
 
 ---
 
