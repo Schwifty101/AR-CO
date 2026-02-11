@@ -65,7 +65,10 @@ export class DashboardService {
       this.logger.error('Failed to count cases', casesResult.error.message);
     }
     if (appointmentsResult.error) {
-      this.logger.error('Failed to count appointments', appointmentsResult.error.message);
+      this.logger.error(
+        'Failed to count appointments',
+        appointmentsResult.error.message,
+      );
     }
 
     return {
@@ -87,32 +90,43 @@ export class DashboardService {
   async getClientStats(clientProfileId: string): Promise<ClientDashboardStats> {
     const client = this.supabaseService.getAdminClient();
 
-    const [casesResult, appointmentsResult, invoicesResult] = await Promise.all([
-      client
-        .from('cases')
-        .select('id', { count: 'exact', head: true })
-        .eq('client_profile_id', clientProfileId),
-      client
-        .from('appointments')
-        .select('id', { count: 'exact', head: true })
-        .eq('client_profile_id', clientProfileId)
-        .in('status', ['pending', 'confirmed'])
-        .gte('appointment_date', new Date().toISOString().split('T')[0]),
-      client
-        .from('invoices')
-        .select('id', { count: 'exact', head: true })
-        .eq('client_profile_id', clientProfileId)
-        .in('status', ['draft', 'sent', 'overdue']),
-    ]);
+    const [casesResult, appointmentsResult, invoicesResult] = await Promise.all(
+      [
+        client
+          .from('cases')
+          .select('id', { count: 'exact', head: true })
+          .eq('client_profile_id', clientProfileId),
+        client
+          .from('appointments')
+          .select('id', { count: 'exact', head: true })
+          .eq('client_profile_id', clientProfileId)
+          .in('status', ['pending', 'confirmed'])
+          .gte('appointment_date', new Date().toISOString().split('T')[0]),
+        client
+          .from('invoices')
+          .select('id', { count: 'exact', head: true })
+          .eq('client_profile_id', clientProfileId)
+          .in('status', ['draft', 'sent', 'overdue']),
+      ],
+    );
 
     if (casesResult.error) {
-      this.logger.error('Failed to count client cases', casesResult.error.message);
+      this.logger.error(
+        'Failed to count client cases',
+        casesResult.error.message,
+      );
     }
     if (appointmentsResult.error) {
-      this.logger.error('Failed to count client appointments', appointmentsResult.error.message);
+      this.logger.error(
+        'Failed to count client appointments',
+        appointmentsResult.error.message,
+      );
     }
     if (invoicesResult.error) {
-      this.logger.error('Failed to count client invoices', invoicesResult.error.message);
+      this.logger.error(
+        'Failed to count client invoices',
+        invoicesResult.error.message,
+      );
     }
 
     return {

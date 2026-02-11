@@ -260,7 +260,9 @@ export class AuthService {
       };
     } else {
       // Check if existing user should be upgraded to admin
-      const isAdminEmail = this.adminWhitelistService.isAdminEmail(authUser.email);
+      const isAdminEmail = this.adminWhitelistService.isAdminEmail(
+        authUser.email,
+      );
       if (isAdminEmail && profile.user_type !== 'admin') {
         // Upgrade user to admin
         const { error: updateError } = await adminClient
