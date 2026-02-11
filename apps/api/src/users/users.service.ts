@@ -32,6 +32,7 @@ import {
   Injectable,
   NotFoundException,
   InternalServerErrorException,
+  BadRequestException,
   Logger,
 } from '@nestjs/common';
 import { SupabaseService } from '../database/supabase.service';
@@ -476,38 +477,82 @@ export class UsersService {
   /**
    * Delete a user and all associated data
    *
-   * Removes the user_profiles record (cascading deletes handle linked profiles)
-   * and removes the user from Supabase auth.users table.
+   * Removes the user from Supabase auth.users first, then deletes the
+   * user_profiles record (cascading deletes handle linked profiles).
+   * Auth-first order prevents orphaned auth users on partial failure.
    *
-   * @param {string} userId - User's UUID
+   * @param {string} userId - Target user's UUID
+   * @param {string} requestingUserId - ID of the admin making the request
    * @returns {Promise<{ message: string }>} Success confirmation
+   * @throws {BadRequestException} If admin attempts self-deletion or target is last admin
    * @throws {NotFoundException} If user does not exist
    * @throws {InternalServerErrorException} If deletion fails
    *
    * @example
    * ```typescript
    * // Delete user account (admin only)
-   * const result = await usersService.deleteUser('user-uuid-to-delete');
+   * const result = await usersService.deleteUser('target-uuid', 'admin-uuid');
    * console.log(result.message); // "User deleted successfully"
    * ```
    *
    * @remarks
    * This operation is irreversible. All user data including cases,
    * appointments, and activity logs will be deleted via cascading foreign keys.
+   * Admins cannot delete their own account or the last remaining admin.
    */
-  async deleteUser(userId: string): Promise<{ message: string }> {
+  async deleteUser(
+    userId: string,
+    requestingUserId: string,
+  ): Promise<{ message: string }> {
     const adminClient = this.supabaseService.getAdminClient();
 
-    // Verify user exists
+    // Self-deletion prevention
+    if (userId === requestingUserId) {
+      throw new BadRequestException('Cannot delete your own account');
+    }
+
+    // Verify target user exists and get their type
     const { data: existingUser, error: fetchError } = await adminClient
       .from('user_profiles')
-      .select('id')
+      .select('id, user_type')
       .eq('id', userId)
       .single();
 
     if (fetchError || !existingUser) {
       this.logger.warn(`User not found for deletion: ${userId}`);
       throw new NotFoundException(`User with ID ${userId} not found`);
+    }
+
+    // Last-admin protection
+    if (existingUser.user_type === 'admin') {
+      const { count, error: countError } = await adminClient
+        .from('user_profiles')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_type', 'admin');
+
+      if (countError) {
+        this.logger.error(`Failed to count admin users: ${countError.message}`);
+        throw new InternalServerErrorException(
+          'Unable to verify admin count. Please try again.',
+        );
+      }
+
+      if ((count ?? 0) <= 1) {
+        throw new BadRequestException('Cannot delete the last admin user');
+      }
+    }
+
+    // Delete auth user FIRST to prevent orphaned auth records
+    const { error: authDeleteError } =
+      await adminClient.auth.admin.deleteUser(userId);
+
+    if (authDeleteError) {
+      this.logger.error(
+        `Failed to delete auth user for ${userId}: ${authDeleteError.message}`,
+      );
+      throw new InternalServerErrorException(
+        'Unable to delete user authentication record. Please try again.',
+      );
     }
 
     // Delete from user_profiles (cascading deletes handle linked tables)
@@ -520,22 +565,12 @@ export class UsersService {
       this.logger.error(
         `Failed to delete user profile for ${userId}: ${deleteError.message}`,
       );
+      // Auth user is deleted but profile remains — log critical error
+      this.logger.error(
+        `CRITICAL: Auth user deleted but profile deletion failed for ${userId}. Manual cleanup required.`,
+      );
       throw new InternalServerErrorException(
         'Unable to delete user profile. Please try again.',
-      );
-    }
-
-    // Delete from Supabase auth.users
-    const { error: authDeleteError } =
-      await adminClient.auth.admin.deleteUser(userId);
-
-    if (authDeleteError) {
-      this.logger.error(
-        `Failed to delete auth user for ${userId}: ${authDeleteError.message}`,
-      );
-      // Profile is already deleted, log the error but don't throw
-      this.logger.warn(
-        `User profile deleted but auth user removal failed for ${userId}`,
       );
     }
 
