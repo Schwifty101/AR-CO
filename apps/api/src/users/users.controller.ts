@@ -418,7 +418,10 @@ export class UsersController {
   @Delete(':id')
   @Roles(UserType.ADMIN)
   @HttpCode(HttpStatus.OK)
-  async deleteUser(@Param('id') id: string): Promise<{ message: string }> {
-    return this.usersService.deleteUser(id);
+  async deleteUser(
+    @Param('id') id: string,
+    @CurrentUser() user: AuthUser,
+  ): Promise<{ message: string }> {
+    return this.usersService.deleteUser(id, user.id);
   }
 }

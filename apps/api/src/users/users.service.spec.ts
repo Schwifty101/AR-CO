@@ -16,6 +16,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import {
   NotFoundException,
   InternalServerErrorException,
+  BadRequestException,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { SupabaseService } from '../database/supabase.service';
@@ -369,35 +370,68 @@ describe('UsersService', () => {
   });
 
   describe('deleteUser', () => {
-    it('should delete user and auth record successfully', async () => {
-      // Mock exists check with proper chaining
+    it('should delete auth then profile successfully', async () => {
+      // Mock exists check (now includes user_type)
       mockAdminClient.from.mockReturnValueOnce({
         select: jest.fn().mockReturnValue({
           eq: jest.fn().mockReturnValue({
             single: jest.fn().mockResolvedValue({
-              data: { id: 'user-uuid-123' },
+              data: { id: 'user-uuid-123', user_type: 'client' },
               error: null,
             }),
           }),
         }),
       });
-      // Mock profile delete with proper chaining
+      // Mock auth delete (now FIRST)
+      mockAdminClient.auth.admin.deleteUser.mockResolvedValueOnce({
+        error: null,
+      });
+      // Mock profile delete (now SECOND)
       mockAdminClient.from.mockReturnValueOnce({
         delete: jest.fn().mockReturnValue({
           eq: jest.fn().mockResolvedValue({ error: null }),
         }),
       });
-      // Mock auth delete
-      mockAdminClient.auth.admin.deleteUser.mockResolvedValueOnce({
-        error: null,
-      });
 
-      const result = await service.deleteUser('user-uuid-123');
+      const result = await service.deleteUser(
+        'user-uuid-123',
+        'admin-uuid-999',
+      );
 
       expect(result.message).toBe('User deleted successfully');
       expect(mockAdminClient.auth.admin.deleteUser).toHaveBeenCalledWith(
         'user-uuid-123',
       );
+    });
+
+    it('should throw BadRequestException on self-deletion', async () => {
+      await expect(
+        service.deleteUser('admin-uuid-999', 'admin-uuid-999'),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('should throw BadRequestException when deleting last admin', async () => {
+      // Mock exists check - target is admin
+      mockAdminClient.from.mockReturnValueOnce({
+        select: jest.fn().mockReturnValue({
+          eq: jest.fn().mockReturnValue({
+            single: jest.fn().mockResolvedValue({
+              data: { id: 'target-admin-uuid', user_type: 'admin' },
+              error: null,
+            }),
+          }),
+        }),
+      });
+      // Mock admin count query - only 1 admin left
+      mockAdminClient.from.mockReturnValueOnce({
+        select: jest.fn().mockReturnValue({
+          eq: jest.fn().mockResolvedValue({ count: 1, error: null }),
+        }),
+      });
+
+      await expect(
+        service.deleteUser('target-admin-uuid', 'requesting-admin-uuid'),
+      ).rejects.toThrow(BadRequestException);
     });
 
     it('should throw NotFoundException if user does not exist', async () => {
@@ -412,35 +446,31 @@ describe('UsersService', () => {
         }),
       });
 
-      await expect(service.deleteUser('nonexistent-uuid')).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(
+        service.deleteUser('nonexistent-uuid', 'admin-uuid-999'),
+      ).rejects.toThrow(NotFoundException);
     });
 
-    it('should succeed even if auth user deletion fails', async () => {
+    it('should throw InternalServerErrorException if auth deletion fails', async () => {
+      // Mock exists check
       mockAdminClient.from.mockReturnValueOnce({
         select: jest.fn().mockReturnValue({
           eq: jest.fn().mockReturnValue({
             single: jest.fn().mockResolvedValue({
-              data: { id: 'user-uuid-123' },
+              data: { id: 'user-uuid-123', user_type: 'client' },
               error: null,
             }),
           }),
         }),
       });
-      mockAdminClient.from.mockReturnValueOnce({
-        delete: jest.fn().mockReturnValue({
-          eq: jest.fn().mockResolvedValue({ error: null }),
-        }),
-      });
+      // Mock auth delete failure
       mockAdminClient.auth.admin.deleteUser.mockResolvedValueOnce({
         error: { message: 'Auth delete failed' },
       });
 
-      const result = await service.deleteUser('user-uuid-123');
-
-      // Should still succeed - profile is deleted, auth failure logged
-      expect(result.message).toBe('User deleted successfully');
+      await expect(
+        service.deleteUser('user-uuid-123', 'admin-uuid-999'),
+      ).rejects.toThrow(InternalServerErrorException);
     });
   });
 });
