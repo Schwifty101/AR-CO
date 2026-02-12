@@ -29,7 +29,7 @@ const mockAdminClient = {
   auth: {
     admin: {
       getUserById: jest.fn(),
-      createUser: jest.fn(),
+      inviteUserByEmail: jest.fn(),
       deleteUser: jest.fn(),
     },
   },
@@ -90,7 +90,7 @@ describe('ClientsService', () => {
     jest.clearAllMocks();
     mockAdminClient.from.mockReset();
     mockAdminClient.auth.admin.getUserById.mockReset();
-    mockAdminClient.auth.admin.createUser.mockReset();
+    mockAdminClient.auth.admin.inviteUserByEmail.mockReset();
     mockAdminClient.auth.admin.deleteUser.mockReset();
 
     const module: TestingModule = await Test.createTestingModule({
@@ -179,8 +179,8 @@ describe('ClientsService', () => {
   });
 
   describe('createClient', () => {
-    it('should create auth user, user profile, and client profile', async () => {
-      mockAdminClient.auth.admin.createUser.mockResolvedValueOnce({
+    it('should invite user via email and create user profile and client profile', async () => {
+      mockAdminClient.auth.admin.inviteUserByEmail.mockResolvedValueOnce({
         data: { user: { id: 'new-user-id' } },
         error: null,
       });
@@ -216,8 +216,8 @@ describe('ClientsService', () => {
       expect(result.companyName).toBe('New Corp');
     });
 
-    it('should throw InternalServerErrorException if auth creation fails', async () => {
-      mockAdminClient.auth.admin.createUser.mockResolvedValueOnce({
+    it('should throw InternalServerErrorException if invite fails', async () => {
+      mockAdminClient.auth.admin.inviteUserByEmail.mockResolvedValueOnce({
         data: null,
         error: { message: 'Email already exists' },
       });
@@ -231,7 +231,7 @@ describe('ClientsService', () => {
     });
 
     it('should cleanup auth user if user_profile creation fails', async () => {
-      mockAdminClient.auth.admin.createUser.mockResolvedValueOnce({
+      mockAdminClient.auth.admin.inviteUserByEmail.mockResolvedValueOnce({
         data: { user: { id: 'cleanup-user-id' } },
         error: null,
       });
@@ -255,6 +255,49 @@ describe('ClientsService', () => {
 
       expect(mockAdminClient.auth.admin.deleteUser).toHaveBeenCalledWith(
         'cleanup-user-id',
+      );
+    });
+
+    it('should cleanup auth user and user_profile if client_profile creation fails', async () => {
+      mockAdminClient.auth.admin.inviteUserByEmail.mockResolvedValueOnce({
+        data: { user: { id: 'cleanup-user-id-2' } },
+        error: null,
+      });
+      // user_profiles insert succeeds
+      mockAdminClient.from.mockReturnValueOnce({
+        insert: jest.fn().mockResolvedValue({ error: null }),
+      });
+      // client_profiles insert fails
+      mockAdminClient.from.mockReturnValueOnce({
+        insert: jest.fn().mockReturnValue({
+          select: jest.fn().mockReturnValue({
+            single: jest.fn().mockResolvedValue({
+              data: null,
+              error: { message: 'Client profile insert failed' },
+            }),
+          }),
+        }),
+      });
+      // Cleanup: delete user_profile
+      mockAdminClient.from.mockReturnValueOnce({
+        delete: jest.fn().mockReturnValue({
+          eq: jest.fn().mockResolvedValue({ error: null }),
+        }),
+      });
+      // Cleanup: deleteUser
+      mockAdminClient.auth.admin.deleteUser.mockResolvedValueOnce({
+        error: null,
+      });
+
+      await expect(
+        service.createClient({
+          email: 'fail2@example.com',
+          fullName: 'Fail Two',
+        }),
+      ).rejects.toThrow(InternalServerErrorException);
+
+      expect(mockAdminClient.auth.admin.deleteUser).toHaveBeenCalledWith(
+        'cleanup-user-id-2',
       );
     });
   });

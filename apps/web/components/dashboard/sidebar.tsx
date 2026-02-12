@@ -32,12 +32,19 @@ const ADMIN_NAV: NavItem[] = [
   { label: 'Dashboard', href: '/admin/dashboard' },
   { label: 'Profile', href: '/admin/profile' },
   { label: 'Users', href: '/admin/users' },
+  { label: 'Clients', href: '/admin/clients' },
+  { label: 'Complaints', href: '/admin/complaints' },
+  { label: 'Subscriptions', href: '/admin/subscriptions' },
+  { label: 'Service Registrations', href: '/admin/service-registrations' },
 ];
 
 /** Client navigation items */
 const CLIENT_NAV: NavItem[] = [
   { label: 'Dashboard', href: '/client/dashboard' },
   { label: 'Profile', href: '/client/profile' },
+  { label: 'Subscription', href: '/client/subscription' },
+  { label: 'Complaints', href: '/client/complaints' },
+  { label: 'My Services', href: '/client/services' },
 ];
 
 /** Props for DashboardSidebar */

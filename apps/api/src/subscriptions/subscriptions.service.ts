@@ -5,7 +5,9 @@ import {
   ForbiddenException,
   InternalServerErrorException,
   BadRequestException,
+  HttpException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { SupabaseService } from '../database/supabase.service';
 import { SafepayService } from '../payments/safepay.service';
 import { UserType } from '../common/enums/user-type.enum';
@@ -41,6 +43,26 @@ interface SubscriptionRow {
   updated_at: string;
 }
 
+/** Allowed sort columns for subscriptions */
+const ALLOWED_SUBSCRIPTION_SORT_COLUMNS = [
+  'created_at',
+  'updated_at',
+  'status',
+  'start_date',
+  'end_date',
+] as const;
+
+/**
+ * Validate sort column against allowed list, defaulting to created_at
+ *
+ * @param sort - The sort column to validate
+ * @param allowed - Array of allowed column names
+ * @returns Valid sort column (original if allowed, 'created_at' otherwise)
+ */
+function validateSortColumn(sort: string, allowed: readonly string[]): string {
+  return allowed.includes(sort) ? sort : 'created_at';
+}
+
 /**
  * Service responsible for managing subscription lifecycle
  * Handles subscription creation, retrieval, cancellation, and Safepay integration
@@ -63,6 +85,7 @@ export class SubscriptionsService {
   constructor(
     private readonly supabaseService: SupabaseService,
     private readonly safepayService: SafepayService,
+    private readonly configService: ConfigService,
   ) {}
 
   /**
@@ -186,13 +209,14 @@ export class SubscriptionsService {
       }
 
       // Create Safepay checkout session
+      const frontendUrl = this.configService.get<string>('FRONTEND_URL');
       const { checkoutUrl } =
         await this.safepayService.createSubscriptionCheckout({
           planId: 'civic_retainer',
           reference: clientProfileId,
           customerEmail: user.email,
-          returnUrl: `${process.env.FRONTEND_URL}/client/subscriptions/success`,
-          cancelUrl: `${process.env.FRONTEND_URL}/client/subscriptions/cancel`,
+          returnUrl: `${frontendUrl}/client/subscriptions/success`,
+          cancelUrl: `${frontendUrl}/client/subscriptions/cancel`,
         });
 
       return {
@@ -200,10 +224,7 @@ export class SubscriptionsService {
         checkoutUrl,
       };
     } catch (error) {
-      if (
-        error instanceof ForbiddenException ||
-        error instanceof BadRequestException
-      ) {
+      if (error instanceof HttpException) {
         throw error;
       }
       this.logger.error(`Unexpected error creating subscription: ${error}`);
@@ -254,10 +275,7 @@ export class SubscriptionsService {
 
       return this.mapSubscriptionRow(data);
     } catch (error) {
-      if (
-        error instanceof NotFoundException ||
-        error instanceof BadRequestException
-      ) {
+      if (error instanceof HttpException) {
         throw error;
       }
       this.logger.error(`Unexpected error fetching subscription: ${error}`);
@@ -365,11 +383,7 @@ export class SubscriptionsService {
 
       return this.mapSubscriptionRow(updated);
     } catch (error) {
-      if (
-        error instanceof NotFoundException ||
-        error instanceof ForbiddenException ||
-        error instanceof BadRequestException
-      ) {
+      if (error instanceof HttpException) {
         throw error;
       }
       this.logger.error(`Unexpected error cancelling subscription: ${error}`);
@@ -423,11 +437,12 @@ export class SubscriptionsService {
         throw new InternalServerErrorException('Failed to count subscriptions');
       }
 
-      // Get paginated data
+      // Get paginated data with validated sort
+      const validSort = validateSortColumn(sort, ALLOWED_SUBSCRIPTION_SORT_COLUMNS);
       const { data, error: fetchError } = (await adminClient
         .from('subscriptions')
         .select('*')
-        .order(sort, { ascending: order === 'asc' })
+        .order(validSort, { ascending: order === 'asc' })
         .range(offset, offset + limit - 1)) as DbListResult<SubscriptionRow>;
 
       if (fetchError) {
@@ -451,7 +466,7 @@ export class SubscriptionsService {
         },
       };
     } catch (error) {
-      if (error instanceof InternalServerErrorException) {
+      if (error instanceof HttpException) {
         throw error;
       }
       this.logger.error(`Unexpected error fetching subscriptions: ${error}`);

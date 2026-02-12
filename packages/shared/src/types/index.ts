@@ -11,6 +11,7 @@ export type {
 } from './auth.types';
 
 export type {
+  InviteUserData,
   UpdateUserProfileData,
   CreateClientProfileData,
   UpdateClientProfileData,

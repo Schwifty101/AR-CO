@@ -42,6 +42,7 @@ import {
   HttpStatus,
   Param,
   Patch,
+  Post,
   Query,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
@@ -51,12 +52,14 @@ import { UserType } from '../common/enums/user-type.enum';
 import type { AuthUser } from '../common/interfaces/auth-user.interface';
 import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
 import {
+  InviteUserSchema,
   UpdateUserProfileSchema,
   UpdateClientProfileSchema,
   UpdateAttorneyProfileSchema,
   PaginationSchema,
 } from '@repo/shared';
 import type {
+  InviteUserData,
   UpdateUserProfileData,
   UpdateClientProfileData,
   UpdateAttorneyProfileData,
@@ -311,8 +314,10 @@ export class UsersController {
    * - Page-based navigation
    * - Total count for pagination UI
    * - Basic profile information for each user
+   * - Optional filtering by user types (comma-separated query param)
    *
    * @param pagination - Pagination parameters (page, limit)
+   * @param userTypes - Optional comma-separated list of user types to filter (e.g., "admin,staff,attorney")
    * @returns Paginated user list with metadata
    *
    * @throws {ForbiddenException} If user is not staff or admin
@@ -321,8 +326,12 @@ export class UsersController {
    *
    * @example
    * ```typescript
-   * // Request
+   * // Request (all users)
    * GET /api/users?page=2&limit=20
+   * Headers: { Authorization: 'Bearer <admin_jwt_token>' }
+   *
+   * // Request (filter by type)
+   * GET /api/users?page=1&limit=20&userTypes=admin,staff,attorney
    * Headers: { Authorization: 'Bearer <admin_jwt_token>' }
    *
    * // Response (200 OK)
@@ -330,9 +339,9 @@ export class UsersController {
    *   "data": [
    *     {
    *       "id": "uuid-1",
-   *       "email": "client1@example.com",
-   *       "fullName": "Client One",
-   *       "userType": "CLIENT",
+   *       "email": "staff1@arcolaw.com",
+   *       "fullName": "Staff One",
+   *       "userType": "STAFF",
    *       "phoneNumber": "+92-300-1111111",
    *       "createdAt": "2024-01-10T08:00:00Z"
    *     },
@@ -346,10 +355,10 @@ export class UsersController {
    *     }
    *   ],
    *   "meta": {
-   *     "page": 2,
+   *     "page": 1,
    *     "limit": 20,
-   *     "total": 150,
-   *     "totalPages": 8
+   *     "total": 25,
+   *     "totalPages": 2
    *   }
    * }
    * ```
@@ -359,8 +368,66 @@ export class UsersController {
   async getAllUsers(
     @Query(new ZodValidationPipe(PaginationSchema))
     pagination: PaginationParams,
+    @Query('userTypes') userTypes?: string,
   ): Promise<PaginatedUsersResponse> {
-    return this.usersService.getAllUsers(pagination);
+    const types = userTypes ? userTypes.split(',') : undefined;
+    return this.usersService.getAllUsers(pagination, types);
+  }
+
+  /**
+   * Invite a new user (admin/staff/attorney) to the system
+   *
+   * Sends a magic link email invitation to create an account.
+   * Only admins can invite new users. This endpoint is for inviting
+   * internal users (admin, staff, attorney) only - NOT clients.
+   *
+   * @param dto - Invitation data (email, fullName, userType, phoneNumber)
+   * @returns Created user information
+   *
+   * @throws {ForbiddenException} If user is not an admin
+   * @throws {BadRequestException} If validation fails or userType is 'client'
+   * @throws {InternalServerErrorException} If invitation fails
+   *
+   * @remarks
+   * The invited user will receive an email with a magic link to set their password.
+   * Use the Clients module (POST /api/clients) for client registration.
+   *
+   * @example
+   * ```typescript
+   * // Request
+   * POST /api/users/invite
+   * Headers: { Authorization: 'Bearer <admin_jwt_token>' }
+   * Body: {
+   *   "email": "newstaff@arcolaw.com",
+   *   "fullName": "Jane Smith",
+   *   "userType": "staff",
+   *   "phoneNumber": "+92-300-1234567"
+   * }
+   *
+   * // Response (201 Created)
+   * {
+   *   "id": "uuid-new-123",
+   *   "email": "newstaff@arcolaw.com",
+   *   "fullName": "Jane Smith",
+   *   "userType": "staff"
+   * }
+   *
+   * // Error: Email already exists (500 Internal Server Error)
+   * {
+   *   "statusCode": 500,
+   *   "message": "Unable to invite user. The email may already be registered.",
+   *   "error": "Internal Server Error"
+   * }
+   * ```
+   */
+  @Post('invite')
+  @Roles(UserType.ADMIN)
+  @HttpCode(HttpStatus.CREATED)
+  async inviteUser(
+    @Body(new ZodValidationPipe(InviteUserSchema))
+    dto: InviteUserData,
+  ): Promise<{ id: string; email: string; fullName: string; userType: string }> {
+    return this.usersService.inviteUser(dto);
   }
 
   /**
