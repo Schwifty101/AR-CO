@@ -202,20 +202,21 @@ export default function AdminClientDetailPage() {
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">
-            {isLoading ? (
+          {isLoading ? (
+            <>
               <Skeleton className="h-8 w-48" />
-            ) : (
-              client?.fullName ?? 'Client Details'
-            )}
-          </h1>
-          <p className="text-muted-foreground">
-            {isLoading ? (
               <Skeleton className="h-4 w-64 mt-1" />
-            ) : (
-              'Client profile and associated records'
-            )}
-          </p>
+            </>
+          ) : (
+            <>
+              <h1 className="text-3xl font-bold tracking-tight">
+                {client?.fullName ?? 'Client Details'}
+              </h1>
+              <p className="text-muted-foreground">
+                Client profile and associated records
+              </p>
+            </>
+          )}
         </div>
       </div>
 

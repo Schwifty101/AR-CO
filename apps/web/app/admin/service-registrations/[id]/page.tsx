@@ -29,7 +29,6 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
@@ -46,6 +45,7 @@ import {
   assignRegistration,
   type ServiceRegistrationResponse,
 } from '@/lib/api/service-registrations';
+import { getUsers, type PaginatedUsers } from '@/lib/api/users';
 import { ServiceRegistrationStatus, ServiceRegistrationPaymentStatus } from '@repo/shared';
 
 /** Registration status badge color mapping */
@@ -91,6 +91,7 @@ export default function AdminServiceRegistrationDetailPage() {
   const [registration, setRegistration] = useState<ServiceRegistrationResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [staffList, setStaffList] = useState<PaginatedUsers['users']>([]);
 
   // Update status form
   const {
@@ -104,15 +105,15 @@ export default function AdminServiceRegistrationDetailPage() {
 
   // Assign staff form
   const {
-    register: registerAssign,
     handleSubmit: handleSubmitAssign,
+    setValue: setAssignValue,
     formState: { errors: assignErrors, isSubmitting: isAssigning },
     reset: resetAssign,
   } = useForm<AssignStaffForm>({
     resolver: zodResolver(assignStaffSchema),
   });
 
-  // Fetch registration on mount
+  // Fetch registration and staff list on mount
   useEffect(() => {
     async function loadRegistration() {
       try {
@@ -132,7 +133,17 @@ export default function AdminServiceRegistrationDetailPage() {
       }
     }
 
+    async function loadStaffList() {
+      try {
+        const result = await getUsers({ userTypes: ['admin', 'staff'], limit: 100 });
+        setStaffList(result.users);
+      } catch {
+        // Non-blocking — staff dropdown will be empty but form still works
+      }
+    }
+
     loadRegistration();
+    loadStaffList();
   }, [registrationId, resetStatus]);
 
   const onUpdateStatus = async (data: UpdateStatusForm) => {
@@ -262,7 +273,9 @@ export default function AdminServiceRegistrationDetailPage() {
             <div>
               <Label className="text-muted-foreground">Assigned To</Label>
               <p className="font-medium">
-                {registration.assignedStaffId || <span className="text-muted-foreground">Unassigned</span>}
+                {registration.assignedStaffId
+                  ? staffList.find((s) => s.id === registration.assignedStaffId)?.fullName || registration.assignedStaffId
+                  : <span className="text-muted-foreground">Unassigned</span>}
               </p>
             </div>
           </div>
@@ -355,12 +368,21 @@ export default function AdminServiceRegistrationDetailPage() {
           <form onSubmit={handleSubmitAssign(onAssignStaff)} className="space-y-4">
             <h3 className="font-semibold">Assign Staff</h3>
             <div className="space-y-2">
-              <Label htmlFor="staffId">Staff UUID</Label>
-              <Input
-                id="staffId"
-                placeholder="Enter staff member UUID"
-                {...registerAssign('staffId')}
-              />
+              <Label htmlFor="staffId">Staff Member</Label>
+              <Select
+                onValueChange={(value) => setAssignValue('staffId', value)}
+              >
+                <SelectTrigger id="staffId">
+                  <SelectValue placeholder="Select a staff member" />
+                </SelectTrigger>
+                <SelectContent>
+                  {staffList.map((staff) => (
+                    <SelectItem key={staff.id} value={staff.id}>
+                      {staff.fullName} ({staff.email})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               {assignErrors.staffId && (
                 <p className="text-sm text-destructive">{assignErrors.staffId.message}</p>
               )}
