@@ -20,6 +20,7 @@ import {
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { SupabaseService } from '../database/supabase.service';
+import { UserType } from '@repo/shared';
 
 /** Mock Supabase admin client */
 const mockAdminClient = {
@@ -28,6 +29,7 @@ const mockAdminClient = {
     admin: {
       getUserById: jest.fn(),
       deleteUser: jest.fn(),
+      inviteUserByEmail: jest.fn(),
     },
   },
 };
@@ -92,6 +94,7 @@ describe('UsersService', () => {
     mockAdminClient.from.mockReset();
     mockAdminClient.auth.admin.getUserById.mockReset();
     mockAdminClient.auth.admin.deleteUser.mockReset();
+    mockAdminClient.auth.admin.inviteUserByEmail.mockReset();
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -350,6 +353,56 @@ describe('UsersService', () => {
       expect(result.meta.totalPages).toBe(1);
     });
 
+    it('should filter users by type when userTypes provided', async () => {
+      const mockInChain = jest.fn().mockReturnThis();
+
+      // Mock count query with .in() chain
+      mockAdminClient.from.mockReturnValueOnce({
+        select: jest.fn().mockReturnValue({
+          in: mockInChain.mockResolvedValueOnce({ count: 1, error: null }),
+        }),
+      });
+
+      // Mock data query with .in() chain
+      const mockOrderChain = {
+        order: jest.fn().mockReturnValue({
+          range: jest.fn().mockResolvedValue({
+            data: [{ ...mockUserProfile, user_type: 'admin' }],
+            error: null,
+          }),
+        }),
+      };
+
+      mockAdminClient.from.mockReturnValueOnce({
+        select: jest.fn().mockReturnValue({
+          in: jest.fn().mockReturnValue(mockOrderChain),
+        }),
+      });
+
+      // Mock getUserProfile for the admin user
+      mockAdminClient.from.mockReturnValueOnce(
+        mockSelectEqSingle({ ...mockUserProfile, user_type: 'admin' }),
+      );
+      mockAdminClient.auth.admin.getUserById.mockResolvedValueOnce({
+        data: { user: { email: 'admin@example.com' } },
+        error: null,
+      });
+
+      const result = await service.getAllUsers(
+        {
+          page: 1,
+          limit: 20,
+          sort: 'created_at',
+          order: 'desc',
+        },
+        ['admin', 'staff'],
+      );
+
+      expect(result.data).toHaveLength(1);
+      expect(result.meta.total).toBe(1);
+      expect(mockInChain).toHaveBeenCalledWith('user_type', ['admin', 'staff']);
+    });
+
     it('should throw InternalServerErrorException on count failure', async () => {
       mockAdminClient.from.mockReturnValueOnce({
         select: jest.fn().mockResolvedValue({
@@ -366,6 +419,101 @@ describe('UsersService', () => {
           order: 'desc',
         }),
       ).rejects.toThrow(InternalServerErrorException);
+    });
+  });
+
+  describe('inviteUser', () => {
+    it('should successfully invite a new user', async () => {
+      const mockAuthUser = {
+        id: 'new-user-uuid',
+        email: 'invited@example.com',
+      };
+
+      // Mock inviteUserByEmail
+      mockAdminClient.auth.admin.inviteUserByEmail = jest
+        .fn()
+        .mockResolvedValueOnce({
+          data: { user: mockAuthUser },
+          error: null,
+        });
+
+      // Mock profile insert
+      mockAdminClient.from.mockReturnValueOnce({
+        insert: jest.fn().mockResolvedValue({ error: null }),
+      });
+
+      const result = await service.inviteUser({
+        email: 'invited@example.com',
+        fullName: 'New Staff',
+        userType: UserType.STAFF,
+        phoneNumber: '+92-300-9999999',
+      });
+
+      expect(result.id).toBe('new-user-uuid');
+      expect(result.email).toBe('invited@example.com');
+      expect(result.fullName).toBe('New Staff');
+      expect(result.userType).toBe(UserType.STAFF);
+      expect(
+        mockAdminClient.auth.admin.inviteUserByEmail,
+      ).toHaveBeenCalledWith('invited@example.com');
+    });
+
+    it('should throw InternalServerErrorException on auth error', async () => {
+      // Mock auth failure
+      mockAdminClient.auth.admin.inviteUserByEmail = jest
+        .fn()
+        .mockResolvedValueOnce({
+          data: null,
+          error: { message: 'Email already registered' },
+        });
+
+      await expect(
+        service.inviteUser({
+          email: 'existing@example.com',
+          fullName: 'Test User',
+          userType: UserType.STAFF,
+        }),
+      ).rejects.toThrow(InternalServerErrorException);
+    });
+
+    it('should cleanup auth user on profile creation failure', async () => {
+      const mockAuthUser = {
+        id: 'new-user-uuid',
+        email: 'invited@example.com',
+      };
+
+      // Mock successful auth invite
+      mockAdminClient.auth.admin.inviteUserByEmail = jest
+        .fn()
+        .mockResolvedValueOnce({
+          data: { user: mockAuthUser },
+          error: null,
+        });
+
+      // Mock profile insert failure
+      mockAdminClient.from.mockReturnValueOnce({
+        insert: jest
+          .fn()
+          .mockResolvedValue({ error: { message: 'Profile insert failed' } }),
+      });
+
+      // Mock deleteUser for cleanup
+      mockAdminClient.auth.admin.deleteUser.mockResolvedValueOnce({
+        error: null,
+      });
+
+      await expect(
+        service.inviteUser({
+          email: 'invited@example.com',
+          fullName: 'Test User',
+          userType: UserType.ADMIN,
+        }),
+      ).rejects.toThrow(InternalServerErrorException);
+
+      // Verify cleanup was called
+      expect(mockAdminClient.auth.admin.deleteUser).toHaveBeenCalledWith(
+        'new-user-uuid',
+      );
     });
   });
 

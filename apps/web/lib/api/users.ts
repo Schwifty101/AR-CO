@@ -34,10 +34,12 @@ import type {
 export type { UserProfile, UpdateUserProfileData, UpdateClientProfileData, UpdateAttorneyProfileData } from '@repo/shared';
 export { UserType, CompanyType } from '@repo/shared';
 
-/** Pagination parameters for the frontend (only page + limit) */
-export interface PaginationParams {
+/** Pagination and filter parameters for the users list endpoint */
+export interface UsersListParams {
   page?: number;
   limit?: number;
+  userTypes?: string[];
+  search?: string;
 }
 
 /** Paginated users response shaped for frontend consumption */
@@ -186,17 +188,21 @@ export async function updateAttorneyProfile(
 /**
  * Fetch paginated list of all users (admin/staff only)
  *
- * @param params - Pagination parameters (page, limit)
+ * @param params - Pagination parameters (page, limit, userTypes)
  * @returns Paginated users response
  * @throws Error if request fails or user lacks permissions
  */
 export async function getUsers(
-  params?: PaginationParams,
+  params?: UsersListParams,
 ): Promise<PaginatedUsers> {
   const token = await getSessionToken();
   const queryParams = new URLSearchParams();
   if (params?.page) queryParams.set('page', params.page.toString());
   if (params?.limit) queryParams.set('limit', params.limit.toString());
+  if (params?.userTypes && params.userTypes.length > 0) {
+    queryParams.set('userTypes', params.userTypes.join(','));
+  }
+  if (params?.search) queryParams.set('search', params.search);
 
   const url = `/api/users${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
 
@@ -246,4 +252,60 @@ export async function deleteUser(userId: string): Promise<void> {
     const error = (await response.json()) as { message?: string };
     throw new Error(error.message || 'Failed to delete user');
   }
+}
+
+/** Data required to invite a new user */
+export interface InviteUserData {
+  /** Email address for the invitation */
+  email: string;
+  /** Full name of the user */
+  fullName: string;
+  /** User type — admin, staff, or attorney */
+  userType: 'admin' | 'staff' | 'attorney';
+  /** Optional phone number */
+  phoneNumber?: string;
+}
+
+/** Response from invite user endpoint */
+export interface InviteUserResponse {
+  id: string;
+  email: string;
+  fullName: string;
+  userType: string;
+}
+
+/**
+ * Invite a new user (admin/staff/attorney) via email.
+ * The invited user receives a magic link to set their password.
+ *
+ * @param data - Invitation data
+ * @returns Created user info
+ * @throws Error if invitation fails
+ *
+ * @example
+ * ```typescript
+ * const user = await inviteUser({
+ *   email: 'john@example.com',
+ *   fullName: 'John Doe',
+ *   userType: 'staff',
+ * });
+ * ```
+ */
+export async function inviteUser(data: InviteUserData): Promise<InviteUserResponse> {
+  const token = await getSessionToken();
+  const response = await fetch('/api/users/invite', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    const error = (await response.json()) as { message?: string };
+    throw new Error(error.message || 'Failed to invite user');
+  }
+
+  return (await response.json()) as InviteUserResponse;
 }

@@ -11,6 +11,7 @@ export type {
 } from './auth.types';
 
 export type {
+  InviteUserData,
   UpdateUserProfileData,
   CreateClientProfileData,
   UpdateClientProfileData,
@@ -27,3 +28,40 @@ export type {
   AdminDashboardStats,
   ClientDashboardStats,
 } from './dashboard.types';
+
+export type {
+  CreateClientData,
+  UpdateClientData,
+  ClientFilters,
+  ClientResponse,
+  PaginatedClientsResponse,
+} from './clients.types';
+
+export type {
+  SubscriptionResponse,
+  CancelSubscriptionData,
+  PaginatedSubscriptionsResponse,
+} from './subscriptions.types';
+
+export type {
+  CreateComplaintData,
+  UpdateComplaintStatusData,
+  AssignComplaintData,
+  ComplaintFilters,
+  ComplaintResponse,
+  PaginatedComplaintsResponse,
+} from './complaints.types';
+
+export type {
+  CreateServiceRegistrationData,
+  GuestStatusCheckData,
+  UpdateRegistrationStatusData,
+  ServiceRegistrationResponse,
+  GuestStatusResponse,
+  PaginatedServiceRegistrationsResponse,
+} from './service-registrations.types';
+
+export type {
+  ServiceResponse,
+  PaginatedServicesResponse,
+} from './services.types';
