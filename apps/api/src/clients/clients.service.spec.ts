@@ -7,7 +7,7 @@
  * - createClient (auth + profile creation)
  * - updateClient
  * - deleteClient
- * - getClientCases / getClientDocuments / getClientInvoices
+ * (Aggregation tests in clients-aggregation.service.spec.ts)
  *
  * @module ClientsServiceSpec
  */
@@ -345,55 +345,6 @@ describe('ClientsService', () => {
       await expect(service.deleteClient('nonexistent')).rejects.toThrow(
         NotFoundException,
       );
-    });
-  });
-
-  describe('getClientCases', () => {
-    it('should return paginated cases for staff', async () => {
-      // Count query
-      mockAdminClient.from.mockReturnValueOnce({
-        select: jest.fn().mockReturnValue({
-          eq: jest.fn().mockResolvedValue({ count: 5, error: null }),
-        }),
-      });
-      // Data query
-      mockAdminClient.from.mockReturnValueOnce({
-        select: jest.fn().mockReturnValue({
-          eq: jest.fn().mockReturnValue({
-            order: jest.fn().mockReturnValue({
-              range: jest.fn().mockResolvedValue({
-                data: [{ id: 'case-1', title: 'Test Case' }],
-                error: null,
-              }),
-            }),
-          }),
-        }),
-      });
-
-      const result = await service.getClientCases(
-        'client-uuid-456',
-        staffUser,
-        { page: 1, limit: 20, sort: 'created_at', order: 'desc' },
-      );
-
-      expect(result.data).toHaveLength(1);
-      expect(result.meta).toEqual({
-        page: 1,
-        limit: 20,
-        total: 5,
-        totalPages: 1,
-      });
-    });
-
-    it('should throw ForbiddenException for other client', async () => {
-      await expect(
-        service.getClientCases('client-uuid-456', otherClient, {
-          page: 1,
-          limit: 20,
-          sort: 'created_at',
-          order: 'desc',
-        }),
-      ).rejects.toThrow(ForbiddenException);
     });
   });
 

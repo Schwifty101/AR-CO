@@ -38,7 +38,9 @@
       "mcp__supabase__apply_migration",
       "mcp__supabase__get_advisors",
       "Bash(node -e \"const p = require\\(''./package.json''\\); console.log\\(JSON.stringify\\(p.jest || ''no jest config in package.json'', null, 2\\)\\)\")",
-      "Bash(npx eslint:*)"
+      "Bash(npx eslint:*)",
+      "Bash(pnpm add:*)",
+      "Bash(wc:*)"
     ],
     "env": {
       "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"

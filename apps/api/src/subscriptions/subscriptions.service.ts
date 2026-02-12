@@ -52,32 +52,16 @@ const ALLOWED_SUBSCRIPTION_SORT_COLUMNS = [
   'end_date',
 ] as const;
 
-/**
- * Validate sort column against allowed list, defaulting to created_at
- *
- * @param sort - The sort column to validate
- * @param allowed - Array of allowed column names
- * @returns Valid sort column (original if allowed, 'created_at' otherwise)
- */
-function validateSortColumn(sort: string, allowed: readonly string[]): string {
-  return allowed.includes(sort) ? sort : 'created_at';
-}
+import { validateSortColumn } from '../common/utils/query-helpers';
 
-/**
- * Service responsible for managing subscription lifecycle
- * Handles subscription creation, retrieval, cancellation, and Safepay integration
- *
- * @remarks
- * This service integrates with Supabase for persistence and
- * SafepayService for payment processing. All database queries use
- * the admin client to bypass RLS restrictions.
- *
- * @example
- * ```typescript
- * const result = await subscriptionsService.createSubscription(user);
- * console.log(result.checkoutUrl); // Redirect client to this URL
- * ```
- */
+/** Default subscription plan configuration */
+const SUBSCRIPTION_PLAN = {
+  PLAN_NAME: 'civic_retainer',
+  MONTHLY_AMOUNT: 700.0,
+  CURRENCY: 'PKR',
+} as const;
+
+/** Service for managing subscription lifecycle with Safepay integration */
 @Injectable()
 export class SubscriptionsService {
   private readonly logger = new Logger(SubscriptionsService.name);
@@ -93,22 +77,6 @@ export class SubscriptionsService {
    * If a subscription already exists, reactivates it or throws error
    *
    * @param user - The authenticated user (must be CLIENT role)
-   * @returns The created/reactivated subscription and Safepay checkout URL
-   * @throws {BadRequestException} If user is not a CLIENT or missing clientProfileId
-   * @throws {ForbiddenException} If user already has an active subscription
-   * @throws {InternalServerErrorException} If database or Safepay operation fails
-   *
-   * @example
-   * ```typescript
-   * try {
-   *   const result = await service.createSubscription(user);
-   *   // Redirect user to result.checkoutUrl
-   * } catch (error) {
-   *   if (error instanceof ForbiddenException) {
-   *     // Handle already active subscription
-   *   }
-   * }
-   * ```
    */
   async createSubscription(
     user: AuthUser,
@@ -185,9 +153,9 @@ export class SubscriptionsService {
           .from('subscriptions')
           .insert({
             client_profile_id: clientProfileId,
-            plan_name: 'civic_retainer',
-            monthly_amount: 700.0,
-            currency: 'PKR',
+            plan_name: SUBSCRIPTION_PLAN.PLAN_NAME,
+            monthly_amount: SUBSCRIPTION_PLAN.MONTHLY_AMOUNT,
+            currency: SUBSCRIPTION_PLAN.CURRENCY,
             status: SubscriptionStatus.PENDING,
           })
           .select()
@@ -234,21 +202,7 @@ export class SubscriptionsService {
     }
   }
 
-  /**
-   * Retrieves the authenticated client's subscription
-   *
-   * @param user - The authenticated user (must be CLIENT role)
-   * @returns The client's subscription details
-   * @throws {BadRequestException} If user is not a CLIENT or missing clientProfileId
-   * @throws {NotFoundException} If subscription does not exist
-   * @throws {InternalServerErrorException} If database query fails
-   *
-   * @example
-   * ```typescript
-   * const subscription = await service.getMySubscription(user);
-   * console.log(subscription.status); // 'active', 'cancelled', etc.
-   * ```
-   */
+  /** Retrieves the authenticated client's subscription */
   async getMySubscription(user: AuthUser): Promise<SubscriptionResponse> {
     if (user.userType !== UserType.CLIENT || !user.clientProfileId) {
       throw new BadRequestException(
@@ -285,25 +239,7 @@ export class SubscriptionsService {
     }
   }
 
-  /**
-   * Cancels the authenticated client's active subscription
-   *
-   * @param user - The authenticated user (must be CLIENT role)
-   * @param data - Cancellation data including optional reason
-   * @returns The cancelled subscription details
-   * @throws {BadRequestException} If user is not a CLIENT or missing clientProfileId
-   * @throws {NotFoundException} If subscription does not exist
-   * @throws {ForbiddenException} If subscription is not active
-   * @throws {InternalServerErrorException} If database or Safepay operation fails
-   *
-   * @example
-   * ```typescript
-   * const cancelled = await service.cancelSubscription(user, {
-   *   reason: 'Service no longer needed'
-   * });
-   * console.log(cancelled.cancelledAt); // ISO timestamp
-   * ```
-   */
+  /** Cancels the authenticated client's active subscription */
   async cancelSubscription(
     user: AuthUser,
     data: CancelSubscriptionData,
@@ -393,25 +329,7 @@ export class SubscriptionsService {
     }
   }
 
-  /**
-   * Retrieves all subscriptions with pagination (staff only)
-   *
-   * @param pagination - Pagination parameters (page, limit, sort, order)
-   * @returns Paginated list of all subscriptions
-   * @throws {InternalServerErrorException} If database query fails
-   *
-   * @example
-   * ```typescript
-   * const result = await service.getAllSubscriptions({
-   *   page: 1,
-   *   limit: 20,
-   *   sort: 'created_at',
-   *   order: 'desc'
-   * });
-   * console.log(result.total); // Total subscription count
-   * console.log(result.data); // Array of subscriptions
-   * ```
-   */
+  /** Retrieves all subscriptions with pagination (staff only) */
   async getAllSubscriptions(
     pagination: PaginationParams,
   ): Promise<PaginatedSubscriptionsResponse> {

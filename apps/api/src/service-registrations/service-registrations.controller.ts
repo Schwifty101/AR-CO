@@ -8,7 +8,9 @@ import {
   Query,
   HttpCode,
   HttpStatus,
+  UseGuards,
 } from '@nestjs/common';
+import { ThrottlerGuard, Throttle } from '@nestjs/throttler';
 import { Public } from '../common/decorators/public.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -16,6 +18,7 @@ import { UserType } from '../common/enums/user-type.enum';
 import type { AuthUser } from '../common/interfaces/auth-user.interface';
 import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
 import { ServiceRegistrationsService } from './service-registrations.service';
+import { ServiceRegistrationsPaymentService } from './service-registrations-payment.service';
 import {
   CreateServiceRegistrationSchema,
   GuestStatusCheckSchema,
@@ -99,6 +102,7 @@ type AssignRegistrationData = z.infer<typeof AssignRegistrationSchema>;
 export class ServiceRegistrationsController {
   constructor(
     private readonly serviceRegistrationsService: ServiceRegistrationsService,
+    private readonly paymentService: ServiceRegistrationsPaymentService,
   ) {}
 
   /**
@@ -127,6 +131,8 @@ export class ServiceRegistrationsController {
    */
   @Post()
   @Public()
+  @UseGuards(ThrottlerGuard)
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
   @HttpCode(HttpStatus.CREATED)
   async createRegistration(
     @Body(new ZodValidationPipe(CreateServiceRegistrationSchema))
@@ -164,13 +170,15 @@ export class ServiceRegistrationsController {
    */
   @Post(':id/pay')
   @Public()
+  @UseGuards(ThrottlerGuard)
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
   @HttpCode(HttpStatus.OK)
   async initiatePayment(
     @Param('id') id: string,
     @Body(new ZodValidationPipe(InitiatePaymentSchema))
     dto: InitiatePaymentData,
   ): Promise<{ checkoutUrl: string; registrationId: string }> {
-    return this.serviceRegistrationsService.initiatePayment(
+    return this.paymentService.initiatePayment(
       id,
       dto.returnUrl,
       dto.cancelUrl,
@@ -200,6 +208,8 @@ export class ServiceRegistrationsController {
    */
   @Get('status')
   @Public()
+  @UseGuards(ThrottlerGuard)
+  @Throttle({ default: { limit: 20, ttl: 60000 } })
   async getRegistrationStatus(
     @Query(new ZodValidationPipe(GuestStatusCheckSchema))
     dto: GuestStatusCheckData,

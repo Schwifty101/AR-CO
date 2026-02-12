@@ -203,7 +203,7 @@ export default function ClientSubscriptionPage() {
                 <Label className="text-muted-foreground">Status</Label>
                 <div className="mt-1">
                   <Badge className={STATUS_COLORS[subscription.status]}>
-                    {subscription.status.toUpperCase().replace('_', ' ')}
+                    {subscription.status.toUpperCase().replace(/_/g, ' ')}
                   </Badge>
                 </div>
               </div>

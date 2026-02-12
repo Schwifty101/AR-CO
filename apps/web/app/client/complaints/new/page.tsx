@@ -97,7 +97,7 @@ export default function NewComplaintPage() {
         location: data.location || undefined,
       };
 
-      const complaint = await submitComplaint(complaintData);
+      await submitComplaint(complaintData);
       toast.success('Complaint submitted successfully');
       router.push('/client/complaints');
     } catch (err) {

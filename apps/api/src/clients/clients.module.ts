@@ -9,10 +9,11 @@
 import { Module } from '@nestjs/common';
 import { ClientsController } from './clients.controller';
 import { ClientsService } from './clients.service';
+import { ClientsAggregationService } from './clients-aggregation.service';
 
 @Module({
   controllers: [ClientsController],
-  providers: [ClientsService],
+  providers: [ClientsService, ClientsAggregationService],
   exports: [ClientsService],
 })
 export class ClientsModule {}

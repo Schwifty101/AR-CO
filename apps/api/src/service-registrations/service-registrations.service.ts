@@ -7,8 +7,8 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { SupabaseService } from '../database/supabase.service';
-import { SafepayService } from '../payments/safepay.service';
-import { UserType } from '../common/enums/user-type.enum';
+import { STAFF_ROLES } from '../common/constants/roles';
+import { validateSortColumn } from '../common/utils/query-helpers';
 import type { AuthUser } from '../common/interfaces/auth-user.interface';
 import {
   ServiceRegistrationStatus,
@@ -53,14 +53,6 @@ interface ServiceRow {
   is_active: boolean;
 }
 
-/**
- * Staff roles that have access to all service registrations (not just client's own)
- */
-const STAFF_ROLES: string[] = [
-  UserType.ADMIN,
-  UserType.STAFF,
-  UserType.ATTORNEY,
-];
 
 /** Allowed sort columns for service registrations */
 const ALLOWED_REGISTRATION_SORT_COLUMNS = [
@@ -71,90 +63,21 @@ const ALLOWED_REGISTRATION_SORT_COLUMNS = [
   'payment_status',
 ] as const;
 
-/**
- * Validate sort column against allowed list, defaulting to created_at
- *
- * @param sort - The sort column to validate
- * @param allowed - Array of allowed column names
- * @returns Valid sort column (original if allowed, 'created_at' otherwise)
- */
-function validateSortColumn(sort: string, allowed: readonly string[]): string {
-  return allowed.includes(sort) ? sort : 'created_at';
-}
 
 /**
- * Service responsible for managing facilitation service registration lifecycle
- * Handles guest registration, payment initiation, status tracking, and staff management
+ * Service for managing facilitation service registration lifecycle
+ * Handles guest registration, status tracking, and staff management.
+ * Payment initiation is handled by ServiceRegistrationsPaymentService.
  *
- * @remarks
- * This service integrates with Supabase for persistence and Safepay for payments.
- * Unique feature: Allows GUEST (unauthenticated) users to register and pay for services.
- * After payment confirmation, user accounts are auto-created via webhook (future implementation).
- *
- * @example
- * ```typescript
- * // Guest user registers for service
- * const registration = await serviceRegistrationsService.createRegistration({
- *   serviceId: 'service-uuid-123',
- *   fullName: 'Ahmed Khan',
- *   email: 'ahmed@example.com',
- *   phoneNumber: '+923001234567',
- *   cnic: '42101-1234567-1',
- *   address: 'Block 5, Gulshan-e-Iqbal, Karachi',
- *   descriptionOfNeed: 'Need SECP company registration'
- * });
- *
- * // Guest initiates payment
- * const { checkoutUrl } = await serviceRegistrationsService.initiatePayment(
- *   registration.id,
- *   'https://arco.pk/payment/success',
- *   'https://arco.pk/payment/cancel'
- * );
- *
- * // Guest checks status
- * const status = await serviceRegistrationsService.getRegistrationStatus(
- *   'REG-2026-0001',
- *   'ahmed@example.com'
- * );
- * ```
+ * @class ServiceRegistrationsService
  */
 @Injectable()
 export class ServiceRegistrationsService {
   private readonly logger = new Logger(ServiceRegistrationsService.name);
 
-  constructor(
-    private readonly supabaseService: SupabaseService,
-    private readonly safepayService: SafepayService,
-  ) {}
+  constructor(private readonly supabaseService: SupabaseService) {}
 
-  /**
-   * Creates a new service registration (guest/unauthenticated access)
-   * Validates that the requested service exists and is active
-   *
-   * @param dto - The registration creation data
-   * @returns The created registration with auto-generated reference number
-   * @throws {NotFoundException} If service does not exist or is inactive
-   * @throws {InternalServerErrorException} If database operation fails
-   *
-   * @example
-   * ```typescript
-   * try {
-   *   const result = await service.createRegistration({
-   *     serviceId: 'service-uuid-123',
-   *     fullName: 'Sara Ahmed',
-   *     email: 'sara@example.com',
-   *     phoneNumber: '+923001234567',
-   *     cnic: '42101-1234567-1',
-   *     address: 'DHA Phase 5, Karachi',
-   *     descriptionOfNeed: 'Need business NTN registration'
-   *   });
-   * } catch (error) {
-   *   if (error instanceof NotFoundException) {
-   *     // Handle service not found
-   *   }
-   * }
-   * ```
-   */
+  /** Creates a new service registration (guest/unauthenticated access) */
   async createRegistration(
     dto: CreateServiceRegistrationData,
   ): Promise<ServiceRegistrationResponse> {
@@ -210,142 +133,7 @@ export class ServiceRegistrationsService {
     return this.mapRegistrationRow(data);
   }
 
-  /**
-   * Initiates payment for a service registration
-   * Creates a Safepay checkout session and updates registration with tracker ID
-   *
-   * @param registrationId - The registration ID
-   * @param returnUrl - URL to redirect after successful payment
-   * @param cancelUrl - URL to redirect after cancelled payment
-   * @returns Checkout URL and registration ID
-   * @throws {NotFoundException} If registration does not exist
-   * @throws {BadRequestException} If payment already completed
-   * @throws {InternalServerErrorException} If payment creation fails
-   *
-   * @example
-   * ```typescript
-   * try {
-   *   const result = await service.initiatePayment(
-   *     'registration-uuid-123',
-   *     'https://arco.pk/payment/success',
-   *     'https://arco.pk/payment/cancel'
-   *   );
-   *   // Redirect user to result.checkoutUrl
-   * } catch (error) {
-   *   if (error instanceof BadRequestException) {
-   *     // Payment already completed
-   *   }
-   * }
-   * ```
-   */
-  async initiatePayment(
-    registrationId: string,
-    returnUrl: string,
-    cancelUrl: string,
-  ): Promise<{ checkoutUrl: string; registrationId: string }> {
-    this.logger.log(`Initiating payment for registration ${registrationId}`);
-
-    const adminClient = this.supabaseService.getAdminClient();
-
-    // Fetch registration with service details
-    const { data: registration, error: fetchError } = (await adminClient
-      .from('service_registrations')
-      .select('*, services(registration_fee)')
-      .eq('id', registrationId)
-      .single()) as DbResult<
-      ServiceRegistrationRow & { services: { registration_fee: number } }
-    >;
-
-    if (fetchError || !registration) {
-      this.logger.warn(`Registration ${registrationId} not found`, fetchError);
-      throw new NotFoundException('Registration not found');
-    }
-
-    // Check if already paid
-    if (registration.payment_status === ServiceRegistrationPaymentStatus.PAID) {
-      this.logger.warn(
-        `Registration ${registrationId} already paid, cannot initiate payment`,
-      );
-      throw new BadRequestException('Payment already completed');
-    }
-
-    // Get service fee
-    const serviceFee = registration.services.registration_fee;
-
-    // Create Safepay checkout session
-    let checkoutUrl: string;
-    let trackerToken: string;
-
-    try {
-      const result = await this.safepayService.createCheckoutSession({
-        amount: serviceFee,
-        currency: 'PKR',
-        orderId: registrationId,
-        metadata: {
-          type: 'service',
-          referenceId: registrationId,
-        },
-        returnUrl,
-        cancelUrl,
-      });
-
-      checkoutUrl = result.checkoutUrl;
-      trackerToken = result.token;
-    } catch (error) {
-      this.logger.error(
-        `Failed to create Safepay checkout for registration ${registrationId}`,
-        error,
-      );
-      throw new InternalServerErrorException('Failed to initiate payment');
-    }
-
-    // Update registration with tracker ID
-    const { error: updateError } = await adminClient
-      .from('service_registrations')
-      .update({ safepay_tracker_id: trackerToken })
-      .eq('id', registrationId);
-
-    if (updateError) {
-      this.logger.error(
-        `Failed to update registration ${registrationId} with tracker ID`,
-        updateError,
-      );
-      throw new InternalServerErrorException('Failed to update registration');
-    }
-
-    this.logger.log(
-      `Payment initiated for registration ${registrationId}, tracker: ${trackerToken}`,
-    );
-
-    return {
-      checkoutUrl,
-      registrationId,
-    };
-  }
-
-  /**
-   * Retrieves minimal status information for a guest user
-   * Requires both reference number AND email to match for security
-   *
-   * @param dto - Guest status check data (reference number + email)
-   * @returns Minimal registration status (no sensitive info)
-   * @throws {NotFoundException} If registration not found or email mismatch
-   *
-   * @example
-   * ```typescript
-   * try {
-   *   const status = await service.getRegistrationStatus({
-   *     ref: 'REG-2026-0001',
-   *     email: 'sara@example.com'
-   *   });
-   *   console.log(status.status); // 'pending_payment' | 'paid' | 'in_progress' | ...
-   * } catch (error) {
-   *   if (error instanceof NotFoundException) {
-   *     // Invalid reference or email
-   *   }
-   * }
-   * ```
-   */
+  /** Retrieves minimal status for a guest user (requires ref + email match) */
   async getRegistrationStatus(
     dto: GuestStatusCheckData,
   ): Promise<GuestStatusResponse> {
@@ -381,30 +169,7 @@ export class ServiceRegistrationsService {
     };
   }
 
-  /**
-   * Retrieves service registrations with pagination
-   * Clients see only their own registrations, staff see all registrations
-   *
-   * @param user - The authenticated user
-   * @param pagination - Pagination parameters (page, limit, sort, order)
-   * @returns Paginated list of registrations with total count
-   * @throws {InternalServerErrorException} If database operation fails
-   *
-   * @example
-   * ```typescript
-   * // Client viewing their own registrations
-   * const result = await service.getRegistrations(
-   *   clientUser,
-   *   { page: 1, limit: 10, sort: 'created_at', order: 'desc' }
-   * );
-   *
-   * // Staff viewing all registrations
-   * const allRegistrations = await service.getRegistrations(
-   *   staffUser,
-   *   { page: 1, limit: 20, sort: 'created_at', order: 'desc' }
-   * );
-   * ```
-   */
+  /** Retrieves service registrations with pagination (clients see own, staff see all) */
   async getRegistrations(
     user: AuthUser,
     pagination: PaginationParams,
@@ -421,7 +186,10 @@ export class ServiceRegistrationsService {
 
     // If user is CLIENT, filter by their client_profile_id
     if (!STAFF_ROLES.includes(user.userType)) {
-      query = query.eq('client_profile_id', user.clientProfileId as string);
+      if (!user.clientProfileId) {
+        throw new BadRequestException('Client profile not found');
+      }
+      query = query.eq('client_profile_id', user.clientProfileId);
     }
 
     // Validate and apply pagination and sorting
@@ -458,33 +226,7 @@ export class ServiceRegistrationsService {
     };
   }
 
-  /**
-   * Retrieves a single service registration by ID
-   * Clients can only view their own registrations, staff can view all
-   *
-   * @param registrationId - The registration ID
-   * @param user - The authenticated user
-   * @returns The registration details
-   * @throws {NotFoundException} If registration does not exist
-   * @throws {ForbiddenException} If client tries to access another client's registration
-   * @throws {InternalServerErrorException} If database operation fails
-   *
-   * @example
-   * ```typescript
-   * try {
-   *   const registration = await service.getRegistrationById(
-   *     'registration-uuid-123',
-   *     clientUser
-   *   );
-   * } catch (error) {
-   *   if (error instanceof NotFoundException) {
-   *     // Handle not found
-   *   } else if (error instanceof ForbiddenException) {
-   *     // Handle unauthorized access
-   *   }
-   * }
-   * ```
-   */
+  /** Retrieves a single service registration by ID (clients see own only) */
   async getRegistrationById(
     registrationId: string,
     user: AuthUser,
@@ -521,31 +263,7 @@ export class ServiceRegistrationsService {
     return registration;
   }
 
-  /**
-   * Updates the status of a service registration (staff only)
-   * Allows updating status and adding staff notes
-   *
-   * @param registrationId - The registration ID
-   * @param dto - The status update data (status, staffNotes)
-   * @returns The updated registration
-   * @throws {NotFoundException} If registration does not exist
-   * @throws {InternalServerErrorException} If database operation fails
-   *
-   * @example
-   * ```typescript
-   * // Mark registration as completed
-   * const completed = await service.updateRegistrationStatus('registration-uuid-123', {
-   *   status: ServiceRegistrationStatus.COMPLETED,
-   *   staffNotes: 'NTN certificate issued and emailed to client'
-   * });
-   *
-   * // Update to in progress
-   * const inProgress = await service.updateRegistrationStatus('registration-uuid-456', {
-   *   status: ServiceRegistrationStatus.IN_PROGRESS,
-   *   staffNotes: 'Documents submitted to SECP, awaiting approval'
-   * });
-   * ```
-   */
+  /** Updates the status of a service registration (staff only) */
   async updateRegistrationStatus(
     registrationId: string,
     dto: UpdateRegistrationStatusData,
@@ -585,25 +303,7 @@ export class ServiceRegistrationsService {
     return this.mapRegistrationRow(data);
   }
 
-  /**
-   * Assigns a service registration to a staff member (staff only)
-   * Automatically updates status to IN_PROGRESS if currently PENDING_PAYMENT or PAID
-   *
-   * @param registrationId - The registration ID
-   * @param staffId - The staff member ID to assign
-   * @returns The updated registration
-   * @throws {NotFoundException} If registration does not exist
-   * @throws {InternalServerErrorException} If database operation fails
-   *
-   * @example
-   * ```typescript
-   * // Assign registration to staff attorney
-   * const assigned = await service.assignRegistration(
-   *   'registration-uuid-123',
-   *   'staff-uuid-789'
-   * );
-   * ```
-   */
+  /** Assigns a service registration to a staff member (auto-transitions to IN_PROGRESS) */
   async assignRegistration(
     registrationId: string,
     staffId: string,
@@ -661,17 +361,7 @@ export class ServiceRegistrationsService {
     return this.mapRegistrationRow(data);
   }
 
-  /**
-   * Maps a database row (snake_case) to a ServiceRegistrationResponse object (camelCase)
-   *
-   * @remarks
-   * Note: safepay_tracker_id and safepay_transaction_id are intentionally excluded
-   * from the response for security reasons. They are internal payment tracking fields.
-   *
-   * @param row - The raw database row
-   * @returns The mapped service registration response object
-   * @private
-   */
+  /** Maps a database row (snake_case) to ServiceRegistrationResponse (camelCase) */
   private mapRegistrationRow(
     row: ServiceRegistrationRow,
   ): ServiceRegistrationResponse {

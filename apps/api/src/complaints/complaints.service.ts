@@ -3,11 +3,16 @@ import {
   Logger,
   NotFoundException,
   ForbiddenException,
+  BadRequestException,
   InternalServerErrorException,
 } from '@nestjs/common';
 import { SupabaseService } from '../database/supabase.service';
 import { SubscriptionsService } from '../subscriptions/subscriptions.service';
-import { UserType } from '../common/enums/user-type.enum';
+import { STAFF_ROLES } from '../common/constants/roles';
+import {
+  validateSortColumn,
+  sanitizePostgrestFilter,
+} from '../common/utils/query-helpers';
 import type { AuthUser } from '../common/interfaces/auth-user.interface';
 import {
   ComplaintStatus,
@@ -21,7 +26,7 @@ import {
 } from '@repo/shared';
 import type { DbResult, DbListResult } from '../database/db-result.types';
 
-/** Database row shape for the complaints table */
+/** Database row shape for the complaints table with joined staff profile */
 interface ComplaintRow {
   id: string;
   complaint_number: string;
@@ -39,16 +44,17 @@ interface ComplaintRow {
   resolved_at: string | null;
   created_at: string;
   updated_at: string;
+  /** Joined staff profile from user_profiles via assigned_staff_id */
+  assigned_staff: { first_name: string; last_name: string } | null;
 }
 
 /**
- * Staff roles that have access to all complaints (not just their own)
+ * Supabase select clause that joins assigned staff profile
+ * Uses a foreign-key relationship: complaints.assigned_staff_id -> user_profiles.id
  */
-const STAFF_ROLES: string[] = [
-  UserType.ADMIN,
-  UserType.STAFF,
-  UserType.ATTORNEY,
-];
+const COMPLAINT_SELECT_WITH_STAFF =
+  '*, assigned_staff:user_profiles!assigned_staff_id(first_name, last_name)' as const;
+
 
 /** Allowed sort columns for complaints */
 const ALLOWED_COMPLAINT_SORT_COLUMNS = [
@@ -58,16 +64,6 @@ const ALLOWED_COMPLAINT_SORT_COLUMNS = [
   'status',
 ] as const;
 
-/**
- * Validate sort column against allowed list, defaulting to created_at
- *
- * @param sort - The sort column to validate
- * @param allowed - Array of allowed column names
- * @returns Valid sort column (original if allowed, 'created_at' otherwise)
- */
-function validateSortColumn(sort: string, allowed: readonly string[]): string {
-  return allowed.includes(sort) ? sort : 'created_at';
-}
 
 /**
  * Service responsible for managing citizen complaints lifecycle
@@ -130,11 +126,15 @@ export class ComplaintsService {
     user: AuthUser,
     dto: CreateComplaintData,
   ): Promise<ComplaintResponse> {
+    if (!user.clientProfileId) {
+      throw new BadRequestException('Client profile not found');
+    }
+
     this.logger.log(`Client ${user.clientProfileId} submitting complaint`);
 
     // CRITICAL: Check subscription first
     const isActive = await this.subscriptionsService.isSubscriptionActive(
-      user.clientProfileId as string,
+      user.clientProfileId,
     );
 
     if (!isActive) {
@@ -159,7 +159,7 @@ export class ComplaintsService {
         category: dto.category ?? null,
         evidence_urls: dto.evidenceUrls ?? [],
       })
-      .select('*')
+      .select(COMPLAINT_SELECT_WITH_STAFF)
       .single()) as DbResult<ComplaintRow>;
 
     if (error || !data) {
@@ -214,11 +214,16 @@ export class ComplaintsService {
     const { page, limit, sort, order } = pagination;
     const offset = (page - 1) * limit;
 
-    let query = adminClient.from('complaints').select('*', { count: 'exact' });
+    let query = adminClient
+      .from('complaints')
+      .select(COMPLAINT_SELECT_WITH_STAFF, { count: 'exact' });
 
     // If user is CLIENT, filter by their client_profile_id
     if (!STAFF_ROLES.includes(user.userType)) {
-      query = query.eq('client_profile_id', user.clientProfileId as string);
+      if (!user.clientProfileId) {
+        throw new BadRequestException('Client profile not found');
+      }
+      query = query.eq('client_profile_id', user.clientProfileId);
     }
 
     // Apply optional filters
@@ -227,10 +232,8 @@ export class ComplaintsService {
     }
 
     if (filters.targetOrganization) {
-      query = query.ilike(
-        'target_organization',
-        `%${filters.targetOrganization}%`,
-      );
+      const sanitized = sanitizePostgrestFilter(filters.targetOrganization);
+      query = query.ilike('target_organization', `%${sanitized}%`);
     }
 
     if (filters.category) {
@@ -300,7 +303,7 @@ export class ComplaintsService {
 
     const { data, error } = (await adminClient
       .from('complaints')
-      .select('*')
+      .select(COMPLAINT_SELECT_WITH_STAFF)
       .eq('id', complaintId)
       .single()) as DbResult<ComplaintRow>;
 
@@ -381,7 +384,7 @@ export class ComplaintsService {
       .from('complaints')
       .update(updateData)
       .eq('id', complaintId)
-      .select('*')
+      .select(COMPLAINT_SELECT_WITH_STAFF)
       .single()) as DbResult<ComplaintRow>;
 
     if (error || !data) {
@@ -446,7 +449,7 @@ export class ComplaintsService {
       .from('complaints')
       .update(updateData)
       .eq('id', complaintId)
-      .select('*')
+      .select(COMPLAINT_SELECT_WITH_STAFF)
       .single()) as DbResult<ComplaintRow>;
 
     if (error || !data) {
@@ -460,12 +463,18 @@ export class ComplaintsService {
 
   /**
    * Maps a database row (snake_case) to a ComplaintResponse object (camelCase)
+   * Includes the joined staff profile name when available
    *
-   * @param row - The raw database row
+   * @param row - The raw database row with optional joined staff profile
    * @returns The mapped complaint response object
    * @private
    */
   private mapComplaintRow(row: ComplaintRow): ComplaintResponse {
+    const staffProfile = row.assigned_staff;
+    const assignedStaffName = staffProfile
+      ? `${staffProfile.first_name} ${staffProfile.last_name}`.trim()
+      : null;
+
     return {
       id: row.id,
       complaintNumber: row.complaint_number,
@@ -478,6 +487,7 @@ export class ComplaintsService {
       evidenceUrls: row.evidence_urls ?? [],
       status: row.status,
       assignedStaffId: row.assigned_staff_id ?? null,
+      assignedStaffName,
       staffNotes: row.staff_notes ?? null,
       resolutionNotes: row.resolution_notes ?? null,
       resolvedAt: row.resolved_at ?? null,

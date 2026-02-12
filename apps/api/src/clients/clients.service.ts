@@ -1,24 +1,8 @@
 /**
- * Clients Service
- *
- * Handles staff-facing CRUD operations for client profiles and
- * aggregation endpoints for client-related data (cases, documents, invoices).
+ * Clients Service - CRUD operations for client profiles
  * Supports "own data" access pattern where clients can view their own records.
  *
  * @module ClientsService
- *
- * @example
- * ```typescript
- * // Get paginated client list (staff only)
- * const clients = await clientsService.getClients(
- *   { page: 1, limit: 20, sort: 'created_at', order: 'desc' },
- *   { city: 'Karachi' },
- *   user,
- * );
- *
- * // Get single client (staff sees any, client sees own)
- * const client = await clientsService.getClientById('client-uuid', user);
- * ```
  */
 
 import {
@@ -29,7 +13,11 @@ import {
   Logger,
 } from '@nestjs/common';
 import { SupabaseService } from '../database/supabase.service';
-import { UserType } from '../common/enums/user-type.enum';
+import { STAFF_ROLES } from '../common/constants/roles';
+import {
+  validateSortColumn,
+  sanitizePostgrestFilter,
+} from '../common/utils/query-helpers';
 import type { AuthUser } from '../common/interfaces/auth-user.interface';
 import type {
   CreateClientData,
@@ -77,32 +65,7 @@ interface AuthCreateResult {
   error: { message: string } | null;
 }
 
-/** Staff-level roles that can view all clients */
-const STAFF_ROLES: string[] = [
-  UserType.ADMIN,
-  UserType.STAFF,
-  UserType.ATTORNEY,
-];
 
-/**
- * Sanitize input for safe use in PostgREST filter expressions
- *
- * Removes special characters that could manipulate filter logic:
- * `,` (OR separator), `.` (operator delimiter), `()` (grouping),
- * `"'` (string delimiters), `\` (escape character)
- *
- * @param {string} input - Raw user input
- * @returns {string} Sanitized string safe for filter interpolation
- *
- * @example
- * ```typescript
- * const safe = sanitizePostgrestFilter('test,name.ilike');
- * // Returns: 'testnameilike'
- * ```
- */
-function sanitizePostgrestFilter(input: string): string {
-  return input.replace(/[,.()"'\\]/g, '');
-}
 
 /** Allowed sort columns for client profiles */
 const ALLOWED_CLIENT_SORT_COLUMNS = [
@@ -111,46 +74,9 @@ const ALLOWED_CLIENT_SORT_COLUMNS = [
   'company_name',
 ] as const;
 
-/** Allowed sort columns for cases aggregation */
-const ALLOWED_CASE_SORT_COLUMNS = [
-  'created_at',
-  'updated_at',
-  'case_number',
-] as const;
 
-/** Allowed sort columns for documents aggregation */
-const ALLOWED_DOCUMENT_SORT_COLUMNS = [
-  'created_at',
-  'updated_at',
-  'document_name',
-] as const;
 
-/** Allowed sort columns for invoices aggregation */
-const ALLOWED_INVOICE_SORT_COLUMNS = [
-  'created_at',
-  'updated_at',
-  'invoice_number',
-] as const;
-
-/**
- * Validate sort column against allowed list, defaulting to created_at
- *
- * @param sort - The sort column to validate
- * @param allowed - Array of allowed column names
- * @returns Valid sort column (original if allowed, 'created_at' otherwise)
- */
-function validateSortColumn(sort: string, allowed: readonly string[]): string {
-  return allowed.includes(sort) ? sort : 'created_at';
-}
-
-/**
- * Clients service for client profile management
- *
- * Provides CRUD for client_profiles with user_profiles join,
- * plus aggregation queries for cases, documents, and invoices.
- *
- * @class ClientsService
- */
+/** Clients service for client profile management */
 @Injectable()
 export class ClientsService {
   private readonly logger = new Logger(ClientsService.name);
@@ -171,22 +97,7 @@ export class ClientsService {
     throw new ForbiddenException('You can only access your own data');
   }
 
-  /**
-   * Get paginated list of clients with optional filters
-   *
-   * @param {PaginationParams} pagination - Pagination parameters
-   * @param {ClientFilters} filters - Optional filters (companyType, city, search)
-   * @returns {Promise<PaginatedClientsResponse>} Paginated client list
-   * @throws {InternalServerErrorException} If database query fails
-   *
-   * @example
-   * ```typescript
-   * const result = await clientsService.getClients(
-   *   { page: 1, limit: 20, sort: 'created_at', order: 'desc' },
-   *   { companyType: 'llc', city: 'Lahore' },
-   * );
-   * ```
-   */
+  /** Get paginated list of clients with optional filters */
   async getClients(
     pagination: PaginationParams,
     filters: ClientFilters,
@@ -305,20 +216,7 @@ export class ClientsService {
     };
   }
 
-  /**
-   * Get a single client profile by client_profiles ID
-   *
-   * @param {string} clientId - client_profiles UUID
-   * @param {AuthUser} user - Requesting user (for access check)
-   * @returns {Promise<ClientResponse>} Client profile
-   * @throws {NotFoundException} If client not found
-   * @throws {ForbiddenException} If client tries to access another client
-   *
-   * @example
-   * ```typescript
-   * const client = await clientsService.getClientById('client-uuid', user);
-   * ```
-   */
+  /** Get a single client profile by client_profiles ID */
   async getClientById(
     clientId: string,
     user: AuthUser,
@@ -366,23 +264,7 @@ export class ClientsService {
 
   /**
    * Create a new client (staff-initiated)
-   *
-   * Creates a Supabase auth user via email invite, user_profile (type: client),
-   * and client_profile in sequence. The user receives an email with a magic link
-   * to set their password.
-   *
-   * @param {CreateClientData} dto - Client creation data
-   * @returns {Promise<ClientResponse>} Newly created client profile
-   * @throws {InternalServerErrorException} If creation fails
-   *
-   * @example
-   * ```typescript
-   * const client = await clientsService.createClient({
-   *   email: 'new@example.com',
-   *   fullName: 'New Client',
-   *   companyName: 'ACME Ltd',
-   * });
-   * ```
+   * Creates auth user via email invite, user_profile, and client_profile in sequence.
    */
   async createClient(dto: CreateClientData): Promise<ClientResponse> {
     const adminClient = this.supabaseService.getAdminClient();
@@ -473,21 +355,14 @@ export class ClientsService {
     };
   }
 
-  /**
-   * Update a client profile
-   *
-   * @param {string} clientId - client_profiles UUID
-   * @param {UpdateClientData} dto - Fields to update
-   * @param {AuthUser} user - Requesting user
-   * @returns {Promise<ClientResponse>} Updated client profile
-   * @throws {NotFoundException} If client not found
-   * @throws {InternalServerErrorException} If update fails
-   */
+  /** Update a client profile */
   async updateClient(
     clientId: string,
     dto: UpdateClientData,
     user: AuthUser,
   ): Promise<ClientResponse> {
+    this.assertClientAccess(clientId, user);
+
     const updateData: Record<string, unknown> = {};
     if (dto.companyName !== undefined)
       updateData.company_name = dto.companyName;
@@ -524,16 +399,7 @@ export class ClientsService {
     return this.getClientById(clientId, user);
   }
 
-  /**
-   * Delete a client and associated user account
-   *
-   * Deletes auth user first, then cascading deletes handle profiles.
-   *
-   * @param {string} clientId - client_profiles UUID
-   * @returns {Promise<{ message: string }>} Success message
-   * @throws {NotFoundException} If client not found
-   * @throws {InternalServerErrorException} If deletion fails
-   */
+  /** Delete a client and associated user account (cascading) */
   async deleteClient(clientId: string): Promise<{ message: string }> {
     const adminClient = this.supabaseService.getAdminClient();
 
@@ -581,193 +447,4 @@ export class ClientsService {
     return { message: 'Client deleted successfully' };
   }
 
-  /**
-   * Get cases for a specific client
-   *
-   * @param {string} clientId - client_profiles UUID
-   * @param {AuthUser} user - Requesting user (for access check)
-   * @param {PaginationParams} pagination - Pagination parameters
-   * @returns {Promise<{ data: unknown[]; meta: object }>} Paginated cases
-   */
-  async getClientCases(
-    clientId: string,
-    user: AuthUser,
-    pagination: PaginationParams,
-  ): Promise<{ data: unknown[]; meta: object }> {
-    this.assertClientAccess(clientId, user);
-
-    const adminClient = this.supabaseService.getAdminClient();
-    const offset = (pagination.page - 1) * pagination.limit;
-
-    const { count, error: countError } = (await adminClient
-      .from('cases')
-      .select('*', { count: 'exact', head: true })
-      .eq('client_profile_id', clientId)) as DbCountResult;
-
-    if (countError) {
-      this.logger.error(`Failed to count cases: ${countError.message}`);
-      throw new InternalServerErrorException('Unable to retrieve cases count.');
-    }
-
-    const total = count ?? 0;
-    const totalPages = Math.ceil(total / pagination.limit);
-
-    // Validate sort column
-    const validSort = validateSortColumn(
-      pagination.sort,
-      ALLOWED_CASE_SORT_COLUMNS,
-    );
-
-    const { data: cases, error } = (await adminClient
-      .from('cases')
-      .select('*')
-      .eq('client_profile_id', clientId)
-      .order(validSort, { ascending: pagination.order === 'asc' })
-      .range(offset, offset + pagination.limit - 1)) as DbListResult<
-      Record<string, unknown>
-    >;
-
-    if (error) {
-      this.logger.error(`Failed to fetch cases: ${error.message}`);
-      throw new InternalServerErrorException('Unable to retrieve cases.');
-    }
-
-    return {
-      data: cases || [],
-      meta: {
-        page: pagination.page,
-        limit: pagination.limit,
-        total,
-        totalPages,
-      },
-    };
-  }
-
-  /**
-   * Get documents for a specific client
-   *
-   * @param {string} clientId - client_profiles UUID
-   * @param {AuthUser} user - Requesting user (for access check)
-   * @param {PaginationParams} pagination - Pagination parameters
-   * @returns {Promise<{ data: unknown[]; meta: object }>} Paginated documents
-   */
-  async getClientDocuments(
-    clientId: string,
-    user: AuthUser,
-    pagination: PaginationParams,
-  ): Promise<{ data: unknown[]; meta: object }> {
-    this.assertClientAccess(clientId, user);
-
-    const adminClient = this.supabaseService.getAdminClient();
-    const offset = (pagination.page - 1) * pagination.limit;
-
-    const { count, error: countError } = (await adminClient
-      .from('documents')
-      .select('*', { count: 'exact', head: true })
-      .eq('client_profile_id', clientId)) as DbCountResult;
-
-    if (countError) {
-      this.logger.error(`Failed to count documents: ${countError.message}`);
-      throw new InternalServerErrorException(
-        'Unable to retrieve documents count.',
-      );
-    }
-
-    const total = count ?? 0;
-    const totalPages = Math.ceil(total / pagination.limit);
-
-    // Validate sort column
-    const validSort = validateSortColumn(
-      pagination.sort,
-      ALLOWED_DOCUMENT_SORT_COLUMNS,
-    );
-
-    const { data: documents, error } = (await adminClient
-      .from('documents')
-      .select('*')
-      .eq('client_profile_id', clientId)
-      .order(validSort, { ascending: pagination.order === 'asc' })
-      .range(offset, offset + pagination.limit - 1)) as DbListResult<
-      Record<string, unknown>
-    >;
-
-    if (error) {
-      this.logger.error(`Failed to fetch documents: ${error.message}`);
-      throw new InternalServerErrorException('Unable to retrieve documents.');
-    }
-
-    return {
-      data: documents || [],
-      meta: {
-        page: pagination.page,
-        limit: pagination.limit,
-        total,
-        totalPages,
-      },
-    };
-  }
-
-  /**
-   * Get invoices for a specific client
-   *
-   * @param {string} clientId - client_profiles UUID
-   * @param {AuthUser} user - Requesting user (for access check)
-   * @param {PaginationParams} pagination - Pagination parameters
-   * @returns {Promise<{ data: unknown[]; meta: object }>} Paginated invoices
-   */
-  async getClientInvoices(
-    clientId: string,
-    user: AuthUser,
-    pagination: PaginationParams,
-  ): Promise<{ data: unknown[]; meta: object }> {
-    this.assertClientAccess(clientId, user);
-
-    const adminClient = this.supabaseService.getAdminClient();
-    const offset = (pagination.page - 1) * pagination.limit;
-
-    const { count, error: countError } = (await adminClient
-      .from('invoices')
-      .select('*', { count: 'exact', head: true })
-      .eq('client_profile_id', clientId)) as DbCountResult;
-
-    if (countError) {
-      this.logger.error(`Failed to count invoices: ${countError.message}`);
-      throw new InternalServerErrorException(
-        'Unable to retrieve invoices count.',
-      );
-    }
-
-    const total = count ?? 0;
-    const totalPages = Math.ceil(total / pagination.limit);
-
-    // Validate sort column
-    const validSort = validateSortColumn(
-      pagination.sort,
-      ALLOWED_INVOICE_SORT_COLUMNS,
-    );
-
-    const { data: invoices, error } = (await adminClient
-      .from('invoices')
-      .select('*')
-      .eq('client_profile_id', clientId)
-      .order(validSort, { ascending: pagination.order === 'asc' })
-      .range(offset, offset + pagination.limit - 1)) as DbListResult<
-      Record<string, unknown>
-    >;
-
-    if (error) {
-      this.logger.error(`Failed to fetch invoices: ${error.message}`);
-      throw new InternalServerErrorException('Unable to retrieve invoices.');
-    }
-
-    return {
-      data: invoices || [],
-      meta: {
-        page: pagination.page,
-        limit: pagination.limit,
-        total,
-        totalPages,
-      },
-    };
-  }
 }
