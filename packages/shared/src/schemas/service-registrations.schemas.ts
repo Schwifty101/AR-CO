@@ -14,7 +14,7 @@ export const CreateServiceRegistrationSchema = z.object({
 
 /** Schema for guest status check */
 export const GuestStatusCheckSchema = z.object({
-  ref: z.string().min(1, 'Reference number is required'),
+  referenceNumber: z.string().min(1, 'Reference number is required'),
   email: z.string().email('Valid email is required'),
 });
 

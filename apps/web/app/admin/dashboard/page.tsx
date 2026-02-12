@@ -13,6 +13,7 @@
  */
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth/use-auth';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getAdminDashboardStats } from '@/lib/api/dashboard';
@@ -20,6 +21,7 @@ import type { AdminDashboardStats } from '@repo/shared';
 
 export default function AdminDashboardPage() {
   const { user, isLoading: authLoading } = useAuth();
+  const router = useRouter();
   const [stats, setStats] = useState<AdminDashboardStats | null>(null);
   const [statsLoading, setStatsLoading] = useState(true);
   const [statsError, setStatsError] = useState<string | null>(null);
@@ -42,6 +44,12 @@ export default function AdminDashboardPage() {
 
     loadStats();
   }, [authLoading]);
+
+  // Redirect to signin when session is lost
+  if (!authLoading && !user) {
+    router.push('/auth/signin');
+    return null;
+  }
 
   if (authLoading) {
     return (
@@ -67,7 +75,7 @@ export default function AdminDashboardPage() {
       )}
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <div className="rounded-lg border p-6">
+        <div className="rounded-lg border p-6 transition-shadow hover:shadow-md">
           <h3 className="text-sm font-medium text-muted-foreground">
             Total Clients
           </h3>
@@ -79,7 +87,7 @@ export default function AdminDashboardPage() {
             </p>
           )}
         </div>
-        <div className="rounded-lg border p-6">
+        <div className="rounded-lg border p-6 transition-shadow hover:shadow-md">
           <h3 className="text-sm font-medium text-muted-foreground">
             Active Cases
           </h3>
@@ -91,7 +99,7 @@ export default function AdminDashboardPage() {
             </p>
           )}
         </div>
-        <div className="rounded-lg border p-6">
+        <div className="rounded-lg border p-6 transition-shadow hover:shadow-md">
           <h3 className="text-sm font-medium text-muted-foreground">
             Pending Appointments
           </h3>
@@ -104,7 +112,7 @@ export default function AdminDashboardPage() {
           )}
         </div>
         {/* TODO: Fetch from backend when dashboard stats are expanded */}
-        <div className="rounded-lg border p-6">
+        <div className="rounded-lg border p-6 transition-shadow hover:shadow-md">
           <h3 className="text-sm font-medium text-muted-foreground">
             Active Subscribers
           </h3>
@@ -114,7 +122,7 @@ export default function AdminDashboardPage() {
             <p className="mt-2 text-3xl font-bold">0</p>
           )}
         </div>
-        <div className="rounded-lg border p-6">
+        <div className="rounded-lg border p-6 transition-shadow hover:shadow-md">
           <h3 className="text-sm font-medium text-muted-foreground">
             Open Complaints
           </h3>
@@ -124,7 +132,7 @@ export default function AdminDashboardPage() {
             <p className="mt-2 text-3xl font-bold">0</p>
           )}
         </div>
-        <div className="rounded-lg border p-6">
+        <div className="rounded-lg border p-6 transition-shadow hover:shadow-md">
           <h3 className="text-sm font-medium text-muted-foreground">
             Pending Registrations
           </h3>

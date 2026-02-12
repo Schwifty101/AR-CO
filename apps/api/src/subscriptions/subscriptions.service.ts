@@ -177,14 +177,14 @@ export class SubscriptionsService {
       }
 
       // Create Safepay checkout session
-      const frontendUrl = this.configService.get<string>('FRONTEND_URL');
+      const frontendUrl = this.configService.get<string>('FRONTEND_URL') || 'http://localhost:3000';
       const { checkoutUrl } =
         await this.safepayService.createSubscriptionCheckout({
           planId: 'civic_retainer',
           reference: clientProfileId,
           customerEmail: user.email,
-          returnUrl: `${frontendUrl}/client/subscriptions/success`,
-          cancelUrl: `${frontendUrl}/client/subscriptions/cancel`,
+          returnUrl: `${frontendUrl}/subscribe/success`,
+          cancelUrl: `${frontendUrl}/subscribe/cancel`,
         });
 
       return {

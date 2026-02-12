@@ -45,7 +45,7 @@ interface ComplaintRow {
   created_at: string;
   updated_at: string;
   /** Joined staff profile from user_profiles via assigned_staff_id */
-  assigned_staff: { first_name: string; last_name: string } | null;
+  assigned_staff: { full_name: string } | null;
 }
 
 /**
@@ -53,7 +53,7 @@ interface ComplaintRow {
  * Uses a foreign-key relationship: complaints.assigned_staff_id -> user_profiles.id
  */
 const COMPLAINT_SELECT_WITH_STAFF =
-  '*, assigned_staff:user_profiles!assigned_staff_id(first_name, last_name)' as const;
+  '*, assigned_staff:user_profiles!assigned_staff_id(full_name)' as const;
 
 
 /** Allowed sort columns for complaints */
@@ -472,7 +472,7 @@ export class ComplaintsService {
   private mapComplaintRow(row: ComplaintRow): ComplaintResponse {
     const staffProfile = row.assigned_staff;
     const assignedStaffName = staffProfile
-      ? `${staffProfile.first_name} ${staffProfile.last_name}`.trim()
+      ? staffProfile.full_name
       : null;
 
     return {
