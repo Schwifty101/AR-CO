@@ -4,11 +4,15 @@ import { use, useState, useRef, useCallback } from 'react'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
-import { facilitationServices } from '@/components/data/facilitationServicesData'
-import type { DocumentRequirement } from '@/components/data/facilitationServicesData'
+import {
+  isValidCategory,
+  findServiceBySlug,
+  getCategoryDocuments,
+  type CategoryType,
+} from '@/lib/categoryDataMapper'
 
 interface PageProps {
-  params: Promise<{ slug: string }>
+  params: Promise<{ category: string; slug: string }>
 }
 
 /** Slide animation variants */
@@ -24,15 +28,6 @@ interface UploadedFile {
   previewUrl: string | null
 }
 
-/** Get category display name from service data */
-function getCategoryName(
-  doc: DocumentRequirement,
-  categories: { id: string; name: string }[] | undefined
-): string {
-  const cat = categories?.find((c) => c.id === doc.category)
-  return cat?.name ?? doc.category
-}
-
 /** Check if file is an image for preview */
 function isImageFile(file: File): boolean {
   return file.type.startsWith('image/')
@@ -45,13 +40,20 @@ function formatFileSize(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 }
 
-/** Step 3: Required documents & upload */
-export default function FacilitationServiceDocuments({ params }: PageProps) {
-  const { slug } = use(params)
-  const service = facilitationServices.find((s) => s.slug === slug)
+/** Step 3: Required documents with upload interface */
+export default function ServiceDocuments({ params }: PageProps) {
+  const { category, slug } = use(params)
+
+  // Validate category
+  if (!isValidCategory(category)) return notFound()
+
+  // Find service
+  const service = findServiceBySlug(category as CategoryType, slug)
   if (!service) return notFound()
 
-  const documents = service.requiredDocuments
+  // Get category-specific documents
+  const documents = getCategoryDocuments(category as CategoryType)
+
   const total = documents.length
 
   const [currentIndex, setCurrentIndex] = useState(0)
@@ -64,10 +66,6 @@ export default function FacilitationServiceDocuments({ params }: PageProps) {
   const currentFiles = uploadedFiles[currentDoc.id] ?? []
   const isFirst = currentIndex === 0
   const isLast = currentIndex === total - 1
-
-  const acceptFormats = currentDoc.formats
-    ? currentDoc.formats.map((f) => `.${f.toLowerCase()}`).join(',')
-    : undefined
 
   const goNext = useCallback(() => {
     if (isLast) return
@@ -164,8 +162,14 @@ export default function FacilitationServiceDocuments({ params }: PageProps) {
         {/* Step counter */}
         <div className="px-6 md:px-12 pt-5 pb-2 flex items-center justify-between">
           <span
-            className="text-xs uppercase tracking-[0.15em] font-medium"
-            style={{ color: 'var(--heritage-gold)', opacity: 0.7 }}
+            className="text-xs uppercase font-medium"
+            style={{
+              fontFamily: "'Georgia', 'Times New Roman', serif",
+              fontSize: '0.7rem',
+              letterSpacing: '0.15em',
+              color: 'var(--heritage-gold)',
+              opacity: 0.7
+            }}
           >
             Document {currentIndex + 1} of {total}
           </span>
@@ -197,30 +201,20 @@ export default function FacilitationServiceDocuments({ params }: PageProps) {
             >
               {/* LEFT SIDE — Document Info */}
               <div className="relative px-6 md:px-12 pb-8 pt-2 flex flex-col overflow-hidden" style={{ height: '480px' }}>
-                {/* Category */}
-                <motion.span
-                  className="text-xs uppercase tracking-[0.15em] font-medium mb-4 block"
-                  style={{ color: 'var(--heritage-gold)', opacity: 0.7 }}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 0.7, y: 0 }}
-                  transition={{ duration: 0.4, ease: [0.32, 0.72, 0, 1] }}
-                >
-                  {getCategoryName(currentDoc, service.documentCategories)}
-                </motion.span>
-
                 {/* Document name */}
                 <motion.h2
                   className="uppercase mb-4"
                   style={{
+                    fontFamily: "'Lora', Georgia, serif",
                     fontSize: 'clamp(1.5rem, 4vw, 2.5rem)',
-                    fontWeight: 100,
-                    lineHeight: 1,
-                    letterSpacing: '-0.02em',
+                    fontWeight: 300,
+                    lineHeight: 1.1,
+                    letterSpacing: '-0.03em',
                     color: 'var(--heritage-cream)',
                   }}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.1, ease: [0.32, 0.72, 0, 1] }}
+                  transition={{ duration: 0.5, ease: [0.32, 0.72, 0, 1] }}
                 >
                   {currentDoc.name}
                 </motion.h2>
@@ -228,52 +222,99 @@ export default function FacilitationServiceDocuments({ params }: PageProps) {
                 {/* Description */}
                 {currentDoc.description && (
                   <motion.p
-                    className="text-xs leading-tight mb-5 max-w-md"
-                    style={{ color: 'rgba(249, 248, 246, 0.5)' }}
+                    className="mb-5 max-w-md"
+                    style={{
+                      fontFamily: "'Georgia', 'Times New Roman', serif",
+                      fontSize: '0.85rem',
+                      lineHeight: 1.7,
+                      color: 'rgba(249, 248, 246, 0.55)',
+                      letterSpacing: '0.01em'
+                    }}
                     initial={{ opacity: 0, y: 15 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.2, ease: [0.32, 0.72, 0, 1] }}
+                    transition={{ duration: 0.5, delay: 0.1, ease: [0.32, 0.72, 0, 1] }}
                   >
                     {currentDoc.description}
                   </motion.p>
                 )}
 
-                {/* Details section */}
+                {/* Upload Specifications */}
                 <motion.div
-                  className="space-y-4 flex-1"
+                  className="space-y-3 flex-1"
                   initial={{ opacity: 0, y: 15 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.3, ease: [0.32, 0.72, 0, 1] }}
+                  transition={{ duration: 0.5, delay: 0.2, ease: [0.32, 0.72, 0, 1] }}
                 >
-                  {/* Notes */}
-                  {currentDoc.notes && (
-                    <div className="flex gap-2.5 items-start">
-                      <span className="text-[10px] mt-0.5" style={{ color: 'rgba(249, 248, 246, 0.3)' }}>•</span>
-                      <p className="text-[11px] leading-snug" style={{ color: 'rgba(249, 248, 246, 0.4)' }}>
-                        {currentDoc.notes}
-                      </p>
-                    </div>
-                  )}
+                  <h3
+                    className="uppercase font-medium mb-3"
+                    style={{
+                      fontFamily: "'Georgia', 'Times New Roman', serif",
+                      fontSize: '0.6rem',
+                      letterSpacing: '0.35em',
+                      color: 'var(--heritage-gold)',
+                      opacity: 0.7
+                    }}
+                  >
+                    Upload Specifications
+                  </h3>
 
-                  {/* Alternatives */}
-                  {currentDoc.alternatives && currentDoc.alternatives.length > 0 && (
-                    <div className="flex gap-2.5 items-start">
-                      <span className="text-[10px] mt-0.5" style={{ color: 'rgba(249, 248, 246, 0.3)' }}>•</span>
-                      <p className="text-[11px] leading-snug" style={{ color: 'rgba(249, 248, 246, 0.4)' }}>
-                        {currentDoc.alternatives.join(' / ')}
-                      </p>
-                    </div>
-                  )}
+                  {/* Required Status */}
+                  <div className="flex gap-2.5 items-start">
+                    <span className="text-[10px] mt-0.5" style={{ color: 'rgba(249, 248, 246, 0.3)' }}>•</span>
+                    <p style={{
+                      fontFamily: "'Georgia', 'Times New Roman', serif",
+                      fontSize: '0.75rem',
+                      lineHeight: 1.6,
+                      color: 'rgba(249, 248, 246, 0.55)',
+                      letterSpacing: '0.01em'
+                    }}>
+                      <strong style={{ color: currentDoc.required ? 'var(--heritage-gold)' : 'rgba(249, 248, 246, 0.6)', fontWeight: 500 }}>
+                        {currentDoc.required ? 'Required' : 'Optional'}
+                      </strong> document
+                    </p>
+                  </div>
 
-                  {/* Copies */}
-                  {currentDoc.copies && currentDoc.copies > 1 && (
-                    <div className="flex gap-2.5 items-start">
-                      <span className="text-[10px] mt-0.5" style={{ color: 'rgba(249, 248, 246, 0.3)' }}>•</span>
-                      <p className="text-[11px] leading-snug" style={{ color: 'rgba(249, 248, 246, 0.4)' }}>
-                        {currentDoc.copies} copies required
-                      </p>
-                    </div>
-                  )}
+                  {/* Supported Formats - placeholder for now */}
+                  <div className="flex gap-2.5 items-start">
+                    <span className="text-[10px] mt-0.5" style={{ color: 'rgba(249, 248, 246, 0.3)' }}>•</span>
+                    <p style={{
+                      fontFamily: "'Georgia', 'Times New Roman', serif",
+                      fontSize: '0.75rem',
+                      lineHeight: 1.6,
+                      color: 'rgba(249, 248, 246, 0.55)',
+                      letterSpacing: '0.01em'
+                    }}>
+                      Supported formats: PDF, JPG, PNG, DOCX
+                    </p>
+                  </div>
+
+                  {/* Max file size */}
+                  <div className="flex gap-2.5 items-start">
+                    <span className="text-[10px] mt-0.5" style={{ color: 'rgba(249, 248, 246, 0.3)' }}>•</span>
+                    <p style={{
+                      fontFamily: "'Georgia', 'Times New Roman', serif",
+                      fontSize: '0.75rem',
+                      lineHeight: 1.6,
+                      color: 'rgba(249, 248, 246, 0.55)',
+                      letterSpacing: '0.01em'
+                    }}>
+                      Maximum file size: 10 MB
+                    </p>
+                  </div>
+
+                  {/* Multiple files allowed */}
+                  <div className="flex gap-2.5 items-start">
+                    <span className="text-[10px] mt-0.5" style={{ color: 'rgba(249, 248, 246, 0.3)' }}>•</span>
+                    <p style={{
+                      fontFamily: "'Georgia', 'Times New Roman', serif",
+                      fontSize: '0.75rem',
+                      lineHeight: 1.6,
+                      color: 'rgba(249, 248, 246, 0.55)',
+                      letterSpacing: '0.01em'
+                    }}>
+                      Multiple files can be uploaded
+                    </p>
+                  </div>
                 </motion.div>
 
                 {/* Back button — bottom left */}
@@ -281,8 +322,13 @@ export default function FacilitationServiceDocuments({ params }: PageProps) {
                   {!isFirst && (
                     <button
                       onClick={goBack}
-                      className="inline-flex items-center gap-2 text-xs uppercase tracking-wider font-medium transition-all duration-300 hover:gap-3"
-                      style={{ color: 'rgba(249, 248, 246, 0.5)' }}
+                      className="inline-flex items-center gap-2 uppercase font-medium transition-all duration-300 hover:gap-3"
+                      style={{
+                        fontFamily: "'Georgia', 'Times New Roman', serif",
+                        fontSize: '0.7rem',
+                        letterSpacing: '0.12em',
+                        color: 'rgba(249, 248, 246, 0.5)'
+                      }}
                     >
                       <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M7 16l-4-4m0 0l4-4m-4 4h18" />
@@ -334,22 +380,37 @@ export default function FacilitationServiceDocuments({ params }: PageProps) {
                   >
                     <path strokeLinecap="round" strokeLinejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                   </svg>
-                  <p className="text-sm font-light mb-1" style={{ color: 'rgba(249, 248, 246, 0.5)' }}>
+                  <p style={{
+                    fontFamily: "'Lora', Georgia, serif",
+                    fontSize: '0.95rem',
+                    fontWeight: 400,
+                    color: 'rgba(249, 248, 246, 0.55)',
+                    marginBottom: '0.5rem'
+                  }}>
                     Drag & drop files here
                   </p>
-                  <p className="text-xs" style={{ color: 'rgba(249, 248, 246, 0.3)' }}>
+                  <p style={{
+                    fontFamily: "'Georgia', 'Times New Roman', serif",
+                    fontSize: '0.72rem',
+                    color: 'rgba(249, 248, 246, 0.35)',
+                    marginBottom: '1.5rem'
+                  }}>
                     or click to browse
                   </p>
-                  {currentDoc.formats && (
-                    <p className="text-xs mt-3" style={{ color: 'var(--heritage-gold)', opacity: 0.5 }}>
-                      Accepted: {currentDoc.formats.join(', ')}
-                    </p>
-                  )}
+                  <p style={{
+                    fontFamily: "'Georgia', 'Times New Roman', serif",
+                    fontSize: '0.7rem',
+                    color: 'var(--heritage-gold)',
+                    opacity: 0.5,
+                    letterSpacing: '0.05em'
+                  }}>
+                    Accepted: PDF, JPG, PNG, DOCX
+                  </p>
                   <input
                     ref={fileInputRef}
                     type="file"
                     multiple
-                    accept={acceptFormats}
+                    accept=".pdf,.jpg,.jpeg,.png,.docx"
                     onChange={handleFileInput}
                     className="hidden"
                   />
@@ -387,10 +448,18 @@ export default function FacilitationServiceDocuments({ params }: PageProps) {
 
                         {/* File name & size */}
                         <div className="flex-1 min-w-0">
-                          <p className="text-[11px] truncate leading-none mb-0.5" style={{ color: 'var(--heritage-cream)' }}>
+                          <p className="truncate leading-none mb-0.5" style={{
+                            fontFamily: "'Georgia', 'Times New Roman', serif",
+                            fontSize: '0.75rem',
+                            color: 'var(--heritage-cream)'
+                          }}>
                             {uploaded.file.name}
                           </p>
-                          <p className="text-[9px] leading-none" style={{ color: 'rgba(249, 248, 246, 0.3)' }}>
+                          <p className="leading-none" style={{
+                            fontFamily: "'Georgia', 'Times New Roman', serif",
+                            fontSize: '0.65rem',
+                            color: 'rgba(249, 248, 246, 0.35)'
+                          }}>
                             {formatFileSize(uploaded.file.size)}
                           </p>
                         </div>
@@ -419,8 +488,11 @@ export default function FacilitationServiceDocuments({ params }: PageProps) {
                   {!currentDoc.required && !isLast && (
                     <button
                       onClick={goNext}
-                      className="inline-flex items-center gap-2 px-5 py-2 text-xs font-medium uppercase tracking-wider rounded-full border transition-all duration-300 hover:border-[var(--heritage-gold)]"
+                      className="inline-flex items-center gap-2 px-5 py-2 font-medium uppercase rounded-full border transition-all duration-300 hover:border-[var(--heritage-gold)]"
                       style={{
+                        fontFamily: "'Georgia', 'Times New Roman', serif",
+                        fontSize: '0.7rem',
+                        letterSpacing: '0.12em',
                         color: 'rgba(249, 248, 246, 0.5)',
                         borderColor: 'rgba(249, 248, 246, 0.15)',
                       }}
@@ -432,9 +504,13 @@ export default function FacilitationServiceDocuments({ params }: PageProps) {
                   {/* Next / Finish */}
                   {isLast ? (
                     <Link
-                      href={`/services/${slug}/form`}
-                      className="inline-flex items-center gap-2 px-6 py-2 text-xs font-semibold uppercase tracking-wider rounded-full transition-all duration-300 hover:gap-4"
+                      href={`/services/${category}/${slug}/form`}
+                      className="inline-flex items-center gap-2 px-6 py-2 font-medium uppercase rounded-full transition-all duration-300 hover:gap-4"
                       style={{
+                        fontFamily: "'Georgia', 'Times New Roman', serif",
+                        fontSize: '0.72rem',
+                        fontWeight: 500,
+                        letterSpacing: '0.15em',
                         background: 'var(--heritage-gold)',
                         color: 'var(--wood-espresso)',
                       }}
@@ -447,8 +523,12 @@ export default function FacilitationServiceDocuments({ params }: PageProps) {
                   ) : (
                     <button
                       onClick={goNext}
-                      className="inline-flex items-center gap-2 px-6 py-2 text-xs font-semibold uppercase tracking-wider rounded-full transition-all duration-300 hover:gap-4"
+                      className="inline-flex items-center gap-2 px-6 py-2 font-medium uppercase rounded-full transition-all duration-300 hover:gap-4"
                       style={{
+                        fontFamily: "'Georgia', 'Times New Roman', serif",
+                        fontSize: '0.72rem',
+                        fontWeight: 500,
+                        letterSpacing: '0.15em',
                         background: 'var(--heritage-gold)',
                         color: 'var(--wood-espresso)',
                       }}

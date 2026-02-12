@@ -455,26 +455,6 @@ export const regulatoryServiceForm: FormSection[] = [
     ],
   },
   {
-    title: 'SERVICE REQUIRED',
-    fields: [
-      {
-        id: 'serviceType',
-        label: 'Select the Service You Need',
-        type: 'checkbox',
-        required: true,
-        options: [
-          'HEC Degree / Attestation Issue',
-          'NADRA CNIC / NICOP / B-Form Issue',
-          'CDA Plot / Property / Civic Issue',
-          'FBR / Tax Authority Matter',
-          'Utility Issue (Electricity / Gas / Water)',
-          'Excise & Vehicle / Tax Matter',
-          'Other Government Authority Issue',
-        ],
-      },
-    ],
-  },
-  {
     title: 'ABOUT YOUR MATTER',
     fields: [
       {
@@ -484,18 +464,6 @@ export const regulatoryServiceForm: FormSection[] = [
         required: true,
         placeholder: 'e.g. My HEC degree is verified but attestation is delayed for 3 months',
         hint: 'Explain in simple words — no legal language needed',
-      },
-    ],
-  },
-  {
-    title: 'DOCUMENTS (Optional at This Stage)',
-    fields: [
-      {
-        id: 'documents',
-        label: 'Upload documents (if available)',
-        type: 'file',
-        required: false,
-        hint: 'CNIC / Application receipt / Letter / Screenshot',
       },
     ],
   },

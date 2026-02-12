@@ -390,27 +390,6 @@ export const womenDeskServices: WomenDeskService[] = [
 
 export const womenDeskRegistrationForm: FormSection[] = [
   {
-    title: 'SERVICE SELECTION',
-    fields: [
-      {
-        id: 'serviceRequired',
-        label: 'Select the Service You Need',
-        type: 'select',
-        required: true,
-        placeholder: 'Choose a service',
-        options: [
-          'Harassment Cases',
-          'Khula Process',
-          'Divorce Proceedings',
-          'Child Custody & Guardianship',
-          'Maintenance & Financial Support',
-          'Domestic Violence Protection',
-          'Dower (Haq Mehr) Recovery',
-        ],
-      },
-    ],
-  },
-  {
     title: 'CLIENT INFORMATION',
     fields: [
       {
@@ -462,18 +441,6 @@ export const womenDeskRegistrationForm: FormSection[] = [
         type: 'radio',
         required: false,
         options: ['Yes - Immediate assistance needed', 'No - Regular processing'],
-      },
-    ],
-  },
-  {
-    title: 'DOCUMENT UPLOAD (Optional)',
-    fields: [
-      {
-        id: 'documents',
-        label: 'Upload Supporting Documents',
-        type: 'file',
-        required: false,
-        hint: 'Nikahnama, CNIC, evidence, or any relevant documents',
       },
     ],
   },

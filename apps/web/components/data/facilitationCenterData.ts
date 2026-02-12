@@ -923,37 +923,6 @@ export const commonDocuments = [
 
 export const facilitationRegistrationForm: FormSection[] = [
   {
-    title: 'SERVICE SELECTION',
-    fields: [
-      {
-        id: 'serviceRequired',
-        label: 'Select the Service You Need',
-        type: 'select',
-        required: true,
-        placeholder: 'Choose a service',
-        options: [
-          'SECP Registration',
-          'IP Registration',
-          'Pakistan Food Authority License',
-          'Import / Export License',
-          'IHRA Registration',
-          'DRAP Licensing',
-          'NTN Registration',
-          'Sales Tax Registration (STRN)',
-          'Tax Filing',
-          'Property Transfer',
-          'Agreement Drafting',
-          'TV Channel Registration',
-          'Restaurant License and Registration',
-          'Chamber of Commerce Registration',
-          'Succession Certificate',
-          'Family Registration Certificate',
-          'Child Registration Certificate',
-        ],
-      },
-    ],
-  },
-  {
     title: 'CLIENT INFORMATION',
     fields: [
       {
@@ -976,7 +945,6 @@ export const facilitationRegistrationForm: FormSection[] = [
         type: 'tel',
         required: true,
         placeholder: 'Country code + number',
-        hint: 'e.g., +92 300 1234567',
       },
       {
         id: 'countryOfResidence',
@@ -997,7 +965,6 @@ export const facilitationRegistrationForm: FormSection[] = [
         type: 'textarea',
         required: true,
         placeholder: 'Please provide key facts only',
-        hint: 'Explain your requirement in simple terms',
       },
       {
         id: 'cityLocation',
@@ -1012,18 +979,6 @@ export const facilitationRegistrationForm: FormSection[] = [
         type: 'text',
         required: false,
         placeholder: 'e.g., SECP, FBR, NADRA, etc.',
-      },
-    ],
-  },
-  {
-    title: 'DOCUMENT UPLOAD (Optional)',
-    fields: [
-      {
-        id: 'documents',
-        label: 'Upload Supporting Documents',
-        type: 'file',
-        required: false,
-        hint: 'CNIC, Business documents, Authorization letter, or any relevant documents',
       },
     ],
   },

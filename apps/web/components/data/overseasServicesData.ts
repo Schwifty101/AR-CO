@@ -490,29 +490,6 @@ export const overseasServices: OverseasService[] = [
 
 export const overseasRegistrationForm: FormSection[] = [
   {
-    title: 'SERVICE SELECTION',
-    fields: [
-      {
-        id: 'serviceRequired',
-        label: 'Select the Service You Need',
-        type: 'select',
-        required: true,
-        placeholder: 'Choose a service',
-        options: [
-          'Property Verification & Due Diligence',
-          'Sale, Purchase & Transfer of Property',
-          'Property Disputes & Illegal Possession',
-          'Power of Attorney (POA) Services',
-          'Family Law (Divorce, Custody, Maintenance)',
-          'Inheritance & Succession Matters',
-          'Civil Litigation & Court Representation',
-          'Corporate & Business Legal Services',
-          'Documentation, Affidavits & Notarial Services',
-        ],
-      },
-    ],
-  },
-  {
     title: 'CLIENT INFORMATION',
     fields: [
       {
@@ -581,18 +558,6 @@ export const overseasRegistrationForm: FormSection[] = [
         type: 'text',
         required: false,
         placeholder: 'e.g., CDA, NADRA, Revenue Office, Person/Company name',
-      },
-    ],
-  },
-  {
-    title: 'DOCUMENT UPLOAD (Optional)',
-    fields: [
-      {
-        id: 'documents',
-        label: 'Upload Supporting Documents',
-        type: 'file',
-        required: false,
-        hint: 'Property documents, POA, CNIC, passport, or any relevant files',
       },
     ],
   },

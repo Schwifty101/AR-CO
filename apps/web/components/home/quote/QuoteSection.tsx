@@ -1,13 +1,13 @@
 "use client"
 
-import { useRef, useState } from "react"
+import { useRef } from "react"
 import { motion } from "framer-motion"
 import gsap from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
 import { useGSAP } from "@gsap/react"
 import { ArrowUpRight } from "lucide-react"
 import { useFacilitationOverlay } from "@/components/facilitation"
-import { setSlowScroll, setNormalScroll, pauseScroll, resumeScroll } from "../../SmoothScroll"
+import { setSlowScroll, setNormalScroll } from "../../SmoothScroll"
 import styles from "./QuoteSection.module.css"
 
 // Register GSAP plugins
@@ -59,48 +59,21 @@ const SERVICES = [
 export default function QuoteSection() {
   const sectionRef = useRef<HTMLElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
-  const [hoveredIdx, setHoveredIdx] = useState<number | null>(null)
   const { openOverlay } = useFacilitationOverlay()
 
-  // GSAP scroll-speed control & entrance
+  // GSAP scroll-speed control & entrance animation
   useGSAP(() => {
     if (!sectionRef.current || !contentRef.current) return
 
     const section = sectionRef.current
     const content = contentRef.current
 
-    let hasTriggeredPause = false
-
     ScrollTrigger.create({
       trigger: section,
       start: "top bottom",
       end: "bottom top",
       onEnter: () => setSlowScroll(),
-      onLeave: () => {
-        setNormalScroll()
-        hasTriggeredPause = false
-      },
-      onEnterBack: () => setNormalScroll(),
-      onLeaveBack: () => {
-        setSlowScroll()
-        hasTriggeredPause = false
-      },
-    })
-
-    ScrollTrigger.create({
-      trigger: section,
-      start: "top top",
-      end: "top top",
-      onEnter: () => {
-        if (!hasTriggeredPause) {
-          hasTriggeredPause = true
-          pauseScroll()
-          setTimeout(() => {
-            resumeScroll()
-            setNormalScroll()
-          }, 800)
-        }
-      },
+      onLeaveBack: () => setSlowScroll(),
     })
 
     gsap.fromTo(
@@ -165,8 +138,8 @@ export default function QuoteSection() {
                   delay: idx * 0.08,
                   ease: [0.16, 1, 0.3, 1],
                 }}
-                onMouseEnter={() => setHoveredIdx(idx)}
-                onMouseLeave={() => setHoveredIdx(null)}
+                onMouseEnter={() => {}}
+                onMouseLeave={() => {}}
                 onClick={openOverlay}
                 role="button"
                 tabIndex={0}
@@ -177,13 +150,8 @@ export default function QuoteSection() {
                   }
                 }}
               >
-                {/* Hover fill */}
-                <motion.div
-                  className={styles.rowFill}
-                  initial={false}
-                  animate={{ scaleX: hoveredIdx === idx ? 1 : 0 }}
-                  transition={{ duration: 0.5, ease: [0.32, 0.72, 0, 1] }}
-                />
+                {/* Hover fill — pure CSS */}
+                <div className={styles.rowFill} />
 
                 {/* Roman numeral */}
                 <span className={styles.rowNumber}>{service.number}</span>

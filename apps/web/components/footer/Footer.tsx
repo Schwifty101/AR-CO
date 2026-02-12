@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react'
 import Link from 'next/link'
+import { useRouter, usePathname } from 'next/navigation'
 import Image from 'next/image'
 import gsap from 'gsap'
 import SlotMachineText from '../shared/animations/SlotMachineText'
@@ -27,6 +28,31 @@ export default function Footer() {
   const containerRef = useRef<HTMLDivElement>(null)
   const { openOverlay } = usePracticeAreasOverlay()
   const { openOverlay: openFacilitationOverlay } = useFacilitationOverlay()
+  const router = useRouter()
+  const pathname = usePathname()
+
+  /**
+   * Handle About Us navigation with smooth scroll
+   */
+  const handleAboutClick = useCallback((e: React.MouseEvent) => {
+    e.preventDefault()
+    
+    if (pathname === '/') {
+      // Already on homepage, just scroll to about section
+      const aboutSection = document.getElementById('about')
+      if (aboutSection) {
+        const smoother = getSmoother()
+        if (smoother) {
+          smoother.scrollTo(aboutSection, true)
+        } else {
+          aboutSection.scrollIntoView({ behavior: 'smooth' })
+        }
+      }
+    } else {
+      // Navigate to homepage then scroll to about
+      router.push('/#about')
+    }
+  }, [pathname, router])
 
   /**
    * Calculates if the office is currently open
@@ -188,6 +214,14 @@ export default function Footer() {
                         className={styles.navLink}
                         onClick={openFacilitationOverlay}
                         aria-label="Open facilitation services overlay"
+                      >
+                        <SlotMachineText>{link.label}</SlotMachineText>
+                      </button>
+                    ) : link.id === 'about' ? (
+                      <button
+                        className={styles.navLink}
+                        onClick={handleAboutClick}
+                        aria-label="Scroll to About Us section"
                       >
                         <SlotMachineText>{link.label}</SlotMachineText>
                       </button>

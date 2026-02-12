@@ -20,7 +20,7 @@ export const NAV_ITEMS: INavItem[] = [
     { id: 'practice-areas', label: 'Practice Areas', href: '', hasSubmenu: true },
     { id: 'facilitation', label: 'Services', href: '', hasSubmenu: true },
     { id: 'blogs', label: 'Blogs', href: '/blogs', hasSubmenu: false },
-    { id: 'contact', label: 'Contact Us', href: '/contact', hasSubmenu: false },
+    { id: 'about', label: 'About Us', href: '/#about', hasSubmenu: false },
 ]
 
 /**
@@ -30,11 +30,10 @@ export const NAV_ITEMS: INavItem[] = [
 export const SIDEPANEL_FOOTER_NAV_ITEMS: INavItem[] = [
     { id: 'home', label: 'Home', href: '/', hasSubmenu: false },
     { id: 'team', label: 'Our Team', href: '/team', hasSubmenu: false },
-    { id: 'about', label: 'About Us', href: '/about', hasSubmenu: false },
+    { id: 'about', label: 'About Us', href: '/#about', hasSubmenu: false },
     { id: 'blogs', label: 'Blogs', href: '/blogs', hasSubmenu: false },
     { id: 'practice-areas', label: 'Practice Areas', href: '', hasSubmenu: true },
     { id: 'facilitation', label: 'Services', href: '', hasSubmenu: true },
-    { id: 'contact', label: 'Contact Us', href: '/contact', hasSubmenu: false },
 ]
 
 /**
