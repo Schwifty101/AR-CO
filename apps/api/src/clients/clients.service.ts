@@ -85,6 +85,65 @@ const STAFF_ROLES: string[] = [
 ];
 
 /**
+ * Sanitize input for safe use in PostgREST filter expressions
+ *
+ * Removes special characters that could manipulate filter logic:
+ * `,` (OR separator), `.` (operator delimiter), `()` (grouping),
+ * `"'` (string delimiters), `\` (escape character)
+ *
+ * @param {string} input - Raw user input
+ * @returns {string} Sanitized string safe for filter interpolation
+ *
+ * @example
+ * ```typescript
+ * const safe = sanitizePostgrestFilter('test,name.ilike');
+ * // Returns: 'testnameilike'
+ * ```
+ */
+function sanitizePostgrestFilter(input: string): string {
+  return input.replace(/[,.()"'\\]/g, '');
+}
+
+/** Allowed sort columns for client profiles */
+const ALLOWED_CLIENT_SORT_COLUMNS = [
+  'created_at',
+  'updated_at',
+  'company_name',
+] as const;
+
+/** Allowed sort columns for cases aggregation */
+const ALLOWED_CASE_SORT_COLUMNS = [
+  'created_at',
+  'updated_at',
+  'case_number',
+] as const;
+
+/** Allowed sort columns for documents aggregation */
+const ALLOWED_DOCUMENT_SORT_COLUMNS = [
+  'created_at',
+  'updated_at',
+  'document_name',
+] as const;
+
+/** Allowed sort columns for invoices aggregation */
+const ALLOWED_INVOICE_SORT_COLUMNS = [
+  'created_at',
+  'updated_at',
+  'invoice_number',
+] as const;
+
+/**
+ * Validate sort column against allowed list, defaulting to created_at
+ *
+ * @param sort - The sort column to validate
+ * @param allowed - Array of allowed column names
+ * @returns Valid sort column (original if allowed, 'created_at' otherwise)
+ */
+function validateSortColumn(sort: string, allowed: readonly string[]): string {
+  return allowed.includes(sort) ? sort : 'created_at';
+}
+
+/**
  * Clients service for client profile management
  *
  * Provides CRUD for client_profiles with user_profiles join,
@@ -144,7 +203,8 @@ export class ClientsService {
       countQuery = countQuery.eq('company_type', filters.companyType);
     }
     if (filters.city) {
-      countQuery = countQuery.ilike('city', `%${filters.city}%`);
+      const sanitizedCity = sanitizePostgrestFilter(filters.city);
+      countQuery = countQuery.ilike('city', `%${sanitizedCity}%`);
     }
 
     const { count, error: countError } = (await countQuery) as DbCountResult;
@@ -169,18 +229,25 @@ export class ClientsService {
       dataQuery = dataQuery.eq('company_type', filters.companyType);
     }
     if (filters.city) {
-      dataQuery = dataQuery.ilike('city', `%${filters.city}%`);
+      const sanitizedCity = sanitizePostgrestFilter(filters.city);
+      dataQuery = dataQuery.ilike('city', `%${sanitizedCity}%`);
     }
     if (filters.search) {
+      const sanitizedSearch = sanitizePostgrestFilter(filters.search);
       dataQuery = dataQuery.or(
-        `company_name.ilike.%${filters.search}%,user_profiles.full_name.ilike.%${filters.search}%`,
+        `company_name.ilike.%${sanitizedSearch}%,user_profiles.full_name.ilike.%${sanitizedSearch}%`,
       );
     }
 
+    // Validate and handle sort column
+    const validatedSort = validateSortColumn(
+      pagination.sort,
+      ALLOWED_CLIENT_SORT_COLUMNS,
+    );
     const sortColumn =
-      pagination.sort === 'full_name'
+      validatedSort === 'full_name'
         ? 'user_profiles.full_name'
-        : pagination.sort;
+        : validatedSort;
 
     const { data: clients, error: dataError } = (await dataQuery
       .order(sortColumn, { ascending: pagination.order === 'asc' })
@@ -197,6 +264,9 @@ export class ClientsService {
     }
 
     // Fetch emails for each client
+    // TODO: N+1 query pattern - Supabase Auth API lacks batch getUserByIds endpoint.
+    // Current mitigation: Promise.all parallelizes requests, and pagination limits page size.
+    // Future optimization: Denormalize email to user_profiles table and sync via trigger.
     const data: ClientResponse[] = await Promise.all(
       (clients || []).map(async (client) => {
         const userProfile = client.user_profiles;
@@ -297,8 +367,9 @@ export class ClientsService {
   /**
    * Create a new client (staff-initiated)
    *
-   * Creates a Supabase auth user, user_profile (type: client), and client_profile
-   * in sequence. Uses a generated temporary password.
+   * Creates a Supabase auth user via email invite, user_profile (type: client),
+   * and client_profile in sequence. The user receives an email with a magic link
+   * to set their password.
    *
    * @param {CreateClientData} dto - Client creation data
    * @returns {Promise<ClientResponse>} Newly created client profile
@@ -316,14 +387,11 @@ export class ClientsService {
   async createClient(dto: CreateClientData): Promise<ClientResponse> {
     const adminClient = this.supabaseService.getAdminClient();
 
-    // Create auth user with temporary password
-    const tempPassword = `Temp${Date.now()}!`;
+    // Invite user via email (sends magic link for password setup)
     const { data: authData, error: authError } =
-      (await adminClient.auth.admin.createUser({
-        email: dto.email,
-        password: tempPassword,
-        email_confirm: true,
-      })) as AuthCreateResult;
+      (await adminClient.auth.admin.inviteUserByEmail(
+        dto.email,
+      )) as AuthCreateResult;
 
     if (authError || !authData?.user) {
       this.logger.error(
@@ -380,6 +448,9 @@ export class ClientsService {
       this.logger.error(
         `Failed to create client profile for ${userId}: ${clientError?.message}`,
       );
+      // Cleanup: delete user_profile and auth user
+      await adminClient.from('user_profiles').delete().eq('id', userId);
+      await adminClient.auth.admin.deleteUser(userId);
       throw new InternalServerErrorException(
         'Unable to create client profile. Please try again.',
       );
@@ -541,11 +612,17 @@ export class ClientsService {
     const total = count ?? 0;
     const totalPages = Math.ceil(total / pagination.limit);
 
+    // Validate sort column
+    const validSort = validateSortColumn(
+      pagination.sort,
+      ALLOWED_CASE_SORT_COLUMNS,
+    );
+
     const { data: cases, error } = (await adminClient
       .from('cases')
       .select('*')
       .eq('client_profile_id', clientId)
-      .order(pagination.sort, { ascending: pagination.order === 'asc' })
+      .order(validSort, { ascending: pagination.order === 'asc' })
       .range(offset, offset + pagination.limit - 1)) as DbListResult<
       Record<string, unknown>
     >;
@@ -599,11 +676,17 @@ export class ClientsService {
     const total = count ?? 0;
     const totalPages = Math.ceil(total / pagination.limit);
 
+    // Validate sort column
+    const validSort = validateSortColumn(
+      pagination.sort,
+      ALLOWED_DOCUMENT_SORT_COLUMNS,
+    );
+
     const { data: documents, error } = (await adminClient
       .from('documents')
       .select('*')
       .eq('client_profile_id', clientId)
-      .order(pagination.sort, { ascending: pagination.order === 'asc' })
+      .order(validSort, { ascending: pagination.order === 'asc' })
       .range(offset, offset + pagination.limit - 1)) as DbListResult<
       Record<string, unknown>
     >;
@@ -657,11 +740,17 @@ export class ClientsService {
     const total = count ?? 0;
     const totalPages = Math.ceil(total / pagination.limit);
 
+    // Validate sort column
+    const validSort = validateSortColumn(
+      pagination.sort,
+      ALLOWED_INVOICE_SORT_COLUMNS,
+    );
+
     const { data: invoices, error } = (await adminClient
       .from('invoices')
       .select('*')
       .eq('client_profile_id', clientId)
-      .order(pagination.sort, { ascending: pagination.order === 'asc' })
+      .order(validSort, { ascending: pagination.order === 'asc' })
       .range(offset, offset + pagination.limit - 1)) as DbListResult<
       Record<string, unknown>
     >;

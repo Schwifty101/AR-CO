@@ -1,23 +1,23 @@
 'use client';
 
 /**
- * Admin Users List Page
+ * Admin Clients List Page
  *
- * Displays paginated list of all users in the system.
- * Admin and staff can view all users; admins can delete users.
+ * Displays paginated list of all registered clients in the system.
+ * Staff can view all clients and create new client accounts.
  *
- * @module AdminUsersPage
+ * @module AdminClientsPage
  *
  * @example
- * Accessible at /admin/users
+ * Accessible at /admin/clients
  * Requires authentication and admin/staff user type
  */
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import {
   Card,
   CardContent,
@@ -52,102 +52,62 @@ import {
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { getUsers, deleteUser, inviteUser, type UserProfile, type InviteUserData } from '@/lib/api/users';
-
-/** User type badge color mapping */
-const USER_TYPE_COLORS: Record<string, string> = {
-  admin: 'bg-red-500 text-white',
-  attorney: 'bg-blue-500 text-white',
-  staff: 'bg-green-500 text-white',
-  client: 'bg-gray-500 text-white',
-};
+import {
+  getClients,
+  createClient,
+  CompanyType,
+  type ClientResponse,
+  type CreateClientData,
+} from '@/lib/api/clients';
 
 /** Items per page */
 const PAGE_SIZE = 20;
 
 /**
- * Admin users list page component
+ * Admin clients list page component
  */
-export default function AdminUsersPage() {
-  const [users, setUsers] = useState<UserProfile[]>([]);
+export default function AdminClientsPage() {
+  const router = useRouter();
+  const [clients, setClients] = useState<ClientResponse[]>([]);
   const [total, setTotal] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [deletingUserId, setDeletingUserId] = useState<string | null>(null);
 
-  // Invite user dialog state
-  const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
-  const [isInviting, setIsInviting] = useState(false);
-  const [inviteFormData, setInviteFormData] = useState<InviteUserData>({
+  // Add client dialog state
+  const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
+  const [formData, setFormData] = useState<CreateClientData>({
     email: '',
     fullName: '',
-    userType: 'staff',
     phoneNumber: '',
+    companyName: '',
+    companyType: undefined,
+    address: '',
+    city: '',
   });
 
-  // Fetch users when page changes
+  // Fetch clients when page changes
   useEffect(() => {
-    async function loadUsers() {
+    async function loadClients() {
       try {
         setError(null);
         setIsLoading(true);
-        const data = await getUsers({
-          page: currentPage,
-          limit: PAGE_SIZE,
-          userTypes: ['admin', 'staff', 'attorney'],
-        });
-        setUsers(data.users);
+        const data = await getClients({ page: currentPage, limit: PAGE_SIZE });
+        setClients(data.clients);
         setTotal(data.total);
         setTotalPages(data.totalPages);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load users');
-        toast.error('Failed to load users');
+        setError(err instanceof Error ? err.message : 'Failed to load clients');
+        toast.error('Failed to load clients');
       } finally {
         setIsLoading(false);
       }
     }
 
-    loadUsers();
+    loadClients();
   }, [currentPage]);
-
-  const handleDeleteUser = async (userId: string, userName: string) => {
-    if (
-      !confirm(
-        `Are you sure you want to delete user "${userName}"? This action cannot be undone.`,
-      )
-    ) {
-      return;
-    }
-
-    try {
-      setDeletingUserId(userId);
-      await deleteUser(userId);
-      toast.success('User deleted successfully');
-
-      // Reload users list
-      const data = await getUsers({
-        page: currentPage,
-        limit: PAGE_SIZE,
-        userTypes: ['admin', 'staff', 'attorney'],
-      });
-      setUsers(data.users);
-      setTotal(data.total);
-      setTotalPages(data.totalPages);
-
-      // If current page is now empty and not page 1, go to previous page
-      if (data.users.length === 0 && currentPage > 1) {
-        setCurrentPage(currentPage - 1);
-      }
-    } catch (err) {
-      toast.error(
-        err instanceof Error ? err.message : 'Failed to delete user',
-      );
-    } finally {
-      setDeletingUserId(null);
-    }
-  };
 
   const handlePreviousPage = () => {
     if (currentPage > 1) {
@@ -161,54 +121,75 @@ export default function AdminUsersPage() {
     }
   };
 
-  const handleInviteUser = async () => {
-    // Validate form
-    if (!inviteFormData.email || !inviteFormData.fullName || !inviteFormData.userType) {
-      toast.error('Please fill in all required fields');
+  const handleCreateClient = async () => {
+    // Validate required fields
+    if (!formData.email || !formData.fullName) {
+      toast.error('Please fill in all required fields (Email and Full Name)');
       return;
     }
 
     try {
-      setIsInviting(true);
-      await inviteUser(inviteFormData);
-      toast.success(`Invitation sent to ${inviteFormData.email}`);
+      setIsCreating(true);
+
+      // Remove empty optional fields to avoid sending empty strings
+      const cleanedData: CreateClientData = {
+        email: formData.email,
+        fullName: formData.fullName,
+      };
+
+      if (formData.phoneNumber) cleanedData.phoneNumber = formData.phoneNumber;
+      if (formData.companyName) cleanedData.companyName = formData.companyName;
+      if (formData.companyType) cleanedData.companyType = formData.companyType;
+      if (formData.address) cleanedData.address = formData.address;
+      if (formData.city) cleanedData.city = formData.city;
+
+      await createClient(cleanedData);
+      toast.success(`Client "${formData.fullName}" created successfully`);
 
       // Close dialog and reset form
-      setInviteDialogOpen(false);
-      setInviteFormData({
+      setAddDialogOpen(false);
+      setFormData({
         email: '',
         fullName: '',
-        userType: 'staff',
         phoneNumber: '',
+        companyName: '',
+        companyType: undefined,
+        address: '',
+        city: '',
       });
 
-      // Refresh users list
-      const data = await getUsers({
-        page: currentPage,
-        limit: PAGE_SIZE,
-        userTypes: ['admin', 'staff', 'attorney'],
-      });
-      setUsers(data.users);
+      // Refresh clients list
+      const data = await getClients({ page: currentPage, limit: PAGE_SIZE });
+      setClients(data.clients);
       setTotal(data.total);
       setTotalPages(data.totalPages);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed to invite user');
+      toast.error(err instanceof Error ? err.message : 'Failed to create client');
     } finally {
-      setIsInviting(false);
+      setIsCreating(false);
     }
   };
 
   const handleDialogChange = (open: boolean) => {
-    setInviteDialogOpen(open);
+    setAddDialogOpen(open);
     if (!open) {
       // Reset form when dialog closes
-      setInviteFormData({
+      setFormData({
         email: '',
         fullName: '',
-        userType: 'staff',
         phoneNumber: '',
+        companyName: '',
+        companyType: undefined,
+        address: '',
+        city: '',
       });
     }
+  };
+
+  const handleRowClick = (clientId: string) => {
+    // Placeholder for client detail page
+    toast.info('Client detail page coming soon');
+    // Future: router.push(`/admin/clients/${clientId}`);
   };
 
   const formatDate = (dateString: string) => {
@@ -223,23 +204,23 @@ export default function AdminUsersPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Staff & Admin Users</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Clients</h1>
           <p className="text-muted-foreground">
-            Manage admin, staff, and attorney accounts
+            Manage registered client accounts
           </p>
         </div>
-        <Dialog open={inviteDialogOpen} onOpenChange={handleDialogChange}>
+        <Dialog open={addDialogOpen} onOpenChange={handleDialogChange}>
           <DialogTrigger asChild>
             <Button>
               <UserPlus className="mr-2 h-4 w-4" />
-              Invite User
+              Add Client
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Invite New User</DialogTitle>
+              <DialogTitle>Add New Client</DialogTitle>
               <DialogDescription>
-                Send an invitation email to a new admin, staff, or attorney user.
+                Create a new client account in the system.
               </DialogDescription>
             </DialogHeader>
 
@@ -249,12 +230,12 @@ export default function AdminUsersPage() {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="user@example.com"
-                  value={inviteFormData.email}
+                  placeholder="client@example.com"
+                  value={formData.email}
                   onChange={(e) =>
-                    setInviteFormData({ ...inviteFormData, email: e.target.value })
+                    setFormData({ ...formData, email: e.target.value })
                   }
-                  disabled={isInviting}
+                  disabled={isCreating}
                 />
               </div>
 
@@ -264,35 +245,12 @@ export default function AdminUsersPage() {
                   id="fullName"
                   type="text"
                   placeholder="John Doe"
-                  value={inviteFormData.fullName}
+                  value={formData.fullName}
                   onChange={(e) =>
-                    setInviteFormData({ ...inviteFormData, fullName: e.target.value })
+                    setFormData({ ...formData, fullName: e.target.value })
                   }
-                  disabled={isInviting}
+                  disabled={isCreating}
                 />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="userType">User Type *</Label>
-                <Select
-                  value={inviteFormData.userType}
-                  onValueChange={(value) =>
-                    setInviteFormData({
-                      ...inviteFormData,
-                      userType: value as 'admin' | 'staff' | 'attorney',
-                    })
-                  }
-                  disabled={isInviting}
-                >
-                  <SelectTrigger id="userType">
-                    <SelectValue placeholder="Select user type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="admin">Admin</SelectItem>
-                    <SelectItem value="staff">Staff</SelectItem>
-                    <SelectItem value="attorney">Attorney</SelectItem>
-                  </SelectContent>
-                </Select>
               </div>
 
               <div className="space-y-2">
@@ -301,11 +259,86 @@ export default function AdminUsersPage() {
                   id="phoneNumber"
                   type="tel"
                   placeholder="+92 300 1234567"
-                  value={inviteFormData.phoneNumber}
+                  value={formData.phoneNumber}
                   onChange={(e) =>
-                    setInviteFormData({ ...inviteFormData, phoneNumber: e.target.value })
+                    setFormData({ ...formData, phoneNumber: e.target.value })
                   }
-                  disabled={isInviting}
+                  disabled={isCreating}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="companyName">Company Name (Optional)</Label>
+                <Input
+                  id="companyName"
+                  type="text"
+                  placeholder="ABC Corporation"
+                  value={formData.companyName}
+                  onChange={(e) =>
+                    setFormData({ ...formData, companyName: e.target.value })
+                  }
+                  disabled={isCreating}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="companyType">Company Type (Optional)</Label>
+                <Select
+                  value={formData.companyType || 'none'}
+                  onValueChange={(value) =>
+                    setFormData({
+                      ...formData,
+                      companyType: value === 'none' ? undefined : (value as CompanyType),
+                    })
+                  }
+                  disabled={isCreating}
+                >
+                  <SelectTrigger id="companyType">
+                    <SelectValue placeholder="Select company type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">None</SelectItem>
+                    <SelectItem value={CompanyType.SOLE_PROPRIETORSHIP}>
+                      Sole Proprietorship
+                    </SelectItem>
+                    <SelectItem value={CompanyType.PARTNERSHIP}>
+                      Partnership
+                    </SelectItem>
+                    <SelectItem value={CompanyType.LLC}>LLC</SelectItem>
+                    <SelectItem value={CompanyType.CORPORATION}>
+                      Corporation
+                    </SelectItem>
+                    <SelectItem value={CompanyType.NGO}>NGO</SelectItem>
+                    <SelectItem value={CompanyType.OTHER}>Other</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="address">Address (Optional)</Label>
+                <Input
+                  id="address"
+                  type="text"
+                  placeholder="123 Main Street, Suite 400"
+                  value={formData.address}
+                  onChange={(e) =>
+                    setFormData({ ...formData, address: e.target.value })
+                  }
+                  disabled={isCreating}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="city">City (Optional)</Label>
+                <Input
+                  id="city"
+                  type="text"
+                  placeholder="Karachi"
+                  value={formData.city}
+                  onChange={(e) =>
+                    setFormData({ ...formData, city: e.target.value })
+                  }
+                  disabled={isCreating}
                 />
               </div>
             </div>
@@ -313,13 +346,13 @@ export default function AdminUsersPage() {
             <DialogFooter>
               <Button
                 variant="outline"
-                onClick={() => setInviteDialogOpen(false)}
-                disabled={isInviting}
+                onClick={() => setAddDialogOpen(false)}
+                disabled={isCreating}
               >
                 Cancel
               </Button>
-              <Button onClick={handleInviteUser} disabled={isInviting}>
-                {isInviting ? 'Sending...' : 'Send Invitation'}
+              <Button onClick={handleCreateClient} disabled={isCreating}>
+                {isCreating ? 'Creating...' : 'Create Client'}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -328,11 +361,11 @@ export default function AdminUsersPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Team Members</CardTitle>
+          <CardTitle>All Clients</CardTitle>
           <CardDescription>
             {isLoading
-              ? 'Loading team members...'
-              : `Showing ${users.length} of ${total} staff, admin, and attorney users`}
+              ? 'Loading clients...'
+              : `Showing ${clients.length} of ${total} total clients`}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -348,9 +381,9 @@ export default function AdminUsersPage() {
                     <TableRow>
                       <TableHead>Name</TableHead>
                       <TableHead>Email</TableHead>
-                      <TableHead>Type</TableHead>
+                      <TableHead>Company Name</TableHead>
                       <TableHead>Phone</TableHead>
-                      <TableHead>Joined</TableHead>
+                      <TableHead>Registered</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -366,7 +399,7 @@ export default function AdminUsersPage() {
                             <Skeleton className="h-4 w-48" />
                           </TableCell>
                           <TableCell>
-                            <Skeleton className="h-5 w-16" />
+                            <Skeleton className="h-4 w-40" />
                           </TableCell>
                           <TableCell>
                             <Skeleton className="h-4 w-28" />
@@ -379,52 +412,49 @@ export default function AdminUsersPage() {
                           </TableCell>
                         </TableRow>
                       ))
-                    ) : users.length === 0 ? (
+                    ) : clients.length === 0 ? (
                       <TableRow>
                         <TableCell
                           colSpan={6}
                           className="text-center text-muted-foreground py-8"
                         >
-                          No users found
+                          No clients found
                         </TableCell>
                       </TableRow>
                     ) : (
-                      users.map((user) => (
-                        <TableRow key={user.id}>
+                      clients.map((client) => (
+                        <TableRow
+                          key={client.id}
+                          className="cursor-pointer hover:bg-muted/50"
+                          onClick={() => handleRowClick(client.id)}
+                        >
                           <TableCell className="font-medium">
-                            {user.fullName}
+                            {client.fullName}
                           </TableCell>
-                          <TableCell>{user.email}</TableCell>
+                          <TableCell>{client.email}</TableCell>
                           <TableCell>
-                            <Badge
-                              className={
-                                USER_TYPE_COLORS[user.userType] ||
-                                'bg-gray-500'
-                              }
-                            >
-                              {user.userType.toUpperCase()}
-                            </Badge>
+                            {client.companyName || (
+                              <span className="text-muted-foreground">-</span>
+                            )}
                           </TableCell>
                           <TableCell>
-                            {user.phoneNumber || (
+                            {client.phoneNumber || (
                               <span className="text-muted-foreground">-</span>
                             )}
                           </TableCell>
                           <TableCell className="text-muted-foreground">
-                            {formatDate(user.createdAt)}
+                            {formatDate(client.createdAt)}
                           </TableCell>
                           <TableCell className="text-right">
                             <Button
-                              variant="destructive"
+                              variant="outline"
                               size="sm"
-                              onClick={() =>
-                                handleDeleteUser(user.id, user.fullName)
-                              }
-                              disabled={deletingUserId === user.id}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleRowClick(client.id);
+                              }}
                             >
-                              {deletingUserId === user.id
-                                ? 'Deleting...'
-                                : 'Delete'}
+                              View
                             </Button>
                           </TableCell>
                         </TableRow>
@@ -435,7 +465,7 @@ export default function AdminUsersPage() {
               </div>
 
               {/* Pagination Controls */}
-              {!isLoading && users.length > 0 && (
+              {!isLoading && clients.length > 0 && (
                 <div className="flex items-center justify-between mt-4">
                   <p className="text-sm text-muted-foreground">
                     Page {currentPage} of {totalPages}

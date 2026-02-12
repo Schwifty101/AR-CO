@@ -66,7 +66,7 @@ export default function AdminDashboardPage() {
         </div>
       )}
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <div className="rounded-lg border p-6">
           <h3 className="text-sm font-medium text-muted-foreground">
             Total Clients
@@ -101,6 +101,37 @@ export default function AdminDashboardPage() {
             <p className="mt-2 text-3xl font-bold">
               {stats?.pendingAppointments ?? 0}
             </p>
+          )}
+        </div>
+        {/* TODO: Fetch from backend when dashboard stats are expanded */}
+        <div className="rounded-lg border p-6">
+          <h3 className="text-sm font-medium text-muted-foreground">
+            Active Subscribers
+          </h3>
+          {statsLoading ? (
+            <Skeleton className="mt-2 h-9 w-16" />
+          ) : (
+            <p className="mt-2 text-3xl font-bold">0</p>
+          )}
+        </div>
+        <div className="rounded-lg border p-6">
+          <h3 className="text-sm font-medium text-muted-foreground">
+            Open Complaints
+          </h3>
+          {statsLoading ? (
+            <Skeleton className="mt-2 h-9 w-16" />
+          ) : (
+            <p className="mt-2 text-3xl font-bold">0</p>
+          )}
+        </div>
+        <div className="rounded-lg border p-6">
+          <h3 className="text-sm font-medium text-muted-foreground">
+            Pending Registrations
+          </h3>
+          {statsLoading ? (
+            <Skeleton className="mt-2 h-9 w-16" />
+          ) : (
+            <p className="mt-2 text-3xl font-bold">0</p>
           )}
         </div>
       </div>

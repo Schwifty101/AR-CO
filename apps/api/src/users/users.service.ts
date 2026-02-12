@@ -37,6 +37,7 @@ import {
 } from '@nestjs/common';
 import { SupabaseService } from '../database/supabase.service';
 import type {
+  InviteUserData,
   UpdateUserProfileData,
   UpdateClientProfileData,
   UpdateAttorneyProfileData,
@@ -395,8 +396,10 @@ export class UsersService {
    *
    * Retrieves user profiles with pagination, sorting, and total count.
    * Includes role-specific profile data for each user.
+   * Optionally filter by user types.
    *
    * @param {PaginationParams} paginationDto - Pagination parameters
+   * @param {string[]} [userTypes] - Optional array of user types to filter by (e.g., ['admin', 'staff', 'attorney'])
    * @returns {Promise<PaginatedUsersResponse>} Paginated user list with metadata
    * @throws {InternalServerErrorException} If query fails
    *
@@ -410,13 +413,13 @@ export class UsersService {
    *   order: 'desc'
    * });
    *
-   * // Custom pagination
+   * // Filter by user types (staff and admin only)
    * const result2 = await usersService.getAllUsers({
-   *   page: 3,
-   *   limit: 50,
+   *   page: 1,
+   *   limit: 20,
    *   sort: 'full_name',
    *   order: 'asc'
-   * });
+   * }, ['admin', 'staff', 'attorney']);
    *
    * console.log(result.meta.totalPages); // Total number of pages
    * console.log(result.data.length); // Number of users in current page
@@ -424,15 +427,22 @@ export class UsersService {
    */
   async getAllUsers(
     paginationDto: PaginationParams,
+    userTypes?: string[],
   ): Promise<PaginatedUsersResponse> {
     const adminClient = this.supabaseService.getAdminClient();
 
     const offset = (paginationDto.page - 1) * paginationDto.limit;
 
-    // Get total count
-    const { count, error: countError } = await adminClient
+    // Get total count with optional userTypes filter
+    let countQuery = adminClient
       .from('user_profiles')
       .select('*', { count: 'exact', head: true });
+
+    if (userTypes && userTypes.length > 0) {
+      countQuery = countQuery.in('user_type', userTypes);
+    }
+
+    const { count, error: countError } = await countQuery;
 
     if (countError) {
       this.logger.error(`Failed to count users: ${countError.message}`);
@@ -444,10 +454,16 @@ export class UsersService {
     const total = count ?? 0;
     const totalPages = Math.ceil(total / paginationDto.limit);
 
-    // Get paginated users
-    const { data: users, error: usersError } = await adminClient
+    // Get paginated users with optional userTypes filter
+    let dataQuery = adminClient
       .from('user_profiles')
-      .select('id, full_name, phone_number, user_type, created_at, updated_at')
+      .select('id, full_name, phone_number, user_type, created_at, updated_at');
+
+    if (userTypes && userTypes.length > 0) {
+      dataQuery = dataQuery.in('user_type', userTypes);
+    }
+
+    const { data: users, error: usersError } = await dataQuery
       .order(paginationDto.sort, { ascending: paginationDto.order === 'asc' })
       .range(offset, offset + paginationDto.limit - 1);
 
@@ -471,6 +487,82 @@ export class UsersService {
         total,
         totalPages,
       },
+    };
+  }
+
+  /**
+   * Invite a new user (admin/staff/attorney) via Supabase email invitation
+   *
+   * Creates a Supabase auth user via email invite and user_profile in sequence.
+   * The invited user receives a magic link email to set their password.
+   * Only non-client user types are allowed (admin, staff, attorney).
+   *
+   * @param {InviteUserData} dto - Invitation data including email, name, and user type
+   * @returns {Promise<{ id: string; email: string; fullName: string; userType: string }>} Created user info
+   * @throws {InternalServerErrorException} If invitation or profile creation fails
+   *
+   * @example
+   * ```typescript
+   * // Invite a new staff member
+   * const result = await usersService.inviteUser({
+   *   email: 'staff@arcolaw.com',
+   *   fullName: 'Jane Smith',
+   *   userType: 'staff',
+   *   phoneNumber: '+92-300-1234567'
+   * });
+   * console.log(result.id); // New user's UUID
+   * ```
+   *
+   * @remarks
+   * This method does NOT create client users. Use the Clients module
+   * createClient() method for client registration. If profile creation fails,
+   * the auth user is automatically cleaned up to prevent orphaned accounts.
+   */
+  async inviteUser(
+    dto: InviteUserData,
+  ): Promise<{ id: string; email: string; fullName: string; userType: string }> {
+    const adminClient = this.supabaseService.getAdminClient();
+
+    // 1. Invite user via Supabase (sends magic link email)
+    const { data: authData, error: authError } =
+      await adminClient.auth.admin.inviteUserByEmail(dto.email);
+
+    if (authError || !authData?.user) {
+      this.logger.error(`Failed to invite user ${dto.email}`, authError);
+      throw new InternalServerErrorException(
+        'Unable to invite user. The email may already be registered.',
+      );
+    }
+
+    const userId = authData.user.id;
+
+    // 2. Create user_profile
+    const { error: profileError } = await adminClient
+      .from('user_profiles')
+      .insert({
+        id: userId,
+        full_name: dto.fullName,
+        phone_number: dto.phoneNumber ?? null,
+        user_type: dto.userType,
+      });
+
+    if (profileError) {
+      this.logger.error(
+        `Failed to create profile for ${dto.email}`,
+        profileError,
+      );
+      // Cleanup: delete auth user
+      await adminClient.auth.admin.deleteUser(userId);
+      throw new InternalServerErrorException(
+        'Unable to create user profile. Please try again.',
+      );
+    }
+
+    return {
+      id: userId,
+      email: dto.email,
+      fullName: dto.fullName,
+      userType: dto.userType,
     };
   }
 

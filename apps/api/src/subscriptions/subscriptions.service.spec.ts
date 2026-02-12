@@ -4,6 +4,7 @@ import {
   ForbiddenException,
   BadRequestException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { SubscriptionsService } from './subscriptions.service';
 import { SupabaseService } from '../database/supabase.service';
 import { SafepayService } from '../payments/safepay.service';
@@ -77,6 +78,17 @@ describe('SubscriptionsService', () => {
         {
           provide: SafepayService,
           useValue: mockSafepayService,
+        },
+        {
+          provide: ConfigService,
+          useValue: {
+            get: jest.fn((key: string) => {
+              if (key === 'FRONTEND_URL') {
+                return 'http://localhost:3000';
+              }
+              return undefined;
+            }),
+          },
         },
       ],
     }).compile();

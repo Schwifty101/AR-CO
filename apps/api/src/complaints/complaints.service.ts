@@ -50,6 +50,25 @@ const STAFF_ROLES: string[] = [
   UserType.ATTORNEY,
 ];
 
+/** Allowed sort columns for complaints */
+const ALLOWED_COMPLAINT_SORT_COLUMNS = [
+  'created_at',
+  'updated_at',
+  'complaint_number',
+  'status',
+] as const;
+
+/**
+ * Validate sort column against allowed list, defaulting to created_at
+ *
+ * @param sort - The sort column to validate
+ * @param allowed - Array of allowed column names
+ * @returns Valid sort column (original if allowed, 'created_at' otherwise)
+ */
+function validateSortColumn(sort: string, allowed: readonly string[]): string {
+  return allowed.includes(sort) ? sort : 'created_at';
+}
+
 /**
  * Service responsible for managing citizen complaints lifecycle
  * Handles submission, tracking, assignment, and resolution of complaints
@@ -218,9 +237,10 @@ export class ComplaintsService {
       query = query.eq('category', filters.category);
     }
 
-    // Apply pagination and sorting
+    // Validate and apply pagination and sorting
+    const validSort = validateSortColumn(sort, ALLOWED_COMPLAINT_SORT_COLUMNS);
     query = query
-      .order(sort, { ascending: order === 'asc' })
+      .order(validSort, { ascending: order === 'asc' })
       .range(offset, offset + limit - 1);
 
     const { data, error, count } = (await query) as DbListResult<ComplaintRow>;

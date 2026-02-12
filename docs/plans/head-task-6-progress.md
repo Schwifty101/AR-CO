@@ -1,6 +1,6 @@
 # HEAD TASK 6 - Progress Tracker
 
-## Status: IN PROGRESS — Batch 2 complete, Batch 3 next (Service Registrations module)
+## Status: IN PROGRESS — Batch 4 complete, ready for commit
 
 ## COMPLETED
 
@@ -97,32 +97,73 @@ All files created and type-checked (`pnpm tsc --noEmit` passes):
 - **0 lint errors** across clients, subscriptions, complaints, and database modules
 - **51 tests passing**, type check passes
 
-## NEXT: BATCH 3
+### Phase 7: Service Registrations Module ✅
+- `apps/api/src/service-registrations/service-registrations.service.ts` — 7 methods: createRegistration, initiatePayment, getRegistrationStatus, getRegistrations, getRegistrationById, updateRegistrationStatus, assignRegistration
+- `apps/api/src/service-registrations/service-registrations.controller.ts` — 7 endpoints: POST (public), POST/:id/pay (public), GET/status (public), GET (auth), GET/:id (auth), PATCH/:id/status (staff), PATCH/:id/assign (staff)
+- `apps/api/src/service-registrations/service-registrations.module.ts` — imports PaymentsModule, exports ServiceRegistrationsService
+- `apps/api/src/service-registrations/service-registrations.service.spec.ts` — **24 tests passing**
 
-### Phase 7: Service Registrations Module
-Files to create:
-- `apps/api/src/service-registrations/service-registrations.service.ts`
-- `apps/api/src/service-registrations/service-registrations.service.spec.ts`
-- `apps/api/src/service-registrations/service-registrations.controller.ts`
-- `apps/api/src/service-registrations/service-registrations.module.ts`
+**Key patterns in Service Registrations module:**
+- Guest endpoints use @Public() decorator (no auth required)
+- Guest status check requires BOTH reference_number AND email match
+- `initiatePayment()` validates payment_status !== 'paid' (BadRequestException)
+- `assignRegistration()` auto-transitions PENDING_PAYMENT/PAID → IN_PROGRESS
+- `ServiceRegistrationRow` interface for type-safe DB result casting
+- SafepayService integration for checkout URL generation
 
-### Phase 8: App Module Registration
-- Add all 5 new modules to `apps/api/src/app.module.ts`
-- Run tests, type check, lint
+### Phase 8: App Module Registration ✅
+- Added ServiceRegistrationsModule to `app.module.ts` (all 5 new modules now registered)
+- **105 tests passing** across 8 suites (service-registrations: 24, clients: 12, subscriptions: 13, complaints: 13, safepay: 6, auth: 7, users: 28, app: 2)
+- Type check passes (`pnpm tsc --noEmit`) for both api and web
+- 0 new lint errors from batch 3 code (pre-existing errors in safepay stub and users service unchanged)
 
-### Phase 9: Frontend API Helpers
-- `apps/web/lib/api/clients.ts`
-- `apps/web/lib/api/subscriptions.ts`
-- `apps/web/lib/api/complaints.ts`
-- `apps/web/lib/api/service-registrations.ts`
-- `apps/web/lib/api/services.ts`
+### Phase 9: Frontend API Helpers ✅
+- `apps/web/lib/api/clients.ts` — 8 functions (getClients, getClientById, createClient, updateClient, deleteClient, getClientCases, getClientDocuments, getClientInvoices)
+- `apps/web/lib/api/subscriptions.ts` — 4 functions (createSubscription, getMySubscription, cancelSubscription, getAllSubscriptions)
+- `apps/web/lib/api/complaints.ts` — 5 functions (submitComplaint, getComplaints, getComplaintById, updateComplaintStatus, assignComplaint)
+- `apps/web/lib/api/service-registrations.ts` — 7 functions (3 public: createRegistration, initiatePayment, checkRegistrationStatus + 4 auth: getMyRegistrations, getRegistrationById, updateRegistrationStatus, assignRegistration)
+- `apps/web/lib/api/services.ts` — 1 function (getServices, public/no auth)
 
-### Phase 10-12: Frontend Pages
-- Client pages: subscription, complaints (list/new/detail), services
-- Admin pages: clients, complaints (list/detail), subscriptions, service-registrations
-- Sidebar nav updates, dashboard stats updates, public services page
+**Key patterns in Frontend API helpers:**
+- Public endpoints (guest registrations, services list) skip getSessionToken()
+- Pagination response unwrapping: backend `{ data, meta }` → frontend `{ items, total, page, limit, totalPages }`
+- Re-exported types from @repo/shared for consumer convenience
+- JSDoc on all exported functions with @param, @returns, @throws, @example
 
-### Phase 13: Final Verification
+### Phase 10: Sidebar + Public Pages + Dashboard Updates ✅
+- Updated `components/dashboard/sidebar.tsx` — added 4 admin nav items + 3 client nav items
+- Created `app/(public)/subscribe/page.tsx` — civic retainer landing (PKR 700/month), smart CTA (auth-aware)
+- Created `app/(public)/subscribe/success/page.tsx` — subscription activated confirmation
+- Created `app/(public)/subscribe/cancel/page.tsx` — subscription cancelled with retry option
+- Updated `app/admin/dashboard/page.tsx` — added 3 new stat cards (Active Subscribers, Open Complaints, Pending Registrations)
+- Updated `app/client/dashboard/page.tsx` — added 3 new stat cards (Subscription, Open Complaints, Service Registrations)
+
+### Phase 11: Client Portal Pages ✅
+- `app/client/subscription/page.tsx` — subscription status, cancel with AlertDialog, resubscribe CTA
+- `app/client/complaints/page.tsx` — paginated complaints table with status badges
+- `app/client/complaints/new/page.tsx` — React Hook Form + Zod, category Select, subscription gate
+- `app/client/complaints/[id]/page.tsx` — full complaint detail view
+- `app/client/services/page.tsx` — paginated service registrations table
+- `app/client/services/[id]/page.tsx` — full registration detail view
+
+### Phase 12: Admin Management Pages ✅
+- `app/admin/complaints/page.tsx` — all complaints with filters (status, category, target org)
+- `app/admin/complaints/[id]/page.tsx` — detail + update status form + assign staff form
+- `app/admin/subscriptions/page.tsx` — read-only subscription list with status badges
+- `app/admin/service-registrations/page.tsx` — all registrations with status + payment badges
+- `app/admin/service-registrations/[id]/page.tsx` — detail + update status form + assign staff form
+
+### Phase 13: Verification ✅
+- **105 backend tests passing** (8 suites, 0 failures)
+- **Frontend type check passes** (`pnpm tsc --noEmit` — 0 errors)
+- **Backend type check passes** (`pnpm tsc --noEmit` — 0 errors)
+- 0 new lint errors from batch 3+4 code
+
+## NEXT: BATCH 5
+
+### Commit + Final cleanup
+- Commit all batch 3+4 changes
+- Update init.md checkboxes
 
 ## KEY PATTERNS (for next context)
 
@@ -151,5 +192,5 @@ Files to create:
 - **Path quoting**: always quote paths with `&` in bash
 
 ## COMMITS MADE YET:
-- Commit 1: 51dafbe 
-- Commit 2: 
+- Batch 1: 51dafbe 
+- Batch 2: 49411c0

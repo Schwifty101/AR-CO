@@ -12,6 +12,7 @@ export {
 } from './auth.schemas';
 
 export {
+  InviteUserSchema,
   UpdateUserProfileSchema,
   CreateClientProfileSchema,
   UpdateClientProfileSchema,
