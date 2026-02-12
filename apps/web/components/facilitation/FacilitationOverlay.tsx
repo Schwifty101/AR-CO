@@ -10,6 +10,7 @@ import { regulatoryServices } from '@/components/data/regulatoryServiceData'
 import { overseasServices } from '@/components/data/overseasServicesData'
 import { womenDeskServices } from '@/components/data/womenDeskData'
 import { getSmoother } from '@/components/SmoothScroll'
+import { useConsultationOverlay } from '@/components/consultation'
 import styles from './FacilitationOverlay.module.css'
 
 interface SubService {
@@ -38,7 +39,7 @@ const OVERLAY_CATEGORIES: OverlayCategory[] = [
     tagline: 'Business Registration, Licensing & Compliance',
     services: facilitationServices.map((s) => ({
       label: s.title,
-      href: `/services/${toSlug(s.id)}`,
+      href: `/services/facilitation/${toSlug(s.id)}`,
     })),
   },
   {
@@ -47,7 +48,7 @@ const OVERLAY_CATEGORIES: OverlayCategory[] = [
     tagline: 'Property, Family Law & Legal Representation Abroad',
     services: overseasServices.map((s) => ({
       label: s.title,
-      href: `/services/${toSlug(s.id)}`,
+      href: `/services/overseas/${toSlug(s.id)}`,
     })),
   },
   {
@@ -56,7 +57,7 @@ const OVERLAY_CATEGORIES: OverlayCategory[] = [
     tagline: 'Authority Complaints, Tax & Public Service Issues',
     services: regulatoryServices.map((s) => ({
       label: s.title,
-      href: `/services/${toSlug(s.id)}`,
+      href: `/services/regulatory/${toSlug(s.id)}`,
     })),
   },
   {
@@ -65,7 +66,7 @@ const OVERLAY_CATEGORIES: OverlayCategory[] = [
     tagline: 'Family Law, Protection & Women\'s Rights',
     services: womenDeskServices.map((s) => ({
       label: s.title,
-      href: `/services/${toSlug(s.id)}`,
+      href: `/services/women-desk/${toSlug(s.id)}`,
     })),
   },
   {
@@ -96,6 +97,7 @@ interface FacilitationOverlayProps {
  */
 export default function FacilitationOverlay({ isOpen, onClose }: FacilitationOverlayProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null)
+  const { openOverlay: openConsultationOverlay } = useConsultationOverlay()
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -222,14 +224,26 @@ export default function FacilitationOverlay({ isOpen, onClose }: FacilitationOve
                   {/* Panel Header — Clickable */}
                   <div
                     className={styles.panelHeader}
-                    onClick={() => toggleCategory(category.id)}
+                    onClick={() => {
+                      if (category.id === 'litigation') {
+                        onClose()
+                        openConsultationOverlay()
+                      } else {
+                        toggleCategory(category.id)
+                      }
+                    }}
                     role="button"
                     tabIndex={0}
-                    aria-expanded={isExpanded}
+                    aria-expanded={category.id === 'litigation' ? undefined : isExpanded}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' || e.key === ' ') {
                         e.preventDefault()
-                        toggleCategory(category.id)
+                        if (category.id === 'litigation') {
+                          onClose()
+                          openConsultationOverlay()
+                        } else {
+                          toggleCategory(category.id)
+                        }
                       }
                     }}
                   >

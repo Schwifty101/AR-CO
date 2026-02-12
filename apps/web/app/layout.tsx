@@ -5,6 +5,7 @@ import { AuthProvider } from "@/lib/auth/auth-context"
 import { PracticeAreasProvider } from "@/components/practice-areas"
 import PracticeAreasOverlayWrapper from "@/components/practice-areas/PracticeAreasOverlayWrapper"
 import { FacilitationProvider, FacilitationOverlayWrapper } from "@/components/facilitation"
+import { ConsultationProvider, ConsultationOverlayWrapper } from "@/components/consultation"
 import "./globals.css"
 
 export const metadata: Metadata = {
@@ -52,9 +53,12 @@ export default function RootLayout({
         <AuthProvider>
           <PracticeAreasProvider>
             <FacilitationProvider>
-              {children}
-              <PracticeAreasOverlayWrapper />
-              <FacilitationOverlayWrapper />
+              <ConsultationProvider>
+                {children}
+                <PracticeAreasOverlayWrapper />
+                <FacilitationOverlayWrapper />
+                <ConsultationOverlayWrapper />
+              </ConsultationProvider>
             </FacilitationProvider>
           </PracticeAreasProvider>
         </AuthProvider>

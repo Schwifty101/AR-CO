@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useLayoutEffect, useCallback } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { motion, Variants, AnimatePresence } from 'framer-motion'
 import { Menu, X, ArrowUpRight } from 'lucide-react'
 import { useGSAP } from '@gsap/react'
@@ -15,6 +15,8 @@ import styles from './Navigation.module.css'
 import SlotMachineText from "@/components/shared/animations/SlotMachineText"
 import { usePracticeAreasOverlay } from '../practice-areas'
 import { useFacilitationOverlay } from '../facilitation'
+import { useConsultationOverlay } from '../consultation'
+import { getSmoother } from '../SmoothScroll'
 
 // Register GSAP plugins
 if (typeof window !== 'undefined') {
@@ -132,11 +134,14 @@ interface IHeroNavbarProps {
     onOpenPracticeAreas: () => void
     /** Handler to open facilitation services overlay */
     onOpenFacilitation: () => void
+    /** Handler for About Us navigation */
+    onAboutClick: () => void
     /** Whether to hide the CTA button */
     hideCta?: boolean
 }
 
-const HeroNavbar: React.FC<IHeroNavbarProps> = ({ isHidden, hasEntered, navItems, onMenuClick, onOpenPracticeAreas, onOpenFacilitation, hideCta }) => {
+const HeroNavbar: React.FC<IHeroNavbarProps> = ({ isHidden, hasEntered, navItems, onMenuClick, onOpenPracticeAreas, onOpenFacilitation, onAboutClick, hideCta }) => {
+    const { openOverlay: openConsultationOverlay } = useConsultationOverlay()
     return (
         <motion.nav
             initial={{ y: "-100%", opacity: 0 }}
@@ -169,6 +174,14 @@ const HeroNavbar: React.FC<IHeroNavbarProps> = ({ isHidden, hasEntered, navItems
                             >
                                 {link.label}
                             </button>
+                        ) : link.id === 'about' ? (
+                            <button
+                                key={link.id}
+                                onClick={onAboutClick}
+                                className={styles.navLink}
+                            >
+                                {link.label}
+                            </button>
                         ) : (
                             <Link
                                 key={link.id}
@@ -184,7 +197,7 @@ const HeroNavbar: React.FC<IHeroNavbarProps> = ({ isHidden, hasEntered, navItems
                 {/* Right CTA - Desktop Only */}
                 {!hideCta && (
                     <div className="hidden lg:block">
-                        <CtaButton variant="outline" />
+                        <CtaButton variant="outline" onClick={openConsultationOverlay} />
                     </div>
                 )}
 
@@ -213,6 +226,7 @@ interface IStickyNavbarProps {
 }
 
 const StickyNavbar: React.FC<IStickyNavbarProps> = ({ isVisible, onMenuClick, hideCta }) => {
+    const { openOverlay: openConsultationOverlay } = useConsultationOverlay()
     return (
         <motion.div
             initial={{ y: "-100%", opacity: 0 }}
@@ -225,7 +239,7 @@ const StickyNavbar: React.FC<IStickyNavbarProps> = ({ isVisible, onMenuClick, hi
         >
             {!hideCta && (
                 <div className={`${styles.stickyContent} hidden md:block`}>
-                    <CtaButton variant="filled" />
+                    <CtaButton variant="filled" onClick={openConsultationOverlay} />
                 </div>
             )}
 
@@ -253,13 +267,16 @@ interface IFullScreenMenuProps {
     onOpenPracticeAreas: () => void
     /** Handler to open facilitation services overlay */
     onOpenFacilitation: () => void
+    /** Handler for About Us navigation */
+    onAboutClick: () => void
 }
 
-const FullScreenMenu: React.FC<IFullScreenMenuProps> = ({ onClose, navItems, onOpenPracticeAreas, onOpenFacilitation }) => {
+const FullScreenMenu: React.FC<IFullScreenMenuProps> = ({ onClose, navItems, onOpenPracticeAreas, onOpenFacilitation, onAboutClick }) => {
     const [isMobile, setIsMobile] = useState(false)
     const [hoveredLink, setHoveredLink] = useState<string | null>(null)
     const [currentTime, setCurrentTime] = useState<string>('')
     const [isOfficeOpen, setIsOfficeOpen] = useState<boolean>(false)
+    const { openOverlay: openConsultationOverlay } = useConsultationOverlay()
 
     // Check viewport on mount to determine animation origin
     useEffect(() => {
@@ -375,7 +392,7 @@ const FullScreenMenu: React.FC<IFullScreenMenuProps> = ({ onClose, navItems, onO
 
                 <div className={styles.menuHeaderActions}>
                     <div className="hidden md:block">
-                        <CtaButton variant="outline" />
+                        <CtaButton variant="outline" onClick={openConsultationOverlay} />
                     </div>
                     <button
                         onClick={onClose}
@@ -410,6 +427,16 @@ const FullScreenMenu: React.FC<IFullScreenMenuProps> = ({ onClose, navItems, onO
                                     <span className={styles.menuLink}>
                                         <SlotMachineText>{link.label}</SlotMachineText>
                                     </span>
+                                ) : link.id === 'about' ? (
+                                    <button
+                                        className={styles.menuLink}
+                                        onClick={() => {
+                                            onAboutClick()
+                                            onClose()
+                                        }}
+                                    >
+                                        <SlotMachineText>{link.label}</SlotMachineText>
+                                    </button>
                                 ) : (
                                     <Link
                                         href={link.href}
@@ -563,9 +590,31 @@ export default function Navigation() {
     const { openOverlay: openPracticeAreasOverlay } = usePracticeAreasOverlay()
     const { openOverlay: openFacilitationOverlay } = useFacilitationOverlay()
     const pathname = usePathname()
+    const router = useRouter()
 
     // Derived state: hasEntered is true when current pathname has completed entrance
     const hasEntered = enteredPathname === pathname
+
+    /**
+     * Handle About Us navigation with smooth scroll
+     */
+    const handleAboutClick = useCallback(() => {
+        if (pathname === '/') {
+            // Already on homepage, just scroll to about section
+            const aboutSection = document.getElementById('about')
+            if (aboutSection) {
+                const smoother = getSmoother()
+                if (smoother) {
+                    smoother.scrollTo(aboutSection, true)
+                } else {
+                    aboutSection.scrollIntoView({ behavior: 'smooth' })
+                }
+            }
+        } else {
+            // Navigate to homepage then scroll to about
+            router.push('/#about')
+        }
+    }, [pathname, router])
 
     /**
      * Ensure app-loaded class is present on all pages
@@ -671,6 +720,7 @@ export default function Navigation() {
                 onMenuClick={handleMenuToggle}
                 onOpenPracticeAreas={openPracticeAreasOverlay}
                 onOpenFacilitation={openFacilitationOverlay}
+                onAboutClick={handleAboutClick}
                 hideCta={hideCta}
             />
             <StickyNavbar
@@ -685,6 +735,7 @@ export default function Navigation() {
                         navItems={SIDEPANEL_FOOTER_NAV_ITEMS}
                         onOpenPracticeAreas={openPracticeAreasOverlay}
                         onOpenFacilitation={openFacilitationOverlay}
+                        onAboutClick={handleAboutClick}
                     />
                 )}
             </AnimatePresence>
