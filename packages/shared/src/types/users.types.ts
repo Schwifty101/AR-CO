@@ -1,5 +1,6 @@
 import type { z } from 'zod';
 import type {
+  InviteUserSchema,
   UpdateUserProfileSchema,
   CreateClientProfileSchema,
   UpdateClientProfileSchema,
@@ -11,6 +12,9 @@ import type {
   PaginatedUsersResponseSchema,
 } from '../schemas/users.schemas';
 import type { PaginationSchema } from '../schemas/common.schemas';
+
+/** Data for inviting a new user (admin/staff/attorney) */
+export type InviteUserData = z.infer<typeof InviteUserSchema>;
 
 /** Data for updating base user profile */
 export type UpdateUserProfileData = z.infer<typeof UpdateUserProfileSchema>;

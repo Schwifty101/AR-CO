@@ -1,5 +1,17 @@
 import { z } from 'zod';
-import { CompanyType } from '../enums';
+import { CompanyType, UserType } from '../enums';
+
+/** DTO for inviting a new user (admin/staff/attorney) */
+export const InviteUserSchema = z.object({
+  email: z.string().email('Invalid email address'),
+  fullName: z.string().min(2, 'Full name must be at least 2 characters'),
+  userType: z.enum([UserType.ADMIN, UserType.STAFF, UserType.ATTORNEY], {
+    errorMap: () => ({
+      message: 'User type must be admin, staff, or attorney',
+    }),
+  }),
+  phoneNumber: z.string().optional(),
+});
 
 /** DTO for updating base user profile fields */
 export const UpdateUserProfileSchema = z.object({

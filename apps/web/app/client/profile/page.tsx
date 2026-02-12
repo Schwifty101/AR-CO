@@ -325,16 +325,16 @@ export default function ClientProfilePage() {
             <div className="space-y-2">
               <Label htmlFor="companyType">Company Type</Label>
               <Select
-                value={companyType || ''}
+                value={companyType || 'none'}
                 onValueChange={(value) =>
-                  setBusinessValue('companyType', value as BusinessInfoData['companyType'])
+                  setBusinessValue('companyType', value === 'none' ? '' as BusinessInfoData['companyType'] : value as BusinessInfoData['companyType'])
                 }
               >
                 <SelectTrigger id="companyType">
                   <SelectValue placeholder="Select company type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">None</SelectItem>
+                  <SelectItem value="none">None</SelectItem>
                   {Object.entries(COMPANY_TYPE_LABELS).map(([value, label]) => (
                     <SelectItem key={value} value={value}>
                       {label}

@@ -13,8 +13,9 @@
  * Requires authentication and admin/staff user type
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
+import { Search, UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -33,7 +34,25 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
-import { getUsers, deleteUser, type UserProfile } from '@/lib/api/users';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { getUsers, deleteUser, inviteUser, type UserProfile, type InviteUserData } from '@/lib/api/users';
 
 /** User type badge color mapping */
 const USER_TYPE_COLORS: Record<string, string> = {
@@ -58,13 +77,58 @@ export default function AdminUsersPage() {
   const [error, setError] = useState<string | null>(null);
   const [deletingUserId, setDeletingUserId] = useState<string | null>(null);
 
-  // Fetch users when page changes
+  // Filter state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [userTypeFilter, setUserTypeFilter] = useState('all');
+
+  // Invite user dialog state
+  const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
+  const [isInviting, setIsInviting] = useState(false);
+  const [inviteFormData, setInviteFormData] = useState<InviteUserData>({
+    email: '',
+    fullName: '',
+    userType: 'staff',
+    phoneNumber: '',
+  });
+
+  // Debounce search input (300ms)
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    debounceTimerRef.current = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 300);
+    return () => {
+      if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+    };
+  }, [searchQuery]);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedSearch, userTypeFilter]);
+
+  // Fetch users when page or filters change
   useEffect(() => {
     async function loadUsers() {
       try {
         setError(null);
         setIsLoading(true);
-        const data = await getUsers({ page: currentPage, limit: PAGE_SIZE });
+
+        // Build userTypes array based on filter selection
+        let userTypes: string[] | undefined;
+        if (userTypeFilter === 'all') {
+          userTypes = ['admin', 'staff', 'attorney'];
+        } else {
+          userTypes = [userTypeFilter];
+        }
+
+        const data = await getUsers({
+          page: currentPage,
+          limit: PAGE_SIZE,
+          userTypes,
+          search: debouncedSearch || undefined,
+        });
         setUsers(data.users);
         setTotal(data.total);
         setTotalPages(data.totalPages);
@@ -77,7 +141,7 @@ export default function AdminUsersPage() {
     }
 
     loadUsers();
-  }, [currentPage]);
+  }, [currentPage, debouncedSearch, userTypeFilter]);
 
   const handleDeleteUser = async (userId: string, userName: string) => {
     if (
@@ -93,8 +157,16 @@ export default function AdminUsersPage() {
       await deleteUser(userId);
       toast.success('User deleted successfully');
 
-      // Reload users list
-      const data = await getUsers({ page: currentPage, limit: PAGE_SIZE });
+      // Reload users list with current filters
+      const userTypes = userTypeFilter === 'all'
+        ? ['admin', 'staff', 'attorney']
+        : [userTypeFilter];
+      const data = await getUsers({
+        page: currentPage,
+        limit: PAGE_SIZE,
+        userTypes,
+        search: debouncedSearch || undefined,
+      });
       setUsers(data.users);
       setTotal(data.total);
       setTotalPages(data.totalPages);
@@ -124,6 +196,60 @@ export default function AdminUsersPage() {
     }
   };
 
+  const handleInviteUser = async () => {
+    // Validate form
+    if (!inviteFormData.email || !inviteFormData.fullName || !inviteFormData.userType) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+
+    try {
+      setIsInviting(true);
+      await inviteUser(inviteFormData);
+      toast.success(`Invitation sent to ${inviteFormData.email}`);
+
+      // Close dialog and reset form
+      setInviteDialogOpen(false);
+      setInviteFormData({
+        email: '',
+        fullName: '',
+        userType: 'staff',
+        phoneNumber: '',
+      });
+
+      // Refresh users list with current filters
+      const userTypes = userTypeFilter === 'all'
+        ? ['admin', 'staff', 'attorney']
+        : [userTypeFilter];
+      const data = await getUsers({
+        page: currentPage,
+        limit: PAGE_SIZE,
+        userTypes,
+        search: debouncedSearch || undefined,
+      });
+      setUsers(data.users);
+      setTotal(data.total);
+      setTotalPages(data.totalPages);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to invite user');
+    } finally {
+      setIsInviting(false);
+    }
+  };
+
+  const handleDialogChange = (open: boolean) => {
+    setInviteDialogOpen(open);
+    if (!open) {
+      // Reset form when dialog closes
+      setInviteFormData({
+        email: '',
+        fullName: '',
+        userType: 'staff',
+        phoneNumber: '',
+      });
+    }
+  };
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -134,23 +260,146 @@ export default function AdminUsersPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Users</h1>
-        <p className="text-muted-foreground">
-          Manage all users in the system
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Staff & Admin Users</h1>
+          <p className="text-muted-foreground">
+            Manage admin, staff, and attorney accounts
+          </p>
+        </div>
+        <Dialog open={inviteDialogOpen} onOpenChange={handleDialogChange}>
+          <DialogTrigger asChild>
+            <Button>
+              <UserPlus className="mr-2 h-4 w-4" />
+              Invite User
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Invite New User</DialogTitle>
+              <DialogDescription>
+                Send an invitation email to a new admin, staff, or attorney user.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email *</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="user@example.com"
+                  value={inviteFormData.email}
+                  onChange={(e) =>
+                    setInviteFormData({ ...inviteFormData, email: e.target.value })
+                  }
+                  disabled={isInviting}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="fullName">Full Name *</Label>
+                <Input
+                  id="fullName"
+                  type="text"
+                  placeholder="John Doe"
+                  value={inviteFormData.fullName}
+                  onChange={(e) =>
+                    setInviteFormData({ ...inviteFormData, fullName: e.target.value })
+                  }
+                  disabled={isInviting}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="userType">User Type *</Label>
+                <Select
+                  value={inviteFormData.userType}
+                  onValueChange={(value) =>
+                    setInviteFormData({
+                      ...inviteFormData,
+                      userType: value as 'admin' | 'staff' | 'attorney',
+                    })
+                  }
+                  disabled={isInviting}
+                >
+                  <SelectTrigger id="userType">
+                    <SelectValue placeholder="Select user type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="admin">Admin</SelectItem>
+                    <SelectItem value="staff">Staff</SelectItem>
+                    <SelectItem value="attorney">Attorney</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="phoneNumber">Phone Number (Optional)</Label>
+                <Input
+                  id="phoneNumber"
+                  type="tel"
+                  placeholder="+92 300 1234567"
+                  value={inviteFormData.phoneNumber}
+                  onChange={(e) =>
+                    setInviteFormData({ ...inviteFormData, phoneNumber: e.target.value })
+                  }
+                  disabled={isInviting}
+                />
+              </div>
+            </div>
+
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setInviteDialogOpen(false)}
+                disabled={isInviting}
+              >
+                Cancel
+              </Button>
+              <Button onClick={handleInviteUser} disabled={isInviting}>
+                {isInviting ? 'Sending...' : 'Send Invitation'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>All Users</CardTitle>
+          <CardTitle>Team Members</CardTitle>
           <CardDescription>
             {isLoading
-              ? 'Loading users...'
-              : `Showing ${users.length} of ${total} total users`}
+              ? 'Loading team members...'
+              : `Showing ${users.length} of ${total} staff, admin, and attorney users`}
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {/* Filter Bar */}
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center mb-6">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search by name..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+            <Select value={userTypeFilter} onValueChange={setUserTypeFilter}>
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder="Filter by type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Types</SelectItem>
+                <SelectItem value="admin">Admin</SelectItem>
+                <SelectItem value="staff">Staff</SelectItem>
+                <SelectItem value="attorney">Attorney</SelectItem>
+                <SelectItem value="client">Client</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
           {error ? (
             <div className="rounded-md bg-destructive/15 p-4 text-destructive">
               {error}
