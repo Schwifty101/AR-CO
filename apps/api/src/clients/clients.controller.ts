@@ -33,6 +33,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { ClientsService } from './clients.service';
+import { ClientsAggregationService } from './clients-aggregation.service';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { Roles } from '../common/decorators/roles.decorator';
 import { UserType } from '../common/enums/user-type.enum';
@@ -60,7 +61,10 @@ import type {
  */
 @Controller('clients')
 export class ClientsController {
-  constructor(private readonly clientsService: ClientsService) {}
+  constructor(
+    private readonly clientsService: ClientsService,
+    private readonly clientsAggregationService: ClientsAggregationService,
+  ) {}
 
   /**
    * Get paginated client list (staff/admin only)
@@ -167,7 +171,7 @@ export class ClientsController {
     @Query(new ZodValidationPipe(PaginationSchema))
     pagination: PaginationParams,
   ): Promise<{ data: unknown[]; meta: object }> {
-    return this.clientsService.getClientCases(id, user, pagination);
+    return this.clientsAggregationService.getClientCases(id, user, pagination);
   }
 
   /**
@@ -185,7 +189,7 @@ export class ClientsController {
     @Query(new ZodValidationPipe(PaginationSchema))
     pagination: PaginationParams,
   ): Promise<{ data: unknown[]; meta: object }> {
-    return this.clientsService.getClientDocuments(id, user, pagination);
+    return this.clientsAggregationService.getClientDocuments(id, user, pagination);
   }
 
   /**
@@ -203,6 +207,6 @@ export class ClientsController {
     @Query(new ZodValidationPipe(PaginationSchema))
     pagination: PaginationParams,
   ): Promise<{ data: unknown[]; meta: object }> {
-    return this.clientsService.getClientInvoices(id, user, pagination);
+    return this.clientsAggregationService.getClientInvoices(id, user, pagination);
   }
 }

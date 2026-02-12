@@ -43,6 +43,7 @@ export const ComplaintResponseSchema = z.object({
   evidenceUrls: z.array(z.string()),
   status: z.nativeEnum(ComplaintStatus),
   assignedStaffId: z.string().uuid().nullable(),
+  assignedStaffName: z.string().nullable(),
   staffNotes: z.string().nullable(),
   resolutionNotes: z.string().nullable(),
   resolvedAt: z.string().nullable(),

@@ -362,130 +362,130 @@ Complete database architecture with 20+ tables, Row-Level Security, comprehensiv
 
 ### Sub-task 6.1: Create Clients Service
 
-- [ ] **6.1.1**: Create `apps/api/src/clients/clients.service.ts`
-- [ ] **6.1.2**: Implement `createClient(createDto)` method
+- [x] **6.1.1**: Create `apps/api/src/clients/clients.service.ts`
+- [x] **6.1.2**: Implement `createClient(createDto)` method
   - Creates user_profile + client_profile in transaction
-- [ ] **6.1.3**: Implement `getClients(paginationDto, filters)` method (staff only)
+- [x] **6.1.3**: Implement `getClients(paginationDto, filters)` method (staff only)
   - Support filtering by company_type, city, status
-- [ ] **6.1.4**: Implement `getClientById(clientId)` method with RLS
-- [ ] **6.1.5**: Implement `updateClient(clientId, updateDto)` method
-- [ ] **6.1.6**: Implement `deleteClient(clientId)` method (admin only)
-- [ ] **6.1.7**: Implement `getClientCases(clientId)` method
-- [ ] **6.1.8**: Implement `getClientDocuments(clientId)` method
-- [ ] **6.1.9**: Implement `getClientInvoices(clientId)` method
+- [x] **6.1.4**: Implement `getClientById(clientId)` method with RLS
+- [x] **6.1.5**: Implement `updateClient(clientId, updateDto)` method
+- [x] **6.1.6**: Implement `deleteClient(clientId)` method (admin only)
+- [x] **6.1.7**: Implement `getClientCases(clientId)` method
+- [x] **6.1.8**: Implement `getClientDocuments(clientId)` method
+- [x] **6.1.9**: Implement `getClientInvoices(clientId)` method
 
 ### Sub-task 6.2: Create Clients Controller
 
-- [ ] **6.2.1**: Create `apps/api/src/clients/clients.controller.ts`
-- [ ] **6.2.2**: Create endpoint: `GET /api/clients` (staff only)
-- [ ] **6.2.3**: Create endpoint: `POST /api/clients` (staff only)
-- [ ] **6.2.4**: Create endpoint: `GET /api/clients/:id`
-- [ ] **6.2.5**: Create endpoint: `PATCH /api/clients/:id`
-- [ ] **6.2.6**: Create endpoint: `DELETE /api/clients/:id` (admin only)
-- [ ] **6.2.7**: Create endpoint: `GET /api/clients/:id/cases`
-- [ ] **6.2.8**: Create endpoint: `GET /api/clients/:id/documents`
-- [ ] **6.2.9**: Create endpoint: `GET /api/clients/:id/invoices`
+- [x] **6.2.1**: Create `apps/api/src/clients/clients.controller.ts`
+- [x] **6.2.2**: Create endpoint: `GET /api/clients` (staff only)
+- [x] **6.2.3**: Create endpoint: `POST /api/clients` (staff only)
+- [x] **6.2.4**: Create endpoint: `GET /api/clients/:id`
+- [x] **6.2.5**: Create endpoint: `PATCH /api/clients/:id`
+- [x] **6.2.6**: Create endpoint: `DELETE /api/clients/:id` (admin only)
+- [x] **6.2.7**: Create endpoint: `GET /api/clients/:id/cases`
+- [x] **6.2.8**: Create endpoint: `GET /api/clients/:id/documents`
+- [x] **6.2.9**: Create endpoint: `GET /api/clients/:id/invoices`
 
 ### Sub-task 6.3: Test RLS Enforcement
 
-- [ ] **6.3.1**: Test that clients can only see their own profile
-- [ ] **6.3.2**: Test that staff can see all client profiles
-- [ ] **6.3.3**: Test that unauthorized users get 403 errors
+- [x] **6.3.1**: Test that clients can only see their own profile
+- [x] **6.3.2**: Test that staff can see all client profiles
+- [x] **6.3.3**: Test that unauthorized users get 403 errors
 
 ### Sub-task 6.4: Create Clients Module
 
-- [ ] **6.4.1**: Create `apps/api/src/clients/clients.module.ts`
+- [x] **6.4.1**: Create `apps/api/src/clients/clients.module.ts`
 
 ### Sub-task 6.5: Subscriptions Database & Backend (Monthly Retainer - PKR 700/month)
 
 **Context:** Civic advocacy subscription. Clients pay PKR 700/month to submit complaints against government organizations. AR&CO holds government bodies accountable.
 
-- [ ] **6.5.1**: Create `subscriptions` table via Supabase migration
+- [x] **6.5.1**: Create `subscriptions` table via Supabase migration
   - Columns: id (uuid, PK), client_profile_id (uuid, FK to client_profiles, UNIQUE), plan_name (text, default 'civic_retainer'), monthly_amount (decimal, default 700), currency (varchar(3), default 'PKR'), status (enum: pending, active, past_due, cancelled, expired), safepay_subscription_id (text), safepay_customer_id (text), current_period_start (timestamptz), current_period_end (timestamptz), cancelled_at (timestamptz), cancellation_reason (text), created_at (timestamptz), updated_at (timestamptz)
-- [ ] **6.5.2**: Enable RLS on subscriptions (clients read own, staff read all, staff update status)
-- [ ] **6.5.3**: Apply updated_at trigger
-- [ ] **6.5.4**: Create `apps/api/src/subscriptions/subscriptions.service.ts`
-- [ ] **6.5.5**: Implement `createSubscription(userId)` method
+- [x] **6.5.2**: Enable RLS on subscriptions (clients read own, staff read all, staff update status)
+- [x] **6.5.3**: Apply updated_at trigger
+- [x] **6.5.4**: Create `apps/api/src/subscriptions/subscriptions.service.ts`
+- [x] **6.5.5**: Implement `createSubscription(userId)` method
   - Calls SafepayService.createSubscription() for PKR 700/month recurring
   - Creates subscriptions record with status = 'pending'
   - Returns Safepay checkout URL
-- [ ] **6.5.6**: Implement `getMySubscription(userId)` method
-- [ ] **6.5.7**: Implement `handleSubscriptionActivated(safepayData)` method (webhook)
+- [x] **6.5.6**: Implement `getMySubscription(userId)` method
+- [ ] **6.5.7**: Implement `handleSubscriptionActivated(safepayData)` method (webhook) — _deferred to HEAD TASK 10_
   - Sets status = 'active', sets billing cycle dates
-- [ ] **6.5.8**: Implement `handleSubscriptionRenewal(safepayData)` method (webhook)
+- [ ] **6.5.8**: Implement `handleSubscriptionRenewal(safepayData)` method (webhook) — _deferred to HEAD TASK 10_
   - Extends current_period_end by 1 month
-- [ ] **6.5.9**: Implement `handleSubscriptionCancelled(safepayData)` method
-- [ ] **6.5.10**: Implement `cancelSubscription(userId)` method
-- [ ] **6.5.11**: Implement `isSubscriptionActive(userId)` method (used by complaints guard)
-- [ ] **6.5.12**: Create `apps/api/src/subscriptions/subscriptions.controller.ts`
+- [ ] **6.5.9**: Implement `handleSubscriptionCancelled(safepayData)` method — _deferred to HEAD TASK 10_
+- [x] **6.5.10**: Implement `cancelSubscription(userId)` method
+- [x] **6.5.11**: Implement `isSubscriptionActive(userId)` method (used by complaints guard)
+- [x] **6.5.12**: Create `apps/api/src/subscriptions/subscriptions.controller.ts`
   - `POST /api/subscriptions` - Create subscription + get Safepay URL
   - `GET /api/subscriptions/me` - Get my subscription
   - `POST /api/subscriptions/cancel` - Cancel subscription
   - `GET /api/subscriptions` (staff only) - List all subscriptions
-- [ ] **6.5.13**: Create subscription DTOs and enums (subscription_status)
-- [ ] **6.5.14**: Create `apps/api/src/subscriptions/subscriptions.module.ts`
+- [x] **6.5.13**: Create subscription DTOs and enums (subscription_status)
+- [x] **6.5.14**: Create `apps/api/src/subscriptions/subscriptions.module.ts`
   - Import PaymentsModule for SafepayService, export SubscriptionsService
 
 ### Sub-task 6.6: Complaints Database & Backend (Civic Complaints)
 
 **Context:** Subscribers submit complaints against government orgs (e.g., "CDA is not cleaning sector F8"). Complaints get reference numbers (CMP-YYYY-NNNN) and are tracked: submitted → under_review → escalated → resolved.
 
-- [ ] **6.6.1**: Create `complaints` table via Supabase migration
+- [x] **6.6.1**: Create `complaints` table via Supabase migration
   - Columns: id (uuid, PK), complaint_number (text, unique, auto-gen: CMP-YYYY-NNNN), client_profile_id (uuid, FK), title (text), description (text), target_organization (text), location (text), category (text), evidence_urls (text[]), status (enum: submitted, under_review, escalated, resolved, closed), assigned_staff_id (uuid, FK, nullable), staff_notes (text), resolution_notes (text), resolved_at (timestamptz), created_at (timestamptz), updated_at (timestamptz)
-- [ ] **6.6.2**: Create `generate_complaint_number()` trigger (CMP-YYYY-NNNN)
-- [ ] **6.6.3**: Apply trigger + RLS (clients read/create own, staff read all + update status) + updated_at trigger
-- [ ] **6.6.4**: Create `apps/api/src/complaints/complaints.service.ts`
-- [ ] **6.6.5**: Implement `submitComplaint(userId, createDto)` method
+- [x] **6.6.2**: Create `generate_complaint_number()` trigger (CMP-YYYY-NNNN)
+- [x] **6.6.3**: Apply trigger + RLS (clients read/create own, staff read all + update status) + updated_at trigger
+- [x] **6.6.4**: Create `apps/api/src/complaints/complaints.service.ts`
+- [x] **6.6.5**: Implement `submitComplaint(userId, createDto)` method
   - Checks active subscription via SubscriptionsService.isSubscriptionActive()
   - Creates complaint record, auto-generates CMP-YYYY-NNNN
-- [ ] **6.6.6**: Implement `getMyComplaints(userId, paginationDto)` method
-- [ ] **6.6.7**: Implement `getComplaintById(complaintId, userId)` method
-- [ ] **6.6.8**: Implement `getAllComplaints(paginationDto, filters)` method (staff only)
+- [x] **6.6.6**: Implement `getMyComplaints(userId, paginationDto)` method
+- [x] **6.6.7**: Implement `getComplaintById(complaintId, userId)` method
+- [x] **6.6.8**: Implement `getAllComplaints(paginationDto, filters)` method (staff only)
   - Filter by status, target_organization, date range
-- [ ] **6.6.9**: Implement `updateComplaintStatus(complaintId, status, staffNotes)` method (staff only)
-- [ ] **6.6.10**: Implement `assignComplaint(complaintId, staffId)` method (staff only)
-- [ ] **6.6.11**: Create `apps/api/src/complaints/complaints.controller.ts`
+- [x] **6.6.9**: Implement `updateComplaintStatus(complaintId, status, staffNotes)` method (staff only)
+- [x] **6.6.10**: Implement `assignComplaint(complaintId, staffId)` method (staff only)
+- [x] **6.6.11**: Create `apps/api/src/complaints/complaints.controller.ts`
   - `POST /api/complaints` - Submit complaint (requires active subscription)
   - `GET /api/complaints` - List complaints (client: own, staff: all)
   - `GET /api/complaints/:id` - Complaint detail
   - `PATCH /api/complaints/:id/status` (staff only) - Update status
   - `PATCH /api/complaints/:id/assign` (staff only) - Assign to staff
-- [ ] **6.6.12**: Create complaint DTOs (create, update-status) and enums (complaint_status, complaint_category)
-- [ ] **6.6.13**: Create `apps/api/src/complaints/complaints.module.ts`
+- [x] **6.6.12**: Create complaint DTOs (create, update-status) and enums (complaint_status, complaint_category)
+- [x] **6.6.13**: Create `apps/api/src/complaints/complaints.module.ts`
   - Import SubscriptionsModule for active subscription check
 
 ### Sub-task 6.7: Service Registrations Database & Backend (Auto Account Creation)
 
 **Context:** Each facilitation service has 1 generic form (name, contact, CNIC, docs upload). Payment + registration auto-creates a user account. No account needed to start the form. Account required only after payment completes.
 
-- [ ] **6.7.1**: Create `service_registrations` table via Supabase migration
+- [x] **6.7.1**: Create `service_registrations` table via Supabase migration
   - Columns: id (uuid, PK), reference_number (text, unique, auto-gen: SRV-YYYY-NNNN), service_id (uuid, FK to services), full_name (text), email (text), phone_number (text), cnic (text), address (text), description_of_need (text), payment_status (enum: pending, paid, failed, refunded), safepay_tracker_id (text), safepay_transaction_id (text), status (enum: pending_payment, paid, in_progress, completed, cancelled), client_profile_id (uuid, FK to client_profiles, nullable - set after auto account creation), assigned_staff_id (uuid, FK, nullable), staff_notes (text), created_at (timestamptz), updated_at (timestamptz)
-- [ ] **6.7.2**: Add `registration_fee` column to existing `services` table (DECIMAL(10,2))
-- [ ] **6.7.3**: Create `generate_service_registration_reference()` trigger (SRV-YYYY-NNNN)
-- [ ] **6.7.4**: Apply trigger + RLS + updated_at trigger
+- [x] **6.7.2**: Add `registration_fee` column to existing `services` table (DECIMAL(10,2))
+- [x] **6.7.3**: Create `generate_service_registration_reference()` trigger (SRV-YYYY-NNNN)
+- [x] **6.7.4**: Apply trigger + RLS + updated_at trigger
   - Public can insert (guest submissions), public can read own by reference_number + email
   - Clients can read own registrations (after account creation), staff can read all + update
-- [ ] **6.7.5**: Add `service_registration_id` nullable FK column to `documents` table
-- [ ] **6.7.6**: Create `apps/api/src/service-registrations/service-registrations.service.ts`
-- [ ] **6.7.7**: Implement `createRegistration(createDto)` method (@Public)
+- [x] **6.7.5**: Add `service_registration_id` nullable FK column to `documents` table
+- [x] **6.7.6**: Create `apps/api/src/service-registrations/service-registrations.service.ts`
+- [x] **6.7.7**: Implement `createRegistration(createDto)` method (@Public)
   - Validates service exists and is active, creates record with status = 'pending_payment'
-- [ ] **6.7.8**: Implement `initiatePayment(registrationId)` method
+- [x] **6.7.8**: Implement `initiatePayment(registrationId)` method
   - Fetches service.registration_fee, calls SafepayService.createCheckoutSession()
-- [ ] **6.7.9**: Implement `handlePaymentConfirmed(registrationId)` method (webhook)
+- [ ] **6.7.9**: Implement `handlePaymentConfirmed(registrationId)` method (webhook) — _deferred to HEAD TASK 10_
   - Updates payment_status = 'paid', status = 'paid'
   - Calls createUserAccount() to auto-create user
-- [ ] **6.7.10**: Implement `createUserAccount(registration)` method
+- [ ] **6.7.10**: Implement `createUserAccount(registration)` method — _deferred to HEAD TASK 10_
   - Check if user exists by email → link to existing account if yes
   - If no: create Supabase auth user (auto-generated password) + user_profile (client) + client_profile
   - Link service_registration.client_profile_id
   - Send credentials email via SendGrid
-- [ ] **6.7.11**: Implement `uploadDocuments(registrationId, files)` method
+- [ ] **6.7.11**: Implement `uploadDocuments(registrationId, files)` method — _deferred to HEAD TASK 9_
   - Uploads to Supabase Storage, creates documents records linked via service_registration_id
-- [ ] **6.7.12**: Implement `getRegistrationStatus(referenceNumber, email)` method (@Public)
-- [ ] **6.7.13**: Implement `getMyRegistrations(userId, paginationDto)` method
-- [ ] **6.7.14**: Implement `getAllRegistrations(paginationDto, filters)` method (staff only)
-- [ ] **6.7.15**: Implement `updateRegistrationStatus(registrationId, status, staffNotes)` method (staff only)
-- [ ] **6.7.16**: Create `apps/api/src/service-registrations/service-registrations.controller.ts`
+- [x] **6.7.12**: Implement `getRegistrationStatus(referenceNumber, email)` method (@Public)
+- [x] **6.7.13**: Implement `getMyRegistrations(userId, paginationDto)` method
+- [x] **6.7.14**: Implement `getAllRegistrations(paginationDto, filters)` method (staff only)
+- [x] **6.7.15**: Implement `updateRegistrationStatus(registrationId, status, staffNotes)` method (staff only)
+- [x] **6.7.16**: Create `apps/api/src/service-registrations/service-registrations.controller.ts`
   - `POST /api/service-registrations` (@Public) - Submit registration
   - `POST /api/service-registrations/:id/pay` (@Public) - Initiate payment
   - `POST /api/service-registrations/:id/documents` (@Public) - Upload docs
@@ -494,43 +494,43 @@ Complete database architecture with 20+ tables, Row-Level Security, comprehensiv
   - `GET /api/service-registrations/:id` - Detail
   - `PATCH /api/service-registrations/:id/status` (staff only) - Update status
   - `GET /api/services` (@Public) - List available services with fees
-- [ ] **6.7.17**: Create service registration DTOs (create, response, update-status) and enums
-- [ ] **6.7.18**: Create `apps/api/src/service-registrations/service-registrations.module.ts`
+- [x] **6.7.17**: Create service registration DTOs (create, response, update-status) and enums
+- [x] **6.7.18**: Create `apps/api/src/service-registrations/service-registrations.module.ts`
   - Import PaymentsModule for SafepayService, AuthModule for account creation
 
 ### Sub-task 6.8: Frontend - Subscribe Page & Complaints Dashboard
 
-- [ ] **6.8.1**: Create `/subscribe` landing page
+- [x] **6.8.1**: Create `/subscribe` landing page
   - Explains civic retainer program (PKR 700/month), "Subscribe Now" button
   - If not logged in → redirect to signup, then back to /subscribe
   - If logged in → initiate Safepay subscription checkout
-- [ ] **6.8.2**: Create subscription success/cancel return pages
-- [ ] **6.8.3**: Create `/client/complaints` page - List complaints with status badges
-- [ ] **6.8.4**: Create `/client/complaints/new` page - Complaint form (title, description, target org, location, category, evidence upload)
+- [x] **6.8.2**: Create subscription success/cancel return pages
+- [x] **6.8.3**: Create `/client/complaints` page - List complaints with status badges
+- [x] **6.8.4**: Create `/client/complaints/new` page - Complaint form (title, description, target org, location, category, evidence upload)
   - Gated: shows "Active subscription required" message if no subscription
-- [ ] **6.8.5**: Create `/client/complaints/:id` page - Complaint detail + status timeline
-- [ ] **6.8.6**: Create `/client/subscription` page - View subscription status, cancel button, payment history
-- [ ] **6.8.7**: Create `apps/web/lib/api/subscriptions.ts` and `apps/web/lib/api/complaints.ts` API client helpers
+- [x] **6.8.5**: Create `/client/complaints/:id` page - Complaint detail + status timeline
+- [x] **6.8.6**: Create `/client/subscription` page - View subscription status, cancel button, payment history
+- [x] **6.8.7**: Create `apps/web/lib/api/subscriptions.ts` and `apps/web/lib/api/complaints.ts` API client helpers
 
 ### Sub-task 6.9: Frontend - Service Registration Pages
 
-- [ ] **6.9.1**: Create `/services` page - List all services with fees and "Register" buttons
-- [ ] **6.9.2**: Create `/services/:slug/register` multi-step form
+- [ ] **6.9.1**: Create `/services` page - List all services with fees and "Register" buttons — _deferred_
+- [ ] **6.9.2**: Create `/services/:slug/register` multi-step form — _deferred_
   - Step 1: Client details (full name, email, phone, CNIC, address)
   - Step 2: Service auto-selected from URL, description of need textarea
   - Step 3: Document upload (drag & drop, multiple files)
   - Step 4: Review + Pay (shows fee from services table, "Pay" → Safepay)
-- [ ] **6.9.3**: Create registration success page ("Account created - check email for credentials")
-- [ ] **6.9.4**: Create `/client/services` page - List my service registrations + status
-- [ ] **6.9.5**: Create `/client/services/:id` page - Registration detail + status timeline + docs
-- [ ] **6.9.6**: Add "Register for Service" CTAs to practice area pages
-- [ ] **6.9.7**: Create `apps/web/lib/api/service-registrations.ts` API client helpers
+- [ ] **6.9.3**: Create registration success page ("Account created - check email for credentials") — _deferred_
+- [x] **6.9.4**: Create `/client/services` page - List my service registrations + status
+- [x] **6.9.5**: Create `/client/services/:id` page - Registration detail + status timeline + docs
+- [ ] **6.9.6**: Add "Register for Service" CTAs to practice area pages — _deferred_
+- [x] **6.9.7**: Create `apps/web/lib/api/service-registrations.ts` API client helpers
 
 ### Sub-task 6.10: Frontend - Client Dashboard Enhancements
 
-- [ ] **6.10.1**: Update client dashboard stats to include: Active Subscription badge, Open Complaints count, Service Registrations in_progress count
-- [ ] **6.10.2**: Update client sidebar: add Complaints, My Services, Subscription, Payment History links
-- [ ] **6.10.3**: Create `/client/payments` page - Payment history across all sources
+- [x] **6.10.1**: Update client dashboard stats to include: Active Subscription badge, Open Complaints count, Service Registrations in_progress count
+- [x] **6.10.2**: Update client sidebar: add Complaints, My Services, Subscription, Payment History links
+- [ ] **6.10.3**: Create `/client/payments` page - Payment history across all sources — _deferred to HEAD TASK 10_
 
 ---
 

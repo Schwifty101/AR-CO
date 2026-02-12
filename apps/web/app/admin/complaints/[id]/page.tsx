@@ -130,7 +130,8 @@ export default function AdminComplaintDetailPage() {
     }
 
     loadComplaint();
-  }, [complaintId, resetStatus]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [complaintId]);
 
   const onUpdateStatus = async (data: UpdateStatusForm) => {
     try {
@@ -245,7 +246,13 @@ export default function AdminComplaintDetailPage() {
             <div>
               <Label className="text-muted-foreground">Assigned To</Label>
               <p className="font-medium">
-                {complaint.assignedStaffId || <span className="text-muted-foreground">Unassigned</span>}
+                {complaint.assignedStaffName ? (
+                  complaint.assignedStaffName
+                ) : complaint.assignedStaffId ? (
+                  <span className="text-muted-foreground italic">Unknown Staff</span>
+                ) : (
+                  <span className="text-muted-foreground">Unassigned</span>
+                )}
               </p>
             </div>
           </div>

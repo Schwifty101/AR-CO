@@ -25,7 +25,7 @@
  * ```
  */
 
-import { createBrowserClient } from '@/lib/supabase/client';
+import { getSessionToken, type PaginationParams } from './auth-helpers';
 import type {
   ComplaintResponse,
   CreateComplaintData,
@@ -43,12 +43,7 @@ export type {
   AssignComplaintData,
   ComplaintFilters,
 } from '@repo/shared';
-
-/** Pagination parameters for the frontend (only page + limit) */
-export interface PaginationParams {
-  page?: number;
-  limit?: number;
-}
+export type { PaginationParams } from './auth-helpers';
 
 /** Paginated complaints response shaped for frontend consumption */
 export interface PaginatedComplaints {
@@ -59,24 +54,6 @@ export interface PaginatedComplaints {
   totalPages: number;
 }
 
-/**
- * Gets the current user's session token from Supabase
- *
- * @returns JWT access token
- * @throws Error if no session exists
- */
-async function getSessionToken(): Promise<string> {
-  const supabase = createBrowserClient();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-
-  if (!session) {
-    throw new Error('No active session. Please sign in again.');
-  }
-
-  return session.access_token;
-}
 
 /**
  * Submit a new complaint (client with active subscription only)

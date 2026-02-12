@@ -187,9 +187,7 @@ export default function AdminClientsPage() {
   };
 
   const handleRowClick = (clientId: string) => {
-    // Placeholder for client detail page
-    toast.info('Client detail page coming soon');
-    // Future: router.push(`/admin/clients/${clientId}`);
+    router.push(`/admin/clients/${clientId}`);
   };
 
   const formatDate = (dateString: string) => {

@@ -22,7 +22,7 @@
  * ```
  */
 
-import { createBrowserClient } from '@/lib/supabase/client';
+import { getSessionToken, type PaginationParams } from './auth-helpers';
 import type {
   SubscriptionResponse,
   CancelSubscriptionData,
@@ -31,12 +31,7 @@ import type {
 
 // Re-export types for consumers that import from this module
 export type { SubscriptionResponse, CancelSubscriptionData } from '@repo/shared';
-
-/** Pagination parameters for the frontend (only page + limit) */
-export interface PaginationParams {
-  page?: number;
-  limit?: number;
-}
+export type { PaginationParams } from './auth-helpers';
 
 /** Paginated subscriptions response shaped for frontend consumption */
 export interface PaginatedSubscriptions {
@@ -47,24 +42,6 @@ export interface PaginatedSubscriptions {
   totalPages: number;
 }
 
-/**
- * Gets the current user's session token from Supabase
- *
- * @returns JWT access token
- * @throws Error if no session exists
- */
-async function getSessionToken(): Promise<string> {
-  const supabase = createBrowserClient();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-
-  if (!session) {
-    throw new Error('No active session. Please sign in again.');
-  }
-
-  return session.access_token;
-}
 
 /**
  * Create a new subscription for the authenticated client

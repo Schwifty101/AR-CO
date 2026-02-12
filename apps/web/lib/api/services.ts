@@ -20,6 +20,7 @@
  * ```
  */
 
+import type { PaginationParams } from './auth-helpers';
 import type {
   ServiceResponse,
   PaginatedServicesResponse,
@@ -27,12 +28,7 @@ import type {
 
 // Re-export types for consumers that import from this module
 export type { ServiceResponse } from '@repo/shared';
-
-/** Pagination parameters for the frontend (only page + limit) */
-export interface PaginationParams {
-  page?: number;
-  limit?: number;
-}
+export type { PaginationParams } from './auth-helpers';
 
 /** Paginated services response shaped for frontend consumption */
 export interface PaginatedServices {
