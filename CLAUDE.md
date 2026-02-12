@@ -4,718 +4,290 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-AR-CO is a comprehensive law firm website platform for AR&CO Law Firm, built as a **Turborepo monorepo** with separate Next.js frontend and NestJS backend applications. The platform includes:
-
-- Public-facing law firm website with practice areas, attorney profiles, and facilitation services
-- Client authentication portal (implemented - Supabase OAuth + email/password)
-- Appointment booking system (planned)
-- Integrated Safepay payment processing (planned)
-- Admin CRM and content management (planned)
+AR-CO is a law firm website platform for AR&CO Law Firm, built as a **Turborepo monorepo** with Next.js frontend and NestJS backend. Includes public website, client portal, admin CRM, complaint system, service registrations, and subscription management.
 
 **Repository:** https://github.com/Schwifty101/AR-CO
-**Current Branch:** `git status` (see for urself)
 
 ## Monorepo Structure
-
-This is a **pnpm workspace** managed by **Turborepo**:
 
 ```
 AR-CO/
 ├── apps/
-│   ├── web/          # Next.js 16 frontend (port 3000)
-│   └── api/          # NestJS backend (port 4000)
+│   ├── web/            # Next.js 16 frontend (port 3000)
+│   └── api/            # NestJS backend (port 4000)
 ├── packages/
-│   └── ui/           # Shared React component library (@repo/ui)
-├── turbo.json        # Turborepo task configuration
+│   ├── shared/         # @repo/shared - Zod schemas, TypeScript types, enums
+│   └── ui/             # @repo/ui - Shared React component library
+├── turbo.json
 └── pnpm-workspace.yaml
 ```
 
 ## Essential Commands
 
-### Development
-
 ```bash
-# Install dependencies (run from root)
-pnpm install
+# Root - all apps
+pnpm install              # Install dependencies
+pnpm dev                  # Start web (:3000) + api (:4000)
+pnpm build                # Build all apps
+pnpm lint                 # Lint all apps
 
-# Start all apps in dev mode (web on :3000, api on :4000)
-pnpm dev
+# Backend (apps/api)
+pnpm --filter api start:dev    # Dev with auto-reload
+pnpm --filter api test         # Unit tests
+pnpm --filter api test:e2e     # E2E tests
+pnpm --filter api test:cov     # Coverage
+pnpm --filter api build        # Production build
 
-# Build all apps
-pnpm build
+# Type check backend
+cd apps/api && pnpm tsc --noEmit
 
-# Lint all apps
-pnpm lint
+# Frontend (apps/web)
+pnpm --filter web dev          # Dev server
+pnpm --filter web build        # Production build
+
+# Add dependencies
+pnpm add <pkg> --filter web    # Frontend
+pnpm add <pkg> --filter api    # Backend
+pnpm add <pkg> --filter shared # Shared package
+
+# shadcn/ui component
+cd apps/web && npx shadcn@latest add <component-name>
 ```
 
-### Frontend-Specific (apps/web)
+**Always use pnpm** (not npm or yarn). Install from root to maintain workspace integrity.
 
-```bash
-cd apps/web
+## Architecture
 
-# Development server
-pnpm dev
+### Shared Package (`@repo/shared`)
 
-# Production build
-pnpm build
-
-# Start production server
-pnpm start
-
-# Lint
-pnpm lint
-```
-
-### Backend-Specific (apps/api)
-
-```bash
-cd apps/api
-
-# Development with auto-reload
-pnpm start:dev
-
-# Production build
-pnpm build
-
-# Start production
-pnpm start:prod
-
-# Run tests
-pnpm test
-pnpm test:e2e
-pnpm test:cov
-
-# Type check
-pnpm tsc --noEmit
-```
-
-## Core Technologies & Documentation
-
-### Frontend Stack (apps/web)
-
-- **Framework:** [Next.js 16.0.10](https://nextjs.org/docs) with App Router
-- **React:** [19.2.0](https://react.dev/)
-- **Language:** [TypeScript 5.x](https://www.typescriptlang.org/docs/)
-- **Styling:** [Tailwind CSS 4.1.9](https://tailwindcss.com/docs) + CSS Modules
-- **UI Components:**
-  - [Radix UI](https://www.radix-ui.com/) - Headless component primitives
-  - [shadcn/ui](https://ui.shadcn.com/) - Pre-built component patterns (59 components in `components/ui/`)
-  - [Lucide React](https://lucide.dev/) - Icon library
-- **Forms & Validation:**
-  - [React Hook Form 7.60.0](https://react-hook-form.com/)
-  - [Zod 3.25.76](https://zod.dev/) - Schema validation
-  - [@hookform/resolvers](https://github.com/react-hook-form/resolvers)
-- **UI Libraries:**
-  - [Sonner](https://sonner.emilkowal.ski/) - Toast notifications
-  - [Embla Carousel](https://www.embla-carousel.com/) - Carousel component
-  - [React Day Picker](https://react-day-picker.js.org/) - Date picker
-  - [Recharts](https://recharts.org/) - Chart library
-  - [next-themes](https://github.com/pacocoursey/next-themes) - Dark mode support
-- **Animation (Planned):**
-  - [GSAP](https://greensock.com/gsap/) or [Framer Motion](https://www.framer.com/motion/) - Kinetic animations
-- **Authentication:**
-  - [@supabase/supabase-js](https://supabase.com/docs/reference/javascript) - Supabase client
-  - [@supabase/ssr](https://supabase.com/docs/guides/auth/server-side/nextjs) - SSR cookie-based session management
-- **Analytics:** [Vercel Analytics](https://vercel.com/docs/analytics)
-
-### Backend Stack (apps/api)
-
-- **Framework:** [NestJS 11.0.1](https://docs.nestjs.com/)
-- **Runtime:** [Node.js &gt;= 20.9.0](https://nodejs.org/docs/)
-- **Language:** [TypeScript 5.7.3](https://www.typescriptlang.org/docs/)
-- **Database:** [Supabase](https://supabase.com/docs) (PostgreSQL + Auth + Storage)
-  - Row-Level Security (RLS) with 50+ policies implemented
-  - 19 tables with comprehensive data model
-  - 5 utility functions in private schema
-  - See [Supabase Community Discussions](https://github.com/orgs/supabase/discussions/29260) for best practices
-- **Authentication:** JWT-based with Supabase Auth (fully implemented)
-  - Auth module with signup, signin, OAuth callback, token refresh, password reset, signout
-  - Global guards for authentication and authorization
-  - Role-based access control (CLIENT, ATTORNEY, STAFF, ADMIN)
-  - Admin email whitelist for personal accounts
-  - Google OAuth for admin users, email/password + OAuth for clients
-  - Global ValidationPipe for DTO validation
-- **Testing:**
-  - [Jest 30.0.0](https://jestjs.io/docs/getting-started)
-  - [Supertest 7.0.0](https://github.com/visionmedia/supertest)
-
-### Planned Integrations (per project scope)
-
-- **Payment Gateway:** [Safepay](https://getsafepay.pk/)
-  - [Implementation Guide](https://safepay-docs.netlify.app/)
-  - [API Documentation](https://apidocs.getsafepay.com/)
-- **Pakistan Legal News API** - Real-time news ticker
-- **WhatsApp Business API** - Client communication
-- **Email Service:** SendGrid or AWS SES
-- **Calendar Integration:** Google Calendar / Outlook
-
-### Development Tools
-
-- **Monorepo:** [Turborepo 2.3.3](https://turbo.build/repo/docs)
-- **Package Manager:** [pnpm 10.28.1](https://pnpm.io/)
-- **Linting:** [ESLint 9.x](https://eslint.org/docs/latest/)
-- **Formatting:** [Prettier 3.4.2](https://prettier.io/docs/en/)
-  - Config: Single quotes, trailing commas
-
-### Deployment & Infrastructure
-
-- **Frontend Hosting:** [Vercel](https://vercel.com/docs)
-- **Backend Hosting:** [Railway](https://docs.railway.app/)
-- **CDN:** Global CDN for content delivery
-- **SSL:** Premium SSL certificates
-
-## Development Rules & Standards
-
-**IMPORTANT:** This codebase follows strict TypeScript development standards documented in `/Users/sobanahmad/Work/AR&CO/Global_Development_Rules.md`. All code contributions must adhere to these rules.
-
-### Key Principles (Summary)
-
-**Core Principles:**
-
-- **KISS** - Keep TypeScript types, functions, and modules minimal
-- **YAGNI** - Implement only what's necessary for current feature scope
-- **DRY** - Shared logic exists in ONE utility or module only
-- **SOLID** - Follow Single-responsibility, Open-closed, Liskov substitution, Interface segregation, and Dependency inversion
-
-**Code Structure:**
-
-- Max **500 lines per file** (split at 400)
-- Organized by **feature folder** (e.g., `/auth`, `/api`, `/db`, `/utils`)
-- Use **relative imports** (`import { foo } from "../utils/foo"`)
-
-**Naming Conventions:**
-
-- Files: `camelCase.ts`
-- Classes: `PascalCase`
-- Interfaces: `IName`
-- Enums: `PascalCase`
-- Constants: `UPPER_SNAKE_CASE`
-- Functions: `camelCase`
-
-**Documentation Requirements:**
-
-- Every exported entity must have **JSDoc-style block** (`/** ... */`)
-- Include **working TypeScript example**
-- Document **edge cases and gotchas**
-- Full error handling with async and type-level validation
-
-**Prohibited Practices:**
-
-- Skipping research phase
-- Creating generic, non-specialized solutions
-- Advancing without validation
-- Assuming implicit context or types
-- Omitting examples
-- Ignoring edge cases
-- Missing error handling
-
-**Before Every Commit:**
-
-- Run static type checks: `pnpm tsc --noEmit`
-- Validate code follows SOLID principles
-- Ensure all exports have JSDoc documentation
-
-For complete details, see: `/Users/sobanahmad/Work/AR&CO/Global_Development_Rules.md`
-
-## Architecture Patterns
-
-### Backend Authentication Architecture
-
-The backend implements a comprehensive JWT-based authentication and authorization system:
-
-**Guard Execution Flow:**
+Shared validation schemas, types, and enums used by both frontend and backend:
 
 ```
-1. Request arrives with Authorization: Bearer <token>
-   ↓
-2. JwtAuthGuard runs (unless @Public())
-   ├─ Extract JWT from Authorization header
-   ├─ Validate with Supabase (getUserFromToken)
-   └─ Populate request.user = AuthUser
-   ↓
-3. RolesGuard runs (if @Roles() present)
-   ├─ Check admin whitelist → Allow if email whitelisted
-   ├─ Check user.userType against required roles
-   └─ Allow or throw ForbiddenException
-   ↓
-4. Route handler executes
-   └─ Access user via @CurrentUser() decorator
+packages/shared/src/
+├── enums.ts                          # UserType, CompanyType, status enums
+├── schemas/
+│   ├── common.schemas.ts             # Pagination, shared validations
+│   ├── auth.schemas.ts               # Auth request/response schemas
+│   ├── clients.schemas.ts
+│   ├── complaints.schemas.ts
+│   ├── service-registrations.schemas.ts
+│   ├── services.schemas.ts
+│   ├── subscriptions.schemas.ts
+│   └── users.schemas.ts
+└── types/
+    ├── [feature].types.ts            # TypeScript interfaces from Zod schemas
+    └── index.ts                      # Barrel export
 ```
 
-**Key Components:**
+Import pattern: `import { SignupSchema, UserType, CreateClientSchema } from '@repo/shared'`
 
-- **SupabaseService**: Manages Supabase clients and JWT validation
-  - `getClient(token)` - User-scoped client (RLS enforced)
-  - `getAdminClient()` - Admin client (bypasses RLS, use with caution)
-  - `getUserFromToken(token)` - Validates JWT and fetches user profile
-- **JwtAuthGuard**: Authenticates requests, populates request.user
-- **RolesGuard**: Authorizes based on user type (CLIENT, ATTORNEY, STAFF, ADMIN)
-- **AdminWhitelistService**: Email-based admin access (e.g., personal Gmail accounts)
+### Backend Modules (apps/api/src/)
 
-**Decorators:**
+All modules follow **Controller-Service-Module** pattern in feature folders:
 
-- `@Public()` - Skip authentication
-- `@Roles(UserType.ADMIN)` - Require specific user types
-- `@CurrentUser()` - Extract authenticated user from request
+| Module | Purpose |
+|--------|---------|
+| `auth/` | Signup, signin, OAuth, token refresh, password reset, signout |
+| `users/` | User profile CRUD, client-specific & attorney-specific data |
+| `clients/` | Client profile management + aggregated data (cases, docs, invoices) |
+| `complaints/` | Complaint submission, tracking, staff assignment, status updates |
+| `service-registrations/` | Guest facilitation service registration + payment handling |
+| `services/` | Available services catalog (NTN, SECP, business registration) |
+| `subscriptions/` | Subscription plans and status tracking |
+| `dashboard/` | Admin and client dashboard statistics |
+| `payments/` | SafepayService for payment gateway integration |
 
-**Example Usage:**
-
-```typescript
-@Controller("cases")
-export class CasesController {
-  @Get("public")
-  @Public()
-  getPublicInfo() {} // No auth required
-
-  @Get()
-  getMyCases(@CurrentUser() user: AuthUser) {} // JWT required
-
-  @Delete(":id")
-  @Roles(UserType.ADMIN, UserType.STAFF)
-  deleteCase(@Param("id") id: string) {} // Admin/staff only
-}
+**Module structure:**
+```
+feature/
+├── feature.module.ts
+├── feature.controller.ts
+├── feature.service.ts
+└── [auxiliary].service.ts    # Optional (e.g., ClientsAggregationService)
 ```
 
-**Admin Whitelist:**
+**Common utilities** in `apps/api/src/common/`:
+- **Decorators:** `@Public()`, `@Roles(UserType.ADMIN)`, `@CurrentUser()`
+- **Guards:** `JwtAuthGuard`, `RolesGuard` (registered globally in main.ts)
+- **Filters:** `HttpExceptionFilter`, `SupabaseExceptionFilter`
+- **Pipes:** `ZodValidationPipe`
+- **Interfaces:** `AuthUser`, `RequestWithUser`
+- **Enums:** `UserType` (CLIENT, ATTORNEY, STAFF, ADMIN)
+- **Utilities:** `query-helpers.ts` (pagination, query building)
 
-- Configured via `ADMIN_EMAILS` in .env (comma-separated)
-- Whitelisted emails bypass all @Roles() restrictions
-- Used for personal email OAuth signups (e.g., Gmail, Outlook)
-- Current whitelist: `sobanahmad2003@gmail.com`
+**DatabaseModule is `@Global()`** - SupabaseService available everywhere without importing.
 
-**Documentation:**
+### Backend Authentication Flow
 
-- Quick Reference: `apps/api/AUTH_QUICK_REFERENCE.md`
-- Testing Guide: `apps/api/TESTING_GUIDE.md`
-- Implementation Details: `apps/api/IMPLEMENTATION_SUMMARY.md`
+```
+Request → JwtAuthGuard → RolesGuard → Route Handler
+  1. Extract & validate JWT via Supabase
+  2. Skip if @Public() decorated
+  3. Populate request.user = AuthUser
+  4. Check @Roles() against user.userType
+  5. Admin whitelist emails bypass all @Roles() checks
+```
+
+**SupabaseService methods:**
+- `getClient(token)` - User-scoped client (RLS enforced)
+- `getAdminClient()` - Admin client (bypasses RLS, use with caution, document why)
+- `getUserFromToken(token)` - Validates JWT and fetches user profile
+
+**Admin whitelist:** Configured via `ADMIN_EMAILS` env var (comma-separated). Whitelisted emails bypass all role restrictions.
+
+### Backend Configuration System
+
+Typed configuration via factory pattern in `apps/api/src/config/`:
+- `AppConfig`, `SupabaseConfig`, `JwtConfig`, `SafepayConfig`, `EmailConfig`, `FileUploadConfig`, `AdminConfig`
+- Access via NestJS `ConfigService` with typed interfaces
+
+### Frontend API Client Pattern (apps/web/lib/api/)
+
+Typed API client functions for each backend module:
+
+```
+lib/api/
+├── auth-helpers.ts              # getSessionToken(), PaginationParams
+├── clients.ts                   # Client CRUD + aggregation
+├── complaints.ts                # Complaint submission/tracking
+├── dashboard.ts                 # Dashboard statistics
+├── service-registrations.ts     # Service registration CRUD
+├── services.ts                  # Services catalog
+├── subscriptions.ts             # Subscription management
+└── users.ts                     # User profile operations
+```
+
+**Pattern:** Each function gets session token from Supabase, makes authenticated `fetch('/api/...')` call through Next.js proxy, returns typed response.
+
+### Frontend Route Structure
+
+```
+app/
+├── (public)/                    # Public routes (practice-areas, subscribe, team)
+├── auth/                        # signin, signup, forgot-password, callback
+├── admin/                       # Admin dashboard, clients, complaints, users, etc.
+│   └── layout.tsx               # DashboardHeader + DashboardSidebar (userType="admin")
+└── client/                      # Client dashboard, complaints, services, profile
+    └── layout.tsx               # DashboardHeader + DashboardSidebar (userType="client")
+```
 
 ### API Proxy Pattern
 
-The Next.js frontend proxies all `/api/*` requests to the NestJS backend to avoid CORS issues:
-
-**Development:**
-
-- Frontend (`localhost:3000`) → Backend (`localhost:4000`)
-
-**Production:**
-
-- Configured in `apps/web/next.config.js` via `rewrites()`
-- Uses `API_BACKEND_URL` environment variable
-- Vercel deployment proxies to Railway backend: `https://api-production-c05e.up.railway.app/api/*`
-
-**Backend API Configuration:**
-
-- All NestJS routes prefixed with `/api` via `app.setGlobalPrefix('api')` in `apps/api/src/main.ts`
-- Example: `GET /api/hello` endpoint in `app.controller.ts`
-
-### Component Organization
-
-- **App-specific components:** `apps/web/components/` (Header, Footer, Hero, PracticeCard, etc.)
-- **Auth components:** `apps/web/components/auth/` (signin-form, signup-form, oauth-button)
-- **Dashboard components:** `apps/web/components/dashboard/` (sidebar, dashboard-header)
-- **Shared UI library:** `packages/ui/` (currently exports Button component)
-- **shadcn/ui components:** `apps/web/components/ui/` (59 pre-built components)
-- **Styling:** Mix of Tailwind CSS utility classes and CSS Modules for component-scoped styles
+Frontend proxies `/api/*` to backend via `next.config.js` rewrites:
+- Dev: `localhost:3000/api/*` → `localhost:4000/api/*`
+- Prod: Vercel → Railway (`API_BACKEND_URL` env var)
+- Backend sets `app.setGlobalPrefix('api')` in `main.ts`
 
 ### State Management
 
-- **Auth:** AuthProvider context with Supabase onAuthStateChange listener (`lib/auth/auth-context.tsx`)
-- **Forms:** React Hook Form with Zod validation
-- **UI State:** React state and Context API
+- **Auth:** AuthProvider context with Supabase `onAuthStateChange` (`lib/auth/auth-context.tsx`)
+- **Forms:** React Hook Form + Zod + shadcn/ui
 - **Theme:** next-themes for dark/light mode
-- **Toasts:** Sonner for notifications
+- **Toasts:** `import { toast } from 'sonner'`
 
-### NestJS Patterns (Backend)
+## Development Patterns
 
-- **Controller-Service-Module** pattern
-- **Dependency Injection** for all services
-- **DTOs** for request/response validation with class-validator
-- **Guards** for authentication/authorization (implemented)
-  - JwtAuthGuard: Validates JWT tokens and populates request.user
-  - RolesGuard: Enforces role-based access control
-- **Decorators** for route metadata
-  - @Public(): Skip authentication
-  - @Roles(...types): Require specific user types
-  - @CurrentUser(): Extract authenticated user
-- **Exception filters** for standardized error handling
-  - HttpExceptionFilter: HTTP error formatting
-  - SupabaseExceptionFilter: Database error mapping
-- **Interceptors** for logging and transformation (planned)
+### Backend Service Pattern
 
-## Key Files to Know
+```typescript
+@Injectable()
+export class FeatureService {
+  private readonly logger = new Logger(FeatureService.name);
+  constructor(private readonly supabaseService: SupabaseService) {}
 
-### Configuration Files
+  async getData(user: AuthUser) {
+    const client = this.supabaseService.getAdminClient(); // or getClient(token) for RLS
+    const { data, error } = await client.from('table').select('*');
+    if (error) throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    return data;
+  }
+}
+```
 
-- `turbo.json` - Turborepo task pipeline and caching
-- `pnpm-workspace.yaml` - Workspace package definitions
-- `apps/web/next.config.js` - Next.js config with API proxy rewrites
-- `apps/api/nest-cli.json` - NestJS CLI configuration
-- `railway.toml` - Railway deployment config for backend
+**camelCase → snake_case:** DTO props are camelCase, DB columns are snake_case. Map manually in service layer.
 
-### Frontend Entry Points
+### Frontend API Call Pattern
 
-- `apps/web/app/layout.tsx` - Root layout with AuthProvider, analytics
-- `apps/web/app/page.tsx` - Homepage with practice areas
-- `apps/web/app/globals.css` - Global Tailwind styles
-- `apps/web/components/Header.tsx` - Navigation with mega-menu
-- `apps/web/components/theme-provider.tsx` - Dark mode setup
-- `apps/web/middleware.ts` - Auth session refresh, route protection
-- `apps/web/lib/supabase/client.ts` - Browser Supabase client
-- `apps/web/lib/supabase/server.ts` - Server component Supabase client
-- `apps/web/lib/auth/auth-context.tsx` - AuthProvider with useAuth hook
-- `apps/web/lib/auth/auth-actions.ts` - Client-side auth operations
-- `apps/web/app/auth/signin/page.tsx` - Unified sign-in (Google OAuth + email)
-- `apps/web/app/auth/signup/page.tsx` - Client registration
-- `apps/web/app/auth/callback/route.ts` - OAuth callback handler
-- `apps/web/app/admin/dashboard/page.tsx` - Admin dashboard placeholder
-- `apps/web/app/client/dashboard/page.tsx` - Client dashboard placeholder
+```typescript
+const token = await getSessionToken();
+const response = await fetch('/api/feature', {
+  headers: { Authorization: `Bearer ${token}` }
+});
+```
 
-### Backend Entry Points
+### Adding a New Backend Module
 
-- `apps/api/src/main.ts` - NestJS bootstrap with global guards, filters, ValidationPipe, and CORS
-- `apps/api/src/app.module.ts` - Root module (imports ConfigModule, DatabaseModule, AuthModule)
-- `apps/api/src/app.controller.ts` - Main controller with example authenticated endpoints
-- `apps/api/src/app.service.ts` - Business logic
+1. Create feature folder in `apps/api/src/`
+2. Add Zod schemas in `packages/shared/src/schemas/`
+3. Add types in `packages/shared/src/types/`
+4. Create controller, service, module files
+5. Register module in `app.module.ts`
+6. Add frontend API client in `apps/web/lib/api/`
+
+## Development Rules
+
+**Full rules:** `/Users/sobanahmad/Work/AR&CO/Global_Development_Rules.md`
+
+- **KISS / YAGNI / DRY / SOLID** principles
+- Max **500 lines per file** (split at 400)
+- Feature folder organization
+- Every exported entity needs **JSDoc** with example
+- `pnpm tsc --noEmit` before every commit
+
+**Naming:** Files `camelCase.ts`, Classes `PascalCase`, Interfaces `IName`, Enums `PascalCase`, Constants `UPPER_SNAKE_CASE`
+
+## Key Files
+
+### Backend
+- `apps/api/src/main.ts` - Bootstrap: global guards, filters, prefix, CORS
+- `apps/api/src/app.module.ts` - Root module imports
 - `apps/api/src/database/supabase.service.ts` - Supabase client management
 - `apps/api/src/common/guards/jwt-auth.guard.ts` - JWT authentication
 - `apps/api/src/common/guards/roles.guard.ts` - Role-based authorization
-- `apps/api/src/auth/auth.service.ts` - Authentication business logic (signup, signin, OAuth, password reset)
-- `apps/api/src/auth/auth.controller.ts` - Auth REST endpoints
-- `apps/api/src/auth/auth.module.ts` - Auth module registration
+- `apps/api/src/config/configuration.ts` - Typed configuration factory
+- `apps/api/AUTH_QUICK_REFERENCE.md` - Auth patterns reference
 
-### Environment Variables
+### Frontend
+- `apps/web/app/layout.tsx` - Root layout with AuthProvider
+- `apps/web/middleware.ts` - Auth session refresh, route protection
+- `apps/web/lib/supabase/client.ts` - Browser Supabase client
+- `apps/web/lib/supabase/server.ts` - Server component Supabase client
+- `apps/web/lib/auth/auth-context.tsx` - AuthProvider with `useAuth()` hook
+- `apps/web/lib/api/auth-helpers.ts` - Session token helper for API calls
+- `apps/web/next.config.js` - API proxy rewrites
 
-**Frontend (.env.example):**
+### Configuration
+- `turbo.json` - Turborepo pipeline (dev, build, lint tasks)
+- `railway.toml` - Backend deployment config
+- `.node-version` - Node.js 20.18.1
 
-```bash
-NEXT_PUBLIC_API_URL=http://localhost:3000
-API_BACKEND_URL=http://localhost:4000
+## Environment Variables
 
-# Supabase (required for authentication)
-NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key_here
-```
+**Frontend:** `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `API_BACKEND_URL`
 
-**Backend (.env.example):**
+**Backend:** `PORT`, `CORS_ORIGINS`, `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `JWT_SECRET`, `ADMIN_EMAILS`
 
-```bash
-# Application
-PORT=4000
-NODE_ENV=development
-CORS_ORIGINS=http://localhost:3000,http://localhost:4000
-
-# Supabase
-SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_ANON_KEY=your_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
-
-# JWT
-JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
-JWT_ACCESS_TOKEN_EXPIRATION=15m
-JWT_REFRESH_TOKEN_EXPIRATION=7d
-
-# Admin Configuration
-ADMIN_EMAILS=admin1@example.com,admin2@example.com
-
-# Safepay, SendGrid, etc. (see .env.example)
-```
-
-## Development Workflow
-
-### PRP Workflow (Plan → Review → Produce)
-
-All feature implementation must follow this strict workflow:
-
-1. **Plan:** Research official docs, define interfaces, plan module structure
-2. **Review:** Validate approach against SOLID principles and project patterns
-3. **Produce:** Implement with full error handling and type safety
-
-### Running in Development
-
-1. **Start both apps:** `pnpm dev` from root (uses Turborepo to start web + api)
-2. **Frontend:** Accessible at http://localhost:3000
-3. **Backend:** Runs on http://localhost:4000
-4. **API calls:** Frontend makes requests to `/api/*` which proxy to backend
-
-### Making Changes
-
-- **Frontend changes:** Edit files in `apps/web/`, hot reload is enabled
-- **Backend changes:** Edit files in `apps/api/`, ts-node-dev auto-restarts
-- **Shared components:** Edit `packages/ui/`, rebuild required for apps to pick up changes
-- **Turborepo caching:** Speeds up repeated builds by caching task outputs
-
-### Adding New Features
-
-When adding features (e.g., client portal, appointments, payments):
-
-1. **Research:** Study official docs (Supabase, Safepay, NestJS patterns)
-2. **Plan:** Define interfaces, DTOs, service structure
-3. **Frontend:** Create components in `apps/web/components/`
-4. **Backend:** Add controllers/services/modules following NestJS patterns
-5. **Shared logic:** Extract to `packages/ui/` if reusable across apps
-6. **shadcn/ui:** Use existing components from `components/ui/` or add new ones via shadcn CLI
-7. **Validate:** Run `pnpm tsc --noEmit` before commit
-
-## Important Notes
-
-### API Integration
-
-**Current Implementation:**
-
-- ✅ Complete database schema with 19 tables and RLS policies
-- ✅ JWT authentication system with guards and decorators
-- ✅ Role-based access control (CLIENT, ATTORNEY, STAFF, ADMIN)
-- ✅ Admin email whitelist for personal accounts
-- ✅ Standardized error handling
-- ✅ Example endpoints: `/api/hello` (public), `/api/profile` (protected), `/api/admin-dashboard` (admin-only)
-- ✅ Authentication module: signup, signin, Google OAuth callback, token refresh, password reset, signout
-- ✅ Auth endpoints: `POST /api/auth/signup`, `POST /api/auth/signin`, `POST /api/auth/oauth/callback`, `POST /api/auth/refresh`, `POST /api/auth/password-reset/request`, `POST /api/auth/password-reset/confirm`, `GET /api/auth/me`, `POST /api/auth/signout`
-- ✅ Frontend auth: Supabase SSR client, AuthProvider context, route protection middleware
-- ✅ Auth pages: Sign-in (Google + email tabs), sign-up, OAuth callback, password reset, admin/client dashboards
-- ✅ 12 unit tests passing for AuthService
-
-**Planned:**
-
-- User management endpoints (profile CRUD)
-- Case management endpoints
-- Appointment booking endpoints
-- Payment processing (Safepay integration)
-- Document management endpoints
-
-**All routes prefixed with `/api`** per NestJS global prefix in `main.ts`
-
-### Supabase Integration (Implemented)
-
-**Completed:**
-
-- ✅ Database schema with 19 tables (user_profiles, cases, appointments, invoices, etc.)
-- ✅ Row-level security (RLS) with 50+ policies
-- ✅ Private schema utility functions (is_admin, is_staff, get_client_profile_id)
-- ✅ Database triggers (auto-generate case numbers, invoice numbers, updated_at timestamps)
-- ✅ SupabaseService for client management (getClient, getAdminClient, getUserFromToken)
-- ✅ JWT authentication via JwtAuthGuard
-- ✅ Supabase Auth integration (email/password + Google OAuth)
-- ✅ Frontend Supabase SSR client with cookie-based sessions (@supabase/ssr)
-
-**Planned:**
-
-- Real-time subscriptions for live updates
-- File upload to Supabase Storage
-
-**Important:**
-
-- Always use `getClient(token)` for user operations (RLS enforced)
-- Only use `getAdminClient()` when RLS bypass is necessary (document why)
-- See `apps/api/AUTH_QUICK_REFERENCE.md` for authentication patterns
-
-**Resources:**
-
-- [Supabase Community Best Practices](https://github.com/orgs/supabase/discussions/29260)
-- [Schema Validation Report](SCHEMA_VALIDATION_REPORT.md) - Database design review
-
-### Payment Processing (Planned)
-
-- Safepay integration for card and mobile wallet payments
-- Webhook-based reconciliation
-- Automated invoice generation
-- Financial analytics dashboard
-- **Follow Safepay implementation guide:** https://safepay-docs.netlify.app/
-- **API reference:** https://apidocs.getsafepay.com/
-
-### Appointment Booking Integration (Cal.com)
-
-- Cal.com as primary booking interface and calendar orchestrator
-- Google Calendar / Outlook synchronization via Cal.com
-- Webhook-based appointment sync to backend database
-- Pre-consultation payment capture via Safepay
-- Automated email confirmations and reminders
-- Client self-service rescheduling
-- No-show tracking and analytics
-- **Cal.com API Reference:** https://cal.com/docs/api-reference/v2/introduction
-- **Google Calendar Integration:** https://developers.google.com/workspace/calendar/api/quickstart/js
-
-### Security Considerations
-
-- HTTPS enforced in production
-- Input validation and sanitization (prevent XSS, SQL injection)
-- CSRF protection
-- Secure file uploads with validation
-- Data encryption at rest and in transit
-- CI/CD pipeline with security audits (planned)
-
-### Business Domain (AR&CO Law Firm)
-
-- **Practice Areas:** Corporate Law, Tax Law, Immigration, Labour Law, IP, Real Estate, Litigation, Contracts
-- **Facilitation Services:** Business registration (NTN, SECP), compliance certificates (AML/CFT, Food Authority), real estate docs, personal certificates, Women's Legal Desk
-- **Target Routes:** `/practice/*`, `/auth/signin`, `/auth/signup`, `/admin/dashboard`, `/client/dashboard`
-
-## Scope Documents
-
-Detailed project requirements and feature specifications are available in:
-
-- `/Users/sobanahmad/Work/AR&CO/Docs/Scope/AR_CO_Package2_Premium_updated.md` - Complete Premium package proposal
-- `/Users/sobanahmad/Work/AR&CO/Docs/Scope/AR_CO_Premium_Final_Proposal_updated.md` - Final proposal with investment breakdown
-- `/Users/sobanahmad/Work/AR&CO/Docs/Scope/AR_CO_feature_breakdown_updated.md` - Comprehensive feature matrix
-
-## Testing
-
-### Backend Tests
-
-```bash
-cd apps/api
-
-# Unit tests
-pnpm test
-
-# E2E tests
-pnpm test:e2e
-
-# Test coverage
-pnpm test:cov
-
-# Type checking
-pnpm tsc --noEmit
-```
-
-### Code Quality
-
-```bash
-# Lint all apps (from root)
-pnpm lint
-
-# Type check (from root)
-turbo run type-check
-
-# Format code with Prettier (run from individual apps if needed)
-pnpm format
-```
+See `.env.example` files in each app for full list.
 
 ## Deployment
 
-### Frontend (Vercel)
+- **Frontend:** Vercel (auto-deploys from GitHub, `vercel.json` for API proxy)
+- **Backend:** Railway (`railway.toml`, build: `pnpm --filter api build`, start: `node dist/main`)
 
-- Auto-deploys from GitHub on push
-- Environment variables configured in Vercel dashboard
-- `apps/web/vercel.json` configures production API proxy
+## Business Domain
 
-### Backend (Railway)
+- **Practice Areas:** Corporate Law, Tax Law, Immigration, Labour Law, IP, Real Estate, Litigation, Contracts
+- **Facilitation Services:** NTN, SECP registration, compliance certificates, real estate docs, Women's Legal Desk
+- **User Roles:** CLIENT, ATTORNEY, STAFF, ADMIN
 
-- Configured via `railway.toml`
-- Build command: `pnpm install --frozen-lockfile && pnpm --filter api build`
-- Start command: `cd apps/api && node dist/main`
-- Watches `/apps/api/**` for changes
+## Planned Integrations
 
-## Package Manager Notes
+- **Payments:** [Safepay](https://safepay-docs.netlify.app/) ([API docs](https://apidocs.getsafepay.com/))
+- **Appointments:** [Cal.com API v2](https://cal.com/docs/api-reference/v2/introduction) with Google Calendar sync
+- **Communication:** WhatsApp Business API, SendGrid email
 
-- **Always use pnpm** (not npm or yarn)
-- **Install from root:** `pnpm install` to maintain workspace integrity
-- **Add dependencies:**
-  - Frontend: `pnpm add <package> --filter web`
-  - Backend: `pnpm add <package> --filter api`
-  - Shared UI: `pnpm add <package> --filter ui`
+## Scope Documents
 
-## Node Version
-
-- **Required:** Node.js >= 20.9.0
-- **Pinned version:** 20.18.1 (see `.node-version`)
-
-## Common Tasks
-
-### Adding a new shadcn/ui component
-
-```bash
-cd apps/web
-npx shadcn@latest add <component-name>
-```
-
-### Creating a new package
-
-1. Add directory in `packages/`
-2. Create `package.json` with `@repo/` scoped name
-3. Update `pnpm-workspace.yaml` if needed
-4. Run `pnpm install` from root
-
-### Creating a new API endpoint (NestJS)
-
-1. **Research:** Study NestJS controller/service patterns
-2. **Plan:** Define DTOs, interfaces, service methods
-3. **Create Controller:** Add route handler with appropriate decorators
-
-   ```typescript
-   import { Controller, Get } from "@nestjs/common";
-   import { CurrentUser } from "./common/decorators/current-user.decorator";
-   import { Roles } from "./common/decorators/roles.decorator";
-   import { UserType } from "./common/enums/user-type.enum";
-   import type { AuthUser } from "./common/interfaces/auth-user.interface";
-
-   @Controller("cases")
-   export class CasesController {
-     @Get()
-     getMyCases(@CurrentUser() user: AuthUser) {
-       // JWT required by default
-     }
-
-     @Get("admin")
-     @Roles(UserType.ADMIN, UserType.STAFF)
-     getAdminCases(@CurrentUser() user: AuthUser) {
-       // Only admin and staff can access
-     }
-   }
-   ```
-
-4. **Create Service:** Implement business logic with Supabase RLS
-   ```typescript
-   async getUserCases(user: AuthUser) {
-     const client = this.supabase.getClient();
-     const { data } = await client
-       .from('cases')
-       .select('*')
-       .eq('client_profile_id', user.clientProfileId);
-     return data;
-   }
-   ```
-5. **Add Module:** Register in appropriate module
-6. **Validate:** Test with Supertest, check types with `tsc --noEmit`
-
-**Authentication Reference:** See `apps/api/AUTH_QUICK_REFERENCE.md` for complete patterns
-
-### Debugging
-
-- **Frontend:** Use browser DevTools, React DevTools extension
-- **Backend:** Use NestJS debugging or attach Node debugger to port 4000
-- **Logs:** Check terminal output for both dev servers
-
-## Git Workflow
-
-- **Main branch:** Production-ready code
-- **Current branch:** `git status` (see for urself)
-- **Commit conventions:** Use clear, descriptive commit messages
-- Recent focus: UI improvements, animations, header fixes, client logo carousel
-
-## Additional Resources
-
-### Official Documentation
-
-- **Next.js App Router:** https://nextjs.org/docs/app
-- **NestJS Documentation:** https://docs.nestjs.com/
-- **TypeScript Handbook:** https://www.typescriptlang.org/docs/
-- **Turborepo Handbook:** https://turbo.build/repo/docs/handbook
-- **Tailwind CSS:** https://tailwindcss.com/docs
-- **Radix UI Components:** https://www.radix-ui.com/primitives/docs/overview/introduction
-- **shadcn/ui:** https://ui.shadcn.com/docs
-
-### Integration Guides
-
-- **Supabase Guides:** https://supabase.com/docs/guides
-- **Supabase Community:** https://github.com/orgs/supabase/discussions/29260
-- **Safepay Implementation:** https://safepay-docs.netlify.app/
-- **Safepay API Reference:** https://apidocs.getsafepay.com/
-- **Safepay Webhooks:** https://apidocs.getsafepay.com/#170e6887-a78e-492f-beea-0c5479129e85
-- **Cal.com API v2 Documentation:** https://cal.com/docs/api-reference/v2/introduction
-- **Cal.com Webhooks:** https://cal.com/docs/api-reference/v2/webhooks
-- **Google Calendar API:** https://developers.google.com/workspace/calendar/api/quickstart/js
-- **Google Calendar Events Guide:** https://developers.google.com/workspace/calendar/create-events
-
-### Project-Specific Rules
-
-- **Global Development Rules:** `/Users/sobanahmad/Work/AR&CO/Global_Development_Rules.md` (mandatory reading)
+- `/Users/sobanahmad/Work/AR&CO/Docs/Scope/AR_CO_Package2_Premium_updated.md`
+- `/Users/sobanahmad/Work/AR&CO/Docs/Scope/AR_CO_Premium_Final_Proposal_updated.md`
+- `/Users/sobanahmad/Work/AR&CO/Docs/Scope/AR_CO_feature_breakdown_updated.md`
