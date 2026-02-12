@@ -34,6 +34,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
+import { MessageSquareWarning } from 'lucide-react';
 import {
   getComplaints,
   type ComplaintResponse,
@@ -112,6 +113,12 @@ export default function ClientComplaintsPage() {
     });
   };
 
+  // Redirect to signin when session is lost
+  if (!authLoading && !user) {
+    router.push('/auth/signin');
+    return null;
+  }
+
   if (authLoading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -185,11 +192,14 @@ export default function ClientComplaintsPage() {
                       ))
                     ) : complaints.length === 0 ? (
                       <TableRow>
-                        <TableCell
-                          colSpan={5}
-                          className="text-center text-muted-foreground py-8"
-                        >
-                          No complaints found. Click "New Complaint" to submit one.
+                        <TableCell colSpan={5} className="py-12">
+                          <div className="flex flex-col items-center justify-center text-center">
+                            <MessageSquareWarning className="h-12 w-12 text-muted-foreground/50 mb-4" />
+                            <h3 className="text-lg font-medium mb-1">No complaints found</h3>
+                            <p className="text-sm text-muted-foreground">
+                              You have not submitted any complaints yet. Click &quot;New Complaint&quot; to get started.
+                            </p>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ) : (

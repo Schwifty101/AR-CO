@@ -137,14 +137,14 @@ export class ServiceRegistrationsService {
   async getRegistrationStatus(
     dto: GuestStatusCheckData,
   ): Promise<GuestStatusResponse> {
-    this.logger.log(`Guest checking status for reference ${dto.ref}`);
+    this.logger.log(`Guest checking status for reference ${dto.referenceNumber}`);
 
     const adminClient = this.supabaseService.getAdminClient();
 
     const { data, error } = (await adminClient
       .from('service_registrations')
       .select('reference_number, status, payment_status, created_at')
-      .eq('reference_number', dto.ref)
+      .eq('reference_number', dto.referenceNumber)
       .eq('email', dto.email)
       .single()) as DbResult<{
       reference_number: string;
@@ -155,7 +155,7 @@ export class ServiceRegistrationsService {
 
     if (error || !data) {
       this.logger.warn(
-        `Registration ${dto.ref} not found or email mismatch`,
+        `Registration ${dto.referenceNumber} not found or email mismatch`,
         error,
       );
       throw new NotFoundException('Registration not found');

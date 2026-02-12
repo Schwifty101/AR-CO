@@ -13,9 +13,9 @@
  * Requires authentication and admin/staff user type
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import { UserPlus } from 'lucide-react';
+import { Search, UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -77,6 +77,11 @@ export default function AdminUsersPage() {
   const [error, setError] = useState<string | null>(null);
   const [deletingUserId, setDeletingUserId] = useState<string | null>(null);
 
+  // Filter state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [userTypeFilter, setUserTypeFilter] = useState('all');
+
   // Invite user dialog state
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
   const [isInviting, setIsInviting] = useState(false);
@@ -87,16 +92,42 @@ export default function AdminUsersPage() {
     phoneNumber: '',
   });
 
-  // Fetch users when page changes
+  // Debounce search input (300ms)
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    debounceTimerRef.current = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 300);
+    return () => {
+      if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+    };
+  }, [searchQuery]);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedSearch, userTypeFilter]);
+
+  // Fetch users when page or filters change
   useEffect(() => {
     async function loadUsers() {
       try {
         setError(null);
         setIsLoading(true);
+
+        // Build userTypes array based on filter selection
+        let userTypes: string[] | undefined;
+        if (userTypeFilter === 'all') {
+          userTypes = ['admin', 'staff', 'attorney'];
+        } else {
+          userTypes = [userTypeFilter];
+        }
+
         const data = await getUsers({
           page: currentPage,
           limit: PAGE_SIZE,
-          userTypes: ['admin', 'staff', 'attorney'],
+          userTypes,
+          search: debouncedSearch || undefined,
         });
         setUsers(data.users);
         setTotal(data.total);
@@ -110,7 +141,7 @@ export default function AdminUsersPage() {
     }
 
     loadUsers();
-  }, [currentPage]);
+  }, [currentPage, debouncedSearch, userTypeFilter]);
 
   const handleDeleteUser = async (userId: string, userName: string) => {
     if (
@@ -126,11 +157,15 @@ export default function AdminUsersPage() {
       await deleteUser(userId);
       toast.success('User deleted successfully');
 
-      // Reload users list
+      // Reload users list with current filters
+      const userTypes = userTypeFilter === 'all'
+        ? ['admin', 'staff', 'attorney']
+        : [userTypeFilter];
       const data = await getUsers({
         page: currentPage,
         limit: PAGE_SIZE,
-        userTypes: ['admin', 'staff', 'attorney'],
+        userTypes,
+        search: debouncedSearch || undefined,
       });
       setUsers(data.users);
       setTotal(data.total);
@@ -182,11 +217,15 @@ export default function AdminUsersPage() {
         phoneNumber: '',
       });
 
-      // Refresh users list
+      // Refresh users list with current filters
+      const userTypes = userTypeFilter === 'all'
+        ? ['admin', 'staff', 'attorney']
+        : [userTypeFilter];
       const data = await getUsers({
         page: currentPage,
         limit: PAGE_SIZE,
-        userTypes: ['admin', 'staff', 'attorney'],
+        userTypes,
+        search: debouncedSearch || undefined,
       });
       setUsers(data.users);
       setTotal(data.total);
@@ -336,6 +375,31 @@ export default function AdminUsersPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {/* Filter Bar */}
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center mb-6">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search by name..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+            <Select value={userTypeFilter} onValueChange={setUserTypeFilter}>
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder="Filter by type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Types</SelectItem>
+                <SelectItem value="admin">Admin</SelectItem>
+                <SelectItem value="staff">Staff</SelectItem>
+                <SelectItem value="attorney">Attorney</SelectItem>
+                <SelectItem value="client">Client</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
           {error ? (
             <div className="rounded-md bg-destructive/15 p-4 text-destructive">
               {error}

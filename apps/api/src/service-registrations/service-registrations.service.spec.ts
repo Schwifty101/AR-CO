@@ -224,7 +224,7 @@ describe('ServiceRegistrationsService', () => {
 
   describe('getRegistrationStatus', () => {
     const statusDto: GuestStatusCheckData = {
-      ref: 'REG-2026-0001',
+      referenceNumber: 'REG-2026-0001',
       email: 'ahmed@example.com',
     };
 

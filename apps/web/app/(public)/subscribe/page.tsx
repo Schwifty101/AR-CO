@@ -43,9 +43,15 @@ export default function SubscribePage() {
       return;
     }
 
+    // Only client accounts can subscribe
+    if (user?.userType !== 'client') {
+      toast.error('Only client accounts can subscribe. Please sign in with a client account.');
+      return;
+    }
+
     setSubscribing(true);
     try {
-      const { subscription, checkoutUrl } = await createSubscription();
+      const { checkoutUrl } = await createSubscription();
       toast.success('Subscription created! Redirecting to payment...');
       window.location.href = checkoutUrl;
     } catch (error) {

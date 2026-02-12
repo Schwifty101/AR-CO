@@ -195,7 +195,7 @@ export class ServiceRegistrationsController {
    *
    * @example
    * ```typescript
-   * GET /api/service-registrations/status?ref=REG-2026-0001&email=sara@example.com
+   * GET /api/service-registrations/status?referenceNumber=REG-2026-0001&email=sara@example.com
    *
    * Response:
    * {

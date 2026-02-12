@@ -105,6 +105,12 @@ export default function ServiceRegistrationDetailPage() {
     });
   };
 
+  // Redirect to signin when session is lost
+  if (!authLoading && !user) {
+    router.push('/auth/signin');
+    return null;
+  }
+
   if (authLoading) {
     return (
       <div className="flex items-center justify-center py-12">

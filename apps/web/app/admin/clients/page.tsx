@@ -13,10 +13,10 @@
  * Requires authentication and admin/staff user type
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { UserPlus } from 'lucide-react';
+import { Search, UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -75,6 +75,11 @@ export default function AdminClientsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Filter state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [companyTypeFilter, setCompanyTypeFilter] = useState('all');
+
   // Add client dialog state
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
@@ -88,13 +93,34 @@ export default function AdminClientsPage() {
     city: '',
   });
 
-  // Fetch clients when page changes
+  // Debounce search input (300ms)
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    debounceTimerRef.current = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 300);
+    return () => {
+      if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+    };
+  }, [searchQuery]);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedSearch, companyTypeFilter]);
+
+  // Fetch clients when page or filters change
   useEffect(() => {
     async function loadClients() {
       try {
         setError(null);
         setIsLoading(true);
-        const data = await getClients({ page: currentPage, limit: PAGE_SIZE });
+        const data = await getClients({
+          page: currentPage,
+          limit: PAGE_SIZE,
+          companyType: companyTypeFilter === 'all' ? undefined : companyTypeFilter as CompanyType,
+          search: debouncedSearch || undefined,
+        });
         setClients(data.clients);
         setTotal(data.total);
         setTotalPages(data.totalPages);
@@ -107,7 +133,7 @@ export default function AdminClientsPage() {
     }
 
     loadClients();
-  }, [currentPage]);
+  }, [currentPage, debouncedSearch, companyTypeFilter]);
 
   const handlePreviousPage = () => {
     if (currentPage > 1) {
@@ -158,8 +184,13 @@ export default function AdminClientsPage() {
         city: '',
       });
 
-      // Refresh clients list
-      const data = await getClients({ page: currentPage, limit: PAGE_SIZE });
+      // Refresh clients list with current filters
+      const data = await getClients({
+        page: currentPage,
+        limit: PAGE_SIZE,
+        companyType: companyTypeFilter === 'all' ? undefined : companyTypeFilter as CompanyType,
+        search: debouncedSearch || undefined,
+      });
       setClients(data.clients);
       setTotal(data.total);
       setTotalPages(data.totalPages);
@@ -367,6 +398,35 @@ export default function AdminClientsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {/* Filter Bar */}
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center mb-6">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search by name or company..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+            <Select value={companyTypeFilter} onValueChange={setCompanyTypeFilter}>
+              <SelectTrigger className="w-[220px]">
+                <SelectValue placeholder="Filter by company type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Company Types</SelectItem>
+                <SelectItem value={CompanyType.SOLE_PROPRIETORSHIP}>
+                  Sole Proprietorship
+                </SelectItem>
+                <SelectItem value={CompanyType.PARTNERSHIP}>Partnership</SelectItem>
+                <SelectItem value={CompanyType.LLC}>LLC</SelectItem>
+                <SelectItem value={CompanyType.CORPORATION}>Corporation</SelectItem>
+                <SelectItem value={CompanyType.NGO}>NGO</SelectItem>
+                <SelectItem value={CompanyType.OTHER}>Other</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
           {error ? (
             <div className="rounded-md bg-destructive/15 p-4 text-destructive">
               {error}

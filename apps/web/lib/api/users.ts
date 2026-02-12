@@ -34,11 +34,12 @@ import type {
 export type { UserProfile, UpdateUserProfileData, UpdateClientProfileData, UpdateAttorneyProfileData } from '@repo/shared';
 export { UserType, CompanyType } from '@repo/shared';
 
-/** Pagination parameters for the frontend (only page + limit) */
-export interface PaginationParams {
+/** Pagination and filter parameters for the users list endpoint */
+export interface UsersListParams {
   page?: number;
   limit?: number;
   userTypes?: string[];
+  search?: string;
 }
 
 /** Paginated users response shaped for frontend consumption */
@@ -192,7 +193,7 @@ export async function updateAttorneyProfile(
  * @throws Error if request fails or user lacks permissions
  */
 export async function getUsers(
-  params?: PaginationParams,
+  params?: UsersListParams,
 ): Promise<PaginatedUsers> {
   const token = await getSessionToken();
   const queryParams = new URLSearchParams();
@@ -201,6 +202,7 @@ export async function getUsers(
   if (params?.userTypes && params.userTypes.length > 0) {
     queryParams.set('userTypes', params.userTypes.join(','));
   }
+  if (params?.search) queryParams.set('search', params.search);
 
   const url = `/api/users${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
 
