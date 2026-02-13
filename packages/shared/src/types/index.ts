@@ -65,3 +65,16 @@ export type {
   ServiceResponse,
   PaginatedServicesResponse,
 } from './services.types';
+
+export type {
+  CreateCaseData,
+  UpdateCaseData,
+  UpdateCaseStatusData,
+  AssignAttorneyData,
+  CaseFilters,
+  CreateCaseActivityData,
+  CaseResponse,
+  CaseActivityResponse,
+  PaginatedCasesResponse,
+  PaginatedCaseActivitiesResponse,
+} from './cases.types';
