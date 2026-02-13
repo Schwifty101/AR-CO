@@ -9,6 +9,15 @@
 
 import type { INavItem, INavSection, INavCategory } from '../nav/types/nav.types'
 import { practiceAreas } from '@/app/(public)/practice-areas/practiceAreasData'
+import { facilitationServices } from '@/components/data/facilitationCenterData'
+import { overseasServices } from '@/components/data/overseasServicesData'
+import { womenDeskServices } from '@/components/data/womenDeskData'
+
+/** Generates a nav link from a service ID and its category */
+function svcLink(category: string, serviceId: string, services: { id: string; title: string }[]) {
+    const service = services.find(s => s.id === serviceId)
+    return { label: service?.title ?? serviceId, href: `/services/${category}/${serviceId}` }
+}
 
 /**
  * Main navigation items (top-level links)
@@ -18,8 +27,9 @@ export const NAV_ITEMS: INavItem[] = [
     { id: 'home', label: 'Home', href: '/', hasSubmenu: false },
     { id: 'team', label: 'Our Team', href: '/team', hasSubmenu: false },
     { id: 'practice-areas', label: 'Practice Areas', href: '', hasSubmenu: true },
-    { id: 'facilitation', label: 'Facilitation Centre', href: '', hasSubmenu: true },
-    { id: 'contact', label: 'Contact Us', href: '/contact', hasSubmenu: false },
+    { id: 'facilitation', label: 'Services', href: '', hasSubmenu: true },
+    { id: 'blogs', label: 'Blogs', href: '/blogs', hasSubmenu: false },
+    { id: 'about', label: 'About Us', href: '/#about', hasSubmenu: false },
 ]
 
 /**
@@ -29,12 +39,10 @@ export const NAV_ITEMS: INavItem[] = [
 export const SIDEPANEL_FOOTER_NAV_ITEMS: INavItem[] = [
     { id: 'home', label: 'Home', href: '/', hasSubmenu: false },
     { id: 'team', label: 'Our Team', href: '/team', hasSubmenu: false },
-    { id: 'about', label: 'About Us', href: '/about', hasSubmenu: false },
-    { id: 'case-studies', label: 'Case Studies', href: '/case-studies', hasSubmenu: false },
+    { id: 'about', label: 'About Us', href: '/#about', hasSubmenu: false },
+    { id: 'blogs', label: 'Blogs', href: '/blogs', hasSubmenu: false },
     { id: 'practice-areas', label: 'Practice Areas', href: '', hasSubmenu: true },
-    { id: 'facilitation', label: 'Facilitation Centre', href: '', hasSubmenu: true },
-    { id: 'contact', label: 'Contact Us', href: '/contact', hasSubmenu: false },
-    { id: 'blog', label: 'Blog', href: '/blog', hasSubmenu: false },
+    { id: 'facilitation', label: 'Services', href: '', hasSubmenu: true },
 ]
 
 /**
@@ -126,55 +134,43 @@ export const PRACTICE_AREAS_LIST = practiceAreas.map(pa => ({
 }))
 
 /**
- * Facilitation Centre navigation section data
+ * Services navigation section data
  */
 export const FACILITATION_DATA: INavSection = {
-    title: 'Facilitation Centre',
-    description: 'Legal facilitation services',
+    title: 'Services',
+    description: 'Legal facilitation & regulatory services',
     categories: [
         {
             title: 'Business & Corporate',
-            links: [
-                { label: 'NTN / STRN', href: '/facilitation/ntn-strn' },
-                { label: 'SECP Registration', href: '/facilitation/secp-registration' },
-                { label: 'Partnership Deeds', href: '/facilitation/partnership-deeds' },
-                { label: 'Agreements', href: '/facilitation/agreements' },
-                { label: 'Bank Documents', href: '/facilitation/bank-documents' },
-            ]
+            links: ['ntn-registration', 'strn-registration', 'secp-registration', 'agreement-drafting', 'import-export-license', 'chamber-registration']
+                .map(id => svcLink('facilitation', id, facilitationServices)),
         },
         {
-            title: 'Compliance Certificates',
-            links: [
-                { label: 'AML / CFT Certificate', href: '/facilitation/aml-cft' },
-                { label: 'Food Authority Licensing', href: '/facilitation/food-authority' },
-                { label: 'Environmental Clearance', href: '/facilitation/environmental' },
-                { label: 'Fire Compliance', href: '/facilitation/fire-compliance' },
-                { label: 'Labour Registration', href: '/facilitation/labour' },
-            ]
+            title: 'Compliance & Licensing',
+            links: ['pfa-license', 'drap-licensing', 'ihra-registration', 'ip-registration', 'tv-channel-registration', 'restaurant-license']
+                .map(id => svcLink('facilitation', id, facilitationServices)),
         },
         {
-            title: 'Real Estate Documentation',
-            links: [
-                { label: 'Property Transfer', href: '/facilitation/property-transfer' },
-                { label: 'Fard Verification', href: '/facilitation/fard-verification' },
-                { label: 'Rent Agreements', href: '/facilitation/rent-agreements' },
-            ]
+            title: 'Real Estate & Property',
+            links: ['property-transfer', 'tax-filing']
+                .map(id => svcLink('facilitation', id, facilitationServices)),
         },
         {
             title: 'Personal Certificates',
-            links: [
-                { label: 'Character Certificate', href: '/facilitation/character-certificate' },
-                { label: 'Succession Certificate', href: '/facilitation/succession-certificate' },
-            ]
+            links: ['succession-certificate', 'family-registration', 'child-registration']
+                .map(id => svcLink('facilitation', id, facilitationServices)),
         },
         {
             title: "Women's Legal Desk",
             highlight: true,
-            links: [
-                { label: 'Khula / Divorce', href: '/facilitation/khula-divorce' },
-                { label: 'Harassment Complaints', href: '/facilitation/harassment' },
-                { label: 'Inheritance Documentation', href: '/facilitation/inheritance' },
-            ]
+            links: ['harassment-cases', 'family-law', 'inheritance-succession']
+                .map(id => svcLink('women-desk', id, womenDeskServices)),
+        },
+        {
+            title: 'Overseas Pakistanis',
+            highlight: true,
+            links: ['property-verification', 'property-transaction', 'property-disputes', 'power-of-attorney', 'family-law', 'inheritance-succession', 'civil-litigation']
+                .map(id => svcLink('overseas', id, overseasServices)),
         },
     ]
 }
@@ -196,7 +192,7 @@ export const SUBMENU_DATA: Record<string, { title: string; categories: INavCateg
         categories: PRACTICE_AREAS_DATA.categories,
     },
     'facilitation': {
-        title: 'Facilitation Centre',
+        title: 'Services',
         categories: FACILITATION_DATA.categories,
     },
 }

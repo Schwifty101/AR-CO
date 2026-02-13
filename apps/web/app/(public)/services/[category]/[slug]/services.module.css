@@ -1,0 +1,374 @@
+/* ============================================================
+   Services Pages — Shared Styles
+   Editorial luxury aesthetic matching blogs
+   Espresso + Gold + Cream with Lora & Georgia fonts
+   ============================================================ */
+
+/* ─── Page Root ─── */
+.page {
+  min-height: 100vh;
+  background: var(--wood-espresso);
+  color: var(--heritage-cream);
+  position: relative;
+}
+
+/* ─── Atmospheric Overlays ─── */
+.pageGrain {
+  position: fixed;
+  inset: 0;
+  opacity: 0.25;
+  pointer-events: none;
+  z-index: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  background-size: 256px 256px;
+}
+
+.pageGlow {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(
+    ellipse 50% 60% at 50% 40%,
+    rgba(212, 175, 55, 0.04) 0%,
+    transparent 100%
+  );
+}
+
+.pageContent {
+  position: relative;
+  z-index: 1;
+}
+
+/* ============================================================
+   Typography — Editorial Luxury
+   ============================================================ */
+
+/* Display titles */
+.displayTitle {
+  font-family: 'Lora', Georgia, serif;
+  font-size: clamp(2.5rem, 6.5vw, 5.5rem);
+  font-weight: 300;
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+  color: var(--heritage-cream);
+  margin: 0;
+}
+
+.displayTitleEm {
+  font-style: italic;
+  font-weight: 400;
+  color: var(--heritage-gold);
+}
+
+/* Section titles */
+.sectionTitle {
+  font-family: 'Lora', Georgia, serif;
+  font-size: clamp(1.75rem, 4vw, 3rem);
+  font-weight: 300;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  color: var(--heritage-cream);
+  margin: 0;
+}
+
+/* Subsection titles */
+.subsectionTitle {
+  font-family: 'Lora', Georgia, serif;
+  font-size: clamp(1.25rem, 2.5vw, 1.85rem);
+  font-weight: 400;
+  line-height: 1.3;
+  letter-spacing: -0.02em;
+  color: var(--heritage-cream);
+  margin: 0;
+}
+
+/* Eyebrow labels */
+.eyebrow {
+  display: block;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 0.6rem;
+  font-weight: 500;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: var(--heritage-gold);
+  opacity: 0.7;
+}
+
+/* Body text */
+.bodyText {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: clamp(0.88rem, 1.15vw, 1.02rem);
+  line-height: 1.8;
+  color: rgba(249, 248, 246, 0.55);
+  letter-spacing: 0.01em;
+}
+
+.bodyTextLarge {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: clamp(0.95rem, 1.3vw, 1.12rem);
+  line-height: 1.75;
+  color: rgba(249, 248, 246, 0.6);
+}
+
+/* Supporting text */
+.supportText {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 0.75rem;
+  line-height: 1.6;
+  color: rgba(249, 248, 246, 0.35);
+  letter-spacing: 0.02em;
+}
+
+/* ============================================================
+   Layout & Spacing
+   ============================================================ */
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 4rem;
+}
+
+.containerNarrow {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 0 4rem;
+}
+
+.section {
+  padding: 4rem 0;
+}
+
+.sectionLarge {
+  padding: 6rem 0;
+}
+
+/* ============================================================
+   Dividers & Decorative Elements
+   ============================================================ */
+.goldRule {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    rgba(212, 175, 55, 0.3) 0%,
+    rgba(212, 175, 55, 0.08) 100%
+  );
+}
+
+.subtleRule {
+  width: 100%;
+  height: 1px;
+  background: rgba(249, 248, 246, 0.06);
+}
+
+.verticalAccent {
+  position: absolute;
+  width: 1px;
+  height: 100%;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(212, 175, 55, 0.15) 30%,
+    rgba(212, 175, 55, 0.15) 70%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+/* ============================================================
+   Buttons & Interactive Elements
+   ============================================================ */
+.buttonPrimary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 2rem;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--wood-espresso);
+  background: var(--heritage-gold);
+  border: none;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.buttonPrimary:hover {
+  gap: 1.25rem;
+  background: rgba(212, 175, 55, 0.9);
+  box-shadow: 0 8px 24px rgba(212, 175, 55, 0.2);
+}
+
+.buttonSecondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.75rem 1.75rem;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: rgba(249, 248, 246, 0.6);
+  background: transparent;
+  border: 1px solid rgba(249, 248, 246, 0.15);
+  border-radius: 2px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.buttonSecondary:hover {
+  border-color: var(--heritage-gold);
+  color: var(--heritage-gold);
+  gap: 1rem;
+}
+
+.linkText {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(249, 248, 246, 0.4);
+  text-decoration: none;
+  transition: color 0.3s ease, gap 0.3s ease;
+}
+
+.linkText:hover {
+  color: var(--heritage-gold);
+  gap: 0.75rem;
+}
+
+/* ============================================================
+   Cards & Containers
+   ============================================================ */
+.card {
+  position: relative;
+  padding: 2.5rem 2rem;
+  border: 1px solid rgba(249, 248, 246, 0.08);
+  background: rgba(26, 17, 10, 0.3);
+  backdrop-filter: blur(8px);
+  transition: all 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.card:hover {
+  border-color: rgba(212, 175, 55, 0.25);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+}
+
+.cardTopBand {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, var(--heritage-gold), rgba(212, 175, 55, 0.2));
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.5s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.card:hover .cardTopBand {
+  transform: scaleX(1);
+}
+
+/* ============================================================
+   Navigation Breadcrumb
+   ============================================================ */
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.breadcrumbItem {
+  color: rgba(249, 248, 246, 0.3);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.breadcrumbItem:hover {
+  color: var(--heritage-gold);
+}
+
+.breadcrumbItemActive {
+  color: var(--heritage-gold);
+  font-weight: 500;
+}
+
+.breadcrumbSeparator {
+  color: rgba(249, 248, 246, 0.15);
+}
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+@media (max-width: 1024px) {
+  .container,
+  .containerNarrow {
+    padding-left: 2.5rem;
+    padding-right: 2.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .container,
+  .containerNarrow {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+
+  .section {
+    padding: 3rem 0;
+  }
+
+  .sectionLarge {
+    padding: 4rem 0;
+  }
+
+  .buttonPrimary,
+  .buttonSecondary {
+    font-size: 0.68rem;
+    padding: 0.75rem 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .container,
+  .containerNarrow {
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+  }
+
+  .section {
+    padding: 2.5rem 0;
+  }
+
+  .sectionLarge {
+    padding: 3.5rem 0;
+  }
+}
+
+/* ─── Reduced Motion ─── */
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .buttonPrimary,
+  .buttonSecondary,
+  .linkText,
+  .cardTopBand {
+    transition: none !important;
+  }
+}

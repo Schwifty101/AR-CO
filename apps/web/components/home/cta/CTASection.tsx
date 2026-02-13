@@ -1,6 +1,7 @@
 'use client'
 
 import ScrollRevealText from '@/components/shared/animations/ScrollRevealText'
+import { useConsultationOverlay } from '@/components/consultation'
 import styles from './CTASection.module.css'
 
 interface Testimonial {
@@ -68,6 +69,7 @@ const testimonials: Testimonial[] = [
 ]
 
 export default function CTASection() {
+  const { openOverlay } = useConsultationOverlay()
   // All animations removed for simpler, static presentation
   // Individual section animations (ScrollRevealText) remain intact
 
@@ -161,7 +163,7 @@ export default function CTASection() {
           </ScrollRevealText>
         </div>
 
-        <button className={styles.ctaButton}>
+        <button className={styles.ctaButton} onClick={openOverlay}>
           BOOK CONSULTATION
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
             <path
