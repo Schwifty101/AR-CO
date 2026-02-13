@@ -88,19 +88,23 @@ export default function PracticeAreasOverlay({ isOpen, onClose }: PracticeAreasO
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.6 }}
-              className="mb-12 md:mb-16"
+              className="mb-4 md:mb-6"
             >
               <span
                 className="text-xs md:text-sm font-medium uppercase tracking-[0.2em] mb-4 block"
-                style={{ color: 'var(--heritage-gold)' }}
+                style={{
+                  color: 'var(--heritage-gold)',
+                  fontFamily: "'Georgia', 'Times New Roman', serif",
+                }}
               >
                 (Explore Our Expertise)
               </span>
               <h1
                 className="uppercase"
                 style={{
-                  fontSize: 'clamp(3rem, 12vw, 10rem)',
-                  fontWeight: 100,
+                  fontFamily: "'Lora', Georgia, serif",
+                  fontSize: 'clamp(2rem, 8vw, 5.5rem)',
+                  fontWeight: 300,
                   lineHeight: 0.9,
                   letterSpacing: '-0.04em',
                   color: 'var(--heritage-cream)',
@@ -133,14 +137,22 @@ export default function PracticeAreasOverlay({ isOpen, onClose }: PracticeAreasO
                     <div className="flex items-center justify-between">
                       <div className="flex items-baseline gap-4">
                         <span
-                          className="text-sm font-mono transition-colors duration-300 group-hover:text-[var(--heritage-gold)]"
-                          style={{ color: 'rgba(249, 248, 246, 0.4)' }}
+                          className="text-sm transition-colors duration-300 group-hover:text-[var(--heritage-gold)]"
+                          style={{
+                            color: 'rgba(249, 248, 246, 0.4)',
+                            fontFamily: "'Georgia', 'Times New Roman', serif",
+                            letterSpacing: '0.1em',
+                          }}
                         >
                           {String(index + 1).padStart(2, '0')}
                         </span>
                         <span
-                          className="text-lg md:text-xl font-medium transition-colors duration-300 group-hover:text-[var(--heritage-gold)]"
-                          style={{ color: 'var(--heritage-cream)' }}
+                          className="text-lg md:text-xl transition-colors duration-300 group-hover:text-[var(--heritage-gold)]"
+                          style={{
+                            color: 'var(--heritage-cream)',
+                            fontFamily: "'Lora', Georgia, serif",
+                            fontWeight: 400,
+                          }}
                         >
                           {area.title}
                         </span>

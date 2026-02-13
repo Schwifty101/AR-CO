@@ -76,7 +76,7 @@ export default function TeamPhilosophyAbstract({
                         transition={{ duration: 0.6 }}
                     >
                         <div className="h-[1px] w-12 bg-heritage-gold" />
-                        <span className="text-xs font-mono uppercase tracking-widest text-heritage-gold">
+                        <span className="text-xs font-medium uppercase tracking-widest text-heritage-gold" style={{ fontFamily: "'Georgia', 'Times New Roman', serif", letterSpacing: '0.4em' }}>
                             {title}
                         </span>
                     </motion.div>
@@ -87,7 +87,7 @@ export default function TeamPhilosophyAbstract({
                         initial={{ opacity: 0, y: 30 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.8, delay: 0.2 }}
-                        style={{ color: 'var(--heritage-cream)' }}
+                        style={{ fontFamily: "'Lora', Georgia, serif", letterSpacing: '-0.04em', color: 'var(--heritage-cream)' }}
                     >
                         {statement.split(',').map((part, i) => (
                             <span key={i} className="block mb-2">
@@ -103,7 +103,7 @@ export default function TeamPhilosophyAbstract({
                         whileInView={{ opacity: 1 }}
                         transition={{ duration: 0.8, delay: 0.4 }}
                     >
-                        <p className="text-lg leading-relaxed font-light max-w-xl" style={{ color: 'var(--heritage-cream)', opacity: 0.6 }}>
+                        <p className="text-lg leading-relaxed font-light max-w-xl" style={{ fontFamily: "'Georgia', 'Times New Roman', serif", color: 'var(--heritage-cream)', opacity: 0.6 }}>
                             Our practice is built on the understanding that true legal excellence requires more than just knowledge—it demands creativity, empathy, and an unwavering commitment to the human element of law.
                         </p>
                     </motion.div>

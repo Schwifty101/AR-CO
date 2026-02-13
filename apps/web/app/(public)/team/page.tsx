@@ -45,10 +45,12 @@ export default function TeamPage() {
 
             {/* 1. Hero Section - Massive Typography & Background */}
             <TeamHero
-                brandStatement="MEET THE TEAM BEHIND THE EXCELLENCE"
+                brandStatement="OUR TEAM"
                 subtitle=""
                 backgroundImage="/our_team/Group_photo.webp"
                 className="text-heritage-cream relative z-10"
+                textPosition="bottom"
+                textOpacity={0.25}
             />
 
             {/* 1.5 Transition Thread - The Collective */}
@@ -92,14 +94,14 @@ export default function TeamPage() {
             </div>
 
             {/* 4. Recognition Section */}
-            <section className="px-4 md:px-8 lg:px-16 mb-0 max-w-[1600px] mx-auto pb-24 relative z-10">
+            <section className="px-4 md:px-8 lg:px-16 mb-0 max-w-[1600px] mx-auto pb-24 relative z-10" style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}>
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
                     {/* Left: Section Label & Intro */}
                     <div className="lg:col-span-3">
-                        <div className="text-[10px] md:text-xs font-bold uppercase tracking-widest text-heritage-gold mb-8">
+                        <div className="text-[10px] md:text-xs font-medium uppercase tracking-widest text-heritage-gold mb-8" style={{ letterSpacing: '0.4em' }}>
                             (Recognition)
                         </div>
-                        <p className="text-sm font-medium leading-relaxed mb-6 text-heritage-cream/80">
+                        <p className="text-sm font-normal leading-relaxed mb-6 text-heritage-cream/80">
                             Awards and media recognition aren't the goal, but they remind us that thoughtful legal practice leaves a lasting impact.
                         </p>
                     </div>
@@ -108,17 +110,17 @@ export default function TeamPage() {
                     <div className="lg:col-span-9">
                         {/* AWARDS TABLE */}
                         <div className="mb-16">
-                            <div className="text-[10px] md:text-xs font-bold uppercase tracking-widest text-heritage-gold mb-8">
+                            <div className="text-[10px] md:text-xs font-medium uppercase tracking-widest text-heritage-gold mb-8" style={{ letterSpacing: '0.4em' }}>
                                 (Awards)
                             </div>
                             <div className="border-t border-heritage-gold/20">
-                                <div className="grid grid-cols-12 py-4 text-[10px] font-bold uppercase tracking-wider text-heritage-cream/40">
+                                <div className="grid grid-cols-12 py-4 text-[10px] font-medium uppercase tracking-wider text-heritage-cream/40">
                                     <div className="col-span-2">Year</div>
                                     <div className="col-span-4">Organization</div>
                                     <div className="col-span-6">Award</div>
                                 </div>
                                 {AWARDS.map((item, i) => (
-                                    <div key={i} className="grid grid-cols-12 py-6 border-t border-heritage-gold/10 text-sm font-medium group hover:bg-heritage-gold/5 transition-colors cursor-default">
+                                    <div key={i} className="grid grid-cols-12 py-6 border-t border-heritage-gold/10 text-sm font-normal group hover:bg-heritage-gold/5 transition-colors cursor-default">
                                         <div className="col-span-2 text-heritage-cream/60">{item.year}</div>
                                         <div className="col-span-4 text-heritage-cream">{item.name}</div>
                                         <div className="col-span-6 text-heritage-cream/80">{item.award}</div>
@@ -129,17 +131,17 @@ export default function TeamPage() {
 
                         {/* PUBLICATIONS TABLE */}
                         <div>
-                            <div className="text-[10px] md:text-xs font-bold uppercase tracking-widest text-heritage-gold mb-8">
+                            <div className="text-[10px] md:text-xs font-medium uppercase tracking-widest text-heritage-gold mb-8" style={{ letterSpacing: '0.4em' }}>
                                 (Publications)
                             </div>
                             <div className="border-t border-heritage-gold/20">
-                                <div className="grid grid-cols-12 py-4 text-[10px] font-bold uppercase tracking-wider text-heritage-cream/40">
+                                <div className="grid grid-cols-12 py-4 text-[10px] font-medium uppercase tracking-wider text-heritage-cream/40">
                                     <div className="col-span-2">Year</div>
                                     <div className="col-span-4">Publication</div>
                                     <div className="col-span-6">Article</div>
                                 </div>
                                 {PUBLICATIONS.map((pub, i) => (
-                                    <div key={i} className="grid grid-cols-12 py-6 border-t border-heritage-gold/10 text-sm font-medium group hover:bg-heritage-gold/5 transition-colors cursor-default">
+                                    <div key={i} className="grid grid-cols-12 py-6 border-t border-heritage-gold/10 text-sm font-normal group hover:bg-heritage-gold/5 transition-colors cursor-default">
                                         <div className="col-span-2 text-heritage-cream/60">{pub.year}</div>
                                         <div className="col-span-4 text-heritage-cream">{pub.publication}</div>
                                         <div className="col-span-6 text-heritage-cream/80">{pub.article}</div>

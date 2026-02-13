@@ -130,38 +130,11 @@
   align-items: baseline;
   padding: 2.75rem 0;
   border-bottom: 1px solid rgba(249, 248, 246, 0.06);
-  cursor: pointer;
   overflow: hidden;
-  transition: border-color 0.4s ease;
 }
 
 .serviceRow:first-child {
   border-top: 1px solid rgba(249, 248, 246, 0.06);
-}
-
-.serviceRow:hover {
-  border-color: rgba(212, 175, 55, 0.2);
-}
-
-/* Hover background fill — slides in from left, pure CSS for performance */
-.rowFill {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    90deg,
-    rgba(212, 175, 55, 0.06) 0%,
-    rgba(212, 175, 55, 0.02) 60%,
-    transparent 100%
-  );
-  transform: scaleX(0);
-  transform-origin: left center;
-  pointer-events: none;
-  will-change: transform;
-  transition: transform 0.5s cubic-bezier(0.32, 0.72, 0, 1);
-}
-
-.serviceRow:hover .rowFill {
-  transform: scaleX(1);
 }
 
 /* ─── Roman Numeral ─── */
@@ -175,11 +148,6 @@
   color: var(--heritage-gold);
   opacity: 0.4;
   padding-top: 0.4rem;
-  transition: opacity 0.4s ease;
-}
-
-.serviceRow:hover .rowNumber {
-  opacity: 1;
 }
 
 /* ─── Row Title — The dominant typographic element ─── */
@@ -193,13 +161,7 @@
   letter-spacing: -0.025em;
   color: var(--heritage-cream);
   margin: 0;
-  padding-right: 5rem; /* space for arrow */
-  transition: color 0.4s ease, letter-spacing 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.serviceRow:hover .rowTitle {
-  color: var(--heritage-gold);
-  letter-spacing: 0.01em;
+  padding-right: 2rem;
 }
 
 /* ─── Headline Description ─── */
@@ -213,43 +175,8 @@
   color: rgba(249, 248, 246, 0.4);
   margin: 0.75rem 0 0;
   max-width: 700px;
-  transition: color 0.4s ease;
 }
 
-.serviceRow:hover .rowHeadline {
-  color: rgba(249, 248, 246, 0.65);
-}
-
-/* ─── Arrow icon (top-right of row) ─── */
-.rowArrow {
-  position: absolute;
-  right: 0;
-  top: 2.75rem;
-  width: 3rem;
-  height: 3rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--heritage-gold);
-  opacity: 0;
-  transform: translate(-8px, 4px);
-  transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.rowArrow svg {
-  width: 22px;
-  height: 22px;
-}
-
-.serviceRow:hover .rowArrow {
-  opacity: 1;
-  transform: translate(0, 0);
-}
-
-/* ─── CTA text beneath headline ─── */
-.rowCta {
-  display: none;
-}
 
 /* ============================================================
    Bottom CTA Area
@@ -381,33 +308,7 @@
   }
 
   .rowTitle {
-    padding-right: 2.5rem;
-  }
-
-  .rowArrow {
-    width: 2rem;
-    height: 2rem;
-    top: 2rem;
-  }
-
-  .rowArrow svg {
-    width: 18px;
-    height: 18px;
-  }
-
-  /* Always show CTA on mobile since no hover */
-  .rowCta {
-    display: block;
-    opacity: 0.5;
-    height: auto;
-    margin-top: 0.6rem;
-    font-family: 'Georgia', 'Times New Roman', serif;
-    font-size: 0.7rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--heritage-gold);
-    grid-column: 2;
-    grid-row: 3;
+    padding-right: 1rem;
   }
 
   .grainOverlay {
@@ -447,34 +348,17 @@
   .rowTitle {
     grid-column: 1;
     grid-row: 2;
-    padding-right: 2rem;
+    padding-right: 1rem;
   }
 
   .rowHeadline {
     grid-column: 1;
     grid-row: 3;
   }
-
-  .rowCta {
-    grid-column: 1;
-    grid-row: 4;
-  }
-
-  .rowArrow {
-    top: auto;
-    bottom: 2rem;
-  }
 }
 
 /* ─── Reduced Motion ─── */
 @media (prefers-reduced-motion: reduce) {
-  .serviceRow,
-  .rowFill,
-  .rowTitle,
-  .rowNumber,
-  .rowHeadline,
-  .rowArrow,
-  .rowCta,
   .ctaButton::before {
     transition: none !important;
   }

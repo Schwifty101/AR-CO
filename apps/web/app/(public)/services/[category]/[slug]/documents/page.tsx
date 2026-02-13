@@ -141,16 +141,76 @@ export default function ServiceDocuments({ params }: PageProps) {
 
   return (
     <div className="px-4 md:px-12 lg:px-20 pt-2 md:pt-4 pb-16 md:pb-24">
+      <style jsx global>{`
+        .doc-scrollbar::-webkit-scrollbar {
+          width: 4px;
+        }
+        .doc-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .doc-scrollbar::-webkit-scrollbar-thumb {
+          background: rgba(212, 175, 55, 0.15);
+          border-radius: 2px;
+        }
+        .doc-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: rgba(212, 175, 55, 0.25);
+        }
+        .doc-scrollbar {
+          scrollbar-width: thin;
+          scrollbar-color: rgba(212, 175, 55, 0.15) transparent;
+        }
+      `}</style>
       {/* Main container */}
       <div
         className="relative rounded-xl overflow-hidden border"
         style={{
-          borderColor: 'rgba(249, 248, 246, 0.08)',
+          background: '#110b06',
+          borderColor: 'rgba(212, 175, 55, 0.12)',
           boxShadow: '0 0 40px rgba(201, 169, 106, 0.12), 0 0 80px rgba(201, 169, 106, 0.06), 0 20px 60px rgba(0, 0, 0, 0.3)',
         }}
       >
+        {/* Grain texture overlay */}
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            opacity: 0.3,
+            pointerEvents: 'none',
+            zIndex: 0,
+            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E")`,
+            backgroundSize: '256px 256px',
+          }}
+        />
+        {/* Corner decorations */}
+        <div
+          style={{
+            position: 'absolute',
+            top: '12px',
+            left: '12px',
+            width: '24px',
+            height: '24px',
+            borderTop: '1px solid rgba(212, 175, 55, 0.2)',
+            borderLeft: '1px solid rgba(212, 175, 55, 0.2)',
+            zIndex: 1,
+            pointerEvents: 'none',
+          }}
+        />
+        <div
+          style={{
+            position: 'absolute',
+            bottom: '12px',
+            right: '12px',
+            width: '24px',
+            height: '24px',
+            borderBottom: '1px solid rgba(212, 175, 55, 0.2)',
+            borderRight: '1px solid rgba(212, 175, 55, 0.2)',
+            zIndex: 1,
+            pointerEvents: 'none',
+          }}
+        />
+
         {/* Progress bar at top */}
-        <div className="relative h-[2px] w-full" style={{ background: 'rgba(249, 248, 246, 0.06)' }}>
+        <div className="relative h-[2px] w-full" style={{ background: 'rgba(249, 248, 246, 0.06)', zIndex: 2 }}>
           <motion.div
             className="absolute left-0 top-0 h-full"
             style={{ background: 'var(--heritage-gold)' }}
@@ -160,23 +220,26 @@ export default function ServiceDocuments({ params }: PageProps) {
         </div>
 
         {/* Step counter */}
-        <div className="px-6 md:px-12 pt-5 pb-2 flex items-center justify-between">
+        <div className="px-6 md:px-12 pt-5 pb-2 flex items-center justify-between" style={{ position: 'relative', zIndex: 2 }}>
           <span
             className="text-xs uppercase font-medium"
             style={{
               fontFamily: "'Georgia', 'Times New Roman', serif",
-              fontSize: '0.7rem',
-              letterSpacing: '0.15em',
+              fontSize: '0.6rem',
+              letterSpacing: '0.3em',
               color: 'var(--heritage-gold)',
-              opacity: 0.7
+              opacity: 0.55
             }}
           >
             Document {currentIndex + 1} of {total}
           </span>
           {!currentDoc.required && (
             <span
-              className="text-xs uppercase tracking-wider px-2 py-0.5 rounded-full border"
+              className="text-xs uppercase tracking-wider px-2 py-0.5 border"
               style={{
+                fontFamily: "'Georgia', 'Times New Roman', serif",
+                fontSize: '0.65rem',
+                letterSpacing: '0.12em',
                 color: 'rgba(249, 248, 246, 0.4)',
                 borderColor: 'rgba(249, 248, 246, 0.12)',
               }}
@@ -187,7 +250,7 @@ export default function ServiceDocuments({ params }: PageProps) {
         </div>
 
         {/* Animated content area — fixed height */}
-        <div className="relative overflow-hidden" style={{ height: '480px' }}>
+        <div className="relative overflow-hidden" style={{ height: '480px', position: 'relative', zIndex: 2 }}>
           <AnimatePresence mode="wait" custom={direction}>
             <motion.div
               key={currentDoc.id}
@@ -200,7 +263,7 @@ export default function ServiceDocuments({ params }: PageProps) {
               className="absolute inset-0 grid grid-cols-1 md:grid-cols-2"
             >
               {/* LEFT SIDE — Document Info */}
-              <div className="relative px-6 md:px-12 pb-8 pt-2 flex flex-col overflow-hidden" style={{ height: '480px' }}>
+              <div className="relative px-6 md:px-12 pb-8 pt-2 flex flex-col overflow-hidden doc-scrollbar" style={{ height: '480px' }}>
                 {/* Document name */}
                 <motion.h2
                   className="uppercase mb-4"
@@ -322,18 +385,31 @@ export default function ServiceDocuments({ params }: PageProps) {
                   {!isFirst && (
                     <button
                       onClick={goBack}
-                      className="inline-flex items-center gap-2 uppercase font-medium transition-all duration-300 hover:gap-3"
+                      className="inline-flex items-center gap-2 transition-all duration-300"
                       style={{
+                        padding: '0.65rem 1.25rem',
+                        background: 'none',
+                        border: '1px solid rgba(249, 248, 246, 0.1)',
+                        color: 'rgba(249, 248, 246, 0.5)',
                         fontFamily: "'Georgia', 'Times New Roman', serif",
-                        fontSize: '0.7rem',
+                        fontSize: '0.72rem',
                         letterSpacing: '0.12em',
-                        color: 'rgba(249, 248, 246, 0.5)'
+                        textTransform: 'uppercase',
+                        cursor: 'pointer',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.borderColor = 'rgba(249, 248, 246, 0.25)'
+                        e.currentTarget.style.color = 'rgba(249, 248, 246, 0.75)'
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.borderColor = 'rgba(249, 248, 246, 0.1)'
+                        e.currentTarget.style.color = 'rgba(249, 248, 246, 0.5)'
                       }}
                     >
                       <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M7 16l-4-4m0 0l4-4m-4 4h18" />
                       </svg>
-                      Back
+                      <span>Back</span>
                     </button>
                   )}
                 </div>
@@ -352,7 +428,7 @@ export default function ServiceDocuments({ params }: PageProps) {
               />
 
               {/* RIGHT SIDE — Upload Area */}
-              <div className="px-6 md:px-12 pb-8 pt-2 flex flex-col" style={{ height: '480px' }}>
+              <div className="px-6 md:px-12 pb-8 pt-2 flex flex-col" style={{ height: '480px', background: 'rgba(0, 0, 0, 0.15)' }}>
                 {/* Drop zone */}
                 <motion.div
                   initial={{ opacity: 0, scale: 0.95 }}
@@ -362,10 +438,11 @@ export default function ServiceDocuments({ params }: PageProps) {
                   onDrop={handleDrop}
                   onDragOver={handleDragOver}
                   onDragLeave={handleDragLeave}
-                  className="rounded-lg border-2 border-dashed p-8 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-200"
+                  className="border-2 border-dashed p-8 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-300"
                   style={{
                     borderColor: isDragging ? 'var(--heritage-gold)' : 'rgba(249, 248, 246, 0.12)',
-                    background: isDragging ? 'rgba(201, 169, 106, 0.05)' : 'transparent',
+                    background: isDragging ? 'rgba(212, 175, 55, 0.03)' : 'rgba(249, 248, 246, 0.01)',
+                    borderRadius: '4px',
                     minHeight: '160px',
                   }}
                 >
@@ -418,15 +495,18 @@ export default function ServiceDocuments({ params }: PageProps) {
 
                 {/* Uploaded files list */}
                 {currentFiles.length > 0 && (
-                  <div className="mt-4 space-y-1 flex-1 overflow-y-auto" style={{ maxHeight: '200px' }}>
+                  <div className="mt-4 space-y-2 flex-1 overflow-y-auto doc-scrollbar" style={{ maxHeight: '200px' }}>
                     {currentFiles.map((uploaded, idx) => (
                       <div
                         key={`${uploaded.file.name}-${idx}`}
-                        className="flex items-center gap-2 rounded px-2 py-1 border"
+                        className="flex items-center gap-3 px-3 py-2 border transition-colors duration-200"
                         style={{
                           background: 'rgba(249, 248, 246, 0.02)',
                           borderColor: 'rgba(249, 248, 246, 0.08)',
+                          borderRadius: '2px',
                         }}
+                        onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'rgba(212, 175, 55, 0.2)' }}
+                        onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(249, 248, 246, 0.08)' }}
                       >
                         {/* Preview thumbnail or file icon */}
                         {uploaded.previewUrl ? (
@@ -483,21 +563,33 @@ export default function ServiceDocuments({ params }: PageProps) {
                 )}
 
                 {/* Bottom buttons — Skip & Next */}
-                <div className="mt-auto pt-6 flex items-center justify-end gap-3">
+                <div className="mt-auto pt-6 flex items-center justify-end gap-3" style={{ borderTop: '1px solid rgba(249, 248, 246, 0.06)', paddingTop: '1.5rem' }}>
                   {/* Skip (only for optional docs) */}
                   {!currentDoc.required && !isLast && (
                     <button
                       onClick={goNext}
-                      className="inline-flex items-center gap-2 px-5 py-2 font-medium uppercase rounded-full border transition-all duration-300 hover:border-[var(--heritage-gold)]"
+                      className="inline-flex items-center gap-2 transition-all duration-300"
                       style={{
-                        fontFamily: "'Georgia', 'Times New Roman', serif",
-                        fontSize: '0.7rem',
-                        letterSpacing: '0.12em',
+                        padding: '0.65rem 1.25rem',
+                        background: 'none',
+                        border: '1px solid rgba(249, 248, 246, 0.1)',
                         color: 'rgba(249, 248, 246, 0.5)',
-                        borderColor: 'rgba(249, 248, 246, 0.15)',
+                        fontFamily: "'Georgia', 'Times New Roman', serif",
+                        fontSize: '0.72rem',
+                        letterSpacing: '0.12em',
+                        textTransform: 'uppercase',
+                        cursor: 'pointer',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.borderColor = 'var(--heritage-gold)'
+                        e.currentTarget.style.color = 'var(--heritage-gold)'
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.borderColor = 'rgba(249, 248, 246, 0.1)'
+                        e.currentTarget.style.color = 'rgba(249, 248, 246, 0.5)'
                       }}
                     >
-                      Skip
+                      <span>Skip</span>
                     </button>
                   )}
 
@@ -505,17 +597,29 @@ export default function ServiceDocuments({ params }: PageProps) {
                   {isLast ? (
                     <Link
                       href={`/services/${category}/${slug}/form`}
-                      className="inline-flex items-center gap-2 px-6 py-2 font-medium uppercase rounded-full transition-all duration-300 hover:gap-4"
+                      className="inline-flex items-center gap-2 transition-all duration-300"
                       style={{
+                        padding: '0.7rem 1.5rem',
+                        background: 'var(--heritage-gold)',
+                        border: 'none',
+                        color: 'var(--wood-espresso)',
                         fontFamily: "'Georgia', 'Times New Roman', serif",
                         fontSize: '0.72rem',
-                        fontWeight: 500,
-                        letterSpacing: '0.15em',
-                        background: 'var(--heritage-gold)',
-                        color: 'var(--wood-espresso)',
+                        fontWeight: 600,
+                        letterSpacing: '0.12em',
+                        textTransform: 'uppercase',
+                        textDecoration: 'none',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = '#c9a430'
+                        e.currentTarget.style.boxShadow = '0 4px 20px rgba(212, 175, 55, 0.25)'
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'var(--heritage-gold)'
+                        e.currentTarget.style.boxShadow = 'none'
                       }}
                     >
-                      Continue
+                      <span>Continue</span>
                       <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
                       </svg>
@@ -523,17 +627,29 @@ export default function ServiceDocuments({ params }: PageProps) {
                   ) : (
                     <button
                       onClick={goNext}
-                      className="inline-flex items-center gap-2 px-6 py-2 font-medium uppercase rounded-full transition-all duration-300 hover:gap-4"
+                      className="inline-flex items-center gap-2 transition-all duration-300"
                       style={{
+                        padding: '0.7rem 1.5rem',
+                        background: 'var(--heritage-gold)',
+                        border: 'none',
+                        color: 'var(--wood-espresso)',
                         fontFamily: "'Georgia', 'Times New Roman', serif",
                         fontSize: '0.72rem',
-                        fontWeight: 500,
-                        letterSpacing: '0.15em',
-                        background: 'var(--heritage-gold)',
-                        color: 'var(--wood-espresso)',
+                        fontWeight: 600,
+                        letterSpacing: '0.12em',
+                        textTransform: 'uppercase',
+                        cursor: 'pointer',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = '#c9a430'
+                        e.currentTarget.style.boxShadow = '0 4px 20px rgba(212, 175, 55, 0.25)'
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'var(--heritage-gold)'
+                        e.currentTarget.style.boxShadow = 'none'
                       }}
                     >
-                      Next
+                      <span>Next</span>
                       <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
                       </svg>
