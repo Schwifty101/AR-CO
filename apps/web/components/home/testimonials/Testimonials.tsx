@@ -4,6 +4,7 @@ import { useRef } from "react"
 import gsap from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
 import { useGSAP } from "@gsap/react"
+import { pauseScroll, resumeScroll, getSmoother } from "../../SmoothScroll"
 import styles from "./Testimonials.module.css"
 
 // Register GSAP plugins
@@ -196,6 +197,37 @@ export default function Testimonials() {
         }
       }
     )
+
+    // Auto-pause when testimonials section is fully in frame
+    let hasTriggeredPause = false
+
+    ScrollTrigger.create({
+      trigger: section,
+      start: "top bottom",
+      end: "bottom top",
+      onLeave: () => { hasTriggeredPause = false },
+      onLeaveBack: () => { hasTriggeredPause = false },
+    })
+
+    ScrollTrigger.create({
+      trigger: section,
+      start: "top top",
+      end: "top top",
+      onEnter: () => {
+        if (!hasTriggeredPause) {
+          hasTriggeredPause = true
+          pauseScroll()
+          setTimeout(() => {
+            // Capture position before resuming to kill accumulated momentum
+            const smoother = getSmoother()
+            const currentPos = smoother?.scrollTop() ?? 0
+            resumeScroll()
+            // Snap back to where we paused so momentum doesn't carry over
+            smoother?.scrollTo(currentPos, false)
+          }, 800)
+        }
+      },
+    })
 
     // Calculate scroll distance based on column heights
     const scrollDistance = column1.scrollHeight * 0.6

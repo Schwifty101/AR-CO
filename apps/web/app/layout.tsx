@@ -5,11 +5,12 @@ import { AuthProvider } from "@/lib/auth/auth-context"
 import { PracticeAreasProvider } from "@/components/practice-areas"
 import PracticeAreasOverlayWrapper from "@/components/practice-areas/PracticeAreasOverlayWrapper"
 import { FacilitationProvider, FacilitationOverlayWrapper } from "@/components/facilitation"
+import { ConsultationProvider, ConsultationOverlayWrapper } from "@/components/consultation"
 import "./globals.css"
 
 export const metadata: Metadata = {
   title: "AR&CO Law Firm | Expert Legal Services",
-  description: "Professional legal services and facilitation centre in Pakistan. Expert corporate law, tax law, immigration, labour law, IP, real estate, litigation, and contract services.",
+  description: "Professional legal services and services in Pakistan. Expert corporate law, tax law, immigration, labour law, IP, real estate, litigation, and contract services.",
   generator: 'v0.app',
   keywords: ['law firm', 'legal services', 'Pakistan law', 'corporate law', 'tax law', 'immigration law', 'AR&CO'],
   authors: [{ name: 'AR&CO Law Associates' }],
@@ -18,7 +19,7 @@ export const metadata: Metadata = {
   metadataBase: new URL('https://arco-law.com'),
   openGraph: {
     title: 'AR&CO Law Firm | Expert Legal Services',
-    description: 'Professional legal services and facilitation centre in Pakistan',
+    description: 'Professional legal services and services in Pakistan',
     type: 'website',
     locale: 'en_US',
     url: 'https://arco-law.com',
@@ -27,7 +28,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'AR&CO Law Firm | Expert Legal Services',
-    description: 'Professional legal services and facilitation centre in Pakistan',
+    description: 'Professional legal services and services in Pakistan',
   },
   icons: {
     icon: [
@@ -52,9 +53,12 @@ export default function RootLayout({
         <AuthProvider>
           <PracticeAreasProvider>
             <FacilitationProvider>
-              {children}
-              <PracticeAreasOverlayWrapper />
-              <FacilitationOverlayWrapper />
+              <ConsultationProvider>
+                {children}
+                <PracticeAreasOverlayWrapper />
+                <FacilitationOverlayWrapper />
+                <ConsultationOverlayWrapper />
+              </ConsultationProvider>
             </FacilitationProvider>
           </PracticeAreasProvider>
         </AuthProvider>

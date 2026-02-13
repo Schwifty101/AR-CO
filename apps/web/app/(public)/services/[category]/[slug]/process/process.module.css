@@ -1,0 +1,342 @@
+/* ============================================================
+   Process Timeline — Editorial Luxury
+   ============================================================ */
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem 4rem 6rem;
+}
+
+.title {
+  font-family: 'Lora', Georgia, serif;
+  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  font-weight: 300;
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+  color: var(--heritage-cream);
+  text-align: center;
+  margin: 0 0 4rem;
+}
+
+/* ─── Timeline Container ─── */
+.timeline {
+  position: relative;
+  margin-top: 3rem;
+}
+
+/* Gold horizontal line (desktop) */
+.timelineLine {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    rgba(212, 175, 55, 0.4) 0%,
+    rgba(212, 175, 55, 0.6) 50%,
+    rgba(212, 175, 55, 0.2) 100%
+  );
+  right: 140px;
+  transform: translateY(-50%);
+}
+
+/* Start button on the line */
+.startButton {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 2rem;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--wood-espresso);
+  background: var(--heritage-gold);
+  border: none;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.startButton:hover {
+  gap: 1.25rem;
+  background: rgba(212, 175, 55, 0.9);
+  box-shadow: 0 8px 32px rgba(212, 175, 55, 0.25);
+}
+
+.startButtonIcon {
+  width: 14px;
+  height: 14px;
+}
+
+/* ─── Desktop Timeline Grid ─── */
+.timelineGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  position: relative;
+}
+
+/* Top row (even indices) */
+.timelineRowTop {
+  display: flex;
+  justify-content: space-around;
+  padding-bottom: 3rem;
+  gap: 1rem;
+}
+
+/* Bottom row (odd indices) */
+.timelineRowBottom {
+  display: flex;
+  justify-content: space-around;
+  padding-top: 3rem;
+  gap: 1rem;
+}
+
+/* Step card */
+.step {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 1.25rem;
+  min-width: 0;
+}
+
+.stepTop {
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.stepBottom {
+  justify-content: flex-start;
+  align-items: center;
+}
+
+/* Step title */
+.stepTitle {
+  font-family: 'Lora', Georgia, serif;
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--heritage-cream);
+  text-align: center;
+  margin: 0 0 0.5rem;
+  width: 100%;
+  max-width: 200px;
+}
+
+/* Step description */
+.stepDescription {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 0.7rem;
+  line-height: 1.6;
+  color: rgba(249, 248, 246, 0.45);
+  text-align: center;
+  margin: 0 0 0.5rem;
+  width: 100%;
+  max-width: 200px;
+}
+
+/* Step duration */
+.stepDuration {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 0.62rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--heritage-gold);
+  opacity: 0.7;
+  text-align: center;
+  width: 100%;
+  max-width: 200px;
+}
+
+/* Connector dot */
+.stepDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--heritage-gold);
+  margin-top: 1rem;
+  flex-shrink: 0;
+  box-shadow: 0 0 12px rgba(212, 175, 55, 0.4);
+}
+
+.stepDotBottom {
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+
+/* ─── Mobile Timeline (Vertical) ─── */
+.timelineMobile {
+  display: none;
+  position: relative;
+  padding-left: 3rem;
+}
+
+.timelineLineMobile {
+  position: absolute;
+  left: 1rem;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: linear-gradient(
+    180deg,
+    rgba(212, 175, 55, 0.2) 0%,
+    rgba(212, 175, 55, 0.6) 50%,
+    rgba(212, 175, 55, 0.2) 100%
+  );
+}
+
+.mobileStepsList {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+.mobileStep {
+  position: relative;
+  padding-left: 0;
+}
+
+.mobileDot {
+  position: absolute;
+  left: -2.5rem;
+  top: 0.3rem;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--heritage-gold);
+  box-shadow: 0 0 8px rgba(212, 175, 55, 0.3);
+}
+
+.mobileStepTitle {
+  font-family: 'Lora', Georgia, serif;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--heritage-cream);
+  margin: 0 0 0.35rem;
+}
+
+.mobileStepDescription {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 0.7rem;
+  line-height: 1.6;
+  color: rgba(249, 248, 246, 0.45);
+  margin: 0 0 0.35rem;
+}
+
+.mobileStepDuration {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 0.6rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--heritage-gold);
+  opacity: 0.7;
+}
+
+.mobileStartButton {
+  margin-top: 2rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 2rem;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--wood-espresso);
+  background: var(--heritage-gold);
+  border-radius: 2px;
+  transition: all 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.mobileStartButton:hover {
+  gap: 1.25rem;
+  background: rgba(212, 175, 55, 0.9);
+  box-shadow: 0 8px 32px rgba(212, 175, 55, 0.25);
+}
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+@media (max-width: 1024px) {
+  .container {
+    padding-left: 2.5rem;
+    padding-right: 2.5rem;
+  }
+
+  .stepTitle {
+    font-size: 0.72rem;
+  }
+
+  .stepDescription {
+    font-size: 0.65rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+    padding-bottom: 4rem;
+  }
+
+  .title {
+    font-size: clamp(2rem, 7vw, 3rem);
+    margin-bottom: 3rem;
+  }
+
+  /* Hide desktop timeline */
+  .timelineGrid,
+  .timelineLine,
+  .startButton {
+    display: none !important;
+  }
+
+  /* Show mobile timeline */
+  .timelineMobile {
+    display: block;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+  }
+
+  .timelineMobile {
+    padding-left: 2.5rem;
+  }
+
+  .timelineLineMobile {
+    left: 0.75rem;
+  }
+
+  .mobileDot {
+    left: -1.85rem;
+  }
+}
+
+/* ─── Reduced Motion ─── */
+@media (prefers-reduced-motion: reduce) {
+  .startButton,
+  .mobileStartButton {
+    transition: none !important;
+  }
+}

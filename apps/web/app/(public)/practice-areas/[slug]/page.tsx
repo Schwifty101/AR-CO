@@ -5,6 +5,7 @@ import { use, useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { practiceAreas } from '../practiceAreasData'
 import ScrollRevealText from '@/components/shared/animations/ScrollRevealText'
+import DotGrid from '@/components/shared/animations/DotsBackground'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
