@@ -62,3 +62,32 @@ export enum ServiceRegistrationPaymentStatus {
   FAILED = 'failed',
   REFUNDED = 'refunded',
 }
+
+/** Case lifecycle status - matches DB case_status enum */
+export enum CaseStatus {
+  PENDING = 'pending',
+  ACTIVE = 'active',
+  ON_HOLD = 'on_hold',
+  RESOLVED = 'resolved',
+  CLOSED = 'closed',
+}
+
+/** Case priority level - matches DB case_priority enum */
+export enum CasePriority {
+  LOW = 'low',
+  MEDIUM = 'medium',
+  HIGH = 'high',
+  URGENT = 'urgent',
+}
+
+/** Case activity types for timeline entries - matches DB activity_type enum */
+export enum CaseActivityType {
+  CASE_CREATED = 'case_created',
+  STATUS_CHANGED = 'status_changed',
+  ATTORNEY_ASSIGNED = 'attorney_assigned',
+  DOCUMENT_UPLOADED = 'document_uploaded',
+  NOTE_ADDED = 'note_added',
+  HEARING_SCHEDULED = 'hearing_scheduled',
+  PAYMENT_RECEIVED = 'payment_received',
+  OTHER = 'other',
+}
