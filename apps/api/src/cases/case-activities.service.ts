@@ -22,7 +22,7 @@ interface CaseActivityRow {
   title: string;
   description: string | null;
   created_by: string;
-  attachments: unknown | null;
+  attachments: unknown;
   created_at: string;
   /** Joined user_profiles via created_by foreign key */
   creator: { full_name: string } | null;
@@ -103,18 +103,11 @@ export class CaseActivitiesService {
       .range(offset, offset + limit - 1)) as DbListResult<CaseActivityRow>;
 
     if (error) {
-      this.logger.error(
-        `Failed to fetch activities for case ${caseId}`,
-        error,
-      );
-      throw new InternalServerErrorException(
-        'Failed to fetch case activities',
-      );
+      this.logger.error(`Failed to fetch activities for case ${caseId}`, error);
+      throw new InternalServerErrorException('Failed to fetch case activities');
     }
 
-    const activities = (data ?? []).map((row) =>
-      this.mapCaseActivityRow(row),
-    );
+    const activities = (data ?? []).map((row) => this.mapCaseActivityRow(row));
 
     return {
       data: activities,
@@ -155,9 +148,7 @@ export class CaseActivitiesService {
     dto: CreateCaseActivityData,
     user: AuthUser,
   ): Promise<CaseActivityResponse> {
-    this.logger.log(
-      `Adding activity to case ${caseId} by user ${user.id}`,
-    );
+    this.logger.log(`Adding activity to case ${caseId} by user ${user.id}`);
 
     const adminClient = this.supabaseService.getAdminClient();
 
@@ -174,13 +165,8 @@ export class CaseActivitiesService {
       .single()) as DbResult<CaseActivityRow>;
 
     if (error || !data) {
-      this.logger.error(
-        `Failed to add activity to case ${caseId}`,
-        error,
-      );
-      throw new InternalServerErrorException(
-        'Failed to add case activity',
-      );
+      this.logger.error(`Failed to add activity to case ${caseId}`, error);
+      throw new InternalServerErrorException('Failed to add case activity');
     }
 
     this.logger.log(`Activity added to case ${caseId} successfully`);
@@ -220,15 +206,13 @@ export class CaseActivitiesService {
     try {
       const adminClient = this.supabaseService.getAdminClient();
 
-      const { error } = await adminClient
-        .from('case_activities')
-        .insert({
-          case_id: caseId,
-          activity_type: activityType,
-          title,
-          description,
-          created_by: userId,
-        });
+      const { error } = await adminClient.from('case_activities').insert({
+        case_id: caseId,
+        activity_type: activityType,
+        title,
+        description,
+        created_by: userId,
+      });
 
       if (error) {
         this.logger.warn(
