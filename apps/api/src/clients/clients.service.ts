@@ -65,16 +65,12 @@ interface AuthCreateResult {
   error: { message: string } | null;
 }
 
-
-
 /** Allowed sort columns for client profiles */
 const ALLOWED_CLIENT_SORT_COLUMNS = [
   'created_at',
   'updated_at',
   'company_name',
 ] as const;
-
-
 
 /** Clients service for client profile management */
 @Injectable()
@@ -156,9 +152,7 @@ export class ClientsService {
       ALLOWED_CLIENT_SORT_COLUMNS,
     );
     const sortColumn =
-      validatedSort === 'full_name'
-        ? 'user_profiles.full_name'
-        : validatedSort;
+      validatedSort === 'full_name' ? 'user_profiles.full_name' : validatedSort;
 
     const { data: clients, error: dataError } = (await dataQuery
       .order(sortColumn, { ascending: pagination.order === 'asc' })
@@ -446,5 +440,4 @@ export class ClientsService {
     this.logger.log(`Client deleted: ${clientId}`);
     return { message: 'Client deleted successfully' };
   }
-
 }

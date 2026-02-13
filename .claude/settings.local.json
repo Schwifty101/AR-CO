@@ -41,7 +41,8 @@
       "Bash(npx eslint:*)",
       "Bash(pnpm add:*)",
       "Bash(wc:*)",
-      "Bash(head:*)"
+      "Bash(head:*)",
+      "Bash(pnpm --filter web lint:*)"
     ],
     "env": {
       "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"

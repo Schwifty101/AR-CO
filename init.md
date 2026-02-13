@@ -577,6 +577,39 @@ Complete database architecture with 20+ tables, Row-Level Security, comprehensiv
 
 - [ ] **7.5.1**: Create `apps/api/src/cases/cases.module.ts`
 
+### Sub-task 7.6: Shared Package (Cases Schemas, Types & Enums)
+
+- [ ] **7.6.1**: Add `CaseStatus`, `CasePriority`, `CaseActivityType` enums to `packages/shared/src/enums.ts`
+- [ ] **7.6.2**: Create `packages/shared/src/schemas/cases.schemas.ts`
+  - CreateCaseSchema, UpdateCaseSchema, AssignAttorneySchema, CaseFiltersSchema, CreateCaseActivitySchema
+  - CaseResponseSchema, CaseActivityResponseSchema, PaginatedCasesResponseSchema, PaginatedCaseActivitiesResponseSchema
+- [ ] **7.6.3**: Create `packages/shared/src/types/cases.types.ts`
+  - CreateCaseData, UpdateCaseData, AssignAttorneyData, CaseFilters, CreateCaseActivityData
+  - CaseResponse, CaseActivityResponse, PaginatedCasesResponse, PaginatedCaseActivitiesResponse
+- [ ] **7.6.4**: Update barrel exports (`index.ts` files for enums, schemas, types)
+
+### Sub-task 7.7: Frontend - Cases API Client
+
+- [ ] **7.7.1**: Create `apps/web/lib/api/cases.ts` API client helpers
+  - getCases, getCaseById, createCase, updateCase, deleteCase, assignAttorney, getCaseActivities, addCaseActivity
+
+### Sub-task 7.8: Frontend - Admin Cases Pages
+
+- [ ] **7.8.1**: Create `/admin/cases` page - Case list with filters (status, priority, search), pagination, "New Case" button
+- [ ] **7.8.2**: Create `/admin/cases/new` page - Create case form (client dropdown, practice area, title, description, priority, case type, filing date)
+- [ ] **7.8.3**: Create `/admin/cases/:id` page - Case detail + activities timeline + status update + assign attorney + add activity form
+
+### Sub-task 7.9: Frontend - Client Cases Pages
+
+- [ ] **7.9.1**: Create `/client/cases` page - Client's cases list with status filter, pagination
+- [ ] **7.9.2**: Create `/client/cases/:id` page - Case detail + activities timeline (read-only)
+
+### Sub-task 7.10: Frontend - Navigation & Dashboard Updates
+
+- [ ] **7.10.1**: Update admin sidebar: add Cases link (Briefcase icon) after Clients
+- [ ] **7.10.2**: Update client sidebar: add My Cases link (Briefcase icon)
+- [ ] **7.10.3**: Make dashboard stats cards clickable (cases count links to cases list)
+
 ---
 
 ## HEAD TASK 8: Appointments & Consultation Booking Module

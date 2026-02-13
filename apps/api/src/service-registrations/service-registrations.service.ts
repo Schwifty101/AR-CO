@@ -53,7 +53,6 @@ interface ServiceRow {
   is_active: boolean;
 }
 
-
 /** Allowed sort columns for service registrations */
 const ALLOWED_REGISTRATION_SORT_COLUMNS = [
   'created_at',
@@ -62,7 +61,6 @@ const ALLOWED_REGISTRATION_SORT_COLUMNS = [
   'status',
   'payment_status',
 ] as const;
-
 
 /**
  * Service for managing facilitation service registration lifecycle
@@ -137,7 +135,9 @@ export class ServiceRegistrationsService {
   async getRegistrationStatus(
     dto: GuestStatusCheckData,
   ): Promise<GuestStatusResponse> {
-    this.logger.log(`Guest checking status for reference ${dto.referenceNumber}`);
+    this.logger.log(
+      `Guest checking status for reference ${dto.referenceNumber}`,
+    );
 
     const adminClient = this.supabaseService.getAdminClient();
 
@@ -193,7 +193,10 @@ export class ServiceRegistrationsService {
     }
 
     // Validate and apply pagination and sorting
-    const validSort = validateSortColumn(sort, ALLOWED_REGISTRATION_SORT_COLUMNS);
+    const validSort = validateSortColumn(
+      sort,
+      ALLOWED_REGISTRATION_SORT_COLUMNS,
+    );
     query = query
       .order(validSort, { ascending: order === 'asc' })
       .range(offset, offset + limit - 1);

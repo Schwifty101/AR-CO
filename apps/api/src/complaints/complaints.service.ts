@@ -55,7 +55,6 @@ interface ComplaintRow {
 const COMPLAINT_SELECT_WITH_STAFF =
   '*, assigned_staff:user_profiles!assigned_staff_id(full_name)' as const;
 
-
 /** Allowed sort columns for complaints */
 const ALLOWED_COMPLAINT_SORT_COLUMNS = [
   'created_at',
@@ -63,7 +62,6 @@ const ALLOWED_COMPLAINT_SORT_COLUMNS = [
   'complaint_number',
   'status',
 ] as const;
-
 
 /**
  * Service responsible for managing citizen complaints lifecycle
@@ -471,9 +469,7 @@ export class ComplaintsService {
    */
   private mapComplaintRow(row: ComplaintRow): ComplaintResponse {
     const staffProfile = row.assigned_staff;
-    const assignedStaffName = staffProfile
-      ? staffProfile.full_name
-      : null;
+    const assignedStaffName = staffProfile ? staffProfile.full_name : null;
 
     return {
       id: row.id,

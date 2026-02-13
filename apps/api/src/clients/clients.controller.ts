@@ -189,7 +189,11 @@ export class ClientsController {
     @Query(new ZodValidationPipe(PaginationSchema))
     pagination: PaginationParams,
   ): Promise<{ data: unknown[]; meta: object }> {
-    return this.clientsAggregationService.getClientDocuments(id, user, pagination);
+    return this.clientsAggregationService.getClientDocuments(
+      id,
+      user,
+      pagination,
+    );
   }
 
   /**
@@ -207,6 +211,10 @@ export class ClientsController {
     @Query(new ZodValidationPipe(PaginationSchema))
     pagination: PaginationParams,
   ): Promise<{ data: unknown[]; meta: object }> {
-    return this.clientsAggregationService.getClientInvoices(id, user, pagination);
+    return this.clientsAggregationService.getClientInvoices(
+      id,
+      user,
+      pagination,
+    );
   }
 }
