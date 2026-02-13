@@ -13,6 +13,7 @@ import { SubscriptionsModule } from './subscriptions/subscriptions.module';
 import { ComplaintsModule } from './complaints/complaints.module';
 import { ServiceRegistrationsModule } from './service-registrations/service-registrations.module';
 import { ServicesModule } from './services/services.module';
+import { CasesModule } from './cases/cases.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { ServicesModule } from './services/services.module';
     ComplaintsModule,
     ServiceRegistrationsModule,
     ServicesModule,
+    CasesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
