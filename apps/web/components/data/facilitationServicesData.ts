@@ -7,10 +7,11 @@ export interface ProcessStep {
 
 export interface FormField {
   label: string;
-  type: 'text' | 'email' | 'tel' | 'select' | 'checkbox' | 'textarea' | 'file' | 'number' | 'date';
+  type: 'text' | 'email' | 'tel' | 'select' | 'checkbox' | 'textarea' | 'file' | 'number' | 'date' | 'radio';
   required: boolean;
   options?: string[];
   placeholder?: string;
+  hint?: string;
 }
 
 export interface FormSection {
@@ -71,10 +72,10 @@ export interface DocumentCategory {
 }
 
 export interface FacilitationService {
-  slug: string;
+  id: string;
   title: string;
   tagline: string;
-  deliverables: string[];
+  whatWeDo: string[];
   processSteps: ProcessStep[];
   requiredDocuments: DocumentRequirement[];
   documentCategories?: DocumentCategory[];
@@ -87,10 +88,10 @@ export interface FacilitationService {
 export const facilitationServices: FacilitationService[] = [
   // 1. SECP REGISTRATION
   {
-    slug: 'secp-registration',
+    id: 'secp-registration',
     title: 'SECP Registration',
     tagline: 'Register your company with Securities and Exchange Commission of Pakistan',
-    deliverables: [
+    whatWeDo: [
       'Certificate of Incorporation',
       'Company Registration Number',
       'Memorandum & Articles of Association',
@@ -331,10 +332,10 @@ export const facilitationServices: FacilitationService[] = [
 
   // 2. IP REGISTRATION (TRADEMARK)
   {
-    slug: 'ip-registration-trademark',
+    id: 'ip-registration-trademark',
     title: 'IP Registration (Trademark)',
     tagline: 'Protect your brand with trademark registration',
-    deliverables: [
+    whatWeDo: [
       'Trademark registration certificate',
       'Exclusive rights to your mark',
       'Legal protection from copycats',
@@ -561,10 +562,10 @@ export const facilitationServices: FacilitationService[] = [
 
   // 3. PAKISTAN FOOD AUTHORITY LICENSE
   {
-    slug: 'pakistan-food-authority-license',
+    id: 'pakistan-food-authority-license',
     title: 'Pakistan Food Authority License',
     tagline: 'Get licensed to operate your food business legally',
-    deliverables: [
+    whatWeDo: [
       'Food business registration certificate',
       'License to operate legally',
       'Inspection clearance',
@@ -808,10 +809,10 @@ export const facilitationServices: FacilitationService[] = [
 
   // 4. IMPORT/EXPORT LICENSE
   {
-    slug: 'import-export-license',
+    id: 'import-export-license',
     title: 'Import/Export License',
     tagline: 'Start your international trade business legally',
-    deliverables: [
+    whatWeDo: [
       'Import/Export registration',
       'NTN and Sales tax registration',
       'Customs clearance authorization',
@@ -1063,10 +1064,10 @@ export const facilitationServices: FacilitationService[] = [
 
   // 5. IHRA REGISTRATION
   {
-    slug: 'ihra-registration',
+    id: 'ihra-registration',
     title: 'IHRA Registration',
     tagline: 'Register your healthcare facility in Islamabad',
-    deliverables: [
+    whatWeDo: [
       'IHRA registration certificate',
       'Legal approval to operate healthcare facility',
       'Inspection clearance certificate',
@@ -1352,10 +1353,10 @@ export const facilitationServices: FacilitationService[] = [
 
   // 6. DRAP LICENSING
   {
-    slug: 'drap-licensing',
+    id: 'drap-licensing',
     title: 'DRAP Licensing',
     tagline: 'Get licensed to operate pharmacy or medical business',
-    deliverables: [
+    whatWeDo: [
       'DRAP license certificate',
       'Authorization to operate pharmacy/medical business',
       'Compliance certification',
@@ -1619,10 +1620,10 @@ export const facilitationServices: FacilitationService[] = [
 
   // 7. NTN REGISTRATION
   {
-    slug: 'ntn-registration',
+    id: 'ntn-registration',
     title: 'NTN Registration',
     tagline: 'Get your National Tax Number for tax compliance',
-    deliverables: [
+    whatWeDo: [
       'National Tax Number certificate',
       'Active taxpayer status',
       'FBR portal access',
@@ -1874,10 +1875,10 @@ export const facilitationServices: FacilitationService[] = [
 
   // 8. SALES TAX REGISTRATION (STRN)
   {
-    slug: 'sales-tax-registration',
+    id: 'sales-tax-registration',
     title: 'Sales Tax Registration (STRN)',
     tagline: 'Register for sales tax and become eligible to charge GST',
-    deliverables: [
+    whatWeDo: [
       'Sales Tax Registration Number',
       'Authority to charge sales tax',
       'Input tax claim ability',
@@ -2128,10 +2129,10 @@ export const facilitationServices: FacilitationService[] = [
 
   // 9. TAX FILING
   {
-    slug: 'tax-filing',
+    id: 'tax-filing',
     title: 'Tax Filing',
     tagline: 'File your annual tax returns and stay compliant',
-    deliverables: [
+    whatWeDo: [
       'Filed tax return',
       'FBR acknowledgment receipt',
       'Active filer status',
@@ -2455,10 +2456,10 @@ export const facilitationServices: FacilitationService[] = [
 
   // 10. HARASSMENT CASES
   {
-    slug: 'harassment-cases',
+    id: 'harassment-cases',
     title: 'Harassment Cases',
     tagline: 'Legal support for harassment complaints and litigation',
-    deliverables: [
+    whatWeDo: [
       'Legal complaint drafting',
       'Case filing support',
       'Representation at ombudsman/court',
@@ -2750,10 +2751,10 @@ export const facilitationServices: FacilitationService[] = [
 
   // 11. PROPERTY TRANSFER
   {
-    slug: 'property-transfer',
+    id: 'property-transfer',
     title: 'Property Transfer',
     tagline: 'Complete legal property transfer and mutation services',
-    deliverables: [
+    whatWeDo: [
       'Transfer deed preparation',
       'Mutation in revenue records',
       'Fard/registry documents',
@@ -3084,10 +3085,10 @@ export const facilitationServices: FacilitationService[] = [
 
   // 12. AGREEMENT DRAFTING
   {
-    slug: 'agreement-drafting',
+    id: 'agreement-drafting',
     title: 'Agreement Drafting',
     tagline: 'Custom legal agreements tailored to your needs',
-    deliverables: [
+    whatWeDo: [
       'Customized legal agreement',
       'Legally enforceable document',
       'Notarized copy (if needed)',
@@ -3382,10 +3383,10 @@ export const facilitationServices: FacilitationService[] = [
 
   // 13. TV CHANNEL REGISTRATION
   {
-    slug: 'tv-channel-registration',
+    id: 'tv-channel-registration',
     title: 'TV Channel Registration',
     tagline: 'Get PEMRA license for your television channel',
-    deliverables: [
+    whatWeDo: [
       'PEMRA license application',
       'NOC from relevant authorities',
       'Channel launch clearance',
@@ -3701,10 +3702,10 @@ export const facilitationServices: FacilitationService[] = [
 
   // 14. RESTAURANT LICENSE & REGISTRATION
   {
-    slug: 'restaurant-license-registration',
+    id: 'restaurant-license-registration',
     title: 'Restaurant License & Registration',
     tagline: 'Complete registration and licensing for your restaurant',
-    deliverables: [
+    whatWeDo: [
       'Business registration',
       'Food authority license',
       'Fire safety NOC',
@@ -4064,10 +4065,10 @@ export const facilitationServices: FacilitationService[] = [
 
   // 15. CHAMBER OF COMMERCE REGISTRATION
   {
-    slug: 'chamber-of-commerce-registration',
+    id: 'chamber-of-commerce-registration',
     title: 'Chamber of Commerce Registration',
     tagline: 'Join chamber of commerce for business credibility',
-    deliverables: [
+    whatWeDo: [
       'Chamber membership certificate',
       'Business credibility',
       'Networking opportunities',
@@ -4343,10 +4344,10 @@ export const facilitationServices: FacilitationService[] = [
 
   // 16. SUCCESSION CERTIFICATE
   {
-    slug: 'succession-certificate',
+    id: 'succession-certificate',
     title: 'Succession Certificate',
     tagline: 'Legal right to claim deceased\'s assets and estate',
-    deliverables: [
+    whatWeDo: [
       'Court-issued succession certificate',
       'Legal right to claim assets',
       'Authority over deceased\'s estate',
@@ -4680,10 +4681,10 @@ export const facilitationServices: FacilitationService[] = [
 
   // 17. FAMILY REGISTRATION CERTIFICATE (FRC)
   {
-    slug: 'family-registration-certificate',
+    id: 'family-registration-certificate',
     title: 'Family Registration Certificate (FRC)',
     tagline: 'NADRA-issued official family document',
-    deliverables: [
+    whatWeDo: [
       'NADRA-issued family certificate',
       'Proof of family relationships',
       'Required for visas/immigration',
@@ -4944,10 +4945,10 @@ export const facilitationServices: FacilitationService[] = [
 
   // 18. CHILD REGISTRATION CERTIFICATE (B-FORM)
   {
-    slug: 'child-registration-certificate-b-form',
+    id: 'child-registration-certificate-b-form',
     title: 'Child Registration Certificate (B-Form)',
     tagline: 'Official identity document for children under 18',
-    deliverables: [
+    whatWeDo: [
       'Child Registration Certificate (B-Form)',
       'Official identity document',
       'Required for school admission',
@@ -5198,10 +5199,10 @@ export const facilitationServices: FacilitationService[] = [
 
   // 19. PROPERTY VERIFICATION & DUE DILIGENCE
   {
-    slug: 'property-verification-due-diligence',
+    id: 'property-verification-due-diligence',
     title: 'Property Verification & Due Diligence',
     tagline: 'Comprehensive property verification for overseas Pakistanis',
-    deliverables: [
+    whatWeDo: [
       'Complete property verification report',
       'Title document authentication',
       'Ownership verification',
@@ -5479,10 +5480,10 @@ export const facilitationServices: FacilitationService[] = [
 
   // 20. SALE, PURCHASE & TRANSFER OF PROPERTY
   {
-    slug: 'sale-purchase-transfer-property',
+    id: 'sale-purchase-transfer-property',
     title: 'Sale, Purchase & Transfer of Property',
     tagline: 'Complete property transaction services for overseas Pakistanis',
-    deliverables: [
+    whatWeDo: [
       'Complete sale/purchase documentation',
       'Power of Attorney execution',
       'Stamp duty payment',
@@ -5838,10 +5839,10 @@ export const facilitationServices: FacilitationService[] = [
 
   // 21. PROPERTY DISPUTES & ILLEGAL POSSESSION
   {
-    slug: 'property-disputes-illegal-possession',
+    id: 'property-disputes-illegal-possession',
     title: 'Property Disputes & Illegal Possession',
     tagline: 'Legal action against property grabbing and disputes',
-    deliverables: [
+    whatWeDo: [
       'Legal case filing',
       'Court representation',
       'Recovery proceedings',
@@ -6146,10 +6147,10 @@ export const facilitationServices: FacilitationService[] = [
 
   // 22. POWER OF ATTORNEY (POA) SERVICES
   {
-    slug: 'power-of-attorney-services',
+    id: 'power-of-attorney-services',
     title: 'Power of Attorney (POA) Services',
     tagline: 'Legal authorization documents for overseas Pakistanis',
-    deliverables: [
+    whatWeDo: [
       'Customized POA drafting',
       'Legal safeguards included',
       'Embassy attestation guidance',
@@ -6489,10 +6490,10 @@ export const facilitationServices: FacilitationService[] = [
 
   // 23. FAMILY LAW (DIVORCE, CUSTODY, MAINTENANCE)
   {
-    slug: 'family-law-divorce-custody-maintenance',
+    id: 'family-law-divorce-custody-maintenance',
     title: 'Family Law (Divorce, Custody, Maintenance)',
     tagline: 'Legal representation for family matters',
-    deliverables: [
+    whatWeDo: [
       'Legal notice drafting',
       'Court filing',
       'Representation at hearings',
@@ -6879,10 +6880,10 @@ export const facilitationServices: FacilitationService[] = [
 
   // 24. INHERITANCE & SUCCESSION MATTERS
   {
-    slug: 'inheritance-succession-matters',
+    id: 'inheritance-succession-matters',
     title: 'Inheritance & Succession Matters',
     tagline: 'Islamic inheritance calculation and estate distribution',
-    deliverables: [
+    whatWeDo: [
       'Succession certificate',
       'Inheritance calculation per Islamic law',
       'Distribution documentation',
@@ -7379,10 +7380,10 @@ export const facilitationServices: FacilitationService[] = [
 
   // 25. CIVIL LITIGATION & COURT REPRESENTATION
   {
-    slug: 'civil-litigation-court-representation',
+    id: 'civil-litigation-court-representation',
     title: 'Civil Litigation & Court Representation',
     tagline: 'Complete legal representation for civil disputes',
-    deliverables: [
+    whatWeDo: [
       'Complete court representation',
       'Case filing and documentation',
       'Attendance at all hearings',
@@ -7697,12 +7698,100 @@ export const facilitationServices: FacilitationService[] = [
   }
 ];
 
-// Helper function to get service by slug
-export const getServiceBySlug = (slug: string): FacilitationService | undefined => {
-  return facilitationServices.find(service => service.slug === slug);
+// Helper function to get service by id
+export const getServiceBySlug = (id: string): FacilitationService | undefined => {
+  return facilitationServices.find(service => service.id === id);
 };
 
-// Helper function to get all service slugs
+// Helper function to get all service ids
 export const getAllServiceSlugs = (): string[] => {
-  return facilitationServices.map(service => service.slug);
+  return facilitationServices.map(service => service.id);
 };
+
+export const facilitationRegistrationForm: FormSection[] = [
+  {
+    title: 'CLIENT INFORMATION',
+    fields: [
+      {
+        label: 'Full Name (as per passport / CNIC)',
+        type: 'text',
+        required: true,
+        placeholder: 'Enter your full legal name',
+      },
+      {
+        label: 'Email Address',
+        type: 'email',
+        required: true,
+        placeholder: 'your.email@example.com',
+      },
+      {
+        label: 'Contact Number (WhatsApp preferred)',
+        type: 'tel',
+        required: true,
+        placeholder: 'Country code + number',
+      },
+      {
+        label: 'Country of Residence',
+        type: 'select',
+        required: true,
+        options: ['Pakistan', 'United Kingdom', 'United States', 'Canada', 'UAE', 'Saudi Arabia', 'Other'],
+        placeholder: 'Select your country',
+      },
+    ],
+  },
+  {
+    title: 'CLIENT CASE DETAILS',
+    fields: [
+      {
+        label: 'Brief Description of Your Matter',
+        type: 'textarea',
+        required: true,
+        placeholder: 'Please provide key facts only',
+      },
+      {
+        label: 'City / Location in Pakistan (if applicable)',
+        type: 'text',
+        required: false,
+        placeholder: 'e.g., Islamabad, Lahore, Karachi',
+      },
+      {
+        label: 'Against which Relevant Authority? (if any)',
+        type: 'text',
+        required: false,
+        placeholder: 'e.g., SECP, FBR, NADRA, etc.',
+      },
+    ],
+  },
+  {
+    title: 'REGISTRATION FEE & PAYMENT',
+    fields: [
+      {
+        label: 'Service Registration & Initial Legal Review Fee',
+        type: 'radio',
+        required: true,
+        options: ['PKR 5,000', 'USD 50 (International Clients)'],
+        hint: 'This fee includes: Initial legal review, Case feasibility assessment, Consultation scheduling, File opening & allocation of legal counsel',
+      },
+    ],
+  },
+  {
+    title: 'DECLARATION & CONSENT',
+    fields: [
+      {
+        label: 'I confirm that the information provided is accurate to the best of my knowledge.',
+        type: 'checkbox',
+        required: true,
+      },
+      {
+        label: 'I understand that the registration fee is non-refundable and does not constitute full legal fees for my matter.',
+        type: 'checkbox',
+        required: true,
+      },
+      {
+        label: 'I agree to the Terms & Conditions and Privacy Policy of the firm.',
+        type: 'checkbox',
+        required: true,
+      },
+    ],
+  },
+];

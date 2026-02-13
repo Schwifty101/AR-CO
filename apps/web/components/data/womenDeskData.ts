@@ -337,6 +337,96 @@ export const womenDeskServices: WomenDeskService[] = [
     ],
   },
   {
+    id: 'family-law',
+    title: 'Family Law (Divorce, Custody)',
+    tagline: 'Your rights in family matters, protected',
+    whatWeDo: [
+      'File divorce and Khula petitions',
+      'Handle child custody proceedings',
+      'Process maintenance and alimony claims',
+      'Represent in Family Court hearings',
+    ],
+    processSteps: [
+      {
+        title: 'Confidential Consultation',
+        description: 'Discuss your family matter, review marriage documents and applicable options under Muslim Family Laws Ordinance',
+        duration: '1-2 days',
+      },
+      {
+        title: 'Legal Notice / Petition Filing',
+        description: 'Issue legal notice or file petition for Khula, custody, or maintenance in Family Court',
+        duration: '2-3 days',
+      },
+      {
+        title: 'Court Proceedings',
+        description: 'Attend Family Court hearings, present evidence and witnesses on your behalf',
+        duration: '2-6 months',
+      },
+      {
+        title: 'Decree & Enforcement',
+        description: 'Obtain court decree for divorce, custody, or maintenance and assist with enforcement',
+        duration: '1-2 months',
+      },
+    ],
+    whyYouNeedIt: 'Family disputes require sensitive legal handling to protect your rights and your children\'s welfare.',
+    whyChooseUs: 'Female lawyers available, confidential handling, and strong advocacy for women\'s family rights.',
+    faqs: [
+      {
+        question: 'Can I file for custody and maintenance together?',
+        answer: 'Yes, both can be filed simultaneously in Family Court.',
+      },
+      {
+        question: 'How long does a Khula process take?',
+        answer: 'Typically 3-6 months depending on court schedule and cooperation of the other party.',
+      },
+    ],
+  },
+  {
+    id: 'inheritance-succession',
+    title: 'Inheritance & Succession Rights',
+    tagline: 'Claim your rightful share',
+    whatWeDo: [
+      'File succession certificate petitions',
+      'Protect women\'s inheritance rights under Islamic law',
+      'Handle inheritance disputes and property claims',
+      'Coordinate with NADRA and revenue authorities',
+    ],
+    processSteps: [
+      {
+        title: 'Rights Assessment',
+        description: 'Review inheritance rights under Islamic law and Succession Act, identify all assets and legal heirs',
+        duration: '2-3 days',
+      },
+      {
+        title: 'Documentation & Filing',
+        description: 'Prepare and file succession certificate petition or inheritance claim in appropriate court',
+        duration: '2-3 days',
+      },
+      {
+        title: 'Court Proceedings',
+        description: 'Attend court hearings, respond to objections, present evidence of rightful share',
+        duration: '4-8 months',
+      },
+      {
+        title: 'Asset Transfer',
+        description: 'Upon court order, process transfer of inherited property and assets to rightful heirs',
+        duration: '1-3 months',
+      },
+    ],
+    whyYouNeedIt: 'Women often face denial of their legally mandated inheritance share by family members.',
+    whyChooseUs: 'Strong advocacy for women\'s property rights with experience in inheritance disputes.',
+    faqs: [
+      {
+        question: 'What is a woman\'s share in inheritance under Islamic law?',
+        answer: 'Shares vary by relation (daughter, wife, mother, sister) as defined in Islamic succession law.',
+      },
+      {
+        question: 'Can I claim inheritance if denied by family?',
+        answer: 'Yes, you can file a suit in court to claim your legally mandated share.',
+      },
+    ],
+  },
+  {
     id: 'dower-recovery',
     title: 'Dower (Haq Mehr) Recovery',
     tagline: 'Claim What Is Rightfully Yours',

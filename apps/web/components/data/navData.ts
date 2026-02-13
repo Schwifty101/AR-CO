@@ -9,6 +9,15 @@
 
 import type { INavItem, INavSection, INavCategory } from '../nav/types/nav.types'
 import { practiceAreas } from '@/app/(public)/practice-areas/practiceAreasData'
+import { facilitationServices } from '@/components/data/facilitationCenterData'
+import { overseasServices } from '@/components/data/overseasServicesData'
+import { womenDeskServices } from '@/components/data/womenDeskData'
+
+/** Generates a nav link from a service ID and its category */
+function svcLink(category: string, serviceId: string, services: { id: string; title: string }[]) {
+    const service = services.find(s => s.id === serviceId)
+    return { label: service?.title ?? serviceId, href: `/services/${category}/${serviceId}` }
+}
 
 /**
  * Main navigation items (top-level links)
@@ -133,62 +142,35 @@ export const FACILITATION_DATA: INavSection = {
     categories: [
         {
             title: 'Business & Corporate',
-            links: [
-                { label: 'NTN Registration', href: '/services/ntn-registration' },
-                { label: 'Sales Tax Registration (STRN)', href: '/services/sales-tax-registration' },
-                { label: 'SECP Registration', href: '/services/secp-registration' },
-                { label: 'Agreement Drafting', href: '/services/agreement-drafting' },
-                { label: 'Import / Export License', href: '/services/import-export-license' },
-                { label: 'Chamber of Commerce Registration', href: '/services/chamber-of-commerce-registration' },
-            ]
+            links: ['ntn-registration', 'strn-registration', 'secp-registration', 'agreement-drafting', 'import-export-license', 'chamber-registration']
+                .map(id => svcLink('facilitation', id, facilitationServices)),
         },
         {
             title: 'Compliance & Licensing',
-            links: [
-                { label: 'Food Authority License', href: '/services/pakistan-food-authority-license' },
-                { label: 'DRAP Licensing', href: '/services/drap-licensing' },
-                { label: 'IHRA Registration', href: '/services/ihra-registration' },
-                { label: 'IP Registration (Trademark)', href: '/services/ip-registration-trademark' },
-                { label: 'TV Channel Registration', href: '/services/tv-channel-registration' },
-                { label: 'Restaurant License', href: '/services/restaurant-license-registration' },
-            ]
+            links: ['pfa-license', 'drap-licensing', 'ihra-registration', 'ip-registration', 'tv-channel-registration', 'restaurant-license']
+                .map(id => svcLink('facilitation', id, facilitationServices)),
         },
         {
             title: 'Real Estate & Property',
-            links: [
-                { label: 'Property Transfer', href: '/services/property-transfer' },
-                { label: 'Tax Filing', href: '/services/tax-filing' },
-            ]
+            links: ['property-transfer', 'tax-filing']
+                .map(id => svcLink('facilitation', id, facilitationServices)),
         },
         {
             title: 'Personal Certificates',
-            links: [
-                { label: 'Succession Certificate', href: '/services/succession-certificate' },
-                { label: 'Family Registration Certificate', href: '/services/family-registration-certificate' },
-                { label: 'Child Registration (B-Form)', href: '/services/child-registration-certificate-b-form' },
-            ]
+            links: ['succession-certificate', 'family-registration', 'child-registration']
+                .map(id => svcLink('facilitation', id, facilitationServices)),
         },
         {
             title: "Women's Legal Desk",
             highlight: true,
-            links: [
-                { label: 'Harassment Cases', href: '/services/harassment-cases' },
-                { label: 'Family Law (Divorce, Custody)', href: '/services/family-law-divorce-custody-maintenance' },
-                { label: 'Inheritance & Succession', href: '/services/inheritance-succession-matters' },
-            ]
+            links: ['harassment-cases', 'family-law', 'inheritance-succession']
+                .map(id => svcLink('women-desk', id, womenDeskServices)),
         },
         {
             title: 'Overseas Pakistanis',
             highlight: true,
-            links: [
-                { label: 'Property Verification & Due Diligence', href: '/services/property-verification-due-diligence' },
-                { label: 'Sale, Purchase & Transfer of Property', href: '/services/sale-purchase-transfer-property' },
-                { label: 'Property Disputes & Illegal Possession', href: '/services/property-disputes-illegal-possession' },
-                { label: 'Power of Attorney (POA) Services', href: '/services/power-of-attorney-services' },
-                { label: 'Family Law (Divorce, Custody, Maintenance)', href: '/services/family-law-divorce-custody-maintenance' },
-                { label: 'Inheritance & Succession Matters', href: '/services/inheritance-succession-matters' },
-                { label: 'Civil Litigation & Court Representation', href: '/services/civil-litigation-court-representation' },
-            ]
+            links: ['property-verification', 'property-transaction', 'property-disputes', 'power-of-attorney', 'family-law', 'inheritance-succession', 'civil-litigation']
+                .map(id => svcLink('overseas', id, overseasServices)),
         },
     ]
 }
