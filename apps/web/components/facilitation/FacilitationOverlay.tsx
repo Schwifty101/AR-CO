@@ -182,15 +182,20 @@ export default function FacilitationOverlay({ isOpen, onClose }: FacilitationOve
             >
               <span
                 className="text-xs md:text-sm font-medium uppercase tracking-[0.2em] mb-3 block"
-                style={{ color: 'var(--heritage-gold)', opacity: 0.8 }}
+                style={{
+                  color: 'var(--heritage-gold)',
+                  opacity: 0.8,
+                  fontFamily: "'Georgia', 'Times New Roman', serif",
+                }}
               >
                 Legal Services
               </span>
               <h1
                 className="uppercase"
                 style={{
+                  fontFamily: "'Lora', Georgia, serif",
                   fontSize: 'clamp(2rem, 8vw, 5.5rem)',
-                  fontWeight: 100,
+                  fontWeight: 300,
                   lineHeight: 0.9,
                   letterSpacing: '-0.04em',
                   color: 'var(--heritage-cream)',
@@ -318,7 +323,8 @@ export default function FacilitationOverlay({ isOpen, onClose }: FacilitationOve
                                     className="text-sm md:text-base mb-2"
                                     style={{
                                       color: 'var(--heritage-cream)',
-                                      fontWeight: 500,
+                                      fontFamily: "'Lora', Georgia, serif",
+                                      fontWeight: 400,
                                     }}
                                   >
                                     Premium Service
@@ -327,6 +333,7 @@ export default function FacilitationOverlay({ isOpen, onClose }: FacilitationOve
                                     className="text-xs md:text-sm"
                                     style={{
                                       color: 'var(--heritage-cream)',
+                                      fontFamily: "'Georgia', 'Times New Roman', serif",
                                       opacity: 0.6,
                                     }}
                                   >
@@ -340,6 +347,7 @@ export default function FacilitationOverlay({ isOpen, onClose }: FacilitationOve
                                   className="text-sm"
                                   style={{
                                     color: 'var(--heritage-cream)',
+                                    fontFamily: "'Georgia', 'Times New Roman', serif",
                                     opacity: 0.6,
                                   }}
                                 >
@@ -412,7 +420,10 @@ export default function FacilitationOverlay({ isOpen, onClose }: FacilitationOve
               animate={{ opacity: 1 }}
               transition={{ delay: 1.2, duration: 0.5 }}
               className="mt-4 text-xs tracking-[0.1em] uppercase"
-              style={{ color: 'rgba(249, 248, 246, 0.25)' }}
+              style={{
+                color: 'rgba(249, 248, 246, 0.25)',
+                fontFamily: "'Georgia', 'Times New Roman', serif",
+              }}
             >
               Click a category to explore services
             </motion.p>

@@ -184,11 +184,6 @@ export default function Testimonials() {
         opacity: 1,
         y: 0,
         duration: 0.8,
-        stagger: {
-          amount: 0.6,
-          from: "start",
-          ease: "power2.out"
-        },
         ease: "power3.out",
         scrollTrigger: {
           trigger: section,
@@ -251,7 +246,7 @@ export default function Testimonials() {
       ease: "none"
     }, 0)
     .to(column2, {
-      y: -scrollDistance * 0.7, // 30% slower (middle column)
+      y: -scrollDistance * 1.0, // slightly slower (middle column)
       ease: "none"
     }, 0)
     .to(column3, {

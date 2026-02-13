@@ -37,7 +37,7 @@
     display: grid;
     grid-template-columns: auto 1fr auto;
     align-items: center;
-    gap: 2rem;
+    gap: 1rem;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -45,9 +45,9 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 
 .logo {
-    font-family: 'Cabinet Grotesk', sans-serif;
+    font-family: 'Lora', Georgia, serif;
     font-size: 1.5rem;
-    font-weight: 700;
+    font-weight: 400;
     letter-spacing: -0.02em;
     color: inherit;
     text-decoration: none;
@@ -79,9 +79,9 @@
 }
 
 .navLink {
-    font-family: 'Cabinet Grotesk', sans-serif;
+    font-family: 'Georgia', 'Times New Roman', serif;
     font-size: 0.75rem;
-    font-weight: 600;
+    font-weight: 500;
     letter-spacing: 0.12em;
     text-transform: uppercase;
     color: inherit;
@@ -123,9 +123,9 @@
     align-items: center;
     gap: 0.5rem;
     padding: 0.875rem 1.75rem;
-    font-family: 'Cabinet Grotesk', sans-serif;
+    font-family: 'Georgia', 'Times New Roman', serif;
     font-size: 0.75rem;
-    font-weight: 600;
+    font-weight: 500;
     letter-spacing: 0.1em;
     text-transform: uppercase;
     text-decoration: none;
@@ -165,6 +165,23 @@
     border-color: var(--heritage-cream);
 }
 
+.ctaButtonUpgrade {
+    background: linear-gradient(135deg, var(--heritage-gold), #c9a84c);
+    color: var(--wood-espresso);
+    border: none;
+    box-shadow:
+        0 4px 16px rgba(212, 175, 55, 0.2),
+        0 2px 8px rgba(212, 175, 55, 0.15);
+}
+
+.ctaButtonUpgrade:hover {
+    background: linear-gradient(135deg, #e0c55a, var(--heritage-gold));
+    transform: translateY(-2px);
+    box-shadow:
+        0 8px 28px rgba(212, 175, 55, 0.35),
+        0 4px 12px rgba(212, 175, 55, 0.25);
+}
+
 .ctaIcon {
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -179,9 +196,9 @@
 
 .mobileMenuIndicator {
     display: block;
-    font-family: 'Cabinet Grotesk', sans-serif;
+    font-family: 'Georgia', 'Times New Roman', serif;
     font-size: 0.75rem;
-    font-weight: 600;
+    font-weight: 500;
     letter-spacing: 0.12em;
     text-transform: uppercase;
     cursor: pointer;
@@ -313,7 +330,7 @@
     display: grid;
     grid-template-columns: 1fr 1.2fr;
     align-items: stretch;
-    padding: 1.5rem 3rem 3rem 3rem;
+    padding: 1rem 3rem 1.5rem 3rem;
     gap: 4rem;
     overflow-y: hidden;
     position: relative;
@@ -323,7 +340,7 @@
 .menuNav {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.25rem;
     width: 100%;
 }
 
@@ -333,10 +350,10 @@
 
 .menuLink {
     display: block;
-    font-family: 'Cabinet Grotesk', sans-serif;
-    font-size: clamp(1.75rem, 5vw, 4rem);
-    font-weight: 700;
-    letter-spacing: -0.03em;
+    font-family: 'Lora', Georgia, serif;
+    font-size: clamp(1.75rem, 3.5vw, 3rem);
+    font-weight: 400;
+    letter-spacing: -0.02em;
     line-height: 1.1;
     color: var(--heritage-cream);
     text-decoration: none;
@@ -398,10 +415,10 @@
 }
 
 .dropdownTitle {
-    font-family: 'Cabinet Grotesk', sans-serif;
+    font-family: 'Lora', Georgia, serif;
     font-size: 1.75rem;
-    font-weight: 700;
-    letter-spacing: -0.03em;
+    font-weight: 400;
+    letter-spacing: -0.02em;
     color: var(--heritage-cream);
     margin-bottom: 0.25rem;
     padding-bottom: 0.875rem;
@@ -413,8 +430,8 @@
 }
 
 .dropdownDescription {
-    font-family: 'Cabinet Grotesk', sans-serif;
-    font-size: 0.875rem;
+    font-family: 'Georgia', 'Times New Roman', serif;
+    font-size: 0.82rem;
     font-weight: 400;
     color: rgba(249, 248, 246, 0.6);
     margin-bottom: 0.5rem;
@@ -449,10 +466,10 @@
 }
 
 .categoryTitle {
-    font-family: 'Cabinet Grotesk', sans-serif;
-    font-size: 0.8125rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
+    font-family: 'Georgia', 'Times New Roman', serif;
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--heritage-gold);
     padding-bottom: 0.5rem;
@@ -474,8 +491,8 @@
 }
 
 .categoryLink {
-    font-family: 'Cabinet Grotesk', sans-serif;
-    font-size: 0.875rem;
+    font-family: 'Georgia', 'Times New Roman', serif;
+    font-size: 0.82rem;
     font-weight: 400;
     color: rgba(249, 248, 246, 0.75);
     text-decoration: none;
@@ -532,23 +549,23 @@
 }
 
 .copyright {
-    font-family: 'Cabinet Grotesk', sans-serif;
-    font-size: 0.8125rem;
-    font-weight: 500;
+    font-family: 'Georgia', 'Times New Roman', serif;
+    font-size: 0.75rem;
+    font-weight: 400;
     color: var(--heritage-cream);
 }
 
 .clockTime {
-    font-family: 'Cabinet Grotesk', sans-serif;
-    font-size: 0.8125rem;
+    font-family: 'Georgia', 'Times New Roman', serif;
+    font-size: 0.75rem;
     font-weight: 400;
     color: rgba(250, 248, 244, 0.7);
 }
 
 .officeStatus {
-    font-family: 'Cabinet Grotesk', sans-serif;
+    font-family: 'Georgia', 'Times New Roman', serif;
     font-size: 0.75rem;
-    font-weight: 600;
+    font-weight: 400;
     letter-spacing: 0.05em;
     text-transform: uppercase;
     display: flex;
@@ -588,8 +605,8 @@
 }
 
 .legalLink {
-    font-family: 'Cabinet Grotesk', sans-serif;
-    font-size: 0.8125rem;
+    font-family: 'Georgia', 'Times New Roman', serif;
+    font-size: 0.75rem;
     font-weight: 400;
     color: rgba(250, 248, 244, 0.7);
     text-decoration: none;
@@ -607,9 +624,9 @@
 }
 
 .socialLink {
-    font-family: 'Cabinet Grotesk', sans-serif;
-    font-size: 0.8125rem;
-    font-weight: 500;
+    font-family: 'Georgia', 'Times New Roman', serif;
+    font-size: 0.75rem;
+    font-weight: 400;
     color: var(--heritage-cream);
     text-decoration: none;
     transition: color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -620,9 +637,9 @@
 }
 
 .credits {
-    font-family: 'Cabinet Grotesk', sans-serif;
+    font-family: 'Georgia', 'Times New Roman', serif;
     font-size: 0.75rem;
-    font-weight: 500;
+    font-weight: 400;
     letter-spacing: 0.05em;
     color: rgba(250, 248, 244, 0.5);
 }
@@ -727,7 +744,7 @@
     }
 
     .menuLink {
-        font-size: clamp(2rem, 7vw, 4.5rem);
+        font-size: clamp(1.5rem, 4vw, 2.5rem);
     }
 }
 

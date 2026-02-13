@@ -5,7 +5,7 @@
 .container {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 2rem 4rem 6rem;
+  padding: 0.5rem 4rem 6rem;
 }
 
 .title {
@@ -16,13 +16,13 @@
   letter-spacing: -0.04em;
   color: var(--heritage-cream);
   text-align: center;
-  margin: 0 0 4rem;
+  margin: 0 0 1.5rem;
 }
 
 /* ─── Timeline Container ─── */
 .timeline {
   position: relative;
-  margin-top: 3rem;
+  margin-top: 1rem;
 }
 
 /* Gold horizontal line (desktop) */
@@ -82,13 +82,14 @@
   display: grid;
   grid-template-columns: 1fr;
   position: relative;
+  margin-top: 4rem;
 }
 
 /* Top row (even indices) */
 .timelineRowTop {
   display: flex;
   justify-content: space-around;
-  padding-bottom: 3rem;
+  padding-bottom: 1.5rem;
   gap: 1rem;
 }
 
@@ -96,7 +97,7 @@
 .timelineRowBottom {
   display: flex;
   justify-content: space-around;
-  padding-top: 3rem;
+  padding-top: 1.5rem;
   gap: 1rem;
 }
 
@@ -105,30 +106,30 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   padding: 0 1.25rem;
   min-width: 0;
 }
 
 .stepTop {
   justify-content: flex-end;
-  align-items: center;
+  align-items: flex-start;
 }
 
 .stepBottom {
   justify-content: flex-start;
-  align-items: center;
+  align-items: flex-start;
 }
 
 /* Step title */
 .stepTitle {
   font-family: 'Lora', Georgia, serif;
-  font-size: 0.8rem;
+  font-size: 0.7rem;
   font-weight: 500;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--heritage-cream);
-  text-align: center;
+  text-align: left;
   margin: 0 0 0.5rem;
   width: 100%;
   max-width: 200px;
@@ -137,13 +138,19 @@
 /* Step description */
 .stepDescription {
   font-family: 'Georgia', 'Times New Roman', serif;
-  font-size: 0.7rem;
-  line-height: 1.6;
+  font-size: 0.65rem;
+  line-height: 1.5;
   color: rgba(249, 248, 246, 0.45);
-  text-align: center;
+  text-align: left;
   margin: 0 0 0.5rem;
   width: 100%;
   max-width: 200px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-height: calc(1.5em * 2);
 }
 
 /* Step duration */
@@ -155,7 +162,7 @@
   text-transform: uppercase;
   color: var(--heritage-gold);
   opacity: 0.7;
-  text-align: center;
+  text-align: left;
   width: 100%;
   max-width: 200px;
 }
@@ -166,14 +173,16 @@
   height: 8px;
   border-radius: 50%;
   background: var(--heritage-gold);
-  margin-top: 1rem;
+  margin-top: 0.5rem;
   flex-shrink: 0;
   box-shadow: 0 0 12px rgba(212, 175, 55, 0.4);
+  align-self: center;
 }
 
 .stepDotBottom {
   margin-top: 0;
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
+  align-self: center;
 }
 
 /* ─── Mobile Timeline (Vertical) ─── */
@@ -221,20 +230,28 @@
 
 .mobileStepTitle {
   font-family: 'Lora', Georgia, serif;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 500;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--heritage-cream);
   margin: 0 0 0.35rem;
+  text-align: left;
 }
 
 .mobileStepDescription {
   font-family: 'Georgia', 'Times New Roman', serif;
-  font-size: 0.7rem;
-  line-height: 1.6;
+  font-size: 0.65rem;
+  line-height: 1.5;
   color: rgba(249, 248, 246, 0.45);
   margin: 0 0 0.35rem;
+  text-align: left;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-height: calc(1.5em * 2);
 }
 
 .mobileStepDuration {
@@ -245,6 +262,7 @@
   text-transform: uppercase;
   color: var(--heritage-gold);
   opacity: 0.7;
+  text-align: left;
 }
 
 .mobileStartButton {
@@ -281,11 +299,11 @@
   }
 
   .stepTitle {
-    font-size: 0.72rem;
+    font-size: 0.68rem;
   }
 
   .stepDescription {
-    font-size: 0.65rem;
+    font-size: 0.62rem;
   }
 }
 
@@ -294,11 +312,16 @@
     padding-left: 1.5rem;
     padding-right: 1.5rem;
     padding-bottom: 4rem;
+    padding-top: 0.5rem;
   }
 
   .title {
     font-size: clamp(2rem, 7vw, 3rem);
-    margin-bottom: 3rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .timeline {
+    margin-top: 1rem;
   }
 
   /* Hide desktop timeline */

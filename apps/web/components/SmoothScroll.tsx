@@ -54,8 +54,8 @@ export const setOverlapScroll = () => {
 
 // Preset: Normal scroll for rest of website (fast, minimal delay)
 export const setNormalScroll = () => {
-  setScrollSpeed(0.6)      // Full speed for snappy scrolling
-  setSmoothness(2)     // Low smoothness for responsive feel
+  setScrollSpeed(1)        // Full native speed for snappy scrolling
+  setSmoothness(1)         // Minimal smoothing for immediate response
 }
 
 // Preset: Fast scroll for content sections (even less delay)
@@ -100,10 +100,10 @@ export default function SmoothScroll({ children }: SmoothScrollProps) {
     const smoother = ScrollSmoother.create({
       wrapper: wrapperRef.current,
       content: contentRef.current,
-      smooth: 1.5,              // Lower smoothing for more responsive feel
+      smooth: 1,                // Low smoothing for responsive feel on all pages
       effects: true,            // Enable data-speed and data-lag attributes
       smoothTouch: 0.1,         // Minimal touch smoothing for responsiveness
-      normalizeScroll: true,    // CRITICAL: Normalizes scroll behavior, prevents acceleration spikes
+      normalizeScroll: false,   // Disabled: was intercepting native scroll and causing lag on content pages
       ignoreMobileResize: true, // Prevent issues with mobile address bar
       speed: 1,                 // Full speed by default - Hero/Quote will override when needed
     })
