@@ -67,3 +67,16 @@ export {
   ServiceResponseSchema,
   PaginatedServicesResponseSchema,
 } from './services.schemas';
+
+export {
+  CreateCaseSchema,
+  UpdateCaseSchema,
+  UpdateCaseStatusSchema,
+  AssignAttorneySchema,
+  CaseFiltersSchema,
+  CreateCaseActivitySchema,
+  CaseResponseSchema,
+  CaseActivityResponseSchema,
+  PaginatedCasesResponseSchema,
+  PaginatedCaseActivitiesResponseSchema,
+} from './cases.schemas';
