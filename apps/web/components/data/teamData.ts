@@ -17,7 +17,7 @@ export const teamMembers: ITeamMemberExtended[] = [
         id: 2,
         name: "Raja Shahbaz",
         role: "Advocate",
-        bio: "Transitioned from criminal and civil litigation to corporate law. Advises on corporate, civil, and commercial matters. Law graduate from International Islamic University Islamabad (2019). Experienced in conducting complex criminal matters including murder trials and NAB references.",
+        bio: "A law graduate from International Islamic University Islamabad (2019), he began his legal career in criminal and civil litigation, conducting complex matters including murder trials and NAB references. He has since transitioned into corporate law and is presently associated with A.R&Co, advising on corporate, civil, and commercial matters.",
         image: "/our_team/shehbaz.webp",
         expertise: ["Corporate Law", "Civil Litigation", "Criminal Litigation", "Commercial Matters"],
         education: ["International Islamic University Islamabad"]
@@ -26,7 +26,7 @@ export const teamMembers: ITeamMemberExtended[] = [
         id: 3,
         name: "Jawad Khalid Niazi",
         role: "Barrister-at-Law, Advocate High Court",
-        bio: "Associate at the firm holding a law degree from the University of Leeds. Has represented clients in patent cases (e.g., Simberella, Rockville) and before regulatory authorities like PTA, PEMRA, and the Competition Commission of Pakistan.",
+        bio: "An associate at the firm and a qualified Barrister holding a law degree from the University of Leeds. He has represented patent cases for major clients like Simberella and Rockville, and has appeared before regulatory authorities including the PTA, PEMRA, and the Competition Commission of Pakistan.",
         image: "/our_team/javad_niazi.webp",
         expertise: ["Intellectual Property", "Regulatory Law", "Patent Cases", "Telecommunications"],
         education: ["University of Leeds"]
@@ -35,7 +35,7 @@ export const teamMembers: ITeamMemberExtended[] = [
         id: 4,
         name: "Muhammad Soban Hayat",
         role: "Advocate",
-        bio: "Qualified lawyer with a degree from BPP University. Associated with A. R & Co since 2015. Specializes in constitutional petitions protecting client rights before statutory and regulatory bodies.",
+        bio: "A qualified lawyer with a degree from BPP University, he has been part of A. R & Co since 2015. He has successfully represented clients before various legal forums and specializes in constitutional petitions protecting client rights before statutory and regulatory bodies.",
         image: "/our_team/placeholder_soban.jpg", // Placeholder as requested
         expertise: ["Constitutional Law", "Regulatory Advocacy"],
         education: ["BPP University"]
@@ -44,7 +44,7 @@ export const teamMembers: ITeamMemberExtended[] = [
         id: 5,
         name: "Komal Zahra",
         role: "Advocate",
-        bio: "Dedicated legal professional with a strong academic background from Bahria University. Plays an active role in preparing cases and representing clients, primarily focusing on civil and family law matters. Rose from intern to Legal Associate through commitment and competence.",
+        bio: "A dedicated legal professional with an LLB degree from Bahria University. She possesses proven skills in legal drafting and research. With a keen interest in litigation and a sharp eye for detail, she plays an active role in preparing cases and representing clients, primarily focusing on civil and family law matters. She rose from intern to Legal Associate through her commitment and competence.",
         image: "/our_team/komal_zahra.webp",
         expertise: ["Civil Law", "Family Law", "Legal Research", "Drafting"],
         education: ["Bahria University"]
@@ -53,7 +53,7 @@ export const teamMembers: ITeamMemberExtended[] = [
         id: 6,
         name: "Syeda Zainab Hameed Gillani",
         role: "Advocate",
-        bio: "Detail-oriented professional with an LLB from Bahria University and an LLM in Human Rights Law. Focused on Civil Law, legal drafting, research, and analysis. Committed to growing as a proficient legal professional.",
+        bio: "A detailed-oriented legal professional with an LLB from Bahria University Islamabad and an LLM in Human Rights Law. With a solid understanding of civil cases and procedures, she focuses on legal drafting, research, and analysis. She is committed to growing as a proficient legal professional and managing client interactions with excellence.",
         image: "/our_team/placeholder_female.jpg", // Placeholder
         expertise: ["Human Rights Law", "Civil Law", "Legal Research"],
         education: ["Bahria University (LLB)", "LLM in Human Rights Law"]
@@ -62,7 +62,7 @@ export const teamMembers: ITeamMemberExtended[] = [
         id: 7,
         name: "Noor Ayyaz Maken",
         role: "Advocate",
-        bio: "Valued member since graduating from Bahria University in 2024. Contributes strongly in legal research, drafting, and case management.",
+        bio: "A valued member and associate of A. R. & Co since her graduation with an LLB from Bahria University, Islamabad in 2024. Her contributions encompass strong capabilities in legal research, drafting, and case management.",
         image: "/our_team/placeholder_noor.jpg", // Placeholder as requested
         expertise: ["Legal Research", "Drafting", "Case Management"],
         education: ["Bahria University"]
@@ -71,7 +71,7 @@ export const teamMembers: ITeamMemberExtended[] = [
         id: 8,
         name: "Muhammad Rohaan Shakir",
         role: "Advocate",
-        bio: "Graduate of the University of London. Practice focuses on civil and commercial litigation, including real estate and family law. Known for a results-driven approach, sharp legal insight, and strong drafting skills.",
+        bio: "A graduate of the University of London, he serves as a key legal professional at the firm. His practice primarily focuses on civil and commercial litigation, including real estate and family law matters. Known for his client-focused attitude and sharp legal insight, he plays an integral role in managing complex legal matters and offering strategic advice.",
         image: "/our_team/rohan.webp",
         expertise: ["Civil Litigation", "Commercial Litigation", "Real Estate", "Family Law"],
         education: ["University of London"]
@@ -80,7 +80,7 @@ export const teamMembers: ITeamMemberExtended[] = [
         id: 9,
         name: "Sufiyan Hayat",
         role: "Advocate",
-        bio: "LLB (Hons) graduate from the University of London. Focuses on corporate and civil law matters. Actively assists senior counsel in high-profile cases with strong research and drafting skills.",
+        bio: "Holding an LLB (Hons) degree from the University of London, he is a dedicated professional contributing significantly through strong legal research and drafting skills. His practice focuses on corporate and civil law. He actively assists senior counsel in high-profile cases, adding value with his analytical approach and courtroom preparation skills.",
         image: "/our_team/placeholder_male.jpg", // Placeholder
         expertise: ["Corporate Law", "Civil Law", "Litigation Support"],
         education: ["University of London"]
@@ -89,7 +89,7 @@ export const teamMembers: ITeamMemberExtended[] = [
         id: 10,
         name: "M. Attiq-ur-Rehman",
         role: "Advocate",
-        bio: "Qualified lawyer with extensive experience in civil and criminal law. Graduate of the University of the Punjab. Well-versed in courtroom procedures and legal strategies.",
+        bio: "An associate at the firm and a qualified lawyer with extensive experience in civil and criminal law. A graduate of the University of the Punjab, he is well-versed in courtroom procedures and legal strategies, having represented clients in a wide range of cases. His expertise allows him to deliver favorable outcomes for the firm.",
         image: "/our_team/placeholder_male.jpg", // Placeholder
         expertise: ["Civil Law", "Criminal Law", "Litigation"],
         education: ["University of the Punjab"]
@@ -98,7 +98,7 @@ export const teamMembers: ITeamMemberExtended[] = [
         id: 11,
         name: "Shahbaz Masih",
         role: "Finance/Administration Manager",
-        bio: "Graduate from the University of the Punjab. Manages the Finance/Administration department. First point of contact for applications and complaints. versed in Financial Management and Bookkeeping.",
+        bio: "A graduate from the University of the Punjab, Lahore, he has managed the Finance/Administration department since joining A. R & Co. He serves as the first point of contact for prospective applications and complaints, being well-versed in Financial Management and Bookkeeping.",
         image: "/our_team/placeholder_male.jpg", // Placeholder
         expertise: ["Financial Management", "Administration", "Bookkeeping"],
         education: ["University of the Punjab"]
@@ -107,7 +107,7 @@ export const teamMembers: ITeamMemberExtended[] = [
         id: 12,
         name: "Sardar Yasir",
         role: "Clerk",
-        bio: "With A. R & Co since its inception. Manages administrative and court work including filing, maintaining case records, and managing court proceedings and dates.",
+        bio: "With A. R & Co since its inception, he manages all administrative and court work, including filing and maintaining case records. He has been instrumental in managing court proceedings and scheduling.",
         image: "/our_team/placeholder_male.jpg", // Placeholder
         expertise: ["Court Administration", "Record Keeping", "Case Management"]
     }

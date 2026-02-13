@@ -10,8 +10,41 @@
       "Bash(ls:*)",
       "Bash(grep:*)",
       "Bash(pnpm --filter web tsc:*)",
+      "mcp__ide__getDiagnostics",
+      "Bash(curl:*)",
+      "Bash(/Users/sobanahmad/.claude/plugins/cache/claude-plugins-official/ralph-loop/*)",
+      "\"Bash(! \\\"/Users/sobanahmad/.claude/plugins/cache/claude-plugins-official/ralph-loop/*)\"\n``*",
+      "mcp__supabase__execute_sql",
+      "Bash(pnpm test:*)",
+      "mcp__supabase__list_tables",
+      "Bash(pnpm install:*)",
       "Bash(npx tsc:*)",
-      "Bash(npx next build:*)"
-    ]
+      "Bash(npx jest:*)",
+      "Bash(git -C \"/Users/sobanahmad/Work/AR&CO/AR-CO\" status)",
+      "Bash(python3:*)",
+      "Bash(xargs ls:*)",
+      "Bash(pnpm build:*)",
+      "Bash(pnpm lint:*)",
+      "Bash(git add:*)",
+      "Bash(git push:*)",
+      "Bash(~/.claude/statusline-command.sh << 'SCRIPT_EOF'\n#!/bin/bash\n\n# Read JSON input from stdin\ninput=$\\(cat\\)\n\n# Extract model display name\nmodel_name=$\\(echo \"$input\" | jq -r '.model.display_name // \"Claude\"'\\)\n\n# Extract context usage percentage \\(used_percentage\\)\nused_pct=$\\(echo \"$input\" | jq -r '.context_window.used_percentage // empty'\\)\n\n# If no messages yet, show default state\nif [ -z \"$used_pct\" ]; then\n    printf \"%s | Context: --\" \"$model_name\"\n    exit 0\nfi\n\n# Round to integer\nused_pct_int=$\\(printf \"%.0f\" \"$used_pct\"\\)\n\n# Create progress bar \\(20 characters wide\\)\nbar_width=20\nfilled=$\\(printf \"%.0f\" \"$\\(echo \"scale=2; $used_pct / 5\" | bc\\)\"\\)\n[ \"$filled\" -lt 0 ] && filled=0\n[ \"$filled\" -gt \"$bar_width\" ] && filled=$bar_width\n\nempty=$\\(\\(bar_width - filled\\)\\)\n\n# Build the bar\nbar=\"\"\nfor \\(\\(i=0; i<filled; i++\\)\\); do bar=\"${bar}█\"; done\nfor \\(\\(i=0; i<empty; i++\\)\\); do bar=\"${bar}░\"; done\n\n# Color coding based on usage\nif [ \"$used_pct_int\" -ge 80 ]; then\n    color=\"\\\\033[31m\"  # Red\nelif [ \"$used_pct_int\" -ge 60 ]; then\n    color=\"\\\\033[33m\"  # Yellow\nelse\n    color=\"\\\\033[32m\"  # Green\nfi\nreset=\"\\\\033[0m\"\n\n# Output status line\nprintf \"${color}%s${reset} | Context: ${color}[%s] %d%%${reset}\" \"$model_name\" \"$bar\" \"$used_pct_int\"\nSCRIPT_EOF)",
+      "Bash(chmod:*)",
+      "WebFetch(domain:apidocs.getsafepay.com)",
+      "WebFetch(domain:safepay-docs.netlify.app)",
+      "WebSearch",
+      "WebFetch(domain:medium.com)",
+      "WebFetch(domain:gist.github.com)",
+      "WebFetch(domain:github.com)",
+      "mcp__supabase__apply_migration",
+      "mcp__supabase__get_advisors",
+      "Bash(node -e \"const p = require\\(''./package.json''\\); console.log\\(JSON.stringify\\(p.jest || ''no jest config in package.json'', null, 2\\)\\)\")",
+      "Bash(npx eslint:*)",
+      "Bash(pnpm add:*)",
+      "Bash(wc:*)",
+      "Bash(head:*)"
+    ],
+    "env": {
+      "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+    }
   }
 }
