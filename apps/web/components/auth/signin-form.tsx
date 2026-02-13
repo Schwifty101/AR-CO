@@ -19,7 +19,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
+import type { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -27,14 +27,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { OAuthButton } from './oauth-button';
 import { useAuth } from '@/lib/auth/use-auth';
 import { signInWithGoogle, signInWithEmail } from '@/lib/auth/auth-actions';
+import { SigninSchema } from '@repo/shared';
 
-/** Email/password validation schema */
-const signinSchema = z.object({
-  email: z.string().email('Please enter a valid email address'),
-  password: z.string().min(1, 'Password is required'),
-});
-
-type SigninFormData = z.infer<typeof signinSchema>;
+type SigninFormData = z.infer<typeof SigninSchema>;
 
 /**
  * Sign-in form with Google OAuth and email/password tabs
@@ -53,7 +48,7 @@ export function SigninForm() {
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<SigninFormData>({
-    resolver: zodResolver(signinSchema),
+    resolver: zodResolver(SigninSchema),
   });
 
   const handleGoogleSignIn = async () => {

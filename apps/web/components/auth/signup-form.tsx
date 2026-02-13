@@ -26,32 +26,17 @@ import { Label } from '@/components/ui/label';
 import { OAuthButton } from './oauth-button';
 import { useAuth } from '@/lib/auth/use-auth';
 import { signUp, signInWithGoogle } from '@/lib/auth/auth-actions';
+import { SignupSchema } from '@repo/shared';
 
-/** Signup form validation schema */
-const signupSchema = z
-  .object({
-    fullName: z
-      .string()
-      .min(1, 'Full name is required')
-      .max(255, 'Full name is too long'),
-    email: z.string().email('Please enter a valid email address'),
-    password: z
-      .string()
-      .min(8, 'Password must be at least 8 characters')
-      .max(72, 'Password is too long')
-      .regex(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-        'Password must contain at least one uppercase letter, one lowercase letter, and one number',
-      ),
-    confirmPassword: z.string(),
-    phoneNumber: z.string().max(20, 'Phone number is too long').optional(),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: 'Passwords do not match',
-    path: ['confirmPassword'],
-  });
+/** Signup form validation schema (extends shared schema with confirmPassword) */
+const signupFormSchema = SignupSchema.extend({
+  confirmPassword: z.string(),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: 'Passwords do not match',
+  path: ['confirmPassword'],
+});
 
-type SignupFormData = z.infer<typeof signupSchema>;
+type SignupFormData = z.infer<typeof signupFormSchema>;
 
 /**
  * Client registration form
@@ -67,7 +52,7 @@ export function SignupForm() {
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<SignupFormData>({
-    resolver: zodResolver(signupSchema),
+    resolver: zodResolver(signupFormSchema),
   });
 
   const handleGoogleSignIn = async () => {

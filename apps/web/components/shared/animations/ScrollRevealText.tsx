@@ -51,7 +51,7 @@ export default function ScrollRevealText({
 
   return (
     <Component
-      ref={ref as any}
+      ref={(el: HTMLElement | null) => { ref.current = el; }}
       className={`${styles.scrollRevealText} ${isVisible ? styles.visible : ''} ${className}`}
       style={{
         ...style,

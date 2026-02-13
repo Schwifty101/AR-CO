@@ -24,6 +24,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from 'react';
@@ -52,10 +53,34 @@ interface AuthProviderProps {
 }
 
 /**
+ * Fetch user profile from backend using the given access token.
+ *
+ * @param accessToken - JWT access token
+ * @returns AuthUser if successful, null otherwise
+ */
+async function fetchUserFromBackend(
+  accessToken: string,
+): Promise<AuthUser | null> {
+  try {
+    const response = await fetch('/api/auth/me', {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+
+    if (response.ok) {
+      return (await response.json()) as AuthUser;
+    }
+  } catch {
+    // Network error — return null
+  }
+  return null;
+}
+
+/**
  * Auth provider component
  *
  * Wraps the app to provide auth state and methods.
- * Listens to Supabase auth state changes.
+ * Uses onAuthStateChange as single source of truth to avoid
+ * concurrent getSession() calls that deadlock on navigator.locks.
  *
  * @param props - Provider props with children
  * @returns Provider component
@@ -63,34 +88,21 @@ interface AuthProviderProps {
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUserState] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const initDone = useRef(false);
 
   const refreshUser = useCallback(async () => {
-    try {
-      const supabase = createBrowserClient();
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
+    const supabase = createBrowserClient();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
 
-      if (!session) {
-        setUserState(null);
-        return;
-      }
-
-      const response = await fetch('/api/auth/me', {
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
-      });
-
-      if (response.ok) {
-        const userData = (await response.json()) as AuthUser;
-        setUserState(userData);
-      } else {
-        setUserState(null);
-      }
-    } catch {
+    if (!session) {
       setUserState(null);
+      return;
     }
+
+    const userData = await fetchUserFromBackend(session.access_token);
+    setUserState(userData);
   }, []);
 
   const clearAuth = useCallback(() => {
@@ -104,32 +116,42 @@ export function AuthProvider({ children }: AuthProviderProps) {
   useEffect(() => {
     const supabase = createBrowserClient();
 
-    // Check initial session
-    const initAuth = async () => {
-      try {
-        await refreshUser();
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    void initAuth();
-
-    // Listen for auth state changes
+    // Use onAuthStateChange as the ONLY way to get the session.
+    // This avoids calling getSession() concurrently which deadlocks
+    // on the navigator.locks API in @supabase/supabase-js.
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event) => {
-      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-        await refreshUser();
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (
+        event === 'INITIAL_SESSION' ||
+        event === 'SIGNED_IN' ||
+        event === 'TOKEN_REFRESHED'
+      ) {
+        if (session) {
+          // Print bearer token to console on sign in
+          if (event === 'SIGNED_IN') {
+            console.log('Bearer Token:', session.access_token);
+          }
+          const userData = await fetchUserFromBackend(session.access_token);
+          setUserState(userData);
+        } else {
+          setUserState(null);
+        }
       } else if (event === 'SIGNED_OUT') {
         setUserState(null);
+      }
+
+      // Mark loading done after first event (INITIAL_SESSION)
+      if (!initDone.current) {
+        initDone.current = true;
+        setIsLoading(false);
       }
     });
 
     return () => {
       subscription.unsubscribe();
     };
-  }, [refreshUser]);
+  }, []);
 
   const value = useMemo<AuthContextValue>(
     () => ({

@@ -105,33 +105,45 @@ export default function TeamInteractiveList({ members }: TeamInteractiveListProp
                                         transition={{ duration: 0.5, ease: [0.32, 0.72, 0, 1] }}
                                         className="overflow-hidden"
                                     >
-                                        <div className="pt-8 pb-4 grid grid-cols-1 md:grid-cols-2 gap-8 pl-4 border-l border-heritage-gold/20 ml-2">
-
-                                            {/* Education */}
-                                            {member.education && (
-                                                <div>
-                                                    <h4 className="text-xs uppercase tracking-widest text-heritage-gold mb-3 font-bold">Education</h4>
-                                                    <ul className="space-y-1">
-                                                        {member.education.map((edu, i) => (
-                                                            <li key={i} className="text-sm text-heritage-walnut/70 leading-relaxed font-light">{edu}</li>
-                                                        ))}
-                                                    </ul>
+                                        <div className="pt-8 pb-4 pl-4 border-l border-[var(--heritage-gold)]/20 ml-2 space-y-8">
+                                            {/* Bio - Added on Hover */}
+                                            {member.bio && (
+                                                <div className="max-w-2xl">
+                                                    <h4 className="text-xs uppercase tracking-widest text-[var(--heritage-gold)] mb-3 font-bold">About</h4>
+                                                    <p className="text-base text-[var(--heritage-cream)] leading-relaxed font-light">
+                                                        {member.bio}
+                                                    </p>
                                                 </div>
                                             )}
 
-                                            {/* Expertise */}
-                                            {member.expertise && (
-                                                <div>
-                                                    <h4 className="text-xs uppercase tracking-widest text-heritage-gold mb-3 font-bold">Expertise</h4>
-                                                    <div className="flex flex-wrap gap-2">
-                                                        {member.expertise.map((exp, i) => (
-                                                            <span key={i} className="text-xs border border-heritage-walnut/10 px-2 py-1 rounded-full text-heritage-walnut/60 bg-heritage-walnut/5">
-                                                                {exp}
-                                                            </span>
-                                                        ))}
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+                                                {/* Education */}
+                                                {member.education && (
+                                                    <div>
+                                                        <h4 className="text-xs uppercase tracking-widest text-heritage-gold mb-3 font-bold">Education</h4>
+                                                        <ul className="space-y-1">
+                                                            {member.education.map((edu, i) => (
+                                                                <li key={i} className="text-sm text-[var(--heritage-cream)] leading-relaxed font-light">{edu}</li>
+                                                            ))}
+                                                        </ul>
                                                     </div>
-                                                </div>
-                                            )}
+                                                )}
+
+                                                {/* Expertise */}
+                                                {member.expertise && (
+                                                    <div>
+                                                        <h4 className="text-xs uppercase tracking-widest text-heritage-gold mb-3 font-bold">Expertise</h4>
+                                                        <div className="flex flex-wrap gap-2">
+                                                            {member.expertise.map((exp, i) => (
+                                                                <span key={i} className="text-xs border border-[var(--heritage-cream)]/10 px-2 py-1 rounded-full text-[var(--heritage-cream)] bg-[var(--heritage-cream)]/5">
+                                                                    {exp}
+                                                                </span>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
                                     </motion.div>
                                 </div>
@@ -177,7 +189,7 @@ export default function TeamInteractiveList({ members }: TeamInteractiveListProp
                                                 src={member.image}
                                                 alt={member.name}
                                                 fill
-                                                className="object-cover opacity-90 grayscale contrast-125 hover:grayscale-0 transition-all duration-700"
+                                                className="object-cover transition-all duration-700"
                                                 sizes="(max-width: 768px) 100vw, 400px"
                                                 priority={true}
                                             />

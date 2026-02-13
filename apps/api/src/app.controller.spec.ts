@@ -15,8 +15,10 @@ describe('AppController', () => {
   });
 
   describe('root', () => {
-    it('should return "Hello World!"', () => {
-      expect(appController.getHello()).toBe('Hello World!');
+    it('should return hello message', () => {
+      expect(appController.getHello()).toEqual({
+        message: 'Hello from NestJS API on port 4000!',
+      });
     });
   });
 });
