@@ -83,18 +83,11 @@ interface CaseRow {
  */
 const CASE_SELECT_WITH_JOINS = [
   '*',
-  'client_profile:client_profiles!cases_client_profile_id_fkey(',
-  '  user_profile:user_profiles!client_profiles_user_profile_id_fkey(full_name)',
-  ')',
-  'attorney_profile:attorney_profiles!cases_attorney_profile_id_fkey(',
-  '  user_profile:user_profiles!attorney_profiles_user_profile_id_fkey(full_name)',
-  ')',
+  'client_profile:client_profiles!cases_client_profile_id_fkey(user_profile:user_profiles!client_profiles_user_profile_id_fkey(full_name))',
+  'attorney_profile:attorney_profiles!cases_attorney_profile_id_fkey(user_profile:user_profiles!attorney_profiles_user_profile_id_fkey(full_name))',
   'practice_area:practice_areas!cases_practice_area_id_fkey(name)',
   'service:services!cases_service_id_fkey(name)',
-]
-  .join(',')
-  .replace(/\s+/g, ' ')
-  .trim();
+].join(',');
 
 /** Allowed sort columns for cases list */
 const ALLOWED_CASE_SORT_COLUMNS = [

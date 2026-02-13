@@ -42,9 +42,7 @@ interface RegistrationWithFeeRow {
  */
 @Injectable()
 export class ServiceRegistrationsPaymentService {
-  private readonly logger = new Logger(
-    ServiceRegistrationsPaymentService.name,
-  );
+  private readonly logger = new Logger(ServiceRegistrationsPaymentService.name);
 
   constructor(
     private readonly supabaseService: SupabaseService,
