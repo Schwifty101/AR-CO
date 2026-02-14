@@ -13,7 +13,7 @@
  * Requires authentication and admin/staff user type
  */
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -62,6 +62,32 @@ import {
  * Admin cases list page component
  */
 export default function AdminCasesPage() {
+  return (
+    <Suspense fallback={<CasesPageSkeleton />}>
+      <AdminCasesContent />
+    </Suspense>
+  );
+}
+
+function CasesPageSkeleton() {
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Cases</h1>
+          <p className="text-muted-foreground">Manage all legal cases</p>
+        </div>
+      </div>
+      <Card>
+        <CardContent className="pt-6">
+          <Skeleton className="h-64 w-full" />
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+function AdminCasesContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [cases, setCases] = useState<CaseResponse[]>([]);
