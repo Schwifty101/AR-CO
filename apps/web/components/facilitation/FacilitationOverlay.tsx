@@ -106,6 +106,15 @@ export default function FacilitationOverlay({ isOpen, onClose }: FacilitationOve
     [onClose],
   )
 
+  // Close overlay when a page transition is about to start
+  useEffect(() => {
+    if (!isOpen) return
+
+    const handleTransitionStart = () => onClose()
+    window.addEventListener('page-transition-start', handleTransitionStart)
+    return () => window.removeEventListener('page-transition-start', handleTransitionStart)
+  }, [isOpen, onClose])
+
   useEffect(() => {
     const smoother = getSmoother()
 

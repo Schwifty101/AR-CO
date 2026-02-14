@@ -26,6 +26,15 @@ export default function PracticeAreasOverlay({ isOpen, onClose }: PracticeAreasO
     }
   }, [onClose])
 
+  // Close overlay when a page transition is about to start
+  useEffect(() => {
+    if (!isOpen) return
+
+    const handleTransitionStart = () => onClose()
+    window.addEventListener('page-transition-start', handleTransitionStart)
+    return () => window.removeEventListener('page-transition-start', handleTransitionStart)
+  }, [isOpen, onClose])
+
   // Lock body scroll when overlay is open
   useEffect(() => {
     if (isOpen) {
@@ -58,7 +67,7 @@ export default function PracticeAreasOverlay({ isOpen, onClose }: PracticeAreasO
             duration: 0.6,
             ease: [0.32, 0.72, 0, 1]
           }}
-          style={{ 
+          style={{
             background: 'var(--wood-espresso)',
             overflowY: 'auto',
             overflowX: 'hidden',
