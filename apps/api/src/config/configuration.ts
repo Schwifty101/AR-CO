@@ -50,8 +50,8 @@ export interface JwtConfig {
 export interface SafepayConfig {
   /** Secret API key for backend SDK (sec_xxx) */
   secretKey: string;
-  /** Public merchant API key for session creation (pub_xxx) */
-  merchantApiKey: string;
+  /** Public API key for session creation and frontend checkout */
+  publicKey: string;
   /** Current environment */
   environment: 'sandbox' | 'production';
   /** HMAC secret for webhook signature verification */
@@ -135,7 +135,7 @@ export default (): Configuration => ({
   },
   safepay: {
     secretKey: process.env.SAFEPAY_SECRET_KEY || '',
-    merchantApiKey: process.env.SAFEPAY_MERCHANT_API_KEY || '',
+    publicKey: process.env.SAFEPAY_PUBLIC_KEY || '',
     environment:
       (process.env.SAFEPAY_ENVIRONMENT as 'sandbox' | 'production') ||
       'sandbox',

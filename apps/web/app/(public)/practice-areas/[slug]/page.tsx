@@ -43,8 +43,8 @@ function KeyPersonnelSection({ personnel }: KeyPersonnelProps) {
 
   return (
     <div className="mb-20 md:mb-32">
-      <ScrollRevealText 
-        as="h2" 
+      <ScrollRevealText
+        as="h2"
         className="uppercase mb-10"
         style={{
           fontSize: 'clamp(1.5rem, 5vw, 3rem)',
@@ -56,7 +56,7 @@ function KeyPersonnelSection({ personnel }: KeyPersonnelProps) {
       >
         Key Personnel
       </ScrollRevealText>
-      
+
       <div
         className="grid grid-cols-1 lg:grid-cols-12 gap-x-8 relative"
         ref={listRef}
