@@ -154,7 +154,7 @@ export default function ConsultationPaymentStep({
           <SafepayButton
             env={paymentCredentials.environment}
             client={{
-              [paymentCredentials.environment]: paymentCredentials.merchantKey,
+              [paymentCredentials.environment]: paymentCredentials.publicKey,
             }}
             style={{ mode: 'dark', size: 'large' }}
             orderId={paymentCredentials.orderId}

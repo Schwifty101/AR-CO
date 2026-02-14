@@ -17,7 +17,7 @@
  *
  * // Guest initiates payment
  * POST /api/consultations/:id/pay
- * Returns: { trackerToken, merchantKey, amount, ... } // For SafepayButton
+ * Returns: { trackerToken, publicKey, amount, ... } // For SafepayButton
  *
  * // Guest confirms payment
  * POST /api/consultations/:id/confirm-payment
@@ -140,7 +140,7 @@ export class ConsultationsController {
    * Rate limited to 10 requests per minute per IP.
    *
    * @param id - UUID of the consultation booking
-   * @returns Payment session credentials (trackerToken, merchantKey, etc.)
+   * @returns Payment session credentials (trackerToken, publicKey, etc.)
    *
    * @example
    * ```bash
