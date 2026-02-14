@@ -23,10 +23,12 @@ import {
   CreateServiceRegistrationSchema,
   GuestStatusCheckSchema,
   UpdateRegistrationStatusSchema,
+  AssignToSchema,
   PaginationSchema,
   type CreateServiceRegistrationData,
   type GuestStatusCheckData,
   type UpdateRegistrationStatusData,
+  type AssignToData,
   type ServiceRegistrationResponse,
   type GuestStatusResponse,
   type PaginatedServiceRegistrationsResponse,
@@ -44,15 +46,6 @@ const InitiatePaymentSchema = z.object({
 });
 
 type InitiatePaymentData = z.infer<typeof InitiatePaymentSchema>;
-
-/**
- * Schema for assigning a registration to a staff member
- */
-const AssignRegistrationSchema = z.object({
-  staffId: z.string().uuid('Valid staff ID is required'),
-});
-
-type AssignRegistrationData = z.infer<typeof AssignRegistrationSchema>;
 
 /**
  * Controller responsible for handling service registration-related HTTP requests
@@ -302,11 +295,11 @@ export class ServiceRegistrationsController {
   }
 
   /**
-   * Assign service registration to a staff member (staff only)
+   * Assign service registration to a user (staff/attorney) (staff only)
    * Automatically updates status to IN_PROGRESS if currently PENDING_PAYMENT or PAID
    *
    * @param id - The registration ID
-   * @param dto - The assignment data (staffId)
+   * @param dto - The assignment data (assignedToId)
    * @returns The updated registration
    * @throws {NotFoundException} If registration does not exist
    *
@@ -317,7 +310,7 @@ export class ServiceRegistrationsController {
    * Content-Type: application/json
    *
    * {
-   *   "staffId": "staff-uuid-789"
+   *   "assignedToId": "user-profile-uuid-789"
    * }
    * ```
    */
@@ -326,9 +319,9 @@ export class ServiceRegistrationsController {
   @HttpCode(HttpStatus.OK)
   async assignRegistration(
     @Param('id') id: string,
-    @Body(new ZodValidationPipe(AssignRegistrationSchema))
-    dto: AssignRegistrationData,
+    @Body(new ZodValidationPipe(AssignToSchema))
+    dto: AssignToData,
   ): Promise<ServiceRegistrationResponse> {
-    return this.serviceRegistrationsService.assignRegistration(id, dto.staffId);
+    return this.serviceRegistrationsService.assignRegistration(id, dto);
   }
 }

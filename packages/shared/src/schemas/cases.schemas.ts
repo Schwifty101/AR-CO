@@ -28,17 +28,12 @@ export const UpdateCaseStatusSchema = z.object({
   status: z.nativeEnum(CaseStatus),
 });
 
-/** Schema for assigning attorney to a case (staff only) */
-export const AssignAttorneySchema = z.object({
-  attorneyProfileId: z.string().uuid('Valid attorney profile ID is required'),
-});
-
 /** Schema for filtering cases list */
 export const CaseFiltersSchema = z.object({
   status: z.nativeEnum(CaseStatus).optional(),
   priority: z.nativeEnum(CasePriority).optional(),
   clientProfileId: z.string().uuid().optional(),
-  attorneyProfileId: z.string().uuid().optional(),
+  assignedToId: z.string().uuid().optional(),
   practiceAreaId: z.string().uuid().optional(),
   search: z.string().optional(),
 });
@@ -56,8 +51,8 @@ export const CaseResponseSchema = z.object({
   caseNumber: z.string(),
   clientProfileId: z.string().uuid(),
   clientName: z.string(),
-  attorneyProfileId: z.string().uuid().nullable(),
-  attorneyName: z.string().nullable(),
+  assignedToId: z.string().uuid().nullable(),
+  assignedToName: z.string().nullable(),
   practiceAreaId: z.string().uuid(),
   practiceAreaName: z.string(),
   serviceId: z.string().uuid().nullable(),

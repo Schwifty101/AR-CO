@@ -16,6 +16,7 @@ import {
   type CreateServiceRegistrationData,
   type GuestStatusCheckData,
   type UpdateRegistrationStatusData,
+  type AssignToData,
   type ServiceRegistrationResponse,
   type GuestStatusResponse,
   type PaginatedServiceRegistrationsResponse,
@@ -23,7 +24,7 @@ import {
 } from '@repo/shared';
 import type { DbResult, DbListResult } from '../database/db-result.types';
 
-/** Database row shape for the service_registrations table */
+/** Database row shape for the service_registrations table with joined assigned user */
 interface ServiceRegistrationRow {
   id: string;
   reference_number: string;
@@ -39,10 +40,12 @@ interface ServiceRegistrationRow {
   safepay_transaction_id: string | null;
   status: ServiceRegistrationStatus;
   client_profile_id: string | null;
-  assigned_staff_id: string | null;
+  assigned_to_id: string | null;
   staff_notes: string | null;
   created_at: string;
   updated_at: string;
+  /** Joined assigned user profile from user_profiles via assigned_to_id */
+  assigned_to: { full_name: string } | null;
 }
 
 /** Database row shape for the services table (for validation) */
@@ -52,6 +55,13 @@ interface ServiceRow {
   registration_fee: number;
   is_active: boolean;
 }
+
+/**
+ * Supabase select clause that joins assigned user profile
+ * Uses a foreign-key relationship: service_registrations.assigned_to_id -> user_profiles.id
+ */
+const REGISTRATION_SELECT_WITH_JOINS =
+  '*, assigned_to:user_profiles!service_registrations_assigned_to_id_fkey(full_name)' as const;
 
 /** Allowed sort columns for service registrations */
 const ALLOWED_REGISTRATION_SORT_COLUMNS = [
@@ -112,7 +122,7 @@ export class ServiceRegistrationsService {
         address: dto.address ?? null,
         description_of_need: dto.descriptionOfNeed ?? null,
       })
-      .select('*')
+      .select(REGISTRATION_SELECT_WITH_JOINS)
       .single()) as DbResult<ServiceRegistrationRow>;
 
     if (error || !data) {
@@ -182,7 +192,7 @@ export class ServiceRegistrationsService {
 
     let query = adminClient
       .from('service_registrations')
-      .select('*', { count: 'exact' });
+      .select(REGISTRATION_SELECT_WITH_JOINS, { count: 'exact' });
 
     // If user is CLIENT, filter by their client_profile_id
     if (!STAFF_ROLES.includes(user.userType)) {
@@ -242,7 +252,7 @@ export class ServiceRegistrationsService {
 
     const { data, error } = (await adminClient
       .from('service_registrations')
-      .select('*')
+      .select(REGISTRATION_SELECT_WITH_JOINS)
       .eq('id', registrationId)
       .single()) as DbResult<ServiceRegistrationRow>;
 
@@ -289,7 +299,7 @@ export class ServiceRegistrationsService {
       .from('service_registrations')
       .update(updateData)
       .eq('id', registrationId)
-      .select('*')
+      .select(REGISTRATION_SELECT_WITH_JOINS)
       .single()) as DbResult<ServiceRegistrationRow>;
 
     if (error || !data) {
@@ -306,13 +316,30 @@ export class ServiceRegistrationsService {
     return this.mapRegistrationRow(data);
   }
 
-  /** Assigns a service registration to a staff member (auto-transitions to IN_PROGRESS) */
+  /**
+   * Assigns a service registration to a user (staff/attorney).
+   * Auto-transitions status to IN_PROGRESS if currently PENDING_PAYMENT or PAID.
+   *
+   * @param registrationId - The registration UUID
+   * @param dto - Assignment data containing the assignee's user profile ID
+   * @returns The updated registration
+   * @throws {NotFoundException} If registration not found
+   * @throws {InternalServerErrorException} If assignment fails
+   *
+   * @example
+   * ```typescript
+   * const assigned = await service.assignRegistration(
+   *   'reg-uuid',
+   *   { assignedToId: 'user-profile-uuid' }
+   * );
+   * ```
+   */
   async assignRegistration(
     registrationId: string,
-    staffId: string,
+    dto: AssignToData,
   ): Promise<ServiceRegistrationResponse> {
     this.logger.log(
-      `Assigning registration ${registrationId} to staff ${staffId}`,
+      `Assigning registration ${registrationId} to user ${dto.assignedToId}`,
     );
 
     const adminClient = this.supabaseService.getAdminClient();
@@ -333,7 +360,7 @@ export class ServiceRegistrationsService {
     }
 
     const updateData: Record<string, unknown> = {
-      assigned_staff_id: staffId,
+      assigned_to_id: dto.assignedToId,
     };
 
     // If registration status is 'pending_payment' or 'paid', auto-transition to 'in_progress'
@@ -349,7 +376,7 @@ export class ServiceRegistrationsService {
       .from('service_registrations')
       .update(updateData)
       .eq('id', registrationId)
-      .select('*')
+      .select(REGISTRATION_SELECT_WITH_JOINS)
       .single()) as DbResult<ServiceRegistrationRow>;
 
     if (error || !data) {
@@ -381,7 +408,8 @@ export class ServiceRegistrationsService {
       paymentStatus: row.payment_status,
       status: row.status,
       clientProfileId: row.client_profile_id ?? null,
-      assignedStaffId: row.assigned_staff_id ?? null,
+      assignedToId: row.assigned_to_id ?? null,
+      assignedToName: row.assigned_to?.full_name ?? null,
       staffNotes: row.staff_notes ?? null,
       createdAt: row.created_at,
       updatedAt: row.updated_at,

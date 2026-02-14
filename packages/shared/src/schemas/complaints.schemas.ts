@@ -18,11 +18,6 @@ export const UpdateComplaintStatusSchema = z.object({
   resolutionNotes: z.string().max(2000).optional(),
 });
 
-/** Schema for assigning complaint to staff */
-export const AssignComplaintSchema = z.object({
-  staffId: z.string().uuid('Valid staff ID is required'),
-});
-
 /** Schema for filtering complaints */
 export const ComplaintFiltersSchema = z.object({
   status: z.nativeEnum(ComplaintStatus).optional(),
@@ -42,8 +37,8 @@ export const ComplaintResponseSchema = z.object({
   category: z.string().nullable(),
   evidenceUrls: z.array(z.string()),
   status: z.nativeEnum(ComplaintStatus),
-  assignedStaffId: z.string().uuid().nullable(),
-  assignedStaffName: z.string().nullable(),
+  assignedToId: z.string().uuid().nullable(),
+  assignedToName: z.string().nullable(),
   staffNotes: z.string().nullable(),
   resolutionNotes: z.string().nullable(),
   resolvedAt: z.string().nullable(),

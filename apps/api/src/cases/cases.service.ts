@@ -43,7 +43,7 @@ import {
   type CreateCaseData,
   type UpdateCaseData,
   type UpdateCaseStatusData,
-  type AssignAttorneyData,
+  type AssignToData,
   type CaseFilters,
   type CaseResponse,
   type PaginatedCasesResponse,
@@ -55,7 +55,7 @@ interface CaseRow {
   id: string;
   case_number: string;
   client_profile_id: string;
-  attorney_profile_id: string | null;
+  assigned_to_id: string | null;
   practice_area_id: string;
   service_id: string | null;
   title: string;
@@ -69,8 +69,8 @@ interface CaseRow {
   updated_at: string;
   /** Joined client name via client_profiles -> user_profiles */
   client_profile: { user_profile: { full_name: string } | null } | null;
-  /** Joined attorney name via attorney_profiles -> user_profiles */
-  attorney_profile: { user_profile: { full_name: string } | null } | null;
+  /** Joined assigned user name via user_profiles (direct FK) */
+  assigned_to: { full_name: string } | null;
   /** Joined practice area name */
   practice_area: { name: string } | null;
   /** Joined service name */
@@ -84,7 +84,7 @@ interface CaseRow {
 const CASE_SELECT_WITH_JOINS = [
   '*',
   'client_profile:client_profiles!cases_client_profile_id_fkey(user_profile:user_profiles!client_profiles_user_profile_id_fkey(full_name))',
-  'attorney_profile:attorney_profiles!cases_attorney_profile_id_fkey(user_profile:user_profiles!attorney_profiles_user_profile_id_fkey(full_name))',
+  'assigned_to:user_profiles!cases_assigned_to_id_fkey(full_name)',
   'practice_area:practice_areas!cases_practice_area_id_fkey(name)',
   'service:services!cases_service_id_fkey(name)',
 ].join(',');
@@ -231,15 +231,9 @@ export class CasesService {
       countQuery = countQuery.eq('client_profile_id', filters.clientProfileId);
       dataQuery = dataQuery.eq('client_profile_id', filters.clientProfileId);
     }
-    if (filters.attorneyProfileId) {
-      countQuery = countQuery.eq(
-        'attorney_profile_id',
-        filters.attorneyProfileId,
-      );
-      dataQuery = dataQuery.eq(
-        'attorney_profile_id',
-        filters.attorneyProfileId,
-      );
+    if (filters.assignedToId) {
+      countQuery = countQuery.eq('assigned_to_id', filters.assignedToId);
+      dataQuery = dataQuery.eq('assigned_to_id', filters.assignedToId);
     }
     if (filters.practiceAreaId) {
       countQuery = countQuery.eq('practice_area_id', filters.practiceAreaId);
@@ -468,51 +462,50 @@ export class CasesService {
   }
 
   /**
-   * Assign an attorney to a case with auto-activity logging.
+   * Assign a user (attorney/staff) to a case with auto-activity logging.
    *
    * @param caseId - The case UUID
-   * @param dto - Attorney assignment data
+   * @param dto - Assignment data containing the assignee's user profile ID
    * @param user - The staff user making the assignment
    * @returns The updated case
    * @throws {NotFoundException} If case not found
    *
    * @example
    * ```typescript
-   * const updated = await service.assignAttorney(
+   * const updated = await service.assign(
    *   'case-uuid',
-   *   { attorneyProfileId: 'attorney-uuid' },
+   *   { assignedToId: 'user-profile-uuid' },
    *   staffUser
    * );
    * ```
    */
-  async assignAttorney(
+  async assign(
     caseId: string,
-    dto: AssignAttorneyData,
+    dto: AssignToData,
     user: AuthUser,
   ): Promise<CaseResponse> {
     this.logger.log(
-      `Assigning attorney ${dto.attorneyProfileId} to case ${caseId}`,
+      `Assigning user ${dto.assignedToId} to case ${caseId}`,
     );
     const adminClient = this.supabaseService.getAdminClient();
 
     const { data, error } = (await adminClient
       .from('cases')
-      .update({ attorney_profile_id: dto.attorneyProfileId })
+      .update({ assigned_to_id: dto.assignedToId })
       .eq('id', caseId)
       .select(CASE_SELECT_WITH_JOINS)
       .single()) as DbResult<CaseRow>;
 
     if (error || !data) {
-      this.logger.error(`Failed to assign attorney to case ${caseId}`, error);
+      this.logger.error(`Failed to assign user to case ${caseId}`, error);
       throw new NotFoundException('Case not found');
     }
 
-    const attorneyName =
-      data.attorney_profile?.user_profile?.full_name ?? 'Unknown';
+    const assignedName = data.assigned_to?.full_name ?? 'Unknown';
     await this.caseActivitiesService.createAutoActivity(
       caseId,
       CaseActivityType.ATTORNEY_ASSIGNED,
-      `Attorney assigned: ${attorneyName}`,
+      `Assigned to: ${assignedName}`,
       null,
       user.id,
     );
@@ -549,8 +542,8 @@ export class CasesService {
       caseNumber: row.case_number,
       clientProfileId: row.client_profile_id,
       clientName: row.client_profile?.user_profile?.full_name ?? 'Unknown',
-      attorneyProfileId: row.attorney_profile_id,
-      attorneyName: row.attorney_profile?.user_profile?.full_name ?? null,
+      assignedToId: row.assigned_to_id,
+      assignedToName: row.assigned_to?.full_name ?? null,
       practiceAreaId: row.practice_area_id,
       practiceAreaName: row.practice_area?.name ?? 'Unknown',
       serviceId: row.service_id,

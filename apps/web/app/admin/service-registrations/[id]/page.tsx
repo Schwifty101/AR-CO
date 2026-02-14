@@ -73,12 +73,12 @@ const updateStatusSchema = z.object({
 
 type UpdateStatusForm = z.infer<typeof updateStatusSchema>;
 
-/** Assign staff form schema */
-const assignStaffSchema = z.object({
-  staffId: z.string().uuid('Invalid staff ID format'),
+/** Assign form schema */
+const assignSchema = z.object({
+  assignedToId: z.string().uuid('Invalid assignee ID format'),
 });
 
-type AssignStaffForm = z.infer<typeof assignStaffSchema>;
+type AssignForm = z.infer<typeof assignSchema>;
 
 /**
  * Admin service registration detail page component
@@ -103,14 +103,14 @@ export default function AdminServiceRegistrationDetailPage() {
     resolver: zodResolver(updateStatusSchema),
   });
 
-  // Assign staff form
+  // Assign form
   const {
     handleSubmit: handleSubmitAssign,
     setValue: setAssignValue,
     formState: { errors: assignErrors, isSubmitting: isAssigning },
     reset: resetAssign,
-  } = useForm<AssignStaffForm>({
-    resolver: zodResolver(assignStaffSchema),
+  } = useForm<AssignForm>({
+    resolver: zodResolver(assignSchema),
   });
 
   // Fetch registration and staff list on mount
@@ -135,10 +135,10 @@ export default function AdminServiceRegistrationDetailPage() {
 
     async function loadStaffList() {
       try {
-        const result = await getUsers({ userTypes: ['admin', 'staff'], limit: 100 });
+        const result = await getUsers({ userTypes: ['staff', 'attorney'], limit: 100 });
         setStaffList(result.users);
       } catch {
-        // Non-blocking — staff dropdown will be empty but form still works
+        // Non-blocking — assignee dropdown will be empty but form still works
       }
     }
 
@@ -159,9 +159,9 @@ export default function AdminServiceRegistrationDetailPage() {
     }
   };
 
-  const onAssignStaff = async (data: AssignStaffForm) => {
+  const onAssign = async (data: AssignForm) => {
     try {
-      const updated = await assignRegistration(registrationId, data.staffId);
+      const updated = await assignRegistration(registrationId, { assignedToId: data.assignedToId });
       setRegistration(updated);
       resetAssign();
       toast.success('Registration assigned successfully');
@@ -273,9 +273,13 @@ export default function AdminServiceRegistrationDetailPage() {
             <div>
               <Label className="text-muted-foreground">Assigned To</Label>
               <p className="font-medium">
-                {registration.assignedStaffId
-                  ? staffList.find((s) => s.id === registration.assignedStaffId)?.fullName || registration.assignedStaffId
-                  : <span className="text-muted-foreground">Unassigned</span>}
+                {registration.assignedToName ? (
+                  registration.assignedToName
+                ) : registration.assignedToId ? (
+                  <span className="text-muted-foreground italic">Unknown</span>
+                ) : (
+                  <span className="text-muted-foreground">Unassigned</span>
+                )}
               </p>
             </div>
           </div>
@@ -315,7 +319,7 @@ export default function AdminServiceRegistrationDetailPage() {
       <Card>
         <CardHeader>
           <CardTitle>Actions</CardTitle>
-          <CardDescription>Update status or assign staff to this registration</CardDescription>
+          <CardDescription>Update status or assign this registration</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Update Status Form */}
@@ -364,16 +368,16 @@ export default function AdminServiceRegistrationDetailPage() {
 
           <Separator />
 
-          {/* Assign Staff Form */}
-          <form onSubmit={handleSubmitAssign(onAssignStaff)} className="space-y-4">
-            <h3 className="font-semibold">Assign Staff</h3>
+          {/* Assign Form */}
+          <form onSubmit={handleSubmitAssign(onAssign)} className="space-y-4">
+            <h3 className="font-semibold">Assign To</h3>
             <div className="space-y-2">
-              <Label htmlFor="staffId">Staff Member</Label>
+              <Label htmlFor="assignedToId">Assignee</Label>
               <Select
-                onValueChange={(value) => setAssignValue('staffId', value)}
+                onValueChange={(value) => setAssignValue('assignedToId', value)}
               >
-                <SelectTrigger id="staffId">
-                  <SelectValue placeholder="Select a staff member" />
+                <SelectTrigger id="assignedToId">
+                  <SelectValue placeholder="Select a person" />
                 </SelectTrigger>
                 <SelectContent>
                   {staffList.map((staff) => (
@@ -383,13 +387,13 @@ export default function AdminServiceRegistrationDetailPage() {
                   ))}
                 </SelectContent>
               </Select>
-              {assignErrors.staffId && (
-                <p className="text-sm text-destructive">{assignErrors.staffId.message}</p>
+              {assignErrors.assignedToId && (
+                <p className="text-sm text-destructive">{assignErrors.assignedToId.message}</p>
               )}
             </div>
 
             <Button type="submit" disabled={isAssigning}>
-              {isAssigning ? 'Assigning...' : 'Assign Staff'}
+              {isAssigning ? 'Assigning...' : 'Assign'}
             </Button>
           </form>
         </CardContent>

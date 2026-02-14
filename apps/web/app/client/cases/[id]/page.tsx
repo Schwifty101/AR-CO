@@ -225,9 +225,9 @@ export default function ClientCaseDetailPage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Attorney</p>
+                <p className="text-sm font-medium text-muted-foreground">Assigned To</p>
                 <p className="text-base mt-1">
-                  {caseData?.attorneyName || 'Unassigned'}
+                  {caseData?.assignedToName || 'Unassigned'}
                 </p>
               </div>
               <div>

@@ -317,10 +317,10 @@ export default function AdminComplaintsPage() {
                             </Badge>
                           </TableCell>
                           <TableCell>
-                            {complaint.assignedStaffName ? (
-                              complaint.assignedStaffName
-                            ) : complaint.assignedStaffId ? (
-                              <span className="text-muted-foreground italic">Unknown Staff</span>
+                            {complaint.assignedToName ? (
+                              complaint.assignedToName
+                            ) : complaint.assignedToId ? (
+                              <span className="text-muted-foreground italic">Unknown</span>
                             ) : (
                               <span className="text-muted-foreground">Unassigned</span>
                             )}

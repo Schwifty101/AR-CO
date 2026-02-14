@@ -29,7 +29,6 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
@@ -46,6 +45,7 @@ import {
   assignComplaint,
   type ComplaintResponse,
 } from '@/lib/api/complaints';
+import { getUsers } from '@/lib/api/users';
 import { ComplaintStatus } from '@repo/shared';
 
 /** Complaint status badge color mapping */
@@ -66,12 +66,12 @@ const updateStatusSchema = z.object({
 
 type UpdateStatusForm = z.infer<typeof updateStatusSchema>;
 
-/** Assign staff form schema */
-const assignStaffSchema = z.object({
-  staffId: z.string().uuid('Invalid staff ID format'),
+/** Assign form schema */
+const assignSchema = z.object({
+  assignedToId: z.string().uuid('Invalid assignee ID format'),
 });
 
-type AssignStaffForm = z.infer<typeof assignStaffSchema>;
+type AssignForm = z.infer<typeof assignSchema>;
 
 /**
  * Admin complaint detail page component
@@ -84,6 +84,8 @@ export default function AdminComplaintDetailPage() {
   const [complaint, setComplaint] = useState<ComplaintResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [assignees, setAssignees] = useState<{ id: string; name: string }[]>([]);
+  const [isLoadingAssignees, setIsLoadingAssignees] = useState(true);
 
   // Update status form
   const {
@@ -98,15 +100,18 @@ export default function AdminComplaintDetailPage() {
 
   const selectedStatus = watch('status');
 
-  // Assign staff form
+  // Assign form
   const {
-    register: registerAssign,
     handleSubmit: handleSubmitAssign,
     formState: { errors: assignErrors, isSubmitting: isAssigning },
     reset: resetAssign,
-  } = useForm<AssignStaffForm>({
-    resolver: zodResolver(assignStaffSchema),
+    setValue: setAssignValue,
+    watch: watchAssign,
+  } = useForm<AssignForm>({
+    resolver: zodResolver(assignSchema),
   });
+
+  const selectedAssigneeId = watchAssign('assignedToId');
 
   // Fetch complaint on mount
   useEffect(() => {
@@ -133,6 +138,23 @@ export default function AdminComplaintDetailPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [complaintId]);
 
+  // Load assignees for assignment dropdown
+  useEffect(() => {
+    async function loadAssignees() {
+      try {
+        setIsLoadingAssignees(true);
+        const data = await getUsers({ userTypes: ['staff', 'attorney'], limit: 100 });
+        setAssignees(data.users.map((u) => ({ id: u.id, name: u.fullName })));
+      } catch {
+        toast.error('Failed to load assignees');
+      } finally {
+        setIsLoadingAssignees(false);
+      }
+    }
+
+    loadAssignees();
+  }, []);
+
   const onUpdateStatus = async (data: UpdateStatusForm) => {
     try {
       const updated = await updateComplaintStatus(complaintId, {
@@ -147,9 +169,9 @@ export default function AdminComplaintDetailPage() {
     }
   };
 
-  const onAssignStaff = async (data: AssignStaffForm) => {
+  const onAssign = async (data: AssignForm) => {
     try {
-      const updated = await assignComplaint(complaintId, { staffId: data.staffId });
+      const updated = await assignComplaint(complaintId, { assignedToId: data.assignedToId });
       setComplaint(updated);
       resetAssign();
       toast.success('Complaint assigned successfully');
@@ -246,10 +268,10 @@ export default function AdminComplaintDetailPage() {
             <div>
               <Label className="text-muted-foreground">Assigned To</Label>
               <p className="font-medium">
-                {complaint.assignedStaffName ? (
-                  complaint.assignedStaffName
-                ) : complaint.assignedStaffId ? (
-                  <span className="text-muted-foreground italic">Unknown Staff</span>
+                {complaint.assignedToName ? (
+                  complaint.assignedToName
+                ) : complaint.assignedToId ? (
+                  <span className="text-muted-foreground italic">Unknown</span>
                 ) : (
                   <span className="text-muted-foreground">Unassigned</span>
                 )}
@@ -328,7 +350,7 @@ export default function AdminComplaintDetailPage() {
       <Card>
         <CardHeader>
           <CardTitle>Actions</CardTitle>
-          <CardDescription>Update status or assign staff to this complaint</CardDescription>
+          <CardDescription>Update status or assign this complaint</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Update Status Form */}
@@ -389,23 +411,40 @@ export default function AdminComplaintDetailPage() {
 
           <Separator />
 
-          {/* Assign Staff Form */}
-          <form onSubmit={handleSubmitAssign(onAssignStaff)} className="space-y-4">
-            <h3 className="font-semibold">Assign Staff</h3>
+          {/* Assign Form */}
+          <form onSubmit={handleSubmitAssign(onAssign)} className="space-y-4">
+            <h3 className="font-semibold">Assign To</h3>
             <div className="space-y-2">
-              <Label htmlFor="staffId">Staff UUID</Label>
-              <Input
-                id="staffId"
-                placeholder="Enter staff member UUID"
-                {...registerAssign('staffId')}
-              />
-              {assignErrors.staffId && (
-                <p className="text-sm text-destructive">{assignErrors.staffId.message}</p>
+              <Label>Assignee</Label>
+              <Select
+                value={selectedAssigneeId || ''}
+                onValueChange={(value) => setAssignValue('assignedToId', value)}
+                disabled={isLoadingAssignees}
+              >
+                <SelectTrigger>
+                  <SelectValue
+                    placeholder={
+                      isLoadingAssignees
+                        ? 'Loading assignees...'
+                        : 'Select a person'
+                    }
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  {assignees.map((assignee) => (
+                    <SelectItem key={assignee.id} value={assignee.id}>
+                      {assignee.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {assignErrors.assignedToId && (
+                <p className="text-sm text-destructive">{assignErrors.assignedToId.message}</p>
               )}
             </div>
 
             <Button type="submit" disabled={isAssigning}>
-              {isAssigning ? 'Assigning...' : 'Assign Staff'}
+              {isAssigning ? 'Assigning...' : 'Assign'}
             </Button>
           </form>
         </CardContent>

@@ -1,3 +1,5 @@
+export type { AssignToData, PaginationParams } from './common.types';
+
 export type {
   SignupData,
   SigninData,
@@ -21,7 +23,6 @@ export type {
   AttorneyProfile,
   UserProfile,
   PaginatedUsersResponse,
-  PaginationParams,
 } from './users.types';
 
 export type {
@@ -46,7 +47,6 @@ export type {
 export type {
   CreateComplaintData,
   UpdateComplaintStatusData,
-  AssignComplaintData,
   ComplaintFilters,
   ComplaintResponse,
   PaginatedComplaintsResponse,
@@ -70,7 +70,6 @@ export type {
   CreateCaseData,
   UpdateCaseData,
   UpdateCaseStatusData,
-  AssignAttorneyData,
   CaseFilters,
   CreateCaseActivityData,
   CaseResponse,

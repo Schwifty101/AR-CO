@@ -248,7 +248,7 @@ export default function AdminCasesPage() {
                       <TableHead>Case #</TableHead>
                       <TableHead>Title</TableHead>
                       <TableHead>Client</TableHead>
-                      <TableHead>Attorney</TableHead>
+                      <TableHead>Assigned To</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Priority</TableHead>
                       <TableHead>Filing Date</TableHead>
@@ -307,10 +307,10 @@ export default function AdminCasesPage() {
                           <TableCell>{caseItem.title}</TableCell>
                           <TableCell>{caseItem.clientName || 'N/A'}</TableCell>
                           <TableCell>
-                            {caseItem.attorneyName ? (
-                              caseItem.attorneyName
-                            ) : caseItem.attorneyProfileId ? (
-                              <span className="text-muted-foreground italic">Unknown Attorney</span>
+                            {caseItem.assignedToName ? (
+                              caseItem.assignedToName
+                            ) : caseItem.assignedToId ? (
+                              <span className="text-muted-foreground italic">Unknown</span>
                             ) : (
                               <span className="text-muted-foreground">Unassigned</span>
                             )}
