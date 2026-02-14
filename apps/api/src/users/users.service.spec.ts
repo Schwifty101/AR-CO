@@ -453,9 +453,9 @@ describe('UsersService', () => {
       expect(result.email).toBe('invited@example.com');
       expect(result.fullName).toBe('New Staff');
       expect(result.userType).toBe(UserType.STAFF);
-      expect(
-        mockAdminClient.auth.admin.inviteUserByEmail,
-      ).toHaveBeenCalledWith('invited@example.com');
+      expect(mockAdminClient.auth.admin.inviteUserByEmail).toHaveBeenCalledWith(
+        'invited@example.com',
+      );
     });
 
     it('should throw InternalServerErrorException on auth error', async () => {

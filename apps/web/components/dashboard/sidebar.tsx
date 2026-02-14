@@ -26,6 +26,7 @@ import {
   CreditCard,
   ClipboardList,
   Briefcase,
+  Scale,
   LogOut,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
@@ -50,6 +51,7 @@ const ADMIN_NAV: NavItem[] = [
   { label: 'Profile', href: '/admin/profile', icon: User },
   { label: 'Users', href: '/admin/users', icon: Users },
   { label: 'Clients', href: '/admin/clients', icon: UserCheck },
+  { label: 'Cases', href: '/admin/cases', icon: Scale },
   { label: 'Complaints', href: '/admin/complaints', icon: MessageSquareWarning },
   { label: 'Subscriptions', href: '/admin/subscriptions', icon: CreditCard },
   { label: 'Service Registrations', href: '/admin/service-registrations', icon: ClipboardList },
@@ -61,6 +63,7 @@ const CLIENT_NAV: NavItem[] = [
   { label: 'Profile', href: '/client/profile', icon: User },
   { label: 'Subscription', href: '/client/subscription', icon: CreditCard },
   { label: 'Complaints', href: '/client/complaints', icon: MessageSquareWarning },
+  { label: 'My Cases', href: '/client/cases', icon: Scale },
   { label: 'My Services', href: '/client/services', icon: Briefcase },
 ];
 

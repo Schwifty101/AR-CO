@@ -24,7 +24,7 @@ export {
   PaginatedUsersResponseSchema,
 } from './users.schemas';
 
-export { PaginationSchema } from './common.schemas';
+export { PaginationSchema, AssignToSchema } from './common.schemas';
 
 export {
   AdminDashboardStatsSchema,
@@ -48,7 +48,6 @@ export {
 export {
   CreateComplaintSchema,
   UpdateComplaintStatusSchema,
-  AssignComplaintSchema,
   ComplaintFiltersSchema,
   ComplaintResponseSchema,
   PaginatedComplaintsResponseSchema,
@@ -67,3 +66,15 @@ export {
   ServiceResponseSchema,
   PaginatedServicesResponseSchema,
 } from './services.schemas';
+
+export {
+  CreateCaseSchema,
+  UpdateCaseSchema,
+  UpdateCaseStatusSchema,
+  CaseFiltersSchema,
+  CreateCaseActivitySchema,
+  CaseResponseSchema,
+  CaseActivityResponseSchema,
+  PaginatedCasesResponseSchema,
+  PaginatedCaseActivitiesResponseSchema,
+} from './cases.schemas';
