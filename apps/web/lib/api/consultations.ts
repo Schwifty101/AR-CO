@@ -289,3 +289,75 @@ export async function getConsultations(
     totalPages: backendResponse.meta.totalPages,
   };
 }
+
+/**
+ * Fetch a single consultation booking by ID (staff endpoint)
+ *
+ * Retrieves full booking details including payment and scheduling data.
+ * Requires authentication (staff/admin only).
+ *
+ * @param id - UUID of the consultation booking
+ * @returns Full consultation booking details
+ * @throws Error if request fails, booking not found, or user lacks permissions
+ *
+ * @example
+ * ```typescript
+ * const booking = await getConsultationById('550e8400-e29b-41d4-a716-446655440000');
+ * console.log('Reference:', booking.referenceNumber);
+ * console.log('Status:', booking.bookingStatus);
+ * ```
+ */
+export async function getConsultationById(
+  id: string,
+): Promise<ConsultationResponse> {
+  const token = await getSessionToken();
+
+  const response = await fetch(`/api/consultations/${id}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    const error = (await response.json()) as { message?: string };
+    throw new Error(error.message || 'Failed to fetch consultation');
+  }
+
+  return (await response.json()) as ConsultationResponse;
+}
+
+/**
+ * Cancel a consultation booking (staff endpoint)
+ *
+ * Sets booking status to 'cancelled'. Cannot cancel already completed or cancelled bookings.
+ * Does not process refunds automatically. Requires authentication (staff/admin only).
+ *
+ * @param id - UUID of the consultation booking
+ * @returns Updated consultation booking with cancelled status
+ * @throws Error if request fails, booking not found, already cancelled/completed, or user lacks permissions
+ *
+ * @example
+ * ```typescript
+ * const cancelled = await cancelConsultation('550e8400-e29b-41d4-a716-446655440000');
+ * console.log('Status:', cancelled.bookingStatus); // 'cancelled'
+ * ```
+ */
+export async function cancelConsultation(
+  id: string,
+): Promise<ConsultationResponse> {
+  const token = await getSessionToken();
+
+  const response = await fetch(`/api/consultations/${id}/cancel`, {
+    method: 'PATCH',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    const error = (await response.json()) as { message?: string };
+    throw new Error(error.message || 'Failed to cancel consultation');
+  }
+
+  return (await response.json()) as ConsultationResponse;
+}
