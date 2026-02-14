@@ -14,6 +14,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useAuth } from '@/lib/auth/use-auth';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getAdminDashboardStats } from '@/lib/api/dashboard';
@@ -87,18 +88,20 @@ export default function AdminDashboardPage() {
             </p>
           )}
         </div>
-        <div className="rounded-lg border p-6 transition-shadow hover:shadow-md">
-          <h3 className="text-sm font-medium text-muted-foreground">
-            Active Cases
-          </h3>
-          {statsLoading ? (
-            <Skeleton className="mt-2 h-9 w-16" />
-          ) : (
-            <p className="mt-2 text-3xl font-bold">
-              {stats?.activeCases ?? 0}
-            </p>
-          )}
-        </div>
+        <Link href="/admin/cases?status=active">
+          <div className="rounded-lg border p-6 transition-shadow hover:shadow-md cursor-pointer">
+            <h3 className="text-sm font-medium text-muted-foreground">
+              Active Cases
+            </h3>
+            {statsLoading ? (
+              <Skeleton className="mt-2 h-9 w-16" />
+            ) : (
+              <p className="mt-2 text-3xl font-bold">
+                {stats?.activeCases ?? 0}
+              </p>
+            )}
+          </div>
+        </Link>
         <div className="rounded-lg border p-6 transition-shadow hover:shadow-md">
           <h3 className="text-sm font-medium text-muted-foreground">
             Pending Appointments

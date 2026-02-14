@@ -27,10 +27,7 @@ import { STAFF_ROLES } from '../common/constants/roles';
 import { validateSortColumn } from '../common/utils/query-helpers';
 import type { AuthUser } from '../common/interfaces/auth-user.interface';
 import type { PaginationParams } from '@repo/shared';
-import type {
-  DbListResult,
-  DbCountResult,
-} from '../database/db-result.types';
+import type { DbListResult, DbCountResult } from '../database/db-result.types';
 
 /** Allowed sort columns for cases aggregation */
 const ALLOWED_CASE_SORT_COLUMNS = [

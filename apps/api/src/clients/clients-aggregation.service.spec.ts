@@ -69,9 +69,7 @@ describe('ClientsAggregationService', () => {
       ],
     }).compile();
 
-    service = module.get<ClientsAggregationService>(
-      ClientsAggregationService,
-    );
+    service = module.get<ClientsAggregationService>(ClientsAggregationService);
   });
 
   describe('getClientCases', () => {

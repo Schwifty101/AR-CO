@@ -426,7 +426,12 @@ export class UsersController {
   async inviteUser(
     @Body(new ZodValidationPipe(InviteUserSchema))
     dto: InviteUserData,
-  ): Promise<{ id: string; email: string; fullName: string; userType: string }> {
+  ): Promise<{
+    id: string;
+    email: string;
+    fullName: string;
+    userType: string;
+  }> {
     return this.usersService.inviteUser(dto);
   }
 

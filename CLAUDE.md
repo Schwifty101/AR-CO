@@ -66,8 +66,9 @@ Shared validation schemas, types, and enums used by both frontend and backend:
 packages/shared/src/
 ├── enums.ts                          # UserType, CompanyType, status enums
 ├── schemas/
-│   ├── common.schemas.ts             # Pagination, shared validations
+│   ├── common.schemas.ts             # Pagination, shared validations, AssignToSchema
 │   ├── auth.schemas.ts               # Auth request/response schemas
+│   ├── cases.schemas.ts              # Case CRUD, filters, activities schemas
 │   ├── clients.schemas.ts
 │   ├── complaints.schemas.ts
 │   ├── service-registrations.schemas.ts
@@ -95,6 +96,8 @@ All modules follow **Controller-Service-Module** pattern in feature folders:
 | `services/` | Available services catalog (NTN, SECP, business registration) |
 | `subscriptions/` | Subscription plans and status tracking |
 | `dashboard/` | Admin and client dashboard statistics |
+| `cases/` | Case management, case activities timeline, assignment |
+| `practice-areas/` | Practice areas catalog (read-only listing) |
 | `payments/` | SafepayService for payment gateway integration |
 
 **Module structure:**
@@ -148,9 +151,11 @@ Typed API client functions for each backend module:
 ```
 lib/api/
 ├── auth-helpers.ts              # getSessionToken(), PaginationParams
+├── cases.ts                     # Case CRUD, assignment, activities
 ├── clients.ts                   # Client CRUD + aggregation
 ├── complaints.ts                # Complaint submission/tracking
 ├── dashboard.ts                 # Dashboard statistics
+├── practice-areas.ts            # Practice areas listing
 ├── service-registrations.ts     # Service registration CRUD
 ├── services.ts                  # Services catalog
 ├── subscriptions.ts             # Subscription management

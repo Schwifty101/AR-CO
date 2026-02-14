@@ -1,20 +1,20 @@
 'use client';
 
 /**
- * Admin Complaints List Page
+ * Admin Cases List Page
  *
- * Displays paginated list of all complaints with filtering capabilities.
- * Staff can filter by status, category, and target organization.
+ * Displays paginated list of all cases with filtering capabilities.
+ * Staff can filter by status, priority, and search by case number or title.
  *
- * @module AdminComplaintsPage
+ * @module AdminCasesPage
  *
  * @example
- * Accessible at /admin/complaints
+ * Accessible at /admin/cases
  * Requires authentication and admin/staff user type
  */
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { Suspense, useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -34,7 +34,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
-import { MessageSquareWarning } from 'lucide-react';
+import { Briefcase } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -45,82 +45,109 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import {
-  getComplaints,
-  type ComplaintResponse,
-  type ComplaintFilters,
-} from '@/lib/api/complaints';
-import { ComplaintStatus, ComplaintCategory } from '@repo/shared';
-
-/** Complaint status badge color mapping */
-const STATUS_COLORS: Record<ComplaintStatus, string> = {
-  [ComplaintStatus.SUBMITTED]: 'bg-gray-500 text-white',
-  [ComplaintStatus.UNDER_REVIEW]: 'bg-yellow-500 text-white',
-  [ComplaintStatus.ESCALATED]: 'bg-orange-500 text-white',
-  [ComplaintStatus.RESOLVED]: 'bg-green-500 text-white',
-  [ComplaintStatus.CLOSED]: 'bg-blue-500 text-white',
-};
-
-/** Items per page */
-const PAGE_SIZE = 20;
+  getCases,
+  CaseStatus,
+  CasePriority,
+  type CaseResponse,
+  type CaseFilters,
+} from '@/lib/api/cases';
+import {
+  STATUS_COLORS,
+  PRIORITY_COLORS,
+  PAGE_SIZE,
+  formatDate,
+} from './cases.utils';
 
 /**
- * Admin complaints list page component
+ * Admin cases list page component
  */
-export default function AdminComplaintsPage() {
+export default function AdminCasesPage() {
+  return (
+    <Suspense fallback={<CasesPageSkeleton />}>
+      <AdminCasesContent />
+    </Suspense>
+  );
+}
+
+function CasesPageSkeleton() {
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Cases</h1>
+          <p className="text-muted-foreground">Manage all legal cases</p>
+        </div>
+      </div>
+      <Card>
+        <CardContent className="pt-6">
+          <Skeleton className="h-64 w-full" />
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+function AdminCasesContent() {
   const router = useRouter();
-  const [complaints, setComplaints] = useState<ComplaintResponse[]>([]);
+  const searchParams = useSearchParams();
+  const [cases, setCases] = useState<CaseResponse[]>([]);
   const [total, setTotal] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Filter states
-  const [statusFilter, setStatusFilter] = useState<ComplaintStatus | ''>('');
-  const [categoryFilter, setCategoryFilter] = useState<ComplaintCategory | ''>('');
-  const [targetOrgFilter, setTargetOrgFilter] = useState('');
+  // Initialize status filter from URL search params (for dashboard link integration)
+  const initialStatus = searchParams?.get('status') || '';
 
-  // Fetch complaints when page or filters change
+  // Filter states
+  const [statusFilter, setStatusFilter] = useState<CaseStatus | ''>(
+    initialStatus as CaseStatus | ''
+  );
+  const [priorityFilter, setPriorityFilter] = useState<CasePriority | ''>('');
+  const [searchFilter, setSearchFilter] = useState('');
+
+  // Fetch cases when page or filters change
   useEffect(() => {
-    async function loadComplaints() {
+    async function loadCases() {
       try {
         setError(null);
         setIsLoading(true);
 
-        const filters: Partial<ComplaintFilters> = {};
+        const filters: Partial<CaseFilters> = {};
         if (statusFilter) filters.status = statusFilter;
-        if (categoryFilter) filters.category = categoryFilter;
-        if (targetOrgFilter) filters.targetOrganization = targetOrgFilter;
+        if (priorityFilter) filters.priority = priorityFilter;
+        if (searchFilter) filters.search = searchFilter;
 
-        const data = await getComplaints({
+        const data = await getCases({
           page: currentPage,
           limit: PAGE_SIZE,
           ...filters,
         });
 
-        setComplaints(data.complaints);
+        setCases(data.cases);
         setTotal(data.total);
         setTotalPages(data.totalPages);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load complaints');
-        toast.error('Failed to load complaints');
+        setError(err instanceof Error ? err.message : 'Failed to load cases');
+        toast.error('Failed to load cases');
       } finally {
         setIsLoading(false);
       }
     }
 
-    loadComplaints();
-  }, [currentPage, statusFilter, categoryFilter, targetOrgFilter]);
+    loadCases();
+  }, [currentPage, statusFilter, priorityFilter, searchFilter]);
 
   const handleClearFilters = () => {
     setStatusFilter('');
-    setCategoryFilter('');
-    setTargetOrgFilter('');
+    setPriorityFilter('');
+    setSearchFilter('');
     setCurrentPage(1);
   };
 
-  const handleRowClick = (complaintId: string) => {
-    router.push(`/admin/complaints/${complaintId}`);
+  const handleRowClick = (caseId: string) => {
+    router.push(`/admin/cases/${caseId}`);
   };
 
   const handlePreviousPage = () => {
@@ -135,27 +162,24 @@ export default function AdminComplaintsPage() {
     }
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
-  };
-
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Complaints</h1>
-        <p className="text-muted-foreground">
-          Manage all client complaints and escalations
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Cases</h1>
+          <p className="text-muted-foreground">
+            Manage all legal cases
+          </p>
+        </div>
+        <Button onClick={() => router.push('/admin/cases/new')}>
+          New Case
+        </Button>
       </div>
 
       <Card>
         <CardHeader>
           <CardTitle>Filters</CardTitle>
-          <CardDescription>Filter complaints by status, category, or organization</CardDescription>
+          <CardDescription>Filter cases by status, priority, or search by case number/title</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -164,7 +188,7 @@ export default function AdminComplaintsPage() {
               <Select
                 value={statusFilter || 'all'}
                 onValueChange={(value) => {
-                  setStatusFilter(value === 'all' ? '' : (value as ComplaintStatus));
+                  setStatusFilter(value === 'all' ? '' : (value as CaseStatus));
                   setCurrentPage(1);
                 }}
               >
@@ -173,7 +197,7 @@ export default function AdminComplaintsPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All statuses</SelectItem>
-                  {Object.values(ComplaintStatus).map((status) => (
+                  {Object.values(CaseStatus).map((status) => (
                     <SelectItem key={status} value={status}>
                       {status.replace(/_/g, ' ')}
                     </SelectItem>
@@ -183,22 +207,22 @@ export default function AdminComplaintsPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="category-filter">Category</Label>
+              <Label htmlFor="priority-filter">Priority</Label>
               <Select
-                value={categoryFilter || 'all'}
+                value={priorityFilter || 'all'}
                 onValueChange={(value) => {
-                  setCategoryFilter(value === 'all' ? '' : (value as ComplaintCategory));
+                  setPriorityFilter(value === 'all' ? '' : (value as CasePriority));
                   setCurrentPage(1);
                 }}
               >
-                <SelectTrigger id="category-filter">
-                  <SelectValue placeholder="All categories" />
+                <SelectTrigger id="priority-filter">
+                  <SelectValue placeholder="All priorities" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All categories</SelectItem>
-                  {Object.values(ComplaintCategory).map((category) => (
-                    <SelectItem key={category} value={category}>
-                      {category.replace(/_/g, ' ')}
+                  <SelectItem value="all">All priorities</SelectItem>
+                  {Object.values(CasePriority).map((priority) => (
+                    <SelectItem key={priority} value={priority}>
+                      {priority.replace(/_/g, ' ')}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -206,13 +230,13 @@ export default function AdminComplaintsPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="target-org-filter">Target Organization</Label>
+              <Label htmlFor="search-filter">Search</Label>
               <Input
-                id="target-org-filter"
-                placeholder="e.g., FBR, SECP"
-                value={targetOrgFilter}
+                id="search-filter"
+                placeholder="Case # or title"
+                value={searchFilter}
                 onChange={(e) => {
-                  setTargetOrgFilter(e.target.value);
+                  setSearchFilter(e.target.value);
                   setCurrentPage(1);
                 }}
               />
@@ -229,11 +253,11 @@ export default function AdminComplaintsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>All Complaints</CardTitle>
+          <CardTitle>All Cases</CardTitle>
           <CardDescription>
             {isLoading
-              ? 'Loading complaints...'
-              : `Showing ${complaints.length} of ${total} total complaints`}
+              ? 'Loading cases...'
+              : `Showing ${cases.length} of ${total} total cases`}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -247,13 +271,13 @@ export default function AdminComplaintsPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Complaint #</TableHead>
+                      <TableHead>Case #</TableHead>
                       <TableHead>Title</TableHead>
-                      <TableHead>Target Org</TableHead>
-                      <TableHead>Category</TableHead>
-                      <TableHead>Status</TableHead>
+                      <TableHead>Client</TableHead>
                       <TableHead>Assigned To</TableHead>
-                      <TableHead>Date</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Priority</TableHead>
+                      <TableHead>Filing Date</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -268,65 +292,67 @@ export default function AdminComplaintsPage() {
                             <Skeleton className="h-4 w-48" />
                           </TableCell>
                           <TableCell>
-                            <Skeleton className="h-4 w-24" />
+                            <Skeleton className="h-4 w-32" />
                           </TableCell>
                           <TableCell>
-                            <Skeleton className="h-4 w-20" />
+                            <Skeleton className="h-4 w-32" />
                           </TableCell>
                           <TableCell>
                             <Skeleton className="h-5 w-24" />
                           </TableCell>
                           <TableCell>
-                            <Skeleton className="h-4 w-32" />
+                            <Skeleton className="h-5 w-20" />
                           </TableCell>
                           <TableCell>
                             <Skeleton className="h-4 w-24" />
                           </TableCell>
                         </TableRow>
                       ))
-                    ) : complaints.length === 0 ? (
+                    ) : cases.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={7} className="py-12">
                           <div className="flex flex-col items-center justify-center text-center">
-                            <MessageSquareWarning className="h-12 w-12 text-muted-foreground/50 mb-4" />
-                            <h3 className="text-lg font-medium mb-1">No complaints found</h3>
+                            <Briefcase className="h-12 w-12 text-muted-foreground/50 mb-4" />
+                            <h3 className="text-lg font-medium mb-1">No cases found</h3>
                             <p className="text-sm text-muted-foreground">
-                              No complaints match the current filters. Try adjusting or clearing the filters above.
+                              No cases match the current filters. Try adjusting or clearing the filters above.
                             </p>
                           </div>
                         </TableCell>
                       </TableRow>
                     ) : (
-                      complaints.map((complaint) => (
+                      cases.map((caseItem) => (
                         <TableRow
-                          key={complaint.id}
+                          key={caseItem.id}
                           className="cursor-pointer hover:bg-muted/50"
-                          onClick={() => handleRowClick(complaint.id)}
+                          onClick={() => handleRowClick(caseItem.id)}
                         >
                           <TableCell className="font-medium">
-                            {complaint.complaintNumber}
+                            {caseItem.caseNumber}
                           </TableCell>
-                          <TableCell>{complaint.title}</TableCell>
-                          <TableCell>{complaint.targetOrganization}</TableCell>
+                          <TableCell>{caseItem.title}</TableCell>
+                          <TableCell>{caseItem.clientName || 'N/A'}</TableCell>
                           <TableCell>
-                            {complaint.category ? complaint.category.replace(/_/g, ' ') : 'N/A'}
-                          </TableCell>
-                          <TableCell>
-                            <Badge className={STATUS_COLORS[complaint.status]}>
-                              {complaint.status.replace(/_/g, ' ')}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            {complaint.assignedToName ? (
-                              complaint.assignedToName
-                            ) : complaint.assignedToId ? (
+                            {caseItem.assignedToName ? (
+                              caseItem.assignedToName
+                            ) : caseItem.assignedToId ? (
                               <span className="text-muted-foreground italic">Unknown</span>
                             ) : (
                               <span className="text-muted-foreground">Unassigned</span>
                             )}
                           </TableCell>
+                          <TableCell>
+                            <Badge className={STATUS_COLORS[caseItem.status]}>
+                              {caseItem.status.replace(/_/g, ' ')}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge className={PRIORITY_COLORS[caseItem.priority]}>
+                              {caseItem.priority.replace(/_/g, ' ')}
+                            </Badge>
+                          </TableCell>
                           <TableCell className="text-muted-foreground">
-                            {formatDate(complaint.createdAt)}
+                            {formatDate(caseItem.filingDate || caseItem.createdAt)}
                           </TableCell>
                         </TableRow>
                       ))
@@ -336,7 +362,7 @@ export default function AdminComplaintsPage() {
               </div>
 
               {/* Pagination Controls */}
-              {!isLoading && complaints.length > 0 && (
+              {!isLoading && cases.length > 0 && (
                 <div className="flex items-center justify-between mt-4">
                   <p className="text-sm text-muted-foreground">
                     Page {currentPage} of {totalPages}

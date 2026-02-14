@@ -30,7 +30,7 @@ import type {
   ComplaintResponse,
   CreateComplaintData,
   UpdateComplaintStatusData,
-  AssignComplaintData,
+  AssignToData,
   ComplaintFilters,
   PaginatedComplaintsResponse,
 } from '@repo/shared';
@@ -40,7 +40,7 @@ export type {
   ComplaintResponse,
   CreateComplaintData,
   UpdateComplaintStatusData,
-  AssignComplaintData,
+  AssignToData,
   ComplaintFilters,
 } from '@repo/shared';
 export type { PaginationParams } from './auth-helpers';
@@ -233,20 +233,20 @@ export async function updateComplaintStatus(
  * Assigns a complaint to a specific attorney or staff member for handling.
  *
  * @param id - UUID of the complaint
- * @param data - Assignment data containing attorney profile ID
+ * @param data - Assignment data containing the user profile ID to assign to
  * @returns Updated complaint record
  * @throws Error if request fails or user lacks permissions
  *
  * @example
  * ```typescript
  * const assigned = await assignComplaint('550e8400-e29b-41d4-a716-446655440000', {
- *   staffId: '660e8400-e29b-41d4-a716-446655440001',
+ *   assignedToId: '660e8400-e29b-41d4-a716-446655440001',
  * });
  * ```
  */
 export async function assignComplaint(
   id: string,
-  data: AssignComplaintData,
+  data: AssignToData,
 ): Promise<ComplaintResponse> {
   const token = await getSessionToken();
 
