@@ -135,9 +135,9 @@ export default function AdminCreateCasePage() {
         practiceAreaId: data.practiceAreaId,
         title: data.title,
         priority: data.priority,
-        ...(data.description && data.description.trim() !== '' && { description: data.description }),
-        ...(data.caseType && data.caseType.trim() !== '' && { caseType: data.caseType }),
-        ...(data.filingDate && data.filingDate.trim() !== '' && { filingDate: data.filingDate }),
+        ...(data.description && data.description.trim() !== '' ? { description: data.description } : {}),
+        ...(data.caseType && data.caseType.trim() !== '' ? { caseType: data.caseType } : {}),
+        ...(data.filingDate && data.filingDate.trim() !== '' ? { filingDate: data.filingDate } : {}),
       };
 
       const created = await createCase(payload);
