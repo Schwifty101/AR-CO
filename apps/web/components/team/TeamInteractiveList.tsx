@@ -54,8 +54,72 @@ export default function TeamInteractiveList({ members }: TeamInteractiveListProp
         >
             <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-x-12">
 
-                {/* List Column */}
-                <div className="lg:col-span-8 flex flex-col space-y-0 cursor-pointer">
+                {/* Mobile View - Full Profile Cards (Showcase Style) */}
+                <div className="lg:hidden col-span-1 space-y-24 mb-20">
+                    {members.map((member) => (
+                        <div key={member.id} className="flex flex-col">
+                            {/* Image Container */}
+                            <div className="relative w-full aspect-[3/4] mb-8 overflow-hidden rounded-sm bg-heritage-walnut">
+                                <Image
+                                    src={member.image}
+                                    alt={member.name}
+                                    fill
+                                    className="object-cover object-top filter grayscale-[20%]"
+                                    sizes="(max-width: 768px) 100vw, 400px"
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-wood-espresso/90 via-transparent to-transparent opacity-40" />
+                            </div>
+
+                            {/* Text Content */}
+                            <div>
+                                {/* Name */}
+                                <h2 className="text-5xl font-medium mb-3" style={{
+                                    fontFamily: "'Lora', Georgia, serif",
+                                    letterSpacing: '-0.02em',
+                                    lineHeight: 0.9,
+                                    color: 'var(--heritage-cream)',
+                                    textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                                }}>
+                                    {member.name}
+                                </h2>
+                                {/* Role */}
+                                <p className="text-lg text-heritage-gold/90 mb-6 italic" style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}>
+                                    {member.role}
+                                </p>
+                                {/* Bio */}
+                                <p className="text-sm leading-relaxed text-heritage-cream/80 mb-8 border-l border-heritage-gold/20 pl-4" style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}>
+                                    {member.bio}
+                                </p>
+
+                                {/* Education */}
+                                {member.education && (
+                                    <div className="mb-6">
+                                        <h4 className="text-[10px] uppercase tracking-widest text-heritage-gold mb-2 opacity-70" style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}>Education</h4>
+                                        <ul className="space-y-1">
+                                            {member.education.map((edu, i) => (
+                                                <li key={i} className="text-xs text-heritage-cream/70 font-light">{edu}</li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+
+                                {/* Expertise */}
+                                {member.expertise && (
+                                    <div className="flex flex-wrap gap-2">
+                                        {member.expertise.map((exp, i) => (
+                                            <span key={i} className="text-[10px] uppercase tracking-wider border border-heritage-cream/10 px-3 py-1.5 rounded-full text-heritage-cream/60">
+                                                {exp}
+                                            </span>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
+                {/* List Column (Desktop/Interactive) */}
+                <div className="hidden lg:flex lg:col-span-8 flex-col space-y-0 cursor-pointer">
                     {members.map((member, index) => (
                         <div
                             key={member.id}
@@ -116,6 +180,8 @@ export default function TeamInteractiveList({ members }: TeamInteractiveListProp
                                                     </p>
                                                 </div>
                                             )}
+
+
 
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
 

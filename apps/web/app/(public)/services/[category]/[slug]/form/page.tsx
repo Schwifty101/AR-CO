@@ -615,7 +615,7 @@ export default function ServiceForm({ params }: PageProps) {
         </div>
 
         {/* Animated content area */}
-        <div className="relative overflow-hidden" style={{ height: '480px' }}>
+        <div className="relative overflow-hidden min-h-[500px] md:h-[480px]">
           <AnimatePresence mode="wait" custom={direction}>
             <motion.div
               key={currentIndex}
@@ -625,13 +625,13 @@ export default function ServiceForm({ params }: PageProps) {
               animate="center"
               exit="exit"
               transition={{ duration: 0.35, ease: [0.32, 0.72, 0, 1] }}
-              className="absolute inset-0 flex flex-col"
+              className="relative md:absolute md:inset-0 flex flex-col h-full"
             >
               {/* Scrollable content area */}
               <div
                 ref={scrollContainerRef}
                 tabIndex={0}
-                className="flex-1 overflow-y-auto px-6 md:px-12 pt-2 pb-6 custom-scrollbar focus:outline-none"
+                className="flex-1 md:overflow-y-auto px-6 md:px-12 pt-2 pb-6 custom-scrollbar focus:outline-none"
                 style={{ position: 'relative', zIndex: 2 }}
               >
                 {/* Section title */}
@@ -654,11 +654,10 @@ export default function ServiceForm({ params }: PageProps) {
 
                 {/* Form fields - two column or single column based on field count */}
                 <motion.div
-                  className={`grid gap-6 ${
-                    useSingleColumn
+                  className={`grid gap-6 ${useSingleColumn
                       ? 'max-w-md mx-auto'
                       : 'grid-cols-1 md:grid-cols-2'
-                  }`}
+                    }`}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.2, ease: [0.32, 0.72, 0, 1] }}

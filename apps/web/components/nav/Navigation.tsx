@@ -257,6 +257,45 @@ const StickyNavbar: React.FC<IStickyNavbarProps> = ({ isVisible, onMenuClick, hi
     )
 }
 
+// --- Mobile Navbar (Always visible on mobile) ---
+
+interface IMobileNavbarProps {
+    /** Handler for menu button click */
+    onMenuClick: () => void
+    /** Whether to hide the CTA button */
+    hideCta?: boolean
+}
+
+const MobileNavbar: React.FC<IMobileNavbarProps> = ({ onMenuClick, hideCta }) => {
+    const { openOverlay: openConsultationOverlay } = useConsultationOverlay()
+
+    return (
+        <nav className={styles.mobileNavbar}>
+            <div className={styles.mobileLogo}>
+                <Logo />
+            </div>
+
+            <div className={styles.mobileActions}>
+                {!hideCta && (
+                    <CtaButton
+                        variant="filled"
+                        onClick={openConsultationOverlay}
+                        className={styles.mobileCta}
+                    />
+                )}
+
+                <button
+                    onClick={onMenuClick}
+                    className={styles.menuToggle}
+                    aria-label="Open navigation menu"
+                >
+                    <Menu size={20} strokeWidth={2.5} />
+                </button>
+            </div>
+        </nav>
+    )
+}
+
 // --- Full Screen Menu (Overlay) ---
 
 interface IFullScreenMenuProps {
@@ -398,6 +437,10 @@ const FullScreenMenu: React.FC<IFullScreenMenuProps> = ({ onClose, navItems, onO
                         </Link>
                         <CtaButton variant="outline" onClick={openConsultationOverlay} />
                     </div>
+                    {/* Mobile: Only Consultation button in header, Upgrade is in menu list */}
+                    <div className="md:hidden">
+                        <CtaButton variant="outline" onClick={openConsultationOverlay} />
+                    </div>
                     <button
                         onClick={onClose}
                         className={styles.closeButton}
@@ -466,6 +509,20 @@ const FullScreenMenu: React.FC<IFullScreenMenuProps> = ({ onClose, navItems, onO
                             </motion.div>
                         </div>
                     ))}
+
+                    {/* Mobile Only: Upgrade Button as last menu item */}
+                    <div className={`${styles.menuLinkWrapper} md:hidden`}>
+                        <motion.div variants={linkVariants}>
+                            <Link
+                                href="/subscribe"
+                                className={styles.menuLink}
+                                onClick={onClose}
+                                style={{ color: 'var(--heritage-gold)' }}
+                            >
+                                <SlotMachineText>Upgrade</SlotMachineText>
+                            </Link>
+                        </motion.div>
+                    </div>
                 </motion.nav>
             </div>
 
@@ -669,6 +726,10 @@ export default function Navigation() {
             />
             <StickyNavbar
                 isVisible={isScrolled}
+                onMenuClick={handleMenuToggle}
+                hideCta={hideCta}
+            />
+            <MobileNavbar
                 onMenuClick={handleMenuToggle}
                 hideCta={hideCta}
             />

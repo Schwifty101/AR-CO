@@ -250,8 +250,8 @@ export default function ServiceDocuments({ params }: PageProps) {
           )}
         </div>
 
-        {/* Animated content area — fixed height */}
-        <div className="relative overflow-hidden" style={{ height: '480px', position: 'relative', zIndex: 2 }}>
+        {/* Animated content area — responsive height */}
+        <div className="relative overflow-hidden min-h-[500px] md:h-[480px]" style={{ position: 'relative', zIndex: 2 }}>
           <AnimatePresence mode="wait" custom={direction}>
             <motion.div
               key={currentDoc.id}
@@ -261,10 +261,10 @@ export default function ServiceDocuments({ params }: PageProps) {
               animate="center"
               exit="exit"
               transition={{ duration: 0.35, ease: [0.32, 0.72, 0, 1] }}
-              className="absolute inset-0 grid grid-cols-1 md:grid-cols-2"
+              className="relative md:absolute md:inset-0 grid grid-cols-1 md:grid-cols-2"
             >
               {/* LEFT SIDE — Document Info */}
-              <div className="relative px-6 md:px-12 pb-8 pt-2 flex flex-col overflow-hidden doc-scrollbar" style={{ height: '480px' }}>
+              <div className="relative px-6 md:px-12 pb-8 pt-6 md:pt-2 flex flex-col md:overflow-hidden doc-scrollbar md:h-full" style={{}}>
                 {/* Document name */}
                 <motion.h2
                   className="uppercase mb-4"
@@ -304,7 +304,7 @@ export default function ServiceDocuments({ params }: PageProps) {
 
                 {/* Upload Specifications */}
                 <motion.div
-                  className="space-y-3 flex-1"
+                  className="space-y-1 flex-1"
                   initial={{ opacity: 0, y: 15 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.2, ease: [0.32, 0.72, 0, 1] }}
@@ -381,8 +381,8 @@ export default function ServiceDocuments({ params }: PageProps) {
                   </div>
                 </motion.div>
 
-                {/* Back button — bottom left */}
-                <div className="mt-6">
+                {/* Back button — bottom left (Desktop only) */}
+                <div className="mt-6 hidden md:block">
                   {!isFirst && (
                     <button
                       onClick={goBack}
@@ -430,7 +430,7 @@ export default function ServiceDocuments({ params }: PageProps) {
               />
 
               {/* RIGHT SIDE — Upload Area */}
-              <div className="px-6 md:px-12 pb-8 pt-2 flex flex-col" style={{ height: '480px', background: 'transparent' }}>
+              <div className="px-6 md:px-12 pb-8 pt-2 flex flex-col md:h-full" style={{ background: 'transparent' }}>
                 {/* Drop zone */}
                 <motion.div
                   initial={{ opacity: 0, scale: 0.95 }}
@@ -440,7 +440,7 @@ export default function ServiceDocuments({ params }: PageProps) {
                   onDrop={handleDrop}
                   onDragOver={handleDragOver}
                   onDragLeave={handleDragLeave}
-                  className="border-2 border-dashed p-8 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-300"
+                  className="hidden md:flex border-2 border-dashed p-8 flex-col items-center justify-center text-center cursor-pointer transition-all duration-300"
                   style={{
                     borderColor: isDragging ? 'var(--heritage-gold)' : 'rgba(212, 175, 55, 0.2)',
                     background: isDragging ? 'rgba(212, 175, 55, 0.03)' : 'rgba(249, 248, 246, 0.01)',
@@ -494,6 +494,30 @@ export default function ServiceDocuments({ params }: PageProps) {
                     className="hidden"
                   />
                 </motion.div>
+
+                {/* Mobile Upload Button */}
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="md:hidden w-full flex items-center justify-center gap-2 mb-6 transition-all duration-300"
+                  style={{
+                    padding: '1rem',
+                    background: 'rgba(212, 175, 55, 0.1)',
+                    border: '1px dashed var(--heritage-gold)',
+                    borderRadius: '1rem',
+                    color: 'var(--heritage-gold)',
+                    fontFamily: "'Georgia', 'Times New Roman', serif",
+                    fontSize: '0.85rem',
+                    fontWeight: 500,
+                    letterSpacing: '0.05em',
+                    textTransform: 'uppercase',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                  </svg>
+                  <span>Upload Document</span>
+                </button>
 
                 {/* Uploaded files list */}
                 {currentFiles.length > 0 && (
@@ -564,15 +588,16 @@ export default function ServiceDocuments({ params }: PageProps) {
                   </div>
                 )}
 
-                {/* Bottom buttons — Skip & Next */}
-                <div className="mt-auto pt-6 flex items-center justify-end gap-3" style={{ borderTop: '1px solid rgba(212, 175, 55, 0.2)', paddingTop: '1.5rem' }}>
-                  {/* Skip (only for optional docs) */}
-                  {!currentDoc.required && !isLast && (
+                {/* Bottom buttons — Back, Skip & Next */}
+                <div className="mt-auto pt-6 flex items-center justify-between md:justify-end gap-3" style={{ borderTop: '1px solid rgba(212, 175, 55, 0.2)', paddingTop: '1.5rem' }}>
+
+                  {/* Mobile Back Button */}
+                  {!isFirst && (
                     <button
-                      onClick={goNext}
-                      className="inline-flex items-center gap-2 transition-all duration-300"
+                      onClick={goBack}
+                      className="inline-flex md:hidden items-center gap-2 transition-all duration-300"
                       style={{
-                        padding: '0.65rem 1.25rem',
+                        padding: '0.65rem 1rem', // Smaller padding for mobile fit
                         background: 'none',
                         border: '1px solid rgba(249, 248, 246, 0.1)',
                         borderRadius: '100px',
@@ -583,83 +608,111 @@ export default function ServiceDocuments({ params }: PageProps) {
                         textTransform: 'uppercase',
                         cursor: 'pointer',
                       }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.borderColor = 'var(--heritage-gold)'
-                        e.currentTarget.style.color = 'var(--heritage-gold)'
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.borderColor = 'rgba(249, 248, 246, 0.1)'
-                        e.currentTarget.style.color = 'rgba(249, 248, 246, 0.5)'
-                      }}
                     >
-                      <span>Skip</span>
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M7 16l-4-4m0 0l4-4m-4 4h18" />
+                      </svg>
+                      {/* Text hidden on very small screens if needed, but keeping for now */}
+                      <span>Back</span>
                     </button>
                   )}
 
-                  {/* Next / Finish */}
-                  {isLast ? (
-                    <Link
-                      href={`/services/${category}/${slug}/form`}
-                      className="inline-flex items-center gap-2 transition-all duration-300"
-                      style={{
-                        padding: '0.7rem 1.5rem',
-                        background: 'var(--heritage-gold)',
-                        border: 'none',
-                        borderRadius: '100px',
-                        color: 'var(--wood-espresso)',
-                        fontFamily: "'Georgia', 'Times New Roman', serif",
-                        fontSize: '0.72rem',
-                        fontWeight: 600,
-                        letterSpacing: '0.12em',
-                        textTransform: 'uppercase',
-                        textDecoration: 'none',
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.background = '#c9a430'
-                        e.currentTarget.style.boxShadow = '0 4px 20px rgba(212, 175, 55, 0.25)'
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.background = 'var(--heritage-gold)'
-                        e.currentTarget.style.boxShadow = 'none'
-                      }}
-                    >
-                      <span>Continue</span>
-                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                      </svg>
-                    </Link>
-                  ) : (
-                    <button
-                      onClick={goNext}
-                      className="inline-flex items-center gap-2 transition-all duration-300"
-                      style={{
-                        padding: '0.7rem 1.5rem',
-                        background: 'var(--heritage-gold)',
-                        border: 'none',
-                        borderRadius: '100px',
-                        color: 'var(--wood-espresso)',
-                        fontFamily: "'Georgia', 'Times New Roman', serif",
-                        fontSize: '0.72rem',
-                        fontWeight: 600,
-                        letterSpacing: '0.12em',
-                        textTransform: 'uppercase',
-                        cursor: 'pointer',
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.background = '#c9a430'
-                        e.currentTarget.style.boxShadow = '0 4px 20px rgba(212, 175, 55, 0.25)'
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.background = 'var(--heritage-gold)'
-                        e.currentTarget.style.boxShadow = 'none'
-                      }}
-                    >
-                      <span>Next</span>
-                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                      </svg>
-                    </button>
-                  )}
+                  <div className="flex items-center gap-3 ml-auto">
+                    {/* Skip (only for optional docs) */}
+                    {!currentDoc.required && !isLast && (
+                      <button
+                        onClick={goNext}
+                        className="inline-flex items-center gap-2 transition-all duration-300"
+                        style={{
+                          padding: '0.65rem 1.25rem',
+                          background: 'none',
+                          border: '1px solid rgba(249, 248, 246, 0.1)',
+                          borderRadius: '100px',
+                          color: 'rgba(249, 248, 246, 0.5)',
+                          fontFamily: "'Georgia', 'Times New Roman', serif",
+                          fontSize: '0.72rem',
+                          letterSpacing: '0.12em',
+                          textTransform: 'uppercase',
+                          cursor: 'pointer',
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.borderColor = 'var(--heritage-gold)'
+                          e.currentTarget.style.color = 'var(--heritage-gold)'
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.borderColor = 'rgba(249, 248, 246, 0.1)'
+                          e.currentTarget.style.color = 'rgba(249, 248, 246, 0.5)'
+                        }}
+                      >
+                        <span>Skip</span>
+                      </button>
+                    )}
+
+                    {/* Next / Finish */}
+                    {isLast ? (
+                      <Link
+                        href={`/services/${category}/${slug}/form`}
+                        className="inline-flex items-center gap-2 transition-all duration-300"
+                        style={{
+                          padding: '0.7rem 1.5rem',
+                          background: 'var(--heritage-gold)',
+                          border: 'none',
+                          borderRadius: '100px',
+                          color: 'var(--wood-espresso)',
+                          fontFamily: "'Georgia', 'Times New Roman', serif",
+                          fontSize: '0.72rem',
+                          fontWeight: 600,
+                          letterSpacing: '0.12em',
+                          textTransform: 'uppercase',
+                          textDecoration: 'none',
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = '#c9a430'
+                          e.currentTarget.style.boxShadow = '0 4px 20px rgba(212, 175, 55, 0.25)'
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = 'var(--heritage-gold)'
+                          e.currentTarget.style.boxShadow = 'none'
+                        }}
+                      >
+                        <span>Continue</span>
+                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                        </svg>
+                      </Link>
+                    ) : (
+                      <button
+                        onClick={goNext}
+                        className="inline-flex items-center gap-2 transition-all duration-300"
+                        style={{
+                          padding: '0.7rem 1.5rem',
+                          background: 'var(--heritage-gold)',
+                          border: 'none',
+                          borderRadius: '100px',
+                          color: 'var(--wood-espresso)',
+                          fontFamily: "'Georgia', 'Times New Roman', serif",
+                          fontSize: '0.72rem',
+                          fontWeight: 600,
+                          letterSpacing: '0.12em',
+                          textTransform: 'uppercase',
+                          cursor: 'pointer',
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = '#c9a430'
+                          e.currentTarget.style.boxShadow = '0 4px 20px rgba(212, 175, 55, 0.25)'
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = 'var(--heritage-gold)'
+                          e.currentTarget.style.boxShadow = 'none'
+                        }}
+                      >
+                        <span>Next</span>
+                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                        </svg>
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             </motion.div>

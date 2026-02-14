@@ -31,12 +31,10 @@
   left: 0;
   top: 50%;
   height: 1px;
-  background: linear-gradient(
-    90deg,
-    rgba(212, 175, 55, 0.4) 0%,
-    rgba(212, 175, 55, 0.6) 50%,
-    rgba(212, 175, 55, 0.2) 100%
-  );
+  background: linear-gradient(90deg,
+      rgba(212, 175, 55, 0.4) 0%,
+      rgba(212, 175, 55, 0.6) 50%,
+      rgba(212, 175, 55, 0.2) 100%);
   right: 140px;
   transform: translateY(-50%);
 }
@@ -198,12 +196,10 @@
   top: 0;
   bottom: 0;
   width: 1px;
-  background: linear-gradient(
-    180deg,
-    rgba(212, 175, 55, 0.2) 0%,
-    rgba(212, 175, 55, 0.6) 50%,
-    rgba(212, 175, 55, 0.2) 100%
-  );
+  background: linear-gradient(180deg,
+      rgba(212, 175, 55, 0.2) 0%,
+      rgba(212, 175, 55, 0.6) 50%,
+      rgba(212, 175, 55, 0.2) 100%);
 }
 
 .mobileStepsList {
@@ -317,7 +313,10 @@
 
   .title {
     font-size: clamp(2rem, 7vw, 3rem);
-    margin-bottom: 1.5rem;
+    margin-bottom: 2.5rem;
+    text-align: left;
+    margin-top: 1rem;
+
   }
 
   .timeline {
@@ -358,6 +357,7 @@
 
 /* ─── Reduced Motion ─── */
 @media (prefers-reduced-motion: reduce) {
+
   .startButton,
   .mobileStartButton {
     transition: none !important;
