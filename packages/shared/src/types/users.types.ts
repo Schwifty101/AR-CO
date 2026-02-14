@@ -11,7 +11,6 @@ import type {
   UserProfileResponseSchema,
   PaginatedUsersResponseSchema,
 } from '../schemas/users.schemas';
-import type { PaginationSchema } from '../schemas/common.schemas';
 
 /** Data for inviting a new user (admin/staff/attorney) */
 export type InviteUserData = z.infer<typeof InviteUserSchema>;
@@ -42,6 +41,3 @@ export type UserProfile = z.infer<typeof UserProfileResponseSchema>;
 
 /** Paginated users API response */
 export type PaginatedUsersResponse = z.infer<typeof PaginatedUsersResponseSchema>;
-
-/** Pagination query parameters */
-export type PaginationParams = z.infer<typeof PaginationSchema>;

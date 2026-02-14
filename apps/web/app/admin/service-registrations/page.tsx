@@ -223,8 +223,10 @@ export default function AdminServiceRegistrationsPage() {
                             </Badge>
                           </TableCell>
                           <TableCell>
-                            {registration.assignedStaffId ? (
-                              registration.assignedStaffId
+                            {registration.assignedToName ? (
+                              registration.assignedToName
+                            ) : registration.assignedToId ? (
+                              <span className="text-muted-foreground italic">Unknown</span>
                             ) : (
                               <span className="text-muted-foreground">Unassigned</span>
                             )}

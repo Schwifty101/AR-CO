@@ -14,7 +14,7 @@ import {
   ComplaintCategory,
   type CreateComplaintData,
   type UpdateComplaintStatusData,
-  type AssignComplaintData,
+  type AssignToData,
   type ComplaintFilters,
   type PaginationParams,
 } from '@repo/shared';
@@ -68,7 +68,7 @@ describe('ComplaintsService', () => {
     category: 'infrastructure',
     evidence_urls: ['https://example.com/photo1.jpg'],
     status: 'submitted',
-    assigned_staff_id: null,
+    assigned_to_id: null,
     staff_notes: null,
     resolution_notes: null,
     resolved_at: null,
@@ -443,8 +443,8 @@ describe('ComplaintsService', () => {
 
   describe('assignComplaint', () => {
     it('should assign staff and update status to under_review', async () => {
-      const assignDto: AssignComplaintData = {
-        staffId: 'staff-uuid-789',
+      const assignDto: AssignToData = {
+        assignedToId: 'staff-uuid-789',
       };
 
       // Mock fetching current complaint with 'submitted' status
@@ -459,7 +459,7 @@ describe('ComplaintsService', () => {
 
       const assignedComplaint = {
         ...mockComplaintRow,
-        assigned_staff_id: 'staff-uuid-789',
+        assigned_to_id: 'staff-uuid-789',
         status: 'under_review',
       };
 
@@ -487,13 +487,13 @@ describe('ComplaintsService', () => {
         assignDto,
       );
 
-      expect(result.assignedStaffId).toBe('staff-uuid-789');
+      expect(result.assignedToId).toBe('staff-uuid-789');
       expect(result.status).toBe('under_review');
     });
 
     it('should assign staff without changing status if not submitted', async () => {
-      const assignDto: AssignComplaintData = {
-        staffId: 'staff-uuid-789',
+      const assignDto: AssignToData = {
+        assignedToId: 'staff-uuid-789',
       };
 
       // Mock fetching current complaint with 'under_review' status
@@ -508,7 +508,7 @@ describe('ComplaintsService', () => {
 
       const assignedComplaint = {
         ...mockComplaintRow,
-        assigned_staff_id: 'staff-uuid-789',
+        assigned_to_id: 'staff-uuid-789',
         status: 'under_review',
       };
 
@@ -536,12 +536,12 @@ describe('ComplaintsService', () => {
         assignDto,
       );
 
-      expect(result.assignedStaffId).toBe('staff-uuid-789');
+      expect(result.assignedToId).toBe('staff-uuid-789');
     });
 
     it('should throw NotFoundException when complaint not found', async () => {
-      const assignDto: AssignComplaintData = {
-        staffId: 'staff-uuid-789',
+      const assignDto: AssignToData = {
+        assignedToId: 'staff-uuid-789',
       };
 
       mockAdminClient.from.mockReturnValue({

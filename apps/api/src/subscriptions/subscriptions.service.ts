@@ -177,7 +177,9 @@ export class SubscriptionsService {
       }
 
       // Create Safepay checkout session
-      const frontendUrl = this.configService.get<string>('FRONTEND_URL') || 'http://localhost:3000';
+      const frontendUrl =
+        this.configService.get<string>('FRONTEND_URL') ||
+        'http://localhost:3000';
       const { checkoutUrl } =
         await this.safepayService.createSubscriptionCheckout({
           planId: 'civic_retainer',
@@ -356,7 +358,10 @@ export class SubscriptionsService {
       }
 
       // Get paginated data with validated sort
-      const validSort = validateSortColumn(sort, ALLOWED_SUBSCRIPTION_SORT_COLUMNS);
+      const validSort = validateSortColumn(
+        sort,
+        ALLOWED_SUBSCRIPTION_SORT_COLUMNS,
+      );
       const { data, error: fetchError } = (await adminClient
         .from('subscriptions')
         .select('*')

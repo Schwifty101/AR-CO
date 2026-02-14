@@ -18,7 +18,7 @@ import {
   ComplaintStatus,
   type CreateComplaintData,
   type UpdateComplaintStatusData,
-  type AssignComplaintData,
+  type AssignToData,
   type ComplaintFilters,
   type ComplaintResponse,
   type PaginatedComplaintsResponse,
@@ -26,7 +26,7 @@ import {
 } from '@repo/shared';
 import type { DbResult, DbListResult } from '../database/db-result.types';
 
-/** Database row shape for the complaints table with joined staff profile */
+/** Database row shape for the complaints table with joined assigned user profile */
 interface ComplaintRow {
   id: string;
   complaint_number: string;
@@ -38,23 +38,22 @@ interface ComplaintRow {
   category: string | null;
   evidence_urls: string[];
   status: ComplaintStatus;
-  assigned_staff_id: string | null;
+  assigned_to_id: string | null;
   staff_notes: string | null;
   resolution_notes: string | null;
   resolved_at: string | null;
   created_at: string;
   updated_at: string;
-  /** Joined staff profile from user_profiles via assigned_staff_id */
-  assigned_staff: { full_name: string } | null;
+  /** Joined assigned user profile from user_profiles via assigned_to_id */
+  assigned_to: { full_name: string } | null;
 }
 
 /**
- * Supabase select clause that joins assigned staff profile
- * Uses a foreign-key relationship: complaints.assigned_staff_id -> user_profiles.id
+ * Supabase select clause that joins assigned user profile
+ * Uses a foreign-key relationship: complaints.assigned_to_id -> user_profiles.id
  */
-const COMPLAINT_SELECT_WITH_STAFF =
-  '*, assigned_staff:user_profiles!assigned_staff_id(full_name)' as const;
-
+const COMPLAINT_SELECT_WITH_ASSIGNED =
+  '*, assigned_to:user_profiles!complaints_assigned_to_id_fkey(full_name)' as const;
 
 /** Allowed sort columns for complaints */
 const ALLOWED_COMPLAINT_SORT_COLUMNS = [
@@ -63,7 +62,6 @@ const ALLOWED_COMPLAINT_SORT_COLUMNS = [
   'complaint_number',
   'status',
 ] as const;
-
 
 /**
  * Service responsible for managing citizen complaints lifecycle
@@ -159,7 +157,7 @@ export class ComplaintsService {
         category: dto.category ?? null,
         evidence_urls: dto.evidenceUrls ?? [],
       })
-      .select(COMPLAINT_SELECT_WITH_STAFF)
+      .select(COMPLAINT_SELECT_WITH_ASSIGNED)
       .single()) as DbResult<ComplaintRow>;
 
     if (error || !data) {
@@ -216,7 +214,7 @@ export class ComplaintsService {
 
     let query = adminClient
       .from('complaints')
-      .select(COMPLAINT_SELECT_WITH_STAFF, { count: 'exact' });
+      .select(COMPLAINT_SELECT_WITH_ASSIGNED, { count: 'exact' });
 
     // If user is CLIENT, filter by their client_profile_id
     if (!STAFF_ROLES.includes(user.userType)) {
@@ -303,7 +301,7 @@ export class ComplaintsService {
 
     const { data, error } = (await adminClient
       .from('complaints')
-      .select(COMPLAINT_SELECT_WITH_STAFF)
+      .select(COMPLAINT_SELECT_WITH_ASSIGNED)
       .eq('id', complaintId)
       .single()) as DbResult<ComplaintRow>;
 
@@ -384,7 +382,7 @@ export class ComplaintsService {
       .from('complaints')
       .update(updateData)
       .eq('id', complaintId)
-      .select(COMPLAINT_SELECT_WITH_STAFF)
+      .select(COMPLAINT_SELECT_WITH_ASSIGNED)
       .single()) as DbResult<ComplaintRow>;
 
     if (error || !data) {
@@ -397,29 +395,29 @@ export class ComplaintsService {
   }
 
   /**
-   * Assigns a complaint to a staff member (staff only)
+   * Assigns a complaint to a user (staff/attorney) (staff only)
    * Automatically updates status to UNDER_REVIEW if currently SUBMITTED
    *
    * @param complaintId - The complaint ID
-   * @param dto - The assignment data (staffId)
+   * @param dto - The assignment data (assignedToId)
    * @returns The updated complaint
    * @throws {NotFoundException} If complaint does not exist
    * @throws {InternalServerErrorException} If database operation fails
    *
    * @example
    * ```typescript
-   * // Assign complaint to staff attorney
+   * // Assign complaint to a staff member
    * const assigned = await service.assignComplaint('complaint-uuid-123', {
-   *   staffId: 'staff-uuid-789'
+   *   assignedToId: 'user-profile-uuid-789'
    * });
    * ```
    */
   async assignComplaint(
     complaintId: string,
-    dto: AssignComplaintData,
+    dto: AssignToData,
   ): Promise<ComplaintResponse> {
     this.logger.log(
-      `Assigning complaint ${complaintId} to staff ${dto.staffId}`,
+      `Assigning complaint ${complaintId} to user ${dto.assignedToId}`,
     );
 
     const adminClient = this.supabaseService.getAdminClient();
@@ -437,7 +435,7 @@ export class ComplaintsService {
     }
 
     const updateData: Record<string, unknown> = {
-      assigned_staff_id: dto.staffId,
+      assigned_to_id: dto.assignedToId,
     };
 
     // If complaint status is 'submitted', also update to 'under_review'
@@ -449,7 +447,7 @@ export class ComplaintsService {
       .from('complaints')
       .update(updateData)
       .eq('id', complaintId)
-      .select(COMPLAINT_SELECT_WITH_STAFF)
+      .select(COMPLAINT_SELECT_WITH_ASSIGNED)
       .single()) as DbResult<ComplaintRow>;
 
     if (error || !data) {
@@ -470,11 +468,6 @@ export class ComplaintsService {
    * @private
    */
   private mapComplaintRow(row: ComplaintRow): ComplaintResponse {
-    const staffProfile = row.assigned_staff;
-    const assignedStaffName = staffProfile
-      ? staffProfile.full_name
-      : null;
-
     return {
       id: row.id,
       complaintNumber: row.complaint_number,
@@ -486,8 +479,8 @@ export class ComplaintsService {
       category: row.category ?? null,
       evidenceUrls: row.evidence_urls ?? [],
       status: row.status,
-      assignedStaffId: row.assigned_staff_id ?? null,
-      assignedStaffName,
+      assignedToId: row.assigned_to_id ?? null,
+      assignedToName: row.assigned_to?.full_name ?? null,
       staffNotes: row.staff_notes ?? null,
       resolutionNotes: row.resolution_notes ?? null,
       resolvedAt: row.resolved_at ?? null,
