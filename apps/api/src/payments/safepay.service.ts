@@ -183,7 +183,6 @@ export class SafepayService implements OnModuleInit {
         amount: params.amount,
         metadata: {
           order_id: params.orderId,
-          ...params.metadata,
         },
       });
     } catch (error) {
