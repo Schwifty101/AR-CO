@@ -164,9 +164,9 @@ export default function ServiceDocuments({ params }: PageProps) {
       <div
         className="relative rounded-xl overflow-hidden border"
         style={{
-          background: '#110b06',
-          borderColor: 'rgba(212, 175, 55, 0.12)',
-          boxShadow: '0 0 40px rgba(201, 169, 106, 0.12), 0 0 80px rgba(201, 169, 106, 0.06), 0 20px 60px rgba(0, 0, 0, 0.3)',
+          background: 'transparent',
+          borderColor: 'rgba(212, 175, 55, 0.25)',
+          boxShadow: 'none',
         }}
       >
         {/* Grain texture overlay */}
@@ -210,7 +210,7 @@ export default function ServiceDocuments({ params }: PageProps) {
         />
 
         {/* Progress bar at top */}
-        <div className="relative h-[2px] w-full" style={{ background: 'rgba(249, 248, 246, 0.06)', zIndex: 2 }}>
+        <div className="relative h-[2px] w-full" style={{ background: 'rgba(212, 175, 55, 0.15)', zIndex: 2 }}>
           <motion.div
             className="absolute left-0 top-0 h-full"
             style={{ background: 'var(--heritage-gold)' }}
@@ -242,6 +242,7 @@ export default function ServiceDocuments({ params }: PageProps) {
                 letterSpacing: '0.12em',
                 color: 'rgba(249, 248, 246, 0.4)',
                 borderColor: 'rgba(249, 248, 246, 0.12)',
+                borderRadius: '100px',
               }}
             >
               Optional
@@ -390,6 +391,7 @@ export default function ServiceDocuments({ params }: PageProps) {
                         padding: '0.65rem 1.25rem',
                         background: 'none',
                         border: '1px solid rgba(249, 248, 246, 0.1)',
+                        borderRadius: '100px',
                         color: 'rgba(249, 248, 246, 0.5)',
                         fontFamily: "'Georgia', 'Times New Roman', serif",
                         fontSize: '0.72rem',
@@ -428,7 +430,7 @@ export default function ServiceDocuments({ params }: PageProps) {
               />
 
               {/* RIGHT SIDE — Upload Area */}
-              <div className="px-6 md:px-12 pb-8 pt-2 flex flex-col" style={{ height: '480px', background: 'rgba(0, 0, 0, 0.15)' }}>
+              <div className="px-6 md:px-12 pb-8 pt-2 flex flex-col" style={{ height: '480px', background: 'transparent' }}>
                 {/* Drop zone */}
                 <motion.div
                   initial={{ opacity: 0, scale: 0.95 }}
@@ -440,9 +442,9 @@ export default function ServiceDocuments({ params }: PageProps) {
                   onDragLeave={handleDragLeave}
                   className="border-2 border-dashed p-8 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-300"
                   style={{
-                    borderColor: isDragging ? 'var(--heritage-gold)' : 'rgba(249, 248, 246, 0.12)',
+                    borderColor: isDragging ? 'var(--heritage-gold)' : 'rgba(212, 175, 55, 0.2)',
                     background: isDragging ? 'rgba(212, 175, 55, 0.03)' : 'rgba(249, 248, 246, 0.01)',
-                    borderRadius: '4px',
+                    borderRadius: '1rem',
                     minHeight: '160px',
                   }}
                 >
@@ -503,7 +505,7 @@ export default function ServiceDocuments({ params }: PageProps) {
                         style={{
                           background: 'rgba(249, 248, 246, 0.02)',
                           borderColor: 'rgba(249, 248, 246, 0.08)',
-                          borderRadius: '2px',
+                          borderRadius: '100px',
                         }}
                         onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'rgba(212, 175, 55, 0.2)' }}
                         onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(249, 248, 246, 0.08)' }}
@@ -563,7 +565,7 @@ export default function ServiceDocuments({ params }: PageProps) {
                 )}
 
                 {/* Bottom buttons — Skip & Next */}
-                <div className="mt-auto pt-6 flex items-center justify-end gap-3" style={{ borderTop: '1px solid rgba(249, 248, 246, 0.06)', paddingTop: '1.5rem' }}>
+                <div className="mt-auto pt-6 flex items-center justify-end gap-3" style={{ borderTop: '1px solid rgba(212, 175, 55, 0.2)', paddingTop: '1.5rem' }}>
                   {/* Skip (only for optional docs) */}
                   {!currentDoc.required && !isLast && (
                     <button
@@ -573,6 +575,7 @@ export default function ServiceDocuments({ params }: PageProps) {
                         padding: '0.65rem 1.25rem',
                         background: 'none',
                         border: '1px solid rgba(249, 248, 246, 0.1)',
+                        borderRadius: '100px',
                         color: 'rgba(249, 248, 246, 0.5)',
                         fontFamily: "'Georgia', 'Times New Roman', serif",
                         fontSize: '0.72rem',
@@ -602,6 +605,7 @@ export default function ServiceDocuments({ params }: PageProps) {
                         padding: '0.7rem 1.5rem',
                         background: 'var(--heritage-gold)',
                         border: 'none',
+                        borderRadius: '100px',
                         color: 'var(--wood-espresso)',
                         fontFamily: "'Georgia', 'Times New Roman', serif",
                         fontSize: '0.72rem',
@@ -632,6 +636,7 @@ export default function ServiceDocuments({ params }: PageProps) {
                         padding: '0.7rem 1.5rem',
                         background: 'var(--heritage-gold)',
                         border: 'none',
+                        borderRadius: '100px',
                         color: 'var(--wood-espresso)',
                         fontFamily: "'Georgia', 'Times New Roman', serif",
                         fontSize: '0.72rem',

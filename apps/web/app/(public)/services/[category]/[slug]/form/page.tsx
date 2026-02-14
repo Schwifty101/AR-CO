@@ -261,7 +261,7 @@ export default function ServiceForm({ params }: PageProps) {
               padding: '0.85rem 1rem',
               background: 'rgba(249, 248, 246, 0.03)',
               border: '1px solid rgba(249, 248, 246, 0.08)',
-              borderRadius: 0,
+              borderRadius: '1rem',
               fontFamily: "'Georgia', 'Times New Roman', serif",
               fontSize: '0.88rem',
               color: 'var(--heritage-cream)',
@@ -291,7 +291,7 @@ export default function ServiceForm({ params }: PageProps) {
               padding: '0.85rem 1rem',
               background: 'rgba(249, 248, 246, 0.03)',
               border: '1px solid rgba(249, 248, 246, 0.08)',
-              borderRadius: 0,
+              borderRadius: '100px',
               fontFamily: "'Georgia', 'Times New Roman', serif",
               fontSize: '0.88rem',
               color: fieldValue ? 'var(--heritage-cream)' : 'rgba(249, 248, 246, 0.18)',
@@ -467,7 +467,7 @@ export default function ServiceForm({ params }: PageProps) {
               padding: '0.85rem 1rem',
               background: 'rgba(249, 248, 246, 0.03)',
               border: '1px solid rgba(249, 248, 246, 0.08)',
-              borderRadius: 0,
+              borderRadius: '100px',
               fontFamily: "'Georgia', 'Times New Roman', serif",
               fontSize: '0.88rem',
               color: 'var(--heritage-cream)',
@@ -496,7 +496,7 @@ export default function ServiceForm({ params }: PageProps) {
               padding: '0.85rem 1rem',
               background: 'rgba(249, 248, 246, 0.03)',
               border: '1px solid rgba(249, 248, 246, 0.08)',
-              borderRadius: 0,
+              borderRadius: '100px',
               fontFamily: "'Georgia', 'Times New Roman', serif",
               fontSize: '0.88rem',
               color: 'var(--heritage-cream)',
@@ -544,9 +544,9 @@ export default function ServiceForm({ params }: PageProps) {
         ref={formWrapperRef}
         className="relative rounded-xl overflow-hidden border"
         style={{
-          background: '#110b06',
-          borderColor: 'rgba(212, 175, 55, 0.12)',
-          boxShadow: '0 0 40px rgba(201, 169, 106, 0.12), 0 0 80px rgba(201, 169, 106, 0.06), 0 20px 60px rgba(0, 0, 0, 0.3)',
+          background: 'transparent',
+          borderColor: 'rgba(212, 175, 55, 0.25)',
+          boxShadow: 'none',
         }}
       >
         {/* Grain texture overlay */}
@@ -589,7 +589,7 @@ export default function ServiceForm({ params }: PageProps) {
           }}
         />
         {/* Progress bar */}
-        <div className="relative h-[2px] w-full" style={{ background: 'rgba(249, 248, 246, 0.06)', zIndex: 2 }}>
+        <div className="relative h-[2px] w-full" style={{ background: 'rgba(212, 175, 55, 0.15)', zIndex: 2 }}>
           <motion.div
             className="absolute left-0 top-0 h-full"
             style={{ background: 'var(--heritage-gold)' }}
@@ -668,7 +668,7 @@ export default function ServiceForm({ params }: PageProps) {
               </div>
 
               {/* Fixed Navigation buttons at bottom */}
-              <div className="flex-shrink-0 px-6 md:px-12 py-4 border-t" style={{ borderColor: 'rgba(249, 248, 246, 0.06)', position: 'relative', zIndex: 2 }}>
+              <div className="flex-shrink-0 px-6 md:px-12 py-4 border-t" style={{ borderColor: 'rgba(212, 175, 55, 0.2)', position: 'relative', zIndex: 2 }}>
                 <div className="flex items-center justify-between">
                   {/* Back button */}
                   <div>
@@ -680,6 +680,7 @@ export default function ServiceForm({ params }: PageProps) {
                           padding: '0.65rem 1.25rem',
                           background: 'none',
                           border: '1px solid rgba(249, 248, 246, 0.1)',
+                          borderRadius: '100px',
                           color: 'rgba(249, 248, 246, 0.5)',
                           fontFamily: "'Georgia', 'Times New Roman', serif",
                           fontSize: '0.72rem',
@@ -712,6 +713,7 @@ export default function ServiceForm({ params }: PageProps) {
                       padding: '0.7rem 1.5rem',
                       background: 'var(--heritage-gold)',
                       border: 'none',
+                      borderRadius: '100px',
                       color: 'var(--wood-espresso)',
                       fontFamily: "'Georgia', 'Times New Roman', serif",
                       fontSize: '0.72rem',

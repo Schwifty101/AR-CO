@@ -78,6 +78,37 @@ export const resumeScroll = () => {
   }
 }
 
+/**
+ * Smoothly pause scroll for a duration, then resume without momentum jump.
+ * Uses high smoothness to absorb accumulated scroll delta on resume.
+ */
+export const smoothPause = (durationMs: number = 800) => {
+  if (!smootherInstance) return
+
+  // Capture current scroll position and pause
+  const pos = smootherInstance.scrollTop()
+  smootherInstance.paused(true)
+
+  setTimeout(() => {
+    if (!smootherInstance) return
+
+    // Before unpausing: set very high smoothness to absorb momentum
+    smootherInstance.smooth(20)
+
+    // Snap to captured position so no jump occurs
+    smootherInstance.scrollTo(pos, false)
+    smootherInstance.paused(false)
+
+    // Gradually restore normal smoothness
+    gsap.to(smootherInstance, {
+      smooth: 1,
+      duration: 0.6,
+      delay: 0.15,
+      ease: "power2.out"
+    })
+  }, durationMs)
+}
+
 // Scroll to a specific position (used to hold position while frames catch up)
 export const scrollTo = (position: number) => {
   if (smootherInstance) {

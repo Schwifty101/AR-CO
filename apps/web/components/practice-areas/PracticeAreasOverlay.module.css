@@ -1,0 +1,17 @@
+/* ─── Scrollbar Styling ─── */
+.overlayScroll::-webkit-scrollbar {
+  width: 4px;
+}
+
+.overlayScroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.overlayScroll::-webkit-scrollbar-thumb {
+  background: rgba(212, 175, 55, 0.2);
+  border-radius: 2px;
+}
+
+.overlayScroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(212, 175, 55, 0.4);
+}

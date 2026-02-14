@@ -12,6 +12,7 @@
 .cardWrapper {
   position: relative;
   border: 1px solid rgba(249, 248, 246, 0.1);
+  border-radius: 1.25rem;
   background: rgba(26, 17, 10, 0.4);
   backdrop-filter: blur(8px);
   overflow: hidden;
@@ -60,7 +61,7 @@
   color: rgba(249, 248, 246, 0.4);
   padding: 0.3rem 0.75rem;
   border: 1px solid rgba(249, 248, 246, 0.12);
-  border-radius: 2px;
+  border-radius: 100px;
 }
 
 /* ─── Content Area (Split Layout) ─── */
@@ -207,7 +208,7 @@
   justify-content: center;
   text-align: center;
   border: 2px dashed rgba(249, 248, 246, 0.12);
-  border-radius: 4px;
+  border-radius: 1rem;
   padding: 3rem 2rem;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -277,7 +278,7 @@
   gap: 0.85rem;
   padding: 0.85rem 1rem;
   border: 1px solid rgba(249, 248, 246, 0.08);
-  border-radius: 2px;
+  border-radius: 100px;
   background: rgba(249, 248, 246, 0.02);
   transition: border-color 0.2s ease;
 }
@@ -289,7 +290,7 @@
 .filePreview {
   width: 32px;
   height: 32px;
-  border-radius: 2px;
+  border-radius: 50%;
   object-fit: cover;
   flex-shrink: 0;
 }
@@ -297,7 +298,7 @@
 .filePlaceholder {
   width: 32px;
   height: 32px;
-  border-radius: 2px;
+  border-radius: 50%;
   background: rgba(249, 248, 246, 0.06);
   display: flex;
   align-items: center;
@@ -401,7 +402,7 @@
   color: rgba(249, 248, 246, 0.5);
   background: transparent;
   border: 1px solid rgba(249, 248, 246, 0.15);
-  border-radius: 2px;
+  border-radius: 100px;
   cursor: pointer;
   transition: all 0.3s ease;
 }
@@ -425,7 +426,7 @@
   color: var(--wood-espresso);
   background: var(--heritage-gold);
   border: none;
-  border-radius: 2px;
+  border-radius: 100px;
   cursor: pointer;
   transition: all 0.4s cubic-bezier(0.32, 0.72, 0, 1);
 }
