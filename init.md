@@ -534,81 +534,85 @@ Complete database architecture with 20+ tables, Row-Level Security, comprehensiv
 
 ---
 
-## HEAD TASK 7: Cases Module
+## HEAD TASK 7: Cases Module ✅
 
 ### Sub-task 7.1: Create Cases Service
 
-- [ ] **7.1.1**: Create `apps/api/src/cases/cases.service.ts`
-- [ ] **7.1.2**: Implement `createCase(createDto)` method
+- [x] **7.1.1**: Create `apps/api/src/cases/cases.service.ts`
+- [x] **7.1.2**: Implement `createCase(createDto)` method
   - Auto-generates case_number via DB trigger
-- [ ] **7.1.3**: Implement `getCases(paginationDto, filters, currentUser)` method
+- [x] **7.1.3**: Implement `getCases(paginationDto, filters, currentUser)` method
   - RLS filtering based on user role
-- [ ] **7.1.4**: Implement `getCaseById(caseId, currentUser)` method with RLS check
-- [ ] **7.1.5**: Implement `updateCase(caseId, updateDto)` method
-- [ ] **7.1.6**: Implement `deleteCase(caseId)` method (admin only)
-- [ ] **7.1.7**: Implement `assignAttorney(caseId, attorneyId)` method
+- [x] **7.1.4**: Implement `getCaseById(caseId, currentUser)` method with RLS check
+- [x] **7.1.5**: Implement `updateCase(caseId, updateDto)` method
+- [x] **7.1.6**: Implement `deleteCase(caseId)` method (admin only)
+- [x] **7.1.7**: Implement `assign(caseId, assignedToId)` method (uses `assigned_to_id` -> `user_profiles.id`)
 
 ### Sub-task 7.2: Create Case Activities Service
 
-- [ ] **7.2.1**: Implement `getCaseActivities(caseId)` method for timeline view
-- [ ] **7.2.2**: Implement `addCaseActivity(caseId, activityDto)` method
-- [ ] **7.2.3**: Implement auto-activity creation on case status change
+- [x] **7.2.1**: Implement `getCaseActivities(caseId)` method for timeline view
+- [x] **7.2.2**: Implement `addCaseActivity(caseId, activityDto)` method
+- [x] **7.2.3**: Implement auto-activity creation on case status change
 
 ### Sub-task 7.3: Create Cases Controller
 
-- [ ] **7.3.1**: Create `apps/api/src/cases/cases.controller.ts`
-- [ ] **7.3.2**: Create endpoint: `GET /api/cases`
-- [ ] **7.3.3**: Create endpoint: `POST /api/cases` (staff only)
-- [ ] **7.3.4**: Create endpoint: `GET /api/cases/:id`
-- [ ] **7.3.5**: Create endpoint: `PATCH /api/cases/:id`
-- [ ] **7.3.6**: Create endpoint: `DELETE /api/cases/:id` (admin only)
-- [ ] **7.3.7**: Create endpoint: `GET /api/cases/:id/activities`
-- [ ] **7.3.8**: Create endpoint: `POST /api/cases/:id/activities`
-- [ ] **7.3.9**: Create endpoint: `POST /api/cases/:id/assign`
+- [x] **7.3.1**: Create `apps/api/src/cases/cases.controller.ts`
+- [x] **7.3.2**: Create endpoint: `GET /api/cases`
+- [x] **7.3.3**: Create endpoint: `POST /api/cases` (staff only)
+- [x] **7.3.4**: Create endpoint: `GET /api/cases/:id`
+- [x] **7.3.5**: Create endpoint: `PATCH /api/cases/:id`
+- [x] **7.3.6**: Create endpoint: `DELETE /api/cases/:id` (admin only)
+- [x] **7.3.7**: Create endpoint: `GET /api/cases/:id/activities`
+- [x] **7.3.8**: Create endpoint: `POST /api/cases/:id/activities`
+- [x] **7.3.9**: Create endpoint: `PATCH /api/cases/:id/assign` (changed from POST to PATCH for consistency)
 
 ### Sub-task 7.4: Create DTOs
 
-- [ ] **7.4.1**: Create `apps/api/src/cases/dto/create-case.dto.ts`
-- [ ] **7.4.2**: Create `apps/api/src/cases/dto/update-case.dto.ts`
-- [ ] **7.4.3**: Create `apps/api/src/cases/dto/create-case-activity.dto.ts`
-- [ ] **7.4.4**: Create enums for case_status, case_priority, activity_type
+> **Note:** DTOs are implemented as Zod schemas in `packages/shared/src/schemas/cases.schemas.ts` with types in `packages/shared/src/types/cases.types.ts`, using shared `AssignToSchema` from `common.schemas.ts`.
+
+- [x] **7.4.1**: Create `packages/shared/src/schemas/cases.schemas.ts` (Zod schemas)
+- [x] **7.4.2**: Create `packages/shared/src/types/cases.types.ts` (inferred types)
+- [x] **7.4.3**: Create case activity schemas and types
+- [x] **7.4.4**: Add CaseStatus, CasePriority, CaseActivityType enums to `packages/shared/src/enums.ts`
 
 ### Sub-task 7.5: Create Cases Module
 
-- [ ] **7.5.1**: Create `apps/api/src/cases/cases.module.ts`
+- [x] **7.5.1**: Create `apps/api/src/cases/cases.module.ts`
 
 ### Sub-task 7.6: Shared Package (Cases Schemas, Types & Enums)
 
-- [ ] **7.6.1**: Add `CaseStatus`, `CasePriority`, `CaseActivityType` enums to `packages/shared/src/enums.ts`
-- [ ] **7.6.2**: Create `packages/shared/src/schemas/cases.schemas.ts`
-  - CreateCaseSchema, UpdateCaseSchema, AssignAttorneySchema, CaseFiltersSchema, CreateCaseActivitySchema
+- [x] **7.6.1**: Add `CaseStatus`, `CasePriority`, `CaseActivityType` enums to `packages/shared/src/enums.ts`
+- [x] **7.6.2**: Create `packages/shared/src/schemas/cases.schemas.ts`
+  - CreateCaseSchema, UpdateCaseSchema, CaseFiltersSchema, CreateCaseActivitySchema
   - CaseResponseSchema, CaseActivityResponseSchema, PaginatedCasesResponseSchema, PaginatedCaseActivitiesResponseSchema
-- [ ] **7.6.3**: Create `packages/shared/src/types/cases.types.ts`
-  - CreateCaseData, UpdateCaseData, AssignAttorneyData, CaseFilters, CreateCaseActivityData
+  - Assignment uses shared `AssignToSchema` from `common.schemas.ts` (replaces `AssignAttorneySchema`)
+- [x] **7.6.3**: Create `packages/shared/src/types/cases.types.ts`
+  - CreateCaseData, UpdateCaseData, CaseFilters, CreateCaseActivityData
   - CaseResponse, CaseActivityResponse, PaginatedCasesResponse, PaginatedCaseActivitiesResponse
-- [ ] **7.6.4**: Update barrel exports (`index.ts` files for enums, schemas, types)
+  - Assignment uses shared `AssignToData` from `common.types.ts` (replaces `AssignAttorneyData`)
+- [x] **7.6.4**: Update barrel exports (`index.ts` files for enums, schemas, types)
 
 ### Sub-task 7.7: Frontend - Cases API Client
 
-- [ ] **7.7.1**: Create `apps/web/lib/api/cases.ts` API client helpers
-  - getCases, getCaseById, createCase, updateCase, deleteCase, assignAttorney, getCaseActivities, addCaseActivity
+- [x] **7.7.1**: Create `apps/web/lib/api/cases.ts` API client helpers
+  - getCases, getCaseById, createCase, updateCase, deleteCase, assignCase, getCaseActivities, addCaseActivity
 
 ### Sub-task 7.8: Frontend - Admin Cases Pages
 
-- [ ] **7.8.1**: Create `/admin/cases` page - Case list with filters (status, priority, search), pagination, "New Case" button
-- [ ] **7.8.2**: Create `/admin/cases/new` page - Create case form (client dropdown, practice area, title, description, priority, case type, filing date)
-- [ ] **7.8.3**: Create `/admin/cases/:id` page - Case detail + activities timeline + status update + assign attorney + add activity form
+- [x] **7.8.1**: Create `/admin/cases` page - Case list with filters (status, priority, search), pagination, "New Case" button
+- [x] **7.8.2**: Create `/admin/cases/new` page - Create case form (client dropdown, practice area, title, description, priority, case type, filing date)
+- [x] **7.8.3**: Create `/admin/cases/:id` page - Case detail + activities timeline + status update + assign to staff/attorney + add activity form
 
 ### Sub-task 7.9: Frontend - Client Cases Pages
 
-- [ ] **7.9.1**: Create `/client/cases` page - Client's cases list with status filter, pagination
-- [ ] **7.9.2**: Create `/client/cases/:id` page - Case detail + activities timeline (read-only)
+- [x] **7.9.1**: Create `/client/cases` page - Client's cases list with status filter, pagination
+- [x] **7.9.2**: Create `/client/cases/:id` page - Case detail + activities timeline (read-only)
 
 ### Sub-task 7.10: Frontend - Navigation & Dashboard Updates
 
-- [ ] **7.10.1**: Update admin sidebar: add Cases link (Briefcase icon) after Clients
-- [ ] **7.10.2**: Update client sidebar: add My Cases link (Briefcase icon)
-- [ ] **7.10.3**: Make dashboard stats cards clickable (cases count links to cases list)
+- [x] **7.10.1**: Update admin sidebar: add Cases link (Briefcase icon) after Clients
+- [x] **7.10.2**: Update client sidebar: add My Cases link (Briefcase icon)
+- [x] **7.10.3**: Make dashboard stats cards clickable (cases count links to cases list)
 
 ---
 
@@ -1097,7 +1101,7 @@ Complete database architecture with 20+ tables, Row-Level Security, comprehensiv
 ## Estimated Timeline
 
 - Phase 1-2 (Environment + Auth): 3-4 days ✅ DONE
-- Phase 3-4 (Users, Clients, Cases): 4-5 days ✅ DONE (HEAD TASKs 5-6)
+- Phase 3-4 (Users, Clients, Cases): 4-5 days ✅ DONE (HEAD TASKs 5-7)
 - Phase 5-6 (Appointments + Consultation Booking): 4-5 days
 - Phase 7-8 (Documents + Payments/Safepay): 5-6 days
 - Phase 9 (Subscriptions + Complaints): 3-4 days
