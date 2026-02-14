@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { ConfigService } from '@nestjs/config';
 import { SafepayService } from './safepay.service';
 
 describe('SafepayService', () => {
@@ -6,7 +7,15 @@ describe('SafepayService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [SafepayService],
+      providers: [
+        SafepayService,
+        {
+          provide: ConfigService,
+          useValue: {
+            get: jest.fn().mockReturnValue(''),
+          },
+        },
+      ],
     }).compile();
 
     service = module.get<SafepayService>(SafepayService);
@@ -16,8 +25,8 @@ describe('SafepayService', () => {
     expect(service).toBeDefined();
   });
 
-  describe('createCheckoutSession', () => {
-    it('should return a checkout URL and token', async () => {
+  describe('legacy stubs', () => {
+    it('createCheckoutSession should return a checkout URL and token', async () => {
       const result = await service.createCheckoutSession({
         amount: 50000,
         currency: 'PKR',
@@ -30,10 +39,8 @@ describe('SafepayService', () => {
       expect(result.checkoutUrl).toContain('test-order-123');
       expect(result.token).toContain('tracker_stub_');
     });
-  });
 
-  describe('createSubscriptionCheckout', () => {
-    it('should return a checkout URL', async () => {
+    it('createSubscriptionCheckout should return a checkout URL', async () => {
       const result = await service.createSubscriptionCheckout({
         planId: 'civic_retainer',
         reference: 'client-uuid',
@@ -44,25 +51,21 @@ describe('SafepayService', () => {
 
       expect(result.checkoutUrl).toContain('client-uuid');
     });
-  });
 
-  describe('verifyWebhookSignature', () => {
-    it('should return true (stub)', () => {
-      expect(service.verifyWebhookSignature({}, 'sig')).toBe(true);
-    });
-  });
-
-  describe('getPaymentStatus', () => {
-    it('should return completed status (stub)', async () => {
+    it('getPaymentStatus should return completed status', async () => {
       const result = await service.getPaymentStatus('tracker-123');
       expect(result.status).toBe('completed');
     });
-  });
 
-  describe('cancelSubscription', () => {
-    it('should return success (stub)', async () => {
+    it('cancelSubscription should return success', async () => {
       const result = await service.cancelSubscription('sub-123');
       expect(result.success).toBe(true);
+    });
+  });
+
+  describe('verifyWebhookSignature', () => {
+    it('should return false when webhook secret is not configured', () => {
+      expect(service.verifyWebhookSignature('track_xxx', 'sig')).toBe(false);
     });
   });
 });
