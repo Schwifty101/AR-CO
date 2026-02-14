@@ -484,9 +484,7 @@ export class CasesService {
     dto: AssignToData,
     user: AuthUser,
   ): Promise<CaseResponse> {
-    this.logger.log(
-      `Assigning user ${dto.assignedToId} to case ${caseId}`,
-    );
+    this.logger.log(`Assigning user ${dto.assignedToId} to case ${caseId}`);
     const adminClient = this.supabaseService.getAdminClient();
 
     const { data, error } = (await adminClient

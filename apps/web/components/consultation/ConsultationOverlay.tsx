@@ -2,63 +2,102 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, ArrowRight, ArrowLeft, Calendar, Check } from 'lucide-react'
+import { X, ArrowRight, ArrowLeft, Check, Loader2, AlertCircle } from 'lucide-react'
+import { toast } from 'sonner'
 import { getSmoother } from '@/components/SmoothScroll'
+import { createConsultation, initiatePayment } from '@/lib/api/consultations'
+import type { ConsultationPaymentInitResponse, CreateConsultationData } from '@repo/shared'
+import { PersonalInfoStep, CaseDetailsStep, INITIAL_FORM_DATA } from './ConsultationFormSteps'
+import type { ConsultationFormData } from './ConsultationFormSteps'
+import ConsultationPaymentStep from './ConsultationPaymentStep'
+import ConsultationSchedulingStep from './ConsultationSchedulingStep'
 import styles from './ConsultationOverlay.module.css'
 
 /* ─── Types ─── */
+
+/** Props for the ConsultationOverlay component */
 interface ConsultationOverlayProps {
   isOpen: boolean
   onClose: () => void
 }
 
-interface FormData {
-  name: string
-  email: string
-  phone: string
-  practiceArea: string
-  caseDescription: string
+const TOTAL_STEPS = 4
+
+/* ─── Framer Variants (static, defined outside component) ─── */
+
+const backdropVariants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1 },
+  exit: { opacity: 0, transition: { delay: 0.15, duration: 0.3 } },
 }
 
-const PRACTICE_AREAS = [
-  'Corporate & Commercial Law',
-  'Tax Law & Compliance',
-  'Real Estate & Property',
-  'Immigration Law',
-  'Family Law',
-  'Criminal Law',
-  'Labour & Employment Law',
-  'Intellectual Property',
-  'Banking & Finance',
-  'Overseas Pakistani Matters',
-  'Women\'s Legal Rights',
-  'Regulatory Complaints',
-  'Other',
-]
+const cardVariants = {
+  hidden: { opacity: 0, y: '-60%', scaleY: 0.6, scaleX: 0.95 },
+  visible: {
+    opacity: 1,
+    y: '0%',
+    scaleY: 1,
+    scaleX: 1,
+    transition: {
+      type: 'spring' as const,
+      damping: 28,
+      stiffness: 260,
+      mass: 0.8,
+    },
+  },
+  exit: {
+    opacity: 0,
+    y: '-50%',
+    scaleY: 0.7,
+    transition: { duration: 0.35, ease: [0.32, 0, 0.67, 0] as const },
+  },
+}
 
-const TOTAL_STEPS = 3
+const sectionVariants = {
+  enter: { opacity: 0, x: 30 },
+  center: {
+    opacity: 1,
+    x: 0,
+    transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] as const },
+  },
+  exit: { opacity: 0, x: -30, transition: { duration: 0.25 } },
+}
 
 /**
  * ConsultationOverlay
  *
- * Three-step booking overlay:
+ * Four-step booking overlay for scheduling a paid legal consultation:
  *   1. Personal info (name, email, phone)
- *   2. Case details (practice area + description)
- *   3. Cal.com scheduling embed
+ *   2. Case details (practice area, description, urgency, optional fields)
+ *      On submit: creates consultation booking + initiates payment
+ *   3. Payment (Safepay embedded checkout)
+ *      On success: confirms payment, advances to scheduling
+ *   4. Cal.com scheduling (gated behind payment confirmation)
  *
- * Unfolds from top with backdrop blur.
+ * Unfolds from top with backdrop blur. Dark luxury aesthetic.
+ *
+ * @example
+ * ```tsx
+ * <ConsultationOverlay isOpen={isOpen} onClose={() => setOpen(false)} />
+ * ```
  */
 export default function ConsultationOverlay({ isOpen, onClose }: ConsultationOverlayProps) {
+  /* ─── Form State ─── */
   const [step, setStep] = useState(1)
   const [submitted, setSubmitted] = useState(false)
-  const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({})
-  const [formData, setFormData] = useState<FormData>({
-    name: '',
-    email: '',
-    phone: '',
-    practiceArea: '',
-    caseDescription: '',
-  })
+  const [errors, setErrors] = useState<Partial<Record<keyof ConsultationFormData, string>>>({})
+  const [formData, setFormData] = useState<ConsultationFormData>(INITIAL_FORM_DATA)
+
+  /* ─── Booking & Payment State ─── */
+  const [bookingId, setBookingId] = useState<string | null>(null)
+  const [referenceNumber, setReferenceNumber] = useState<string | null>(null)
+  const [paymentCredentials, setPaymentCredentials] =
+    useState<ConsultationPaymentInitResponse | null>(null)
+  const [paymentConfirmed, setPaymentConfirmed] = useState(false)
+
+  /* ─── API State ─── */
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [apiError, setApiError] = useState<string | null>(null)
 
   /* ─── Keyboard ─── */
   const handleKeyDown = useCallback(
@@ -81,12 +120,17 @@ export default function ConsultationOverlay({ isOpen, onClose }: ConsultationOve
     } else {
       document.body.style.overflow = ''
       document.body.style.paddingRight = ''
-      // Reset form when closing
       setTimeout(() => {
         setStep(1)
         setSubmitted(false)
         setErrors({})
-        setFormData({ name: '', email: '', phone: '', practiceArea: '', caseDescription: '' })
+        setFormData(INITIAL_FORM_DATA)
+        setBookingId(null)
+        setReferenceNumber(null)
+        setPaymentCredentials(null)
+        setPaymentConfirmed(false)
+        setIsSubmitting(false)
+        setApiError(null)
       }, 400)
       if (smoother) smoother.paused(false)
     }
@@ -101,9 +145,8 @@ export default function ConsultationOverlay({ isOpen, onClose }: ConsultationOve
   }, [isOpen, handleKeyDown])
 
   /* ─── Field change handler ─── */
-  const updateField = (field: keyof FormData, value: string) => {
+  const updateField = (field: keyof ConsultationFormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
-    // Clear error on change
     if (errors[field]) {
       setErrors((prev) => {
         const next = { ...prev }
@@ -111,11 +154,12 @@ export default function ConsultationOverlay({ isOpen, onClose }: ConsultationOve
         return next
       })
     }
+    if (apiError) setApiError(null)
   }
 
   /* ─── Validation ─── */
   const validateStep = (s: number): boolean => {
-    const errs: Partial<Record<keyof FormData, string>> = {}
+    const errs: Partial<Record<keyof ConsultationFormData, string>> = {}
 
     if (s === 1) {
       if (!formData.name.trim()) errs.name = 'Name is required'
@@ -124,15 +168,15 @@ export default function ConsultationOverlay({ isOpen, onClose }: ConsultationOve
       } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
         errs.email = 'Enter a valid email address'
       }
-      if (!formData.phone.trim()) {
-        errs.phone = 'Phone number is required'
-      }
+      if (!formData.phone.trim()) errs.phone = 'Phone number is required'
     }
 
     if (s === 2) {
       if (!formData.practiceArea) errs.practiceArea = 'Please select a practice area'
       if (!formData.caseDescription.trim()) {
         errs.caseDescription = 'Please describe your case briefly'
+      } else if (formData.caseDescription.trim().length < 20) {
+        errs.caseDescription = 'Please provide at least 20 characters describing your case'
       }
     }
 
@@ -140,58 +184,52 @@ export default function ConsultationOverlay({ isOpen, onClose }: ConsultationOve
     return Object.keys(errs).length === 0
   }
 
+  /* ─── Step 2 Submit: Create Booking + Initiate Payment ─── */
+  const handleStep2Submit = async () => {
+    if (!validateStep(2)) return
+    setIsSubmitting(true)
+    setApiError(null)
+    try {
+      const consultationData: CreateConsultationData = {
+        fullName: formData.name,
+        email: formData.email,
+        phoneNumber: formData.phone,
+        practiceArea: formData.practiceArea,
+        urgency: (formData.urgency || 'medium') as CreateConsultationData['urgency'],
+        issueSummary: formData.caseDescription,
+        relevantDates: formData.relevantDates || undefined,
+        opposingParty: formData.opposingParty || undefined,
+        additionalNotes: formData.additionalNotes || undefined,
+      }
+
+      const booking = await createConsultation(consultationData)
+      setBookingId(booking.id)
+      setReferenceNumber(booking.referenceNumber)
+
+      const creds = await initiatePayment(booking.id)
+      setPaymentCredentials(creds)
+      setStep(3)
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Something went wrong'
+      setApiError(msg)
+      toast.error('Failed to create booking. Please try again.')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
   /* ─── Navigation ─── */
   const goNext = () => {
+    if (step === 2) {
+      void handleStep2Submit()
+      return
+    }
     if (!validateStep(step)) return
     if (step < TOTAL_STEPS) setStep(step + 1)
   }
 
   const goBack = () => {
-    if (step > 1) setStep(step - 1)
-  }
-
-  const handleSubmit = () => {
-    setSubmitted(true)
-  }
-
-  /* ─── Framer variants ─── */
-  const backdropVariants = {
-    hidden: { opacity: 0 },
-    visible: { opacity: 1 },
-    exit: { opacity: 0, transition: { delay: 0.15, duration: 0.3 } },
-  }
-
-  const cardVariants = {
-    hidden: {
-      opacity: 0,
-      y: '-60%',
-      scaleY: 0.6,
-      scaleX: 0.95,
-    },
-    visible: {
-      opacity: 1,
-      y: '0%',
-      scaleY: 1,
-      scaleX: 1,
-      transition: {
-        type: 'spring' as const,
-        damping: 28,
-        stiffness: 260,
-        mass: 0.8,
-      },
-    },
-    exit: {
-      opacity: 0,
-      y: '-50%',
-      scaleY: 0.7,
-      transition: { duration: 0.35, ease: [0.32, 0, 0.67, 0] as const },
-    },
-  }
-
-  const sectionVariants = {
-    enter: { opacity: 0, x: 30 },
-    center: { opacity: 1, x: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] as const } },
-    exit: { opacity: 0, x: -30, transition: { duration: 0.25 } },
+    if (step > 1 && step <= 2) setStep(step - 1)
   }
 
   return (
@@ -247,10 +285,17 @@ export default function ConsultationOverlay({ isOpen, onClose }: ConsultationOve
                     <div className={styles.successIcon}>
                       <Check size={24} />
                     </div>
-                    <h3 className={styles.successTitle}>Request Received</h3>
+                    <h3 className={styles.successTitle}>Booking Confirmed</h3>
                     <p className={styles.successText}>
-                      Thank you, {formData.name}. Our legal team will review your enquiry
-                      and contact you within 24 hours to confirm your consultation.
+                      Thank you, {formData.name}. Your consultation has been
+                      {paymentConfirmed ? ' paid and' : ''} booked successfully.
+                      {referenceNumber && (
+                        <>
+                          {' '}Your reference number is{' '}
+                          <strong>{referenceNumber}</strong>.
+                        </>
+                      )}
+                      {' '}Our legal team will send you a confirmation email shortly.
                     </p>
                     <button className={styles.successClose} onClick={onClose}>
                       Close
@@ -270,13 +315,13 @@ export default function ConsultationOverlay({ isOpen, onClose }: ConsultationOve
                         Schedule Your <em>Legal</em> Session
                       </h2>
                       <p className={styles.subtitle}>
-                        30-minute consultation · No obligations
+                        30-minute consultation &middot; No obligations
                       </p>
                     </motion.div>
 
-                    {/* Step Indicator */}
+                    {/* Step Indicator — 4 dots, 3 lines */}
                     <div className={styles.stepIndicator}>
-                      {[1, 2, 3].map((s, i) => (
+                      {[1, 2, 3, 4].map((s, i) => (
                         <span key={s} style={{ display: 'contents' }}>
                           <span
                             className={`${styles.stepDot} ${
@@ -287,7 +332,7 @@ export default function ConsultationOverlay({ isOpen, onClose }: ConsultationOve
                                   : ''
                             }`}
                           />
-                          {i < 2 && (
+                          {i < 3 && (
                             <span
                               className={`${styles.stepLine} ${
                                 s < step ? styles.stepLineActive : ''
@@ -297,6 +342,14 @@ export default function ConsultationOverlay({ isOpen, onClose }: ConsultationOve
                         </span>
                       ))}
                     </div>
+
+                    {/* API Error Banner */}
+                    {apiError && step <= 2 && (
+                      <div className={styles.apiError}>
+                        <AlertCircle size={14} />
+                        <span>{apiError}</span>
+                      </div>
+                    )}
 
                     {/* Step Content */}
                     <AnimatePresence mode="wait">
@@ -309,50 +362,11 @@ export default function ConsultationOverlay({ isOpen, onClose }: ConsultationOve
                           animate="center"
                           exit="exit"
                         >
-                          <span className={styles.sectionLabel}>Personal Information</span>
-
-                          <div className={styles.fieldGroup}>
-                            <label className={styles.fieldLabel}>Full Name</label>
-                            <input
-                              type="text"
-                              className={styles.fieldInput}
-                              placeholder="e.g. Ahmed Raza"
-                              value={formData.name}
-                              onChange={(e) => updateField('name', e.target.value)}
-                              autoFocus
-                            />
-                            {errors.name && (
-                              <span className={styles.fieldError}>{errors.name}</span>
-                            )}
-                          </div>
-
-                          <div className={styles.fieldGroup}>
-                            <label className={styles.fieldLabel}>Email Address</label>
-                            <input
-                              type="email"
-                              className={styles.fieldInput}
-                              placeholder="e.g. ahmed@example.com"
-                              value={formData.email}
-                              onChange={(e) => updateField('email', e.target.value)}
-                            />
-                            {errors.email && (
-                              <span className={styles.fieldError}>{errors.email}</span>
-                            )}
-                          </div>
-
-                          <div className={styles.fieldGroup}>
-                            <label className={styles.fieldLabel}>Phone Number</label>
-                            <input
-                              type="tel"
-                              className={styles.fieldInput}
-                              placeholder="e.g. +92 300 1234567"
-                              value={formData.phone}
-                              onChange={(e) => updateField('phone', e.target.value)}
-                            />
-                            {errors.phone && (
-                              <span className={styles.fieldError}>{errors.phone}</span>
-                            )}
-                          </div>
+                          <PersonalInfoStep
+                            formData={formData}
+                            errors={errors}
+                            onFieldChange={updateField}
+                          />
                         </motion.div>
                       )}
 
@@ -365,50 +379,15 @@ export default function ConsultationOverlay({ isOpen, onClose }: ConsultationOve
                           animate="center"
                           exit="exit"
                         >
-                          <span className={styles.sectionLabel}>Case Details</span>
-
-                          <div className={styles.fieldGroup}>
-                            <label className={styles.fieldLabel}>Practice Area</label>
-                            <select
-                              className={styles.fieldSelect}
-                              value={formData.practiceArea}
-                              onChange={(e) => updateField('practiceArea', e.target.value)}
-                            >
-                              <option value="">Select a practice area…</option>
-                              {PRACTICE_AREAS.map((area) => (
-                                <option key={area} value={area}>
-                                  {area}
-                                </option>
-                              ))}
-                            </select>
-                            {errors.practiceArea && (
-                              <span className={styles.fieldError}>{errors.practiceArea}</span>
-                            )}
-                          </div>
-
-                          <div className={styles.fieldGroup}>
-                            <label className={styles.fieldLabel}>
-                              Brief Description of Your Case
-                            </label>
-                            <textarea
-                              className={styles.fieldTextarea}
-                              placeholder="Provide a brief overview of your legal matter so our team can prepare for the consultation…"
-                              value={formData.caseDescription}
-                              onChange={(e) =>
-                                updateField('caseDescription', e.target.value)
-                              }
-                              rows={5}
-                            />
-                            {errors.caseDescription && (
-                              <span className={styles.fieldError}>
-                                {errors.caseDescription}
-                              </span>
-                            )}
-                          </div>
+                          <CaseDetailsStep
+                            formData={formData}
+                            errors={errors}
+                            onFieldChange={updateField}
+                          />
                         </motion.div>
                       )}
 
-                      {step === 3 && (
+                      {step === 3 && paymentCredentials && bookingId && referenceNumber && (
                         <motion.div
                           key="step-3"
                           className={styles.formSection}
@@ -417,41 +396,73 @@ export default function ConsultationOverlay({ isOpen, onClose }: ConsultationOve
                           animate="center"
                           exit="exit"
                         >
-                          <span className={styles.sectionLabel}>
-                            Select a Time Slot
-                          </span>
+                          <span className={styles.sectionLabel}>Secure Payment</span>
+                          <ConsultationPaymentStep
+                            paymentCredentials={paymentCredentials}
+                            bookingId={bookingId}
+                            referenceNumber={referenceNumber}
+                            onPaymentConfirmed={() => {
+                              setPaymentConfirmed(true)
+                              setStep(4)
+                            }}
+                            onError={(msg) => setApiError(msg)}
+                          />
+                        </motion.div>
+                      )}
 
-                          <div className={styles.calSection}>
-                            <CalComEmbed />
-                          </div>
+                      {step === 4 && referenceNumber && (
+                        <motion.div
+                          key="step-4"
+                          className={styles.formSection}
+                          variants={sectionVariants}
+                          initial="enter"
+                          animate="center"
+                          exit="exit"
+                        >
+                          <span className={styles.sectionLabel}>Select a Time Slot</span>
+                          <ConsultationSchedulingStep
+                            guestName={formData.name}
+                            guestEmail={formData.email}
+                            referenceNumber={referenceNumber}
+                            onBookingComplete={() => setSubmitted(true)}
+                          />
                         </motion.div>
                       )}
                     </AnimatePresence>
 
-                    {/* Navigation */}
-                    <div className={styles.navButtons}>
-                      {step > 1 && (
-                        <button className={styles.navButtonBack} onClick={goBack}>
-                          <ArrowLeft size={14} />
-                          <span>Back</span>
-                        </button>
-                      )}
+                    {/* Navigation — only for steps 1 and 2 */}
+                    {step <= 2 && (
+                      <div className={styles.navButtons}>
+                        {step > 1 && (
+                          <button
+                            className={styles.navButtonBack}
+                            onClick={goBack}
+                            disabled={isSubmitting}
+                          >
+                            <ArrowLeft size={14} />
+                            <span>Back</span>
+                          </button>
+                        )}
 
-                      {step < TOTAL_STEPS ? (
-                        <button className={styles.navButtonNext} onClick={goNext}>
-                          <span>Continue</span>
-                          <ArrowRight size={14} />
-                        </button>
-                      ) : (
                         <button
-                          className={styles.navButtonSubmit}
-                          onClick={handleSubmit}
+                          className={styles.navButtonNext}
+                          onClick={goNext}
+                          disabled={isSubmitting}
                         >
-                          <span>Confirm Booking</span>
-                          <Check size={14} />
+                          {isSubmitting ? (
+                            <>
+                              <Loader2 size={14} className={styles.spinnerIcon} />
+                              <span>Processing...</span>
+                            </>
+                          ) : (
+                            <>
+                              <span>Continue</span>
+                              <ArrowRight size={14} />
+                            </>
+                          )}
                         </button>
-                      )}
-                    </div>
+                      </div>
+                    )}
                   </>
                 )}
               </div>
@@ -460,86 +471,5 @@ export default function ConsultationOverlay({ isOpen, onClose }: ConsultationOve
         </>
       )}
     </AnimatePresence>
-  )
-}
-
-/* ─────────────────────────────────────────────
-   Cal.com Embed Sub-Component
-   ─────────────────────────────────────────────
-   Renders the Cal.com inline embed for scheduling.
-   Replace CAL_LINK with your actual Cal.com username/event.
-*/
-
-/* eslint-disable @typescript-eslint/no-explicit-any */
-const CAL_LINK = 'arco-law/consultation' // <-- Replace with your actual Cal.com link
-
-function CalComEmbed() {
-  const [loaded, setLoaded] = useState(false)
-
-  const initCalEmbed = useCallback(() => {
-    setLoaded(true)
-    if (typeof window !== 'undefined' && (window as any).Cal) {
-      ;(window as any).Cal('init', {
-        origin: 'https://app.cal.com',
-      })
-      ;(window as any).Cal('inline', {
-        calLink: CAL_LINK,
-        elementOrSelector: '#cal-inline-embed',
-        layout: 'month_view',
-        config: {
-          theme: 'dark',
-        },
-      })
-      ;(window as any).Cal('ui', {
-        theme: 'dark',
-        styles: {
-          branding: { brandColor: '#D4AF37' },
-        },
-      })
-    }
-  }, [])
-
-  useEffect(() => {
-    // Load Cal.com embed script
-    const existingScript = document.querySelector('script[data-cal-embed]')
-    if (existingScript) {
-      // Already loaded from a previous mount — defer to avoid sync setState in effect
-      const raf = requestAnimationFrame(() => initCalEmbed())
-      return () => cancelAnimationFrame(raf)
-    }
-
-    const script = document.createElement('script')
-    script.setAttribute('data-cal-embed', 'true')
-    script.src = 'https://app.cal.com/embed/embed.js'
-    script.async = true
-    script.onload = () => {
-      initCalEmbed()
-    }
-    document.head.appendChild(script)
-
-    return () => {
-      // Cleanup is intentionally skipped to avoid re-loading on re-mount
-    }
-  }, [initCalEmbed])
-
-  // Fallback placeholder while the embed loads or if Cal.com is not configured
-  return (
-    <div className={styles.calContainer}>
-      <div
-        id="cal-inline-embed"
-        style={{ width: '100%', height: '100%', minHeight: '360px', overflow: 'auto' }}
-      />
-      {!loaded && (
-        <div className={styles.calPlaceholder}>
-          <div className={styles.calIcon}>
-            <Calendar size={22} />
-          </div>
-          <h4 className={styles.calPlaceholderTitle}>Loading Available Slots</h4>
-          <p className={styles.calPlaceholderText}>
-            Connecting to our scheduling system. This will only take a moment.
-          </p>
-        </div>
-      )}
-    </div>
   )
 }

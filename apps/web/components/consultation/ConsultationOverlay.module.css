@@ -1,9 +1,4 @@
-/* ============================================================
-   Consultation Overlay
-   Square overlay that unfolds from top with blur backdrop.
-   Editorial luxury aesthetic — espresso + gold + cream
-   Fonts: Lora (headings), Georgia (body/labels) — matching blogs
-   ============================================================ */
+/* Consultation Overlay — espresso + gold + cream luxury aesthetic */
 
 /* ─── Backdrop ─── */
 .backdrop {
@@ -27,13 +22,12 @@
   pointer-events: none;
 }
 
-/* ─── The Card ─── */
+/* ─── Card ─── */
 .card {
   position: relative;
   width: 100%;
   max-width: 680px;
   max-height: 90vh;
-  aspect-ratio: auto;
   background: #110b06;
   border: 1px solid rgba(212, 175, 55, 0.12);
   overflow: hidden;
@@ -41,8 +35,6 @@
   display: flex;
   flex-direction: column;
 }
-
-/* Grain texture */
 .cardGrain {
   position: absolute;
   inset: 0;
@@ -52,42 +44,29 @@
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
   background-size: 256px 256px;
 }
-
-/* Gold accent line at top */
 .cardAccent {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 2px;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    var(--heritage-gold) 20%,
-    var(--heritage-gold) 80%,
-    transparent 100%
-  );
+  background: linear-gradient(90deg, transparent 0%, var(--heritage-gold) 20%, var(--heritage-gold) 80%, transparent 100%);
   opacity: 0.6;
   z-index: 1;
 }
-
-/* Corner decorations */
-.cornerTL,
-.cornerBR {
+.cornerTL, .cornerBR {
   position: absolute;
   width: 24px;
   height: 24px;
   z-index: 1;
   pointer-events: none;
 }
-
 .cornerTL {
   top: 12px;
   left: 12px;
   border-top: 1px solid rgba(212, 175, 55, 0.2);
   border-left: 1px solid rgba(212, 175, 55, 0.2);
 }
-
 .cornerBR {
   bottom: 12px;
   right: 12px;
@@ -113,7 +92,6 @@
   cursor: pointer;
   transition: all 0.3s ease;
 }
-
 .closeButton:hover {
   border-color: var(--heritage-gold);
   color: var(--heritage-gold);
@@ -130,26 +108,15 @@
   flex: 1;
   -webkit-overflow-scrolling: touch;
 }
-
-.cardInner::-webkit-scrollbar {
-  width: 4px;
-}
-
-.cardInner::-webkit-scrollbar-track {
-  background: transparent;
-}
-
+.cardInner::-webkit-scrollbar { width: 4px; }
+.cardInner::-webkit-scrollbar-track { background: transparent; }
 .cardInner::-webkit-scrollbar-thumb {
   background: rgba(212, 175, 55, 0.15);
   border-radius: 2px;
 }
 
 /* ─── Header ─── */
-.header {
-  margin-bottom: 2.5rem;
-  text-align: center;
-}
-
+.header { margin-bottom: 2.5rem; text-align: center; }
 .eyebrow {
   display: block;
   font-family: 'Georgia', 'Times New Roman', serif;
@@ -161,7 +128,6 @@
   opacity: 0.65;
   margin-bottom: 0.75rem;
 }
-
 .title {
   font-family: 'Lora', Georgia, serif;
   font-size: clamp(1.6rem, 3.5vw, 2.4rem);
@@ -171,13 +137,7 @@
   color: var(--heritage-cream);
   margin: 0 0 0.75rem;
 }
-
-.title em {
-  font-style: italic;
-  font-weight: 400;
-  color: var(--heritage-gold);
-}
-
+.title em { font-style: italic; font-weight: 400; color: var(--heritage-gold); }
 .subtitle {
   font-family: 'Georgia', 'Times New Roman', serif;
   font-size: 0.8rem;
@@ -194,7 +154,6 @@
   gap: 0;
   margin-bottom: 2.5rem;
 }
-
 .stepDot {
   width: 8px;
   height: 8px;
@@ -202,35 +161,25 @@
   background: transparent;
   transition: all 0.4s cubic-bezier(0.32, 0.72, 0, 1);
 }
-
 .stepDotActive {
   background: var(--heritage-gold);
   border-color: var(--heritage-gold);
   box-shadow: 0 0 8px rgba(212, 175, 55, 0.3);
 }
-
 .stepDotCompleted {
   background: rgba(212, 175, 55, 0.4);
   border-color: rgba(212, 175, 55, 0.5);
 }
-
 .stepLine {
   width: 48px;
   height: 1px;
   background: rgba(249, 248, 246, 0.08);
   transition: background 0.4s ease;
 }
+.stepLineActive { background: rgba(212, 175, 55, 0.3); }
 
-.stepLineActive {
-  background: rgba(212, 175, 55, 0.3);
-}
-
-/* ─── Form Section ─── */
-.formSection {
-  width: 100%;
-}
-
-/* ─── Section Labels ─── */
+/* ─── Form ─── */
+.formSection { width: 100%; }
 .sectionLabel {
   display: block;
   font-family: 'Georgia', 'Times New Roman', serif;
@@ -244,12 +193,7 @@
   padding-bottom: 0.75rem;
   border-bottom: 1px solid rgba(212, 175, 55, 0.08);
 }
-
-/* ─── Input Fields ─── */
-.fieldGroup {
-  margin-bottom: 1.25rem;
-}
-
+.fieldGroup { margin-bottom: 1.25rem; }
 .fieldLabel {
   display: block;
   font-family: 'Georgia', 'Times New Roman', serif;
@@ -259,8 +203,16 @@
   margin-bottom: 0.5rem;
   text-transform: uppercase;
 }
+.fieldOptional {
+  font-weight: 400;
+  font-style: italic;
+  opacity: 0.5;
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
 
-.fieldInput {
+/* Shared form control base */
+.fieldInput, .fieldTextarea, .fieldSelect {
   width: 100%;
   padding: 0.85rem 1rem;
   background: rgba(249, 248, 246, 0.03);
@@ -273,59 +225,17 @@
   transition: all 0.3s ease;
   outline: none;
 }
-
-.fieldInput::placeholder {
+.fieldInput::placeholder, .fieldTextarea::placeholder {
   color: rgba(249, 248, 246, 0.18);
   font-style: italic;
 }
-
-.fieldInput:focus {
+.fieldInput:focus, .fieldTextarea:focus, .fieldSelect:focus {
   border-color: rgba(212, 175, 55, 0.35);
   background: rgba(212, 175, 55, 0.02);
   box-shadow: 0 0 0 1px rgba(212, 175, 55, 0.08);
 }
-
-.fieldTextarea {
-  width: 100%;
-  padding: 0.85rem 1rem;
-  background: rgba(249, 248, 246, 0.03);
-  border: 1px solid rgba(249, 248, 246, 0.08);
-  border-radius: 0;
-  font-family: 'Georgia', 'Times New Roman', serif;
-  font-size: 0.88rem;
-  color: var(--heritage-cream);
-  letter-spacing: 0.01em;
-  transition: all 0.3s ease;
-  outline: none;
-  resize: vertical;
-  min-height: 120px;
-  line-height: 1.6;
-}
-
-.fieldTextarea::placeholder {
-  color: rgba(249, 248, 246, 0.18);
-  font-style: italic;
-}
-
-.fieldTextarea:focus {
-  border-color: rgba(212, 175, 55, 0.35);
-  background: rgba(212, 175, 55, 0.02);
-  box-shadow: 0 0 0 1px rgba(212, 175, 55, 0.08);
-}
-
-/* ─── Practice area select ─── */
+.fieldTextarea { resize: vertical; min-height: 120px; line-height: 1.6; }
 .fieldSelect {
-  width: 100%;
-  padding: 0.85rem 1rem;
-  background: rgba(249, 248, 246, 0.03);
-  border: 1px solid rgba(249, 248, 246, 0.08);
-  border-radius: 0;
-  font-family: 'Georgia', 'Times New Roman', serif;
-  font-size: 0.88rem;
-  color: var(--heritage-cream);
-  letter-spacing: 0.01em;
-  transition: all 0.3s ease;
-  outline: none;
   cursor: pointer;
   appearance: none;
   -webkit-appearance: none;
@@ -333,73 +243,38 @@
   background-repeat: no-repeat;
   background-position: right 1rem center;
 }
-
-.fieldSelect:focus {
-  border-color: rgba(212, 175, 55, 0.35);
-  background-color: rgba(212, 175, 55, 0.02);
-}
-
-.fieldSelect option {
-  background: #1a110a;
-  color: var(--heritage-cream);
-}
-
-/* ─── Cal.com Embed Section ─── */
-.calSection {
-  width: 100%;
-  min-height: 380px;
-  position: relative;
-}
-
-.calContainer {
-  width: 100%;
-  min-height: 380px;
-  border: 1px solid rgba(249, 248, 246, 0.06);
-  background: rgba(249, 248, 246, 0.02);
-  overflow: hidden;
-  position: relative;
-}
-
-.calPlaceholder {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 360px;
-  gap: 1.25rem;
-  padding: 2rem;
-  text-align: center;
-}
-
-.calIcon {
-  width: 48px;
-  height: 48px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid rgba(212, 175, 55, 0.15);
-  color: var(--heritage-gold);
-  opacity: 0.5;
-}
-
-.calPlaceholderTitle {
-  font-family: 'Lora', Georgia, serif;
-  font-size: 1.1rem;
-  font-weight: 400;
-  color: var(--heritage-cream);
-  margin: 0;
-}
-
-.calPlaceholderText {
+.fieldSelect option { background: #1a110a; color: var(--heritage-cream); }
+.fieldError {
   font-family: 'Georgia', 'Times New Roman', serif;
-  font-size: 0.78rem;
-  line-height: 1.5;
-  color: rgba(249, 248, 246, 0.3);
-  max-width: 320px;
-  margin: 0;
+  font-size: 0.65rem;
+  color: #c97453;
+  margin-top: 0.35rem;
+  letter-spacing: 0.02em;
 }
 
-/* ─── Navigation Buttons ─── */
+/* ─── Error Banner ─── */
+.apiError {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: rgba(201, 116, 83, 0.08);
+  border: 1px solid rgba(201, 116, 83, 0.2);
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 0.75rem;
+  color: #c97453;
+  line-height: 1.5;
+  margin-bottom: 1.5rem;
+}
+
+/* ─── Spinner ─── */
+.spinnerIcon { animation: spinAnimation 1s linear infinite; }
+@keyframes spinAnimation {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ─── Navigation ─── */
 .navButtons {
   display: flex;
   align-items: center;
@@ -408,7 +283,6 @@
   padding-top: 1.5rem;
   border-top: 1px solid rgba(249, 248, 246, 0.06);
 }
-
 .navButtonBack {
   display: flex;
   align-items: center;
@@ -424,12 +298,10 @@
   cursor: pointer;
   transition: all 0.3s ease;
 }
-
 .navButtonBack:hover {
   border-color: rgba(249, 248, 246, 0.25);
   color: rgba(249, 248, 246, 0.75);
 }
-
 .navButtonNext {
   display: flex;
   align-items: center;
@@ -447,65 +319,13 @@
   transition: all 0.3s ease;
   margin-left: auto;
 }
-
 .navButtonNext:hover {
   background: #c9a430;
   box-shadow: 0 4px 20px rgba(212, 175, 55, 0.25);
 }
+.navButtonNext:disabled { opacity: 0.35; cursor: not-allowed; box-shadow: none; }
 
-.navButtonNext:disabled {
-  opacity: 0.35;
-  cursor: not-allowed;
-  box-shadow: none;
-}
-
-.navButtonSubmit {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.7rem 1.5rem;
-  background: var(--heritage-gold);
-  border: none;
-  color: var(--wood-espresso);
-  font-family: 'Georgia', 'Times New Roman', serif;
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  margin-left: auto;
-}
-
-.navButtonSubmit:hover {
-  background: #c9a430;
-  box-shadow: 0 4px 20px rgba(212, 175, 55, 0.25);
-}
-
-/* ─── Step Counter Label ─── */
-.stepLabel {
-  font-family: 'Georgia', 'Times New Roman', serif;
-  font-size: 0.6rem;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  color: rgba(249, 248, 246, 0.25);
-  position: absolute;
-  bottom: 1rem;
-  left: 50%;
-  transform: translateX(-50%);
-  pointer-events: none;
-}
-
-/* ─── Validation errors ─── */
-.fieldError {
-  font-family: 'Georgia', 'Times New Roman', serif;
-  font-size: 0.65rem;
-  color: #c97453;
-  margin-top: 0.35rem;
-  letter-spacing: 0.02em;
-}
-
-/* ─── Success state ─── */
+/* ─── Success State ─── */
 .successSection {
   display: flex;
   flex-direction: column;
@@ -516,7 +336,6 @@
   gap: 1.5rem;
   min-height: 300px;
 }
-
 .successIcon {
   width: 56px;
   height: 56px;
@@ -526,7 +345,6 @@
   border: 1px solid rgba(212, 175, 55, 0.25);
   color: var(--heritage-gold);
 }
-
 .successTitle {
   font-family: 'Lora', Georgia, serif;
   font-size: 1.5rem;
@@ -535,7 +353,6 @@
   color: var(--heritage-cream);
   margin: 0;
 }
-
 .successText {
   font-family: 'Georgia', 'Times New Roman', serif;
   font-size: 0.82rem;
@@ -544,7 +361,6 @@
   max-width: 380px;
   margin: 0;
 }
-
 .successClose {
   margin-top: 1rem;
   padding: 0.65rem 1.5rem;
@@ -558,62 +374,23 @@
   cursor: pointer;
   transition: all 0.3s ease;
 }
-
 .successClose:hover {
   border-color: var(--heritage-gold);
   background: rgba(212, 175, 55, 0.06);
 }
 
-/* ============================================================
-   Responsive
-   ============================================================ */
+/* ─── Responsive ─── */
 @media (max-width: 768px) {
-  .overlay {
-    padding: 1rem;
-    align-items: flex-start;
-    padding-top: 2rem;
-  }
-
-  .card {
-    max-width: 100%;
-    max-height: 92vh;
-  }
-
-  .cardInner {
-    padding: 2.5rem 1.5rem 2rem;
-  }
-
-  .title {
-    font-size: 1.5rem;
-  }
-
-  .stepLine {
-    width: 28px;
-  }
-
-  .navButtons {
-    flex-wrap: wrap;
-    gap: 0.75rem;
-  }
-
-  .navButtonBack,
-  .navButtonNext,
-  .navButtonSubmit {
-    flex: 1;
-    justify-content: center;
-  }
+  .overlay { padding: 1rem; align-items: flex-start; padding-top: 2rem; }
+  .card { max-width: 100%; max-height: 92vh; }
+  .cardInner { padding: 2.5rem 1.5rem 2rem; }
+  .title { font-size: 1.5rem; }
+  .stepLine { width: 28px; }
+  .navButtons { flex-wrap: wrap; gap: 0.75rem; }
+  .navButtonBack, .navButtonNext { flex: 1; justify-content: center; }
 }
 
 @media (max-width: 480px) {
-  .cardInner {
-    padding: 2rem 1.15rem 1.5rem;
-  }
-
-  .header {
-    margin-bottom: 1.75rem;
-  }
-
-  .calPlaceholder {
-    min-height: 280px;
-  }
+  .cardInner { padding: 2rem 1.15rem 1.5rem; }
+  .header { margin-bottom: 1.75rem; }
 }
