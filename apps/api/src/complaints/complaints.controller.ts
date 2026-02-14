@@ -18,12 +18,12 @@ import { ComplaintsService } from './complaints.service';
 import {
   CreateComplaintSchema,
   UpdateComplaintStatusSchema,
-  AssignComplaintSchema,
+  AssignToSchema,
   ComplaintFiltersSchema,
   PaginationSchema,
   type CreateComplaintData,
   type UpdateComplaintStatusData,
-  type AssignComplaintData,
+  type AssignToData,
   type ComplaintFilters,
   type ComplaintResponse,
   type PaginatedComplaintsResponse,
@@ -191,11 +191,11 @@ export class ComplaintsController {
   }
 
   /**
-   * Assign complaint to a staff member (staff only)
+   * Assign complaint to a user (staff/attorney) (staff only)
    * Automatically updates status to UNDER_REVIEW if currently SUBMITTED
    *
    * @param id - The complaint ID
-   * @param dto - The assignment data (staffId)
+   * @param dto - The assignment data (assignedToId)
    * @returns The updated complaint
    * @throws {NotFoundException} If complaint does not exist
    *
@@ -206,7 +206,7 @@ export class ComplaintsController {
    * Content-Type: application/json
    *
    * {
-   *   "staffId": "staff-uuid-789"
+   *   "assignedToId": "user-profile-uuid-789"
    * }
    * ```
    */
@@ -215,8 +215,8 @@ export class ComplaintsController {
   @HttpCode(HttpStatus.OK)
   async assignComplaint(
     @Param('id') id: string,
-    @Body(new ZodValidationPipe(AssignComplaintSchema))
-    dto: AssignComplaintData,
+    @Body(new ZodValidationPipe(AssignToSchema))
+    dto: AssignToData,
   ): Promise<ComplaintResponse> {
     return this.complaintsService.assignComplaint(id, dto);
   }

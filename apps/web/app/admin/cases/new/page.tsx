@@ -47,6 +47,7 @@ import {
 } from '@/components/ui/form';
 import { createCase, CasePriority } from '@/lib/api/cases';
 import { getClients, type ClientResponse } from '@/lib/api/clients';
+import { getPracticeAreas, type PracticeArea } from '@/lib/api/practice-areas';
 
 /** New case form schema */
 const newCaseSchema = z.object({
@@ -68,7 +69,9 @@ export default function AdminCreateCasePage() {
   const router = useRouter();
 
   const [clients, setClients] = useState<ClientResponse[]>([]);
+  const [practiceAreas, setPracticeAreas] = useState<PracticeArea[]>([]);
   const [isLoadingClients, setIsLoadingClients] = useState(true);
+  const [isLoadingPracticeAreas, setIsLoadingPracticeAreas] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
 
   // Form setup with React Hook Form + Zod
@@ -92,11 +95,10 @@ export default function AdminCreateCasePage() {
     control,
   } = form;
 
-  // Fetch clients on mount
+  // Fetch clients and practice areas on mount
   useEffect(() => {
     async function loadClients() {
       try {
-        setLoadError(null);
         setIsLoadingClients(true);
         const data = await getClients({ limit: 100 });
         setClients(data.clients);
@@ -109,7 +111,20 @@ export default function AdminCreateCasePage() {
       }
     }
 
+    async function loadPracticeAreas() {
+      try {
+        setIsLoadingPracticeAreas(true);
+        const data = await getPracticeAreas();
+        setPracticeAreas(data);
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : 'Failed to load practice areas');
+      } finally {
+        setIsLoadingPracticeAreas(false);
+      }
+    }
+
     loadClients();
+    loadPracticeAreas();
   }, []);
 
   const onSubmit = async (data: NewCaseForm) => {
@@ -198,25 +213,41 @@ export default function AdminCreateCasePage() {
                 )}
               />
 
-              {/* Practice Area ID (UUID input) */}
-              <div className="space-y-2">
-                <Label htmlFor="practiceAreaId">
-                  Practice Area ID (UUID) *
-                </Label>
-                <Input
-                  id="practiceAreaId"
-                  placeholder="e.g., 550e8400-e29b-41d4-a716-446655440000"
-                  {...register('practiceAreaId')}
-                />
-                {errors.practiceAreaId && (
-                  <p className="text-sm text-destructive">
-                    {errors.practiceAreaId.message}
-                  </p>
+              {/* Practice Area Selection */}
+              <FormField
+                control={control}
+                name="practiceAreaId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Practice Area *</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      disabled={isLoadingPracticeAreas}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue
+                            placeholder={
+                              isLoadingPracticeAreas
+                                ? 'Loading practice areas...'
+                                : 'Select a practice area'
+                            }
+                          />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {practiceAreas.map((area) => (
+                          <SelectItem key={area.id} value={area.id}>
+                            {area.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
                 )}
-                <p className="text-xs text-muted-foreground">
-                  Enter the UUID of the practice area (Corporate Law, Tax Law, Immigration, etc.)
-                </p>
-              </div>
+              />
 
               {/* Title */}
               <div className="space-y-2">

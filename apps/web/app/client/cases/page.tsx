@@ -208,7 +208,7 @@ export default function ClientCasesPage() {
                     <TableRow>
                       <TableHead>Case #</TableHead>
                       <TableHead>Title</TableHead>
-                      <TableHead>Attorney</TableHead>
+                      <TableHead>Assigned To</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Priority</TableHead>
                       <TableHead>Filing Date</TableHead>
@@ -265,7 +265,7 @@ export default function ClientCasesPage() {
                           </TableCell>
                           <TableCell>{caseItem.title}</TableCell>
                           <TableCell>
-                            {caseItem.attorneyName || 'Unassigned'}
+                            {caseItem.assignedToName || 'Unassigned'}
                           </TableCell>
                           <TableCell>
                             <Badge className={STATUS_COLORS[caseItem.status]}>

@@ -3,7 +3,7 @@
 /**
  * Admin Case Detail Page
  *
- * Displays full case details with ability to update status, assign attorney,
+ * Displays full case details with ability to update status, assign staff/attorney,
  * and manage case activities. Includes timeline view of all case activities.
  *
  * @module AdminCaseDetailPage
@@ -40,7 +40,7 @@ import {
 import {
   getCaseById,
   updateCaseStatus,
-  assignAttorney,
+  assignCase,
   getCaseActivities,
   addCaseActivity,
   CaseStatus,
@@ -48,6 +48,7 @@ import {
   type CaseResponse,
   type CaseActivityResponse,
 } from '@/lib/api/cases';
+import { getUsers } from '@/lib/api/users';
 import { ArrowLeft, Calendar, User, Briefcase, Clock } from 'lucide-react';
 import {
   STATUS_COLORS,
@@ -75,8 +76,10 @@ export default function AdminCaseDetailPage() {
   // Status update state
   const [statusValue, setStatusValue] = useState<CaseStatus>(CaseStatus.PENDING);
 
-  // Attorney assignment state
-  const [attorneyId, setAttorneyId] = useState('');
+  // Assignee state
+  const [assignedToId, setAssignedToId] = useState('');
+  const [assignees, setAssignees] = useState<{ id: string; name: string }[]>([]);
+  const [isLoadingAssignees, setIsLoadingAssignees] = useState(true);
 
   // Activity form state
   const [activityType, setActivityType] = useState<CaseActivityType>(
@@ -113,6 +116,27 @@ export default function AdminCaseDetailPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [caseId]);
 
+  // Load assignees (staff + attorneys) for assignment dropdown
+  useEffect(() => {
+    async function loadAssignees() {
+      try {
+        setIsLoadingAssignees(true);
+        const data = await getUsers({ userTypes: ['staff', 'attorney'], limit: 100 });
+        const mapped = data.users.map((u) => ({
+          id: u.id,
+          name: u.fullName,
+        }));
+        setAssignees(mapped);
+      } catch {
+        toast.error('Failed to load assignees');
+      } finally {
+        setIsLoadingAssignees(false);
+      }
+    }
+
+    loadAssignees();
+  }, []);
+
   /**
    * Handle status update
    */
@@ -135,22 +159,22 @@ export default function AdminCaseDetailPage() {
   };
 
   /**
-   * Handle attorney assignment
+   * Handle case assignment
    */
-  const handleAssignAttorney = async () => {
-    if (!attorneyId.trim()) {
-      toast.error('Please enter an attorney profile ID');
+  const handleAssignCase = async () => {
+    if (!assignedToId.trim()) {
+      toast.error('Please select a person to assign');
       return;
     }
 
     try {
       setIsUpdating(true);
-      await assignAttorney(caseId, { attorneyProfileId: attorneyId });
+      await assignCase(caseId, { assignedToId });
       await loadCase();
-      setAttorneyId('');
-      toast.success('Attorney assigned successfully');
+      setAssignedToId('');
+      toast.success('Case assigned successfully');
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed to assign attorney');
+      toast.error(err instanceof Error ? err.message : 'Failed to assign case');
     } finally {
       setIsUpdating(false);
     }
@@ -261,10 +285,10 @@ export default function AdminCaseDetailPage() {
             <div className="space-y-1">
               <Label className="text-muted-foreground flex items-center gap-2">
                 <User className="h-4 w-4" />
-                Attorney
+                Assigned To
               </Label>
               <p className="font-medium">
-                {caseData.attorneyName || (
+                {caseData.assignedToName || (
                   <span className="text-muted-foreground italic">Unassigned</span>
                 )}
               </p>
@@ -348,7 +372,7 @@ export default function AdminCaseDetailPage() {
       <Card>
         <CardHeader>
           <CardTitle>Actions</CardTitle>
-          <CardDescription>Update case status or assign attorney</CardDescription>
+          <CardDescription>Update case status or assign case</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Update Status */}
@@ -375,17 +399,33 @@ export default function AdminCaseDetailPage() {
 
           <Separator />
 
-          {/* Assign Attorney */}
+          {/* Assign Case */}
           <div className="space-y-4">
-            <h3 className="font-semibold">Assign Attorney</h3>
+            <h3 className="font-semibold">Assign To</h3>
             <div className="flex gap-2">
-              <Input
-                placeholder="Enter attorney profile UUID"
-                value={attorneyId}
-                onChange={(e) => setAttorneyId(e.target.value)}
-                className="max-w-md"
-              />
-              <Button onClick={handleAssignAttorney} disabled={isUpdating}>
+              <Select
+                value={assignedToId}
+                onValueChange={setAssignedToId}
+                disabled={isLoadingAssignees}
+              >
+                <SelectTrigger className="max-w-md">
+                  <SelectValue
+                    placeholder={
+                      isLoadingAssignees
+                        ? 'Loading assignees...'
+                        : 'Select a person'
+                    }
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  {assignees.map((assignee) => (
+                    <SelectItem key={assignee.id} value={assignee.id}>
+                      {assignee.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button onClick={handleAssignCase} disabled={isUpdating}>
                 {isUpdating ? 'Assigning...' : 'Assign'}
               </Button>
             </div>

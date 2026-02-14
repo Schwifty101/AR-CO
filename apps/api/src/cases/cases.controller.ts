@@ -24,9 +24,9 @@
  * PATCH /api/cases/:id/status
  * Body: { status: "resolved" }
  *
- * // Assign attorney (staff only)
- * POST /api/cases/:id/assign
- * Body: { attorneyProfileId: "uuid" }
+ * // Assign user to case (staff only)
+ * PATCH /api/cases/:id/assign
+ * Body: { assignedToId: "uuid" }
  *
  * // Get case activities
  * GET /api/cases/:id/activities?page=1&limit=20
@@ -60,14 +60,14 @@ import {
   CreateCaseSchema,
   UpdateCaseSchema,
   UpdateCaseStatusSchema,
-  AssignAttorneySchema,
+  AssignToSchema,
   CaseFiltersSchema,
   PaginationSchema,
   CreateCaseActivitySchema,
   type CreateCaseData,
   type UpdateCaseData,
   type UpdateCaseStatusData,
-  type AssignAttorneyData,
+  type AssignToData,
   type CaseFilters,
   type PaginationParams,
   type CreateCaseActivityData,
@@ -193,23 +193,23 @@ export class CasesController {
   }
 
   /**
-   * Assign an attorney to a case (staff only)
+   * Assign a user (attorney/staff) to a case (staff only)
    *
    * @param id - The case UUID
    * @param user - The authenticated staff user
-   * @param dto - Attorney assignment data
+   * @param dto - Assignment data with assignedToId
    * @returns The updated case
    */
-  @Post(':id/assign')
+  @Patch(':id/assign')
   @Roles(UserType.ADMIN, UserType.STAFF)
   @HttpCode(HttpStatus.OK)
-  async assignAttorney(
+  async assign(
     @Param('id') id: string,
     @CurrentUser() user: AuthUser,
-    @Body(new ZodValidationPipe(AssignAttorneySchema))
-    dto: AssignAttorneyData,
+    @Body(new ZodValidationPipe(AssignToSchema))
+    dto: AssignToData,
   ): Promise<CaseResponse> {
-    return this.casesService.assignAttorney(id, dto, user);
+    return this.casesService.assign(id, dto, user);
   }
 
   /**

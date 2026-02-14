@@ -8,7 +8,7 @@
  *
  * @example
  * ```typescript
- * import { getCases, getCaseById, createCase, updateCaseStatus } from '@/lib/api/cases';
+ * import { getCases, getCaseById, createCase, updateCaseStatus, assignCase } from '@/lib/api/cases';
  *
  * // Fetch cases list (role-filtered)
  * const cases = await getCases({ page: 1, status: 'active' });
@@ -35,7 +35,7 @@ import type {
   CreateCaseData,
   UpdateCaseData,
   UpdateCaseStatusData,
-  AssignAttorneyData,
+  AssignToData,
   CreateCaseActivityData,
   CaseFilters,
   PaginatedCasesResponse,
@@ -50,7 +50,7 @@ export type {
   CreateCaseData,
   UpdateCaseData,
   UpdateCaseStatusData,
-  AssignAttorneyData,
+  AssignToData,
   CreateCaseActivityData,
   CaseFilters,
 } from '@repo/shared';
@@ -99,7 +99,7 @@ export async function getCases(
   if (params?.status) queryParams.set('status', params.status);
   if (params?.priority) queryParams.set('priority', params.priority);
   if (params?.clientProfileId) queryParams.set('clientProfileId', params.clientProfileId);
-  if (params?.attorneyProfileId) queryParams.set('attorneyProfileId', params.attorneyProfileId);
+  if (params?.assignedToId) queryParams.set('assignedToId', params.assignedToId);
   if (params?.practiceAreaId) queryParams.set('practiceAreaId', params.practiceAreaId);
   if (params?.search) queryParams.set('search', params.search);
 
@@ -300,26 +300,28 @@ export async function deleteCase(id: string): Promise<void> {
 }
 
 /**
- * Assign an attorney to a case (staff only)
+ * Assign a case to a user (staff only)
+ *
+ * Assigns a case to a specific attorney or staff member for handling.
  *
  * @param id - UUID of the case
- * @param data - Attorney assignment data
+ * @param data - Assignment data containing the user profile ID to assign to
  * @returns Updated case record
  * @throws Error if request fails
  *
  * @example
  * ```typescript
- * const updated = await assignAttorney('case-uuid', { attorneyProfileId: 'attorney-uuid' });
+ * const updated = await assignCase('case-uuid', { assignedToId: 'user-profile-uuid' });
  * ```
  */
-export async function assignAttorney(
+export async function assignCase(
   id: string,
-  data: AssignAttorneyData,
+  data: AssignToData,
 ): Promise<CaseResponse> {
   const token = await getSessionToken();
 
   const response = await fetch(`/api/cases/${id}/assign`, {
-    method: 'POST',
+    method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
@@ -329,7 +331,7 @@ export async function assignAttorney(
 
   if (!response.ok) {
     const error = (await response.json()) as { message?: string };
-    throw new Error(error.message || 'Failed to assign attorney');
+    throw new Error(error.message || 'Failed to assign case');
   }
 
   return (await response.json()) as CaseResponse;
