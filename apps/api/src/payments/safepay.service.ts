@@ -245,10 +245,10 @@ export class SafepayService implements OnModuleInit {
 
     this.logger.log(`Verifying payment: tracker=${trackerToken}`);
 
-    // Use reporter.payments.get() per Safepay Express Checkout docs
+    // Use reporter.payments.fetch() — the only query method on Reporter.Payments
     let payment: { data?: { state?: string; reference?: string; amount?: number } };
     try {
-      payment = await this.safepay.reporter.payments.get(trackerToken);
+      payment = await this.safepay.reporter.payments.fetch(trackerToken);
     } catch (error) {
       this.logger.error('Safepay payment verification failed', error);
       throw new InternalServerErrorException(
