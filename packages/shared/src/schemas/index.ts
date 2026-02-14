@@ -78,3 +78,14 @@ export {
   PaginatedCasesResponseSchema,
   PaginatedCaseActivitiesResponseSchema,
 } from './cases.schemas';
+
+export {
+  CreateConsultationSchema,
+  ConsultationPaymentInitResponseSchema,
+  ConfirmConsultationPaymentSchema,
+  ConsultationStatusCheckSchema,
+  ConsultationResponseSchema,
+  ConsultationStatusResponseSchema,
+  PaginatedConsultationsResponseSchema,
+  ConsultationFiltersSchema,
+} from './consultations.schemas';

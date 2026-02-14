@@ -77,3 +77,14 @@ export type {
   PaginatedCasesResponse,
   PaginatedCaseActivitiesResponse,
 } from './cases.types';
+
+export type {
+  CreateConsultationData,
+  ConsultationPaymentInitResponse,
+  ConfirmConsultationPaymentData,
+  ConsultationStatusCheckData,
+  ConsultationResponse,
+  ConsultationStatusResponse,
+  PaginatedConsultationsResponse,
+  ConsultationFilters,
+} from './consultations.types';

@@ -91,3 +91,29 @@ export enum CaseActivityType {
   PAYMENT_RECEIVED = 'payment_received',
   OTHER = 'other',
 }
+
+/** Consultation booking lifecycle status */
+export enum ConsultationBookingStatus {
+  PENDING_PAYMENT = 'pending_payment',
+  PAYMENT_CONFIRMED = 'payment_confirmed',
+  BOOKED = 'booked',
+  COMPLETED = 'completed',
+  CANCELLED = 'cancelled',
+  NO_SHOW = 'no_show',
+}
+
+/** Consultation urgency level */
+export enum ConsultationUrgency {
+  LOW = 'low',
+  MEDIUM = 'medium',
+  HIGH = 'high',
+  URGENT = 'urgent',
+}
+
+/** Consultation payment status */
+export enum ConsultationPaymentStatus {
+  PENDING = 'pending',
+  PAID = 'paid',
+  FAILED = 'failed',
+  REFUNDED = 'refunded',
+}
