@@ -7,7 +7,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger"
 import { useGSAP } from "@gsap/react"
 import { ArrowUpRight } from "lucide-react"
 import { useFacilitationOverlay } from "@/components/facilitation"
-import { setSlowScroll } from "../../SmoothScroll"
+import { smoothPause } from "../../SmoothScroll"
 import styles from "./QuoteSection.module.css"
 
 // Register GSAP plugins
@@ -61,31 +61,37 @@ export default function QuoteSection() {
   const contentRef = useRef<HTMLDivElement>(null)
   const { openOverlay } = useFacilitationOverlay()
 
-  // GSAP scroll-speed control & entrance animation
+  // GSAP scroll-pause & entrance animation
   useGSAP(() => {
     if (!sectionRef.current || !contentRef.current) return
 
     const section = sectionRef.current
     const content = contentRef.current
+    let hasTriggeredPause = false
 
+    // Reset pause flag when section leaves viewport
     ScrollTrigger.create({
       trigger: section,
       start: "top bottom",
       end: "bottom top",
-      onEnter: () => setSlowScroll(),
-      onLeaveBack: () => setSlowScroll(),
+      onLeave: () => { hasTriggeredPause = false },
+      onLeaveBack: () => { hasTriggeredPause = false },
     })
 
-    // Pin the section when it fills the viewport, creating a scroll pause
+    // Smooth pause when section reaches top of viewport
     ScrollTrigger.create({
       trigger: section,
       start: "top top",
-      end: "+=200%",       // hold for 200% of viewport height worth of scroll - requires active scrolling to continue
-      pin: true,
-      pinSpacing: true,
-      anticipatePin: 1,    // prevents flashing
+      end: "top top",
+      onEnter: () => {
+        if (!hasTriggeredPause) {
+          hasTriggeredPause = true
+          smoothPause(800)
+        }
+      },
     })
 
+    // Content entrance animation
     gsap.fromTo(
       content,
       { opacity: 0.8, y: 30 },

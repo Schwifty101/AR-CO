@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X } from 'lucide-react'
 import { practiceAreas } from '@/app/(public)/practice-areas/practiceAreasData'
+import styles from './PracticeAreasOverlay.module.css'
 
 interface PracticeAreasOverlayProps {
   isOpen: boolean
@@ -49,7 +50,7 @@ export default function PracticeAreasOverlay({ isOpen, onClose }: PracticeAreasO
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 z-[9999] scrollbar-hide"
+          className={`fixed inset-0 z-[9999] ${styles.overlayScroll}`}
           initial={{ y: '-100%' }}
           animate={{ y: 0 }}
           exit={{ y: '-100%' }}
@@ -88,7 +89,7 @@ export default function PracticeAreasOverlay({ isOpen, onClose }: PracticeAreasO
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.6 }}
-              className="mb-4 md:mb-6"
+              className="mb-10 md:mb-16"
             >
               <span
                 className="text-xs md:text-sm font-medium uppercase tracking-[0.2em] mb-4 block"
@@ -137,9 +138,8 @@ export default function PracticeAreasOverlay({ isOpen, onClose }: PracticeAreasO
                     <div className="flex items-center justify-between">
                       <div className="flex items-baseline gap-4">
                         <span
-                          className="text-sm transition-colors duration-300 group-hover:text-[var(--heritage-gold)]"
+                          className="text-sm text-[rgba(249,248,246,0.4)] transition-colors duration-300 group-hover:text-[var(--heritage-gold)]"
                           style={{
-                            color: 'rgba(249, 248, 246, 0.4)',
                             fontFamily: "'Georgia', 'Times New Roman', serif",
                             letterSpacing: '0.1em',
                           }}
@@ -147,9 +147,8 @@ export default function PracticeAreasOverlay({ isOpen, onClose }: PracticeAreasO
                           {String(index + 1).padStart(2, '0')}
                         </span>
                         <span
-                          className="text-lg md:text-xl transition-colors duration-300 group-hover:text-[var(--heritage-gold)]"
+                          className="text-lg md:text-xl text-[var(--heritage-cream)] transition-colors duration-300 group-hover:text-[var(--heritage-gold)]"
                           style={{
-                            color: 'var(--heritage-cream)',
                             fontFamily: "'Lora', Georgia, serif",
                             fontWeight: 400,
                           }}

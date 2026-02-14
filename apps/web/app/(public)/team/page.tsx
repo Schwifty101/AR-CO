@@ -35,6 +35,27 @@ export default function TeamPage() {
             className="min-h-screen text-heritage-cream transition-colors duration-700 ease-in-out relative overflow-hidden"
             style={{ background: 'var(--wood-espresso)' }}
         >
+            {/* Atmospheric Glow */}
+            <div
+                className="fixed inset-0 pointer-events-none z-0"
+                style={{
+                    background: `
+                        radial-gradient(ellipse 55% 60% at 20% 40%, rgba(212, 175, 55, 0.04) 0%, transparent 100%),
+                        radial-gradient(ellipse 40% 50% at 80% 70%, rgba(249, 248, 246, 0.015) 0%, transparent 100%)
+                    `
+                }}
+            />
+
+            {/* Grain Overlay */}
+            <div
+                className="fixed inset-0 pointer-events-none z-0"
+                style={{
+                    opacity: 0.25,
+                    backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E")`,
+                    backgroundSize: '256px 256px',
+                }}
+            />
+
             {/* Background Texture Elements */}
             <TeamBackgroundElements
                 variant="cream"

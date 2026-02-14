@@ -193,7 +193,7 @@
   color: var(--wood-espresso);
   background: var(--heritage-gold);
   border: none;
-  border-radius: 2px;
+  border-radius: 100px;
   cursor: pointer;
   transition: all 0.4s cubic-bezier(0.32, 0.72, 0, 1);
 }
@@ -218,7 +218,7 @@
   color: rgba(249, 248, 246, 0.6);
   background: transparent;
   border: 1px solid rgba(249, 248, 246, 0.15);
-  border-radius: 2px;
+  border-radius: 100px;
   cursor: pointer;
   transition: all 0.3s ease;
 }
@@ -254,6 +254,7 @@
   position: relative;
   padding: 2.5rem 2rem;
   border: 1px solid rgba(249, 248, 246, 0.08);
+  border-radius: 1rem;
   background: rgba(26, 17, 10, 0.3);
   backdrop-filter: blur(8px);
   transition: all 0.4s cubic-bezier(0.32, 0.72, 0, 1);

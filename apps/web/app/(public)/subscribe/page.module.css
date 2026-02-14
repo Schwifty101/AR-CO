@@ -101,6 +101,7 @@
   background: rgba(26, 17, 10, 0.4);
   border: 1px solid rgba(249, 248, 246, 0.06);
   padding: 2.5rem 2rem;
+  border-radius: 1rem;
   transition: all 0.4s ease;
 }
 
@@ -158,6 +159,7 @@
   margin: 0 auto 5rem;
   background: rgba(26, 17, 10, 0.4);
   border: 1px solid rgba(249, 248, 246, 0.06);
+  border-radius: 1rem;
   padding: 3rem 2.5rem;
 }
 
@@ -222,6 +224,7 @@
 .ctaCard {
   background: rgba(26, 17, 10, 0.6);
   border: 1px solid rgba(212, 175, 55, 0.2);
+  border-radius: 1.25rem;
   padding: 3rem 2.5rem;
   position: relative;
   overflow: hidden;
@@ -294,6 +297,7 @@
   letter-spacing: 0.22em;
   text-transform: uppercase;
   color: var(--heritage-gold);
+  border-radius: 100px;
 }
 
 .ctaButton::before {
