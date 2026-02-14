@@ -16,7 +16,10 @@
  */
 
 import { Controller, Get } from '@nestjs/common';
-import { PracticeAreasService, type PracticeAreaRow } from './practice-areas.service';
+import {
+  PracticeAreasService,
+  type PracticeAreaRow,
+} from './practice-areas.service';
 
 /**
  * Controller for practice area endpoints

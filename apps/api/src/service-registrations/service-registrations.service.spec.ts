@@ -548,10 +548,9 @@ describe('ServiceRegistrationsService', () => {
           }),
         });
 
-      const result = await service.assignRegistration(
-        'registration-uuid-1',
-        { assignedToId: 'staff-uuid-789' },
-      );
+      const result = await service.assignRegistration('registration-uuid-1', {
+        assignedToId: 'staff-uuid-789',
+      });
 
       expect(result.assignedToId).toBe('staff-uuid-789');
       expect(result.status).toBe(ServiceRegistrationStatus.IN_PROGRESS);
@@ -595,10 +594,9 @@ describe('ServiceRegistrationsService', () => {
           }),
         });
 
-      const result = await service.assignRegistration(
-        'registration-uuid-1',
-        { assignedToId: 'staff-uuid-789' },
-      );
+      const result = await service.assignRegistration('registration-uuid-1', {
+        assignedToId: 'staff-uuid-789',
+      });
 
       expect(result.assignedToId).toBe('staff-uuid-789');
       expect(result.status).toBe(ServiceRegistrationStatus.IN_PROGRESS);
@@ -642,10 +640,9 @@ describe('ServiceRegistrationsService', () => {
           }),
         });
 
-      const result = await service.assignRegistration(
-        'registration-uuid-1',
-        { assignedToId: 'staff-uuid-789' },
-      );
+      const result = await service.assignRegistration('registration-uuid-1', {
+        assignedToId: 'staff-uuid-789',
+      });
 
       expect(result.assignedToId).toBe('staff-uuid-789');
     });
@@ -663,7 +660,9 @@ describe('ServiceRegistrationsService', () => {
       });
 
       await expect(
-        service.assignRegistration('non-existent-id', { assignedToId: 'staff-uuid-789' }),
+        service.assignRegistration('non-existent-id', {
+          assignedToId: 'staff-uuid-789',
+        }),
       ).rejects.toThrow(NotFoundException);
     });
   });

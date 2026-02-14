@@ -15,6 +15,7 @@ import { ServiceRegistrationsModule } from './service-registrations/service-regi
 import { ServicesModule } from './services/services.module';
 import { CasesModule } from './cases/cases.module';
 import { PracticeAreasModule } from './practice-areas/practice-areas.module';
+import { ConsultationsModule } from './consultations/consultations.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { PracticeAreasModule } from './practice-areas/practice-areas.module';
     ServicesModule,
     CasesModule,
     PracticeAreasModule,
+    ConsultationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

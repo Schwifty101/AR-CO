@@ -1,0 +1,178 @@
+/* Consultation Steps — Payment and Scheduling step styles */
+/* Split from ConsultationOverlay.module.css for 500-line compliance */
+
+/* ─── Spinner (duplicated from overlay for module isolation) ─── */
+.spinnerIcon { animation: spinAnimation 1s linear infinite; }
+@keyframes spinAnimation {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ─── Error Banner (payment-specific) ─── */
+.paymentError {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: rgba(201, 116, 83, 0.08);
+  border: 1px solid rgba(201, 116, 83, 0.2);
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 0.75rem;
+  color: #c97453;
+  line-height: 1.5;
+}
+
+/* ─── Cal.com Embed ─── */
+.calSection { width: 100%; min-height: 380px; position: relative; }
+.calContainer {
+  width: 100%;
+  min-height: 380px;
+  border: 1px solid rgba(249, 248, 246, 0.06);
+  background: rgba(249, 248, 246, 0.02);
+  overflow: hidden;
+  position: relative;
+}
+.calPlaceholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 360px;
+  gap: 1.25rem;
+  padding: 2rem;
+  text-align: center;
+}
+.calIcon {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(212, 175, 55, 0.15);
+  color: var(--heritage-gold);
+  opacity: 0.5;
+}
+.calPlaceholderTitle {
+  font-family: 'Lora', Georgia, serif;
+  font-size: 1.1rem;
+  font-weight: 400;
+  color: var(--heritage-cream);
+  margin: 0;
+}
+.calPlaceholderText {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: rgba(249, 248, 246, 0.3);
+  max-width: 320px;
+  margin: 0;
+}
+
+/* ─── Payment Section ─── */
+.paymentSection { width: 100%; display: flex; flex-direction: column; gap: 1.5rem; }
+.paymentSummary {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem 1.5rem;
+  background: rgba(212, 175, 55, 0.04);
+  border: 1px solid rgba(212, 175, 55, 0.12);
+}
+.paymentSummaryIcon {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  color: var(--heritage-gold);
+  flex-shrink: 0;
+}
+.paymentSummaryDetails { display: flex; flex-direction: column; gap: 0.2rem; flex: 1; }
+.paymentSummaryLabel {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 0.65rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: rgba(249, 248, 246, 0.35);
+}
+.paymentSummaryAmount {
+  font-family: 'Lora', Georgia, serif;
+  font-size: 1.3rem;
+  font-weight: 400;
+  color: var(--heritage-gold);
+  letter-spacing: -0.01em;
+}
+.paymentSummaryRef {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(249, 248, 246, 0.25);
+  white-space: nowrap;
+}
+.paymentButtonContainer { display: flex; justify-content: center; padding: 0.5rem 0; min-height: 56px; }
+.paymentButtonLoading, .paymentProcessing {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  color: rgba(249, 248, 246, 0.4);
+}
+.paymentButtonLoading { gap: 0.75rem; padding: 1rem; font-size: 0.75rem; }
+.paymentProcessing { flex-direction: column; gap: 1rem; padding: 2rem; font-size: 0.8rem; text-align: center; }
+.paymentSecurityNote {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 0.65rem;
+  line-height: 1.6;
+  color: rgba(249, 248, 246, 0.2);
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(249, 248, 246, 0.04);
+}
+.paymentSecurityNote svg { flex-shrink: 0; margin-top: 0.1rem; opacity: 0.5; }
+
+/* ─── Scheduling Step ─── */
+.schedulingHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 0.72rem;
+  color: rgba(212, 175, 55, 0.6);
+  letter-spacing: 0.02em;
+}
+.schedulingHeader svg { flex-shrink: 0; }
+.schedulingSkipButton {
+  display: block;
+  width: 100%;
+  margin-top: 1rem;
+  padding: 0.6rem 1rem;
+  background: none;
+  border: 1px solid rgba(249, 248, 246, 0.08);
+  color: rgba(249, 248, 246, 0.35);
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.schedulingSkipButton:hover {
+  border-color: rgba(249, 248, 246, 0.2);
+  color: rgba(249, 248, 246, 0.55);
+}
+
+/* ─── Responsive ─── */
+@media (max-width: 768px) {
+  .paymentSummary { flex-wrap: wrap; gap: 0.75rem; padding: 1rem; }
+  .paymentSummaryAmount { font-size: 1.1rem; }
+  .paymentSummaryRef { width: 100%; text-align: center; }
+}
+
+@media (max-width: 480px) {
+  .calPlaceholder { min-height: 280px; }
+}

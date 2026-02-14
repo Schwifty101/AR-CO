@@ -105,7 +105,9 @@ export interface PaymentVerificationResult {
 @Injectable()
 export class SafepayService implements OnModuleInit {
   private readonly logger = new Logger(SafepayService.name);
-  private safepay: InstanceType<typeof import('@sfpy/node-core').default> | null = null;
+  private safepay: InstanceType<
+    typeof import('@sfpy/node-core').default
+  > | null = null;
   private merchantApiKey = '';
   private environment = 'sandbox';
 
@@ -185,7 +187,10 @@ export class SafepayService implements OnModuleInit {
 
     const trackerToken = session?.data?.tracker?.token;
     if (!trackerToken) {
-      this.logger.error('Safepay session creation returned no tracker', session);
+      this.logger.error(
+        'Safepay session creation returned no tracker',
+        session,
+      );
       throw new InternalServerErrorException(
         'Payment session creation failed — no tracker returned',
       );
