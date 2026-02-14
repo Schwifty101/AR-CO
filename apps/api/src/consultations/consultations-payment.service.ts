@@ -97,7 +97,7 @@ export class ConsultationsPaymentService {
    * ```typescript
    * const paymentSession = await consultationsPaymentService.initiatePayment('booking-uuid');
    * // paymentSession.trackerToken -> 'track_xxx'
-   * // paymentSession.merchantKey -> 'pub_xxx'
+   * // paymentSession.publicKey -> 'sec_xxx'
    * // Frontend uses these to render SafepayButton
    * ```
    */

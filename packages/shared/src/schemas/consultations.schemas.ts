@@ -22,7 +22,7 @@ export const CreateConsultationSchema = z.object({
 export const ConsultationPaymentInitResponseSchema = z.object({
   trackerToken: z.string(),
   environment: z.string(),
-  merchantKey: z.string(),
+  publicKey: z.string(),
   amount: z.number(),
   currency: z.string(),
   orderId: z.string(),
