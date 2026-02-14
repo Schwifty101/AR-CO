@@ -38,6 +38,7 @@ import type {
   ServiceRegistrationResponse,
   CreateServiceRegistrationData,
   UpdateRegistrationStatusData,
+  AssignToData,
   GuestStatusResponse,
   PaginatedServiceRegistrationsResponse,
 } from '@repo/shared';
@@ -47,6 +48,7 @@ export type {
   ServiceRegistrationResponse,
   CreateServiceRegistrationData,
   UpdateRegistrationStatusData,
+  AssignToData,
   GuestStatusResponse,
 } from '@repo/shared';
 export type { PaginationParams } from './auth-helpers';
@@ -320,21 +322,20 @@ export async function updateRegistrationStatus(
  * Assigns a registration to a specific staff member for processing.
  *
  * @param id - UUID of the registration
- * @param staffId - UUID of the attorney/staff profile to assign to
- * @returns Updated registration record
+ * @param data - Assignment data containing the user profile ID to assign to
+ * @returns Updated registration record with assignedToId and assignedToName
  * @throws Error if request fails or user lacks permissions
  *
  * @example
  * ```typescript
- * const assigned = await assignRegistration(
- *   '550e8400-e29b-41d4-a716-446655440000',
- *   '660e8400-e29b-41d4-a716-446655440001'
- * );
+ * const assigned = await assignRegistration('550e8400-e29b-41d4-a716-446655440000', {
+ *   assignedToId: '660e8400-e29b-41d4-a716-446655440001',
+ * });
  * ```
  */
 export async function assignRegistration(
   id: string,
-  staffId: string,
+  data: AssignToData,
 ): Promise<ServiceRegistrationResponse> {
   const token = await getSessionToken();
 
@@ -344,7 +345,7 @@ export async function assignRegistration(
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify({ staffId }),
+    body: JSON.stringify(data),
   });
 
   if (!response.ok) {

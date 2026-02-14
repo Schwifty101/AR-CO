@@ -518,9 +518,12 @@ export class UsersService {
    * createClient() method for client registration. If profile creation fails,
    * the auth user is automatically cleaned up to prevent orphaned accounts.
    */
-  async inviteUser(
-    dto: InviteUserData,
-  ): Promise<{ id: string; email: string; fullName: string; userType: string }> {
+  async inviteUser(dto: InviteUserData): Promise<{
+    id: string;
+    email: string;
+    fullName: string;
+    userType: string;
+  }> {
     const adminClient = this.supabaseService.getAdminClient();
 
     // 1. Invite user via Supabase (sends magic link email)

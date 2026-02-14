@@ -6,6 +6,9 @@ export {
   ComplaintCategory,
   ServiceRegistrationStatus,
   ServiceRegistrationPaymentStatus,
+  CaseStatus,
+  CasePriority,
+  CaseActivityType,
 } from './enums';
 export * from './schemas';
 export * from './types';

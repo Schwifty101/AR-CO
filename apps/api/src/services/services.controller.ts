@@ -125,9 +125,7 @@ export class ServicesController {
    */
   @Get(':id')
   @Public()
-  async getServiceById(
-    @Param('id') id: string,
-  ): Promise<ServiceResponse> {
+  async getServiceById(@Param('id') id: string): Promise<ServiceResponse> {
     return this.servicesService.getServiceById(id);
   }
 }
