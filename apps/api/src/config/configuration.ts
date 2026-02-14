@@ -48,9 +48,16 @@ export interface JwtConfig {
  * Safepay configuration interface
  */
 export interface SafepayConfig {
-  apiKey: string;
+  /** Secret API key for backend SDK (sec_xxx) */
+  secretKey: string;
+  /** Public merchant API key for session creation (pub_xxx) */
+  merchantApiKey: string;
+  /** Current environment */
   environment: 'sandbox' | 'production';
+  /** HMAC secret for webhook signature verification */
   webhookSecret: string;
+  /** API host URL based on environment */
+  host: string;
 }
 
 /**
@@ -127,11 +134,16 @@ export default (): Configuration => ({
     refreshTokenExpiration: process.env.JWT_REFRESH_TOKEN_EXPIRATION || '7d',
   },
   safepay: {
-    apiKey: process.env.SAFEPAY_API_KEY || '',
+    secretKey: process.env.SAFEPAY_SECRET_KEY || '',
+    merchantApiKey: process.env.SAFEPAY_MERCHANT_API_KEY || '',
     environment:
       (process.env.SAFEPAY_ENVIRONMENT as 'sandbox' | 'production') ||
       'sandbox',
     webhookSecret: process.env.SAFEPAY_WEBHOOK_SECRET || '',
+    host:
+      process.env.SAFEPAY_ENVIRONMENT === 'production'
+        ? 'https://api.getsafepay.com'
+        : 'https://sandbox.api.getsafepay.com',
   },
   email: {
     sendgridApiKey: process.env.SENDGRID_API_KEY || '',

@@ -1,8 +1,8 @@
 /**
- * Payments module providing the SafepayService stub.
+ * Payments module providing SafepayService.
  *
- * Exports SafepayService for use by SubscriptionsModule and ServiceRegistrationsModule.
- * The stub will be replaced with real Safepay SDK integration in HEAD TASK 10.
+ * Exports SafepayService for use by ConsultationsModule, SubscriptionsModule,
+ * and ServiceRegistrationsModule.
  *
  * @module PaymentsModule
  */
