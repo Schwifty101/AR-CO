@@ -42,7 +42,11 @@
       "Bash(pnpm add:*)",
       "Bash(wc:*)",
       "Bash(head:*)",
-      "Bash(pnpm --filter web lint:*)"
+      "Bash(pnpm --filter web lint:*)",
+      "Bash(test:*)",
+      "Bash(supabase status:*)",
+      "Bash(supabase init:*)",
+      "Bash(git status:*)"
     ],
     "env": {
       "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
