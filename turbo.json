@@ -4,6 +4,11 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
+      "env": [
+        "API_BACKEND_URL",
+        "CLOUDINARY_URL",
+        "CLOUDINARY_API_SECRET"
+      ],
       "outputs": [".next/**", "!.next/cache/**", "dist/**"]
     },
     "dev": {

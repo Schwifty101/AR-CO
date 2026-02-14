@@ -11,6 +11,16 @@ export class AppController {
   constructor(private readonly appService: AppService) {}
 
   /**
+   * Health check endpoint
+   * Test with: GET /api
+   */
+  @Get()
+  @Public()
+  healthCheck() {
+    return { status: 'ok', service: 'ar-co-api' };
+  }
+
+  /**
    * Public endpoint - no authentication required
    * Test with: GET /api/hello
    */
