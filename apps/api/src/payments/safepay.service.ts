@@ -4,7 +4,7 @@
  * Integrates with the real Safepay Node SDK (@sfpy/node-core) for:
  * - Payment session creation (v3 API)
  * - Payment verification via tracker (reporter API)
- * - Webhook signature verification (HMAC-SHA256)
+ * - Webhook signature verification (HMAC-SHA512)
  *
  * @module PaymentsModule
  * @see docs/safepay/safepay-integration-reference.md
@@ -80,8 +80,8 @@ export interface PaymentSessionResult {
   trackerToken: string;
   /** Environment for SafepayButton */
   environment: string;
-  /** Merchant API key for SafepayButton */
-  merchantKey: string;
+  /** Public API key for SafepayButton */
+  publicKey: string;
   /** Amount in PKR (for SafepayButton) */
   amount: number;
   /** Currency code */
@@ -108,7 +108,7 @@ export class SafepayService implements OnModuleInit {
   private safepay: InstanceType<
     typeof import('@sfpy/node-core').default
   > | null = null;
-  private merchantApiKey = '';
+  private publicKey = '';
   private environment = 'sandbox';
 
   constructor(private readonly configService: ConfigService) {}
@@ -116,8 +116,8 @@ export class SafepayService implements OnModuleInit {
   async onModuleInit(): Promise<void> {
     const secretKey = this.configService.get<string>('safepay.secretKey');
     const host = this.configService.get<string>('safepay.host');
-    this.merchantApiKey =
-      this.configService.get<string>('safepay.merchantApiKey') ?? '';
+    this.publicKey =
+      this.configService.get<string>('safepay.publicKey') ?? '';
     this.environment =
       this.configService.get<string>('safepay.environment') ?? 'sandbox';
 
@@ -157,7 +157,7 @@ export class SafepayService implements OnModuleInit {
    *   metadata: { type: 'consultation', referenceId: 'uuid-here' },
    * });
    * // result.trackerToken → 'track_xxx'
-   * // result.merchantKey → 'pub_xxx'
+   * // result.publicKey → 'sec_xxx'
    * ```
    */
   async createPaymentSession(
@@ -173,17 +173,25 @@ export class SafepayService implements OnModuleInit {
       `Creating payment session: ${params.orderId} for ${params.amount} ${params.currency}`,
     );
 
-    const session = await this.safepay.payments.session.setup({
-      merchant_api_key: this.merchantApiKey,
-      intent: 'CYBERSOURCE',
-      mode: 'payment',
-      currency: params.currency,
-      amount: params.amount,
-      metadata: {
-        order_id: params.orderId,
-        ...params.metadata,
-      },
-    });
+    let session: { data?: { tracker?: { token?: string } } };
+    try {
+      session = await this.safepay.payments.session.setup({
+        merchant_api_key: this.publicKey,
+        intent: 'CYBERSOURCE',
+        mode: 'payment',
+        currency: params.currency,
+        amount: params.amount,
+        metadata: {
+          order_id: params.orderId,
+          ...params.metadata,
+        },
+      });
+    } catch (error) {
+      this.logger.error('Safepay session creation failed', error);
+      throw new InternalServerErrorException(
+        'Payment gateway error — failed to create payment session',
+      );
+    }
 
     const trackerToken = session?.data?.tracker?.token;
     if (!trackerToken) {
@@ -201,7 +209,7 @@ export class SafepayService implements OnModuleInit {
     return {
       trackerToken,
       environment: this.environment,
-      merchantKey: this.merchantApiKey,
+      publicKey: this.publicKey,
       amount: params.amount / 100, // Convert paisa → PKR for frontend
       currency: params.currency,
       orderId: params.orderId,
@@ -211,8 +219,8 @@ export class SafepayService implements OnModuleInit {
   /**
    * Verifies a payment by fetching its status via tracker token.
    *
-   * Uses the reporter API (`safepay.reporter.payments.fetch`) which is the
-   * correct endpoint for payment verification per the SDK type declarations.
+   * Uses the reporter API (`safepay.reporter.payments.get()`) which is the
+   * correct endpoint for payment verification per the Safepay Express Checkout docs.
    *
    * @param trackerToken - The tracker token from createPaymentSession
    * @returns Payment verification result with isPaid flag
@@ -237,8 +245,16 @@ export class SafepayService implements OnModuleInit {
 
     this.logger.log(`Verifying payment: tracker=${trackerToken}`);
 
-    // Use reporter.payments.fetch (NOT payments.session.fetch which doesn't exist)
-    const payment = await this.safepay.reporter.payments.fetch(trackerToken);
+    // Use reporter.payments.get() per Safepay Express Checkout docs
+    let payment: { data?: { state?: string; reference?: string; amount?: number } };
+    try {
+      payment = await this.safepay.reporter.payments.get(trackerToken);
+    } catch (error) {
+      this.logger.error('Safepay payment verification failed', error);
+      throw new InternalServerErrorException(
+        'Payment gateway error — failed to verify payment',
+      );
+    }
 
     const state = payment?.data?.state ?? 'UNKNOWN';
     const reference = payment?.data?.reference ?? null;
@@ -249,28 +265,13 @@ export class SafepayService implements OnModuleInit {
     );
 
     return {
-      isPaid: state === 'PAID',
+      isPaid: state === 'TRACKER_COMPLETED' || state === 'PAID',
       reference,
       amount,
       state,
     };
   }
 
-  /**
-   * Verifies a Safepay webhook signature using HMAC-SHA256.
-   *
-   * @param tracker - The tracker token string (the HMAC message)
-   * @param signature - The X-SFPY-SIGNATURE header value
-   * @returns Whether the signature is valid
-   *
-   * @example
-   * ```typescript
-   * const isValid = safepayService.verifyWebhookSignature(
-   *   'track_xxx',
-   *   'hmac-sha256-signature-from-header',
-   * );
-   * ```
-   */
   // ── Legacy stubs (used by service-registrations + subscriptions modules) ──
 
   /**
@@ -328,7 +329,22 @@ export class SafepayService implements OnModuleInit {
 
   // ── End legacy stubs ──
 
-  verifyWebhookSignature(tracker: string, signature: string): boolean {
+  /**
+   * Verifies a Safepay webhook signature using HMAC-SHA512.
+   *
+   * @param payload - The full webhook request body (JSON-encoded for HMAC)
+   * @param signature - The X-SFPY-SIGNATURE header value
+   * @returns Whether the signature is valid
+   *
+   * @example
+   * ```typescript
+   * const isValid = safepayService.verifyWebhookSignature(
+   *   request.body,
+   *   'hmac-sha512-signature-from-header',
+   * );
+   * ```
+   */
+  verifyWebhookSignature(payload: unknown, signature: string): boolean {
     const webhookSecret = this.configService.get<string>(
       'safepay.webhookSecret',
     );
@@ -337,15 +353,16 @@ export class SafepayService implements OnModuleInit {
       return false;
     }
 
+    const data = Buffer.from(JSON.stringify(payload));
     const expectedSignature = crypto
-      .createHmac('sha256', webhookSecret)
-      .update(tracker)
+      .createHmac('sha512', webhookSecret)
+      .update(data)
       .digest('hex');
 
     try {
       return crypto.timingSafeEqual(
-        Buffer.from(signature),
-        Buffer.from(expectedSignature),
+        Buffer.from(expectedSignature, 'hex'),
+        Buffer.from(signature, 'hex'),
       );
     } catch {
       return false;
