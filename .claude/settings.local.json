@@ -46,7 +46,9 @@
       "Bash(test:*)",
       "Bash(supabase status:*)",
       "Bash(supabase init:*)",
-      "Bash(git status:*)"
+      "Bash(git status:*)",
+      "WebFetch(domain:safepay.helpscoutdocs.com)",
+      "Bash(pnpm --filter api list:*)"
     ],
     "env": {
       "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"

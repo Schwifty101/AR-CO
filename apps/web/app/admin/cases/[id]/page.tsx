@@ -384,7 +384,7 @@ export default function AdminCaseDetailPage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {Object.values(CaseStatus).map((status) => (
+                  {Object.values(CaseStatus).map((status: CaseStatus) => (
                     <SelectItem key={status} value={status}>
                       {formatEnumLabel(status)}
                     </SelectItem>
@@ -490,7 +490,7 @@ export default function AdminCaseDetailPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {Object.values(CaseActivityType).map((type) => (
+                    {Object.values(CaseActivityType).map((type: CaseActivityType) => (
                       <SelectItem key={type} value={type}>
                         {formatEnumLabel(type)}
                       </SelectItem>
