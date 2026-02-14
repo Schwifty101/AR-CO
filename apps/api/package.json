@@ -29,6 +29,7 @@
     "@nestjs/throttler": "^6.5.0",
     "@repo/shared": "workspace:*",
     "@sendgrid/mail": "^8.1.6",
+    "@sfpy/node-core": "^0.3.5",
     "@supabase/supabase-js": "^2.91.0",
     "@types/bcrypt": "^6.0.0",
     "@types/multer": "^2.0.0",
