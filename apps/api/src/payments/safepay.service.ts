@@ -74,15 +74,23 @@ export interface CreatePaymentSessionParams {
   };
 }
 
-/** Payment session creation result */
-export interface PaymentSessionResult {
-  /** Tracker token identifying this payment session */
+/** Internal result from session creation (not exposed to frontend) */
+export interface PaymentSessionInternalResult {
+  /** Tracker token for payment tracking */
   trackerToken: string;
-  /** Environment for SafepayButton */
-  environment: string;
-  /** Public API key for SafepayButton */
-  publicKey: string;
-  /** Amount in PKR (for SafepayButton) */
+  /** Amount in PKR (converted from paisa) */
+  amount: number;
+  /** Currency code */
+  currency: string;
+  /** Order ID */
+  orderId: string;
+}
+
+/** Payment session result returned to frontend */
+export interface PaymentSessionResult {
+  /** Full Safepay checkout URL for popup window */
+  checkoutUrl: string;
+  /** Amount in PKR (for display) */
   amount: number;
   /** Currency code */
   currency: string;
@@ -110,6 +118,7 @@ export class SafepayService implements OnModuleInit {
   > | null = null;
   private publicKey = '';
   private environment = 'sandbox';
+  private frontendUrl = 'http://localhost:3000';
 
   constructor(private readonly configService: ConfigService) {}
 
@@ -120,6 +129,9 @@ export class SafepayService implements OnModuleInit {
       this.configService.get<string>('safepay.publicKey') ?? '';
     this.environment =
       this.configService.get<string>('safepay.environment') ?? 'sandbox';
+    this.frontendUrl =
+      this.configService.get<string>('safepay.frontendUrl') ??
+      'http://localhost:3000';
 
     if (!secretKey) {
       this.logger.warn(
@@ -142,10 +154,13 @@ export class SafepayService implements OnModuleInit {
   }
 
   /**
-   * Creates a payment session and returns credentials for SafepayButton.
+   * Creates a payment session and returns internal tracking details.
+   *
+   * The tracker token is used internally by generateCheckoutUrl() to build
+   * the hosted checkout URL. Not directly exposed to the frontend.
    *
    * @param params - Payment session parameters
-   * @returns Tracker token and credentials for frontend SafepayButton
+   * @returns Internal result with tracker token for checkout URL generation
    * @throws {InternalServerErrorException} If SDK not initialized or API fails
    *
    * @example
@@ -157,12 +172,11 @@ export class SafepayService implements OnModuleInit {
    *   metadata: { type: 'consultation', referenceId: 'uuid-here' },
    * });
    * // result.trackerToken → 'track_xxx'
-   * // result.publicKey → 'sec_xxx'
    * ```
    */
   async createPaymentSession(
     params: CreatePaymentSessionParams,
-  ): Promise<PaymentSessionResult> {
+  ): Promise<PaymentSessionInternalResult> {
     if (!this.safepay) {
       throw new InternalServerErrorException(
         'Safepay SDK not initialized. Check SAFEPAY_SECRET_KEY.',
@@ -207,12 +221,70 @@ export class SafepayService implements OnModuleInit {
 
     return {
       trackerToken,
-      environment: this.environment,
-      publicKey: this.publicKey,
       amount: params.amount / 100, // Convert paisa → PKR for frontend
       currency: params.currency,
       orderId: params.orderId,
     };
+  }
+
+  /**
+   * Generates a Safepay hosted checkout URL for popup-based payment.
+   *
+   * Creates a short-lived TBT (temporary bearer token) via passport, then
+   * builds the checkout URL that the frontend opens in a popup window.
+   *
+   * @param trackerToken - Tracker token from createPaymentSession
+   * @returns Full Safepay checkout URL string
+   * @throws {InternalServerErrorException} If SDK not initialized or API fails
+   *
+   * @example
+   * ```typescript
+   * const url = await safepayService.generateCheckoutUrl('track_xxx');
+   * // url → 'https://sandbox.api.getsafepay.com/components?...'
+   * ```
+   */
+  async generateCheckoutUrl(trackerToken: string): Promise<string> {
+    if (!this.safepay) {
+      throw new InternalServerErrorException(
+        'Safepay SDK not initialized. Check SAFEPAY_SECRET_KEY.',
+      );
+    }
+
+    this.logger.log(
+      `Generating checkout URL for tracker: ${trackerToken}`,
+    );
+
+    // Step 1: Create a short-lived TBT (temporary bearer token)
+    let tbt: string;
+    try {
+      const passportResponse = await this.safepay.client.passport.create();
+      tbt = passportResponse.data as string;
+    } catch (error) {
+      this.logger.error('Safepay passport creation failed', error);
+      throw new InternalServerErrorException(
+        'Payment gateway error — failed to create auth token',
+      );
+    }
+
+    // Step 2: Generate the hosted checkout URL
+    try {
+      const checkoutUrl = this.safepay.checkout.createCheckoutUrl({
+        tracker: trackerToken,
+        tbt,
+        env: this.environment as 'development' | 'sandbox' | 'production',
+        source: 'popup',
+        redirect_url: `${this.frontendUrl}/consultation/payment-callback`,
+        cancel_url: `${this.frontendUrl}/consultation/payment-callback?cancelled=true`,
+      });
+
+      this.logger.log(`Checkout URL generated for tracker: ${trackerToken}`);
+      return checkoutUrl;
+    } catch (error) {
+      this.logger.error('Safepay checkout URL generation failed', error);
+      throw new InternalServerErrorException(
+        'Payment gateway error — failed to generate checkout URL',
+      );
+    }
   }
 
   /**
