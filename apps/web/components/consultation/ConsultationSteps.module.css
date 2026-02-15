@@ -166,6 +166,46 @@
   color: rgba(249, 248, 246, 0.55);
 }
 
+/* --- Pay Button (popup checkout) --- */
+.payButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 1rem 1.5rem;
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.15), rgba(212, 175, 55, 0.08));
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  color: var(--heritage-gold);
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.payButton:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.25), rgba(212, 175, 55, 0.15));
+  border-color: rgba(212, 175, 55, 0.5);
+}
+.payButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.payButtonIcon { flex-shrink: 0; }
+.popupBlockedWarning {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: rgba(201, 116, 83, 0.08);
+  border: 1px solid rgba(201, 116, 83, 0.2);
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 0.75rem;
+  color: #c97453;
+  line-height: 1.5;
+}
+
 /* ─── Responsive ─── */
 @media (max-width: 768px) {
   .paymentSummary { flex-wrap: wrap; gap: 0.75rem; padding: 1rem; }
