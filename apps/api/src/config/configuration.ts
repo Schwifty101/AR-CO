@@ -58,6 +58,8 @@ export interface SafepayConfig {
   webhookSecret: string;
   /** API host URL based on environment */
   host: string;
+  /** Frontend URL for payment redirect callbacks */
+  frontendUrl: string;
 }
 
 /**
@@ -144,6 +146,7 @@ export default (): Configuration => ({
       process.env.SAFEPAY_ENVIRONMENT === 'production'
         ? 'https://api.getsafepay.com'
         : 'https://sandbox.api.getsafepay.com',
+    frontendUrl: process.env.FRONTEND_URL || 'http://localhost:3000',
   },
   email: {
     sendgridApiKey: process.env.SENDGRID_API_KEY || '',
