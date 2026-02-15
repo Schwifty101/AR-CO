@@ -11,8 +11,8 @@
  * @example
  * ```typescript
  * // Initiate payment for a booking
- * const session = await consultationsPaymentService.initiatePayment('booking-uuid');
- * // session.trackerToken -> 'track_xxx'
+ * const result = await consultationsPaymentService.initiatePayment('booking-uuid');
+ * // result.checkoutUrl -> 'https://sandbox.api.getsafepay.com/components?...'
  *
  * // Confirm payment after Safepay callback
  * const updated = await consultationsPaymentService.confirmPayment('booking-uuid', {
@@ -85,20 +85,19 @@ export class ConsultationsPaymentService {
   /**
    * Initiates payment session for a booking (Step 2: Payment initiation)
    *
-   * Creates a Safepay payment session and stores the tracker token.
-   * Amount is fixed at CONSULTATION_FEE_PKR.
+   * Creates a Safepay payment session, generates a hosted checkout URL,
+   * and stores the tracker token. Amount is fixed at CONSULTATION_FEE_PKR.
    *
    * @param bookingId - UUID of the consultation booking
-   * @returns Payment session credentials for SafepayButton frontend component
+   * @returns Checkout URL and display info for popup payment flow
    * @throws {NotFoundException} If booking not found
    * @throws {BadRequestException} If booking already paid
    *
    * @example
    * ```typescript
-   * const paymentSession = await consultationsPaymentService.initiatePayment('booking-uuid');
-   * // paymentSession.trackerToken -> 'track_xxx'
-   * // paymentSession.publicKey -> 'sec_xxx'
-   * // Frontend uses these to render SafepayButton
+   * const result = await consultationsPaymentService.initiatePayment('booking-uuid');
+   * // result.checkoutUrl -> 'https://sandbox.api.getsafepay.com/components?...'
+   * // Frontend opens this URL in a popup window
    * ```
    */
   async initiatePayment(
@@ -154,11 +153,21 @@ export class ConsultationsPaymentService {
       );
     }
 
+    // Generate checkout URL for popup payment
+    const checkoutUrl = await this.safepayService.generateCheckoutUrl(
+      session.trackerToken,
+    );
+
     this.logger.log(
       `Payment session created: ${session.trackerToken} for ${booking.reference_number}`,
     );
 
-    return session;
+    return {
+      checkoutUrl,
+      amount: session.amount,
+      currency: session.currency,
+      orderId: session.orderId,
+    };
   }
 
   /**
