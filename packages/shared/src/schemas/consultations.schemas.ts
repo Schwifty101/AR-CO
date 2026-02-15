@@ -18,11 +18,9 @@ export const CreateConsultationSchema = z.object({
   additionalNotes: z.string().max(2000).optional(),
 });
 
-/** Schema for payment initiation response (returned to frontend for SafepayButton) */
+/** Schema for payment initiation response (returned to frontend for popup checkout) */
 export const ConsultationPaymentInitResponseSchema = z.object({
-  trackerToken: z.string(),
-  environment: z.string(),
-  publicKey: z.string(),
+  checkoutUrl: z.string().url(),
   amount: z.number(),
   currency: z.string(),
   orderId: z.string(),
