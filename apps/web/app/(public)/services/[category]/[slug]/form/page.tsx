@@ -218,18 +218,36 @@ export default function ServiceForm({ params }: PageProps) {
 
     return (
       <div key={`${field.id}-${index}`} className="space-y-2">
-        <label
-          className="block text-xs uppercase tracking-wider font-medium"
-          style={{
-            fontFamily: "'Georgia', 'Times New Roman', serif",
-            color: 'rgba(249, 248, 246, 0.6)'
-          }}
-        >
-          {field.label}
-          {field.required && (
-            <span style={{ color: 'var(--heritage-gold)' }}> *</span>
+        <div className="flex items-center justify-between gap-4 mb-2">
+          <label
+            className="text-xs uppercase tracking-wider font-medium"
+            style={{
+              fontFamily: "'Georgia', 'Times New Roman', serif",
+              fontSize: '0.7rem',
+              letterSpacing: '0.08em',
+              color: 'rgba(249, 248, 246, 0.4)'
+            }}
+          >
+            {field.label}
+            {field.required && (
+              <span style={{ color: 'var(--heritage-gold)' }}> *</span>
+            )}
+          </label>
+          {field.hint && (
+            <span
+              style={{
+                fontFamily: "'Georgia', 'Times New Roman', serif",
+                fontSize: '0.6rem',
+                fontStyle: 'italic',
+                color: 'rgba(249, 248, 246, 0.25)',
+                letterSpacing: '0.01em',
+                textAlign: 'right',
+              }}
+            >
+              {field.hint}
+            </span>
           )}
-        </label>
+        </div>
 
         {field.type === 'textarea' ? (
           <textarea
@@ -238,10 +256,29 @@ export default function ServiceForm({ params }: PageProps) {
             placeholder={field.placeholder}
             required={field.required}
             rows={4}
-            className="w-full px-3 py-2 rounded-lg border text-sm bg-transparent transition-all duration-200 focus:outline-none focus:border-[var(--heritage-gold)] placeholder:text-[rgba(249,248,246,0.25)]"
+            className="w-full transition-all duration-300 focus:outline-none placeholder:italic"
             style={{
+              padding: '0.85rem 1rem',
+              background: 'rgba(249, 248, 246, 0.03)',
+              border: '1px solid rgba(249, 248, 246, 0.08)',
+              borderRadius: '1rem',
+              fontFamily: "'Georgia', 'Times New Roman', serif",
+              fontSize: '0.88rem',
               color: 'var(--heritage-cream)',
-              borderColor: 'rgba(249, 248, 246, 0.15)',
+              letterSpacing: '0.01em',
+              resize: 'vertical',
+              minHeight: '120px',
+              lineHeight: 1.6,
+            }}
+            onFocus={(e) => {
+              e.target.style.borderColor = 'rgba(212, 175, 55, 0.35)'
+              e.target.style.background = 'rgba(212, 175, 55, 0.02)'
+              e.target.style.boxShadow = '0 0 0 1px rgba(212, 175, 55, 0.08)'
+            }}
+            onBlur={(e) => {
+              e.target.style.borderColor = 'rgba(249, 248, 246, 0.08)'
+              e.target.style.background = 'rgba(249, 248, 246, 0.03)'
+              e.target.style.boxShadow = 'none'
             }}
           />
         ) : field.type === 'select' ? (
@@ -249,18 +286,36 @@ export default function ServiceForm({ params }: PageProps) {
             value={fieldValue}
             onChange={(e) => handleFieldChange(field.id, e.target.value)}
             required={field.required}
-            className="w-full px-3 py-2 rounded-lg border text-sm bg-transparent transition-all duration-200 focus:outline-none focus:border-[var(--heritage-gold)]"
+            className="w-full transition-all duration-300 focus:outline-none cursor-pointer"
             style={{
+              padding: '0.85rem 1rem',
+              background: 'rgba(249, 248, 246, 0.03)',
+              border: '1px solid rgba(249, 248, 246, 0.08)',
+              borderRadius: '100px',
               fontFamily: "'Georgia', 'Times New Roman', serif",
-              color: fieldValue ? 'var(--heritage-cream)' : 'rgba(249, 248, 246, 0.25)',
-              borderColor: 'rgba(249, 248, 246, 0.15)',
+              fontSize: '0.88rem',
+              color: fieldValue ? 'var(--heritage-cream)' : 'rgba(249, 248, 246, 0.18)',
+              letterSpacing: '0.01em',
+              appearance: 'none',
+              WebkitAppearance: 'none',
+              backgroundImage: `url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='rgba(249,248,246,0.3)' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`,
+              backgroundRepeat: 'no-repeat',
+              backgroundPosition: 'right 1rem center',
+            }}
+            onFocus={(e) => {
+              e.target.style.borderColor = 'rgba(212, 175, 55, 0.35)'
+              e.target.style.background = 'rgba(212, 175, 55, 0.02)'
+            }}
+            onBlur={(e) => {
+              e.target.style.borderColor = 'rgba(249, 248, 246, 0.08)'
+              e.target.style.background = 'rgba(249, 248, 246, 0.03)'
             }}
           >
-            <option value="" style={{ backgroundColor: 'var(--wood-espresso)', color: 'rgba(249, 248, 246, 0.25)' }}>
+            <option value="" style={{ background: '#1a110a', color: 'rgba(249, 248, 246, 0.18)' }}>
               {field.placeholder || 'Select an option'}
             </option>
             {field.options?.map((opt, idx) => (
-              <option key={idx} value={opt} style={{ backgroundColor: 'var(--wood-espresso)', color: 'var(--heritage-cream)', padding: '8px' }}>
+              <option key={idx} value={opt} style={{ background: '#1a110a', color: 'var(--heritage-cream)' }}>
                 {opt}
               </option>
             ))}
@@ -407,11 +462,26 @@ export default function ServiceForm({ params }: PageProps) {
           <input
             type="file"
             onChange={(e) => handleFieldChange(field.id, e.target.files)}
-            className="w-full px-3 py-2 rounded-lg border text-sm bg-transparent transition-all duration-200 focus:outline-none focus:border-[var(--heritage-gold)]"
+            className="w-full transition-all duration-300 focus:outline-none"
             style={{
+              padding: '0.85rem 1rem',
+              background: 'rgba(249, 248, 246, 0.03)',
+              border: '1px solid rgba(249, 248, 246, 0.08)',
+              borderRadius: '100px',
               fontFamily: "'Georgia', 'Times New Roman', serif",
+              fontSize: '0.88rem',
               color: 'var(--heritage-cream)',
-              borderColor: 'rgba(249, 248, 246, 0.15)',
+              letterSpacing: '0.01em',
+            }}
+            onFocus={(e) => {
+              e.target.style.borderColor = 'rgba(212, 175, 55, 0.35)'
+              e.target.style.background = 'rgba(212, 175, 55, 0.02)'
+              e.target.style.boxShadow = '0 0 0 1px rgba(212, 175, 55, 0.08)'
+            }}
+            onBlur={(e) => {
+              e.target.style.borderColor = 'rgba(249, 248, 246, 0.08)'
+              e.target.style.background = 'rgba(249, 248, 246, 0.03)'
+              e.target.style.boxShadow = 'none'
             }}
           />
         ) : (
@@ -421,25 +491,28 @@ export default function ServiceForm({ params }: PageProps) {
             onChange={(e) => handleFieldChange(field.id, e.target.value)}
             placeholder={field.placeholder}
             required={field.required}
-            className="w-full px-3 py-2 rounded-lg border text-sm bg-transparent transition-all duration-200 focus:outline-none focus:border-[var(--heritage-gold)] placeholder:text-[rgba(249,248,246,0.25)]"
+            className="w-full transition-all duration-300 focus:outline-none placeholder:italic"
             style={{
+              padding: '0.85rem 1rem',
+              background: 'rgba(249, 248, 246, 0.03)',
+              border: '1px solid rgba(249, 248, 246, 0.08)',
+              borderRadius: '100px',
               fontFamily: "'Georgia', 'Times New Roman', serif",
+              fontSize: '0.88rem',
               color: 'var(--heritage-cream)',
-              borderColor: 'rgba(249, 248, 246, 0.15)',
+              letterSpacing: '0.01em',
+            }}
+            onFocus={(e) => {
+              e.target.style.borderColor = 'rgba(212, 175, 55, 0.35)'
+              e.target.style.background = 'rgba(212, 175, 55, 0.02)'
+              e.target.style.boxShadow = '0 0 0 1px rgba(212, 175, 55, 0.08)'
+            }}
+            onBlur={(e) => {
+              e.target.style.borderColor = 'rgba(249, 248, 246, 0.08)'
+              e.target.style.background = 'rgba(249, 248, 246, 0.03)'
+              e.target.style.boxShadow = 'none'
             }}
           />
-        )}
-
-        {field.hint && (
-          <p
-            className="text-[10px] mt-1"
-            style={{
-              fontFamily: "'Georgia', 'Times New Roman', serif",
-              color: 'rgba(249, 248, 246, 0.35)'
-            }}
-          >
-            {field.hint}
-          </p>
         )}
       </div>
     )
@@ -449,23 +522,21 @@ export default function ServiceForm({ params }: PageProps) {
     <div className="px-4 md:px-12 lg:px-20 pt-2 md:pt-4 pb-16 md:pb-24">
       <style jsx global>{`
         .custom-scrollbar::-webkit-scrollbar {
-          width: 6px;
+          width: 4px;
         }
         .custom-scrollbar::-webkit-scrollbar-track {
-          background: rgba(249, 248, 246, 0.03);
-          border-radius: 10px;
+          background: transparent;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: rgba(201, 169, 106, 0.3);
-          border-radius: 10px;
-          transition: background 0.2s;
+          background: rgba(212, 175, 55, 0.15);
+          border-radius: 2px;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: rgba(201, 169, 106, 0.5);
+          background: rgba(212, 175, 55, 0.25);
         }
         .custom-scrollbar {
           scrollbar-width: thin;
-          scrollbar-color: rgba(201, 169, 106, 0.3) rgba(249, 248, 246, 0.03);
+          scrollbar-color: rgba(212, 175, 55, 0.15) transparent;
         }
       `}</style>
       {/* Main container */}
@@ -473,12 +544,52 @@ export default function ServiceForm({ params }: PageProps) {
         ref={formWrapperRef}
         className="relative rounded-xl overflow-hidden border"
         style={{
-          borderColor: 'rgba(249, 248, 246, 0.08)',
-          boxShadow: '0 0 40px rgba(201, 169, 106, 0.12), 0 0 80px rgba(201, 169, 106, 0.06), 0 20px 60px rgba(0, 0, 0, 0.3)',
+          background: 'transparent',
+          borderColor: 'rgba(212, 175, 55, 0.25)',
+          boxShadow: 'none',
         }}
       >
-        {/* Progress bar at top */}
-        <div className="relative h-[2px] w-full" style={{ background: 'rgba(249, 248, 246, 0.06)' }}>
+        {/* Grain texture overlay */}
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            opacity: 0.3,
+            pointerEvents: 'none',
+            zIndex: 0,
+            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E")`,
+            backgroundSize: '256px 256px',
+          }}
+        />
+        {/* Corner decorations */}
+        <div
+          style={{
+            position: 'absolute',
+            top: '12px',
+            left: '12px',
+            width: '24px',
+            height: '24px',
+            borderTop: '1px solid rgba(212, 175, 55, 0.2)',
+            borderLeft: '1px solid rgba(212, 175, 55, 0.2)',
+            zIndex: 1,
+            pointerEvents: 'none',
+          }}
+        />
+        <div
+          style={{
+            position: 'absolute',
+            bottom: '12px',
+            right: '12px',
+            width: '24px',
+            height: '24px',
+            borderBottom: '1px solid rgba(212, 175, 55, 0.2)',
+            borderRight: '1px solid rgba(212, 175, 55, 0.2)',
+            zIndex: 1,
+            pointerEvents: 'none',
+          }}
+        />
+        {/* Progress bar */}
+        <div className="relative h-[2px] w-full" style={{ background: 'rgba(212, 175, 55, 0.15)', zIndex: 2 }}>
           <motion.div
             className="absolute left-0 top-0 h-full"
             style={{ background: 'var(--heritage-gold)' }}
@@ -488,15 +599,15 @@ export default function ServiceForm({ params }: PageProps) {
         </div>
 
         {/* Step counter */}
-        <div className="px-6 md:px-12 pt-5 pb-2 flex items-center justify-between">
+        <div className="px-6 md:px-12 pt-5 pb-2 flex items-center justify-between" style={{ position: 'relative', zIndex: 2 }}>
           <span
             className="text-xs uppercase tracking-[0.15em] font-medium"
             style={{
               fontFamily: "'Georgia', 'Times New Roman', serif",
-              fontSize: '0.7rem',
-              letterSpacing: '0.15em',
+              fontSize: '0.6rem',
+              letterSpacing: '0.3em',
               color: 'var(--heritage-gold)',
-              opacity: 0.7
+              opacity: 0.55
             }}
           >
             Section {currentIndex + 1} of {total}
@@ -504,7 +615,7 @@ export default function ServiceForm({ params }: PageProps) {
         </div>
 
         {/* Animated content area */}
-        <div className="relative overflow-hidden" style={{ height: '480px' }}>
+        <div className="relative overflow-hidden min-h-[500px] md:h-[480px]">
           <AnimatePresence mode="wait" custom={direction}>
             <motion.div
               key={currentIndex}
@@ -514,13 +625,14 @@ export default function ServiceForm({ params }: PageProps) {
               animate="center"
               exit="exit"
               transition={{ duration: 0.35, ease: [0.32, 0.72, 0, 1] }}
-              className="absolute inset-0 flex flex-col"
+              className="relative md:absolute md:inset-0 flex flex-col h-full"
             >
               {/* Scrollable content area */}
               <div
                 ref={scrollContainerRef}
                 tabIndex={0}
-                className="flex-1 overflow-y-auto px-6 md:px-12 pt-2 pb-6 custom-scrollbar focus:outline-none"
+                className="flex-1 md:overflow-y-auto px-6 md:px-12 pt-2 pb-6 custom-scrollbar focus:outline-none"
+                style={{ position: 'relative', zIndex: 2 }}
               >
                 {/* Section title */}
                 <motion.h2
@@ -542,11 +654,10 @@ export default function ServiceForm({ params }: PageProps) {
 
                 {/* Form fields - two column or single column based on field count */}
                 <motion.div
-                  className={`grid gap-6 ${
-                    useSingleColumn
+                  className={`grid gap-6 ${useSingleColumn
                       ? 'max-w-md mx-auto'
                       : 'grid-cols-1 md:grid-cols-2'
-                  }`}
+                    }`}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.2, ease: [0.32, 0.72, 0, 1] }}
@@ -556,25 +667,39 @@ export default function ServiceForm({ params }: PageProps) {
               </div>
 
               {/* Fixed Navigation buttons at bottom */}
-              <div className="flex-shrink-0 px-6 md:px-12 py-4 border-t" style={{ borderColor: 'rgba(249, 248, 246, 0.08)' }}>
+              <div className="flex-shrink-0 px-6 md:px-12 py-4 border-t" style={{ borderColor: 'rgba(212, 175, 55, 0.2)', position: 'relative', zIndex: 2 }}>
                 <div className="flex items-center justify-between">
                   {/* Back button */}
                   <div>
                     {!isFirst && (
                       <button
                         onClick={goBack}
-                        className="inline-flex items-center gap-2 text-xs uppercase tracking-wider font-medium transition-all duration-300 hover:gap-3"
+                        className="inline-flex items-center gap-2 transition-all duration-300"
                         style={{
+                          padding: '0.65rem 1.25rem',
+                          background: 'none',
+                          border: '1px solid rgba(249, 248, 246, 0.1)',
+                          borderRadius: '100px',
+                          color: 'rgba(249, 248, 246, 0.5)',
                           fontFamily: "'Georgia', 'Times New Roman', serif",
-                          fontSize: '0.7rem',
+                          fontSize: '0.72rem',
                           letterSpacing: '0.12em',
-                          color: 'rgba(249, 248, 246, 0.5)'
+                          textTransform: 'uppercase',
+                          cursor: 'pointer',
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.borderColor = 'rgba(249, 248, 246, 0.25)'
+                          e.currentTarget.style.color = 'rgba(249, 248, 246, 0.75)'
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.borderColor = 'rgba(249, 248, 246, 0.1)'
+                          e.currentTarget.style.color = 'rgba(249, 248, 246, 0.5)'
                         }}
                       >
                         <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M7 16l-4-4m0 0l4-4m-4 4h18" />
                         </svg>
-                        Back
+                        <span>Back</span>
                       </button>
                     )}
                   </div>
@@ -582,17 +707,31 @@ export default function ServiceForm({ params }: PageProps) {
                   {/* Next / Submit button */}
                   <button
                     onClick={isLast ? () => router.push(`/services/${category}/${slug}/faq`) : goNext}
-                    className="inline-flex items-center gap-2 px-6 py-2 text-xs font-semibold uppercase tracking-wider rounded-full transition-all duration-300 hover:gap-4"
+                    className="inline-flex items-center gap-2 transition-all duration-300"
                     style={{
+                      padding: '0.7rem 1.5rem',
+                      background: 'var(--heritage-gold)',
+                      border: 'none',
+                      borderRadius: '100px',
+                      color: 'var(--wood-espresso)',
                       fontFamily: "'Georgia', 'Times New Roman', serif",
                       fontSize: '0.72rem',
-                      fontWeight: 500,
-                      letterSpacing: '0.15em',
-                      background: 'var(--heritage-gold)',
-                      color: 'var(--wood-espresso)',
+                      fontWeight: 600,
+                      letterSpacing: '0.12em',
+                      textTransform: 'uppercase',
+                      cursor: 'pointer',
+                      marginLeft: 'auto',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = '#c9a430'
+                      e.currentTarget.style.boxShadow = '0 4px 20px rgba(212, 175, 55, 0.25)'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = 'var(--heritage-gold)'
+                      e.currentTarget.style.boxShadow = 'none'
                     }}
                   >
-                    {isLast ? 'Submit' : 'Next'}
+                    <span>{isLast ? 'Submit' : 'Continue'}</span>
                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
                     </svg>

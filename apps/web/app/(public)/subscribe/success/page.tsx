@@ -4,68 +4,70 @@
  * Subscription Success Page
  *
  * Displayed after successful payment completion via Safepay.
- * Confirms subscription activation and provides navigation to client portal.
+ * Redesigned with editorial luxury aesthetic matching the blogs page.
  *
  * @module SubscribeSuccessPage
- *
- * @example
- * Accessible at /subscribe/success (redirect from Safepay)
  */
 
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle2 } from 'lucide-react';
+import { motion } from 'framer-motion';
+import styles from './page.module.css';
 
-/**
- * Subscription success page component
- */
 export default function SubscribeSuccessPage() {
   return (
-    <div className="container mx-auto px-4 py-12">
-      <div className="mx-auto max-w-2xl">
-        <Card>
-          <CardHeader className="text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
-              <CheckCircle2 className="h-10 w-10 text-green-600" />
-            </div>
-            <CardTitle className="text-2xl">Subscription Activated</CardTitle>
-            <CardDescription>
-              Your Civic Retainer subscription has been successfully activated
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="text-center space-y-6">
-            <div className="rounded-lg bg-muted p-4">
-              <p className="text-sm text-muted-foreground mb-2">
-                What's Next?
-              </p>
-              <ul className="text-sm space-y-2 text-left">
-                <li className="flex items-start">
-                  <CheckCircle2 className="h-4 w-4 text-primary mr-2 mt-0.5 flex-shrink-0" />
-                  <span>Access your subscription details in the client portal</span>
-                </li>
-                <li className="flex items-start">
-                  <CheckCircle2 className="h-4 w-4 text-primary mr-2 mt-0.5 flex-shrink-0" />
-                  <span>Start submitting complaints against government organizations</span>
-                </li>
-                <li className="flex items-start">
-                  <CheckCircle2 className="h-4 w-4 text-primary mr-2 mt-0.5 flex-shrink-0" />
-                  <span>Track your complaint status and receive legal guidance</span>
-                </li>
-              </ul>
-            </div>
+    <div className={styles.page}>
+      <div className={styles.atmosphereGlow} />
+      <div className={styles.grainOverlay} />
 
-            <Button asChild size="lg" className="w-full">
-              <Link href="/client/subscription">
-                Go to Subscription Dashboard
-              </Link>
-            </Button>
+      <div className={styles.container}>
+        <motion.div
+          className={styles.card}
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <div className={styles.iconWrapper}>
+            <CheckCircle2 className={styles.icon} />
+          </div>
 
-            <p className="text-xs text-muted-foreground">
-              You will receive a confirmation email shortly with your subscription details.
-            </p>
-          </CardContent>
-        </Card>
+          <h1 className={styles.title}>Subscription Activated</h1>
+          <p className={styles.subtitle}>
+            Your Civic Retainer subscription has been successfully activated
+          </p>
+
+          <div className={styles.nextSteps}>
+            <p className={styles.nextStepsTitle}>What's Next?</p>
+            <ul className={styles.stepsList}>
+              <li className={styles.stepItem}>
+                <CheckCircle2 className={styles.stepIcon} />
+                <span className={styles.stepText}>
+                  Access your subscription details in the client portal
+                </span>
+              </li>
+              <li className={styles.stepItem}>
+                <CheckCircle2 className={styles.stepIcon} />
+                <span className={styles.stepText}>
+                  Start submitting complaints against government organizations
+                </span>
+              </li>
+              <li className={styles.stepItem}>
+                <CheckCircle2 className={styles.stepIcon} />
+                <span className={styles.stepText}>
+                  Track your complaint status and receive legal guidance
+                </span>
+              </li>
+            </ul>
+          </div>
+
+          <Link href="/client/subscription" className={styles.button}>
+            <span className={styles.buttonText}>Go to Subscription Dashboard</span>
+          </Link>
+
+          <p className={styles.note}>
+            You will receive a confirmation email shortly with your subscription details.
+          </p>
+        </motion.div>
       </div>
     </div>
   );

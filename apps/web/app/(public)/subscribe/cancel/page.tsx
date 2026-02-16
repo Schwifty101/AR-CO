@@ -4,64 +4,60 @@
  * Subscription Cancel Page
  *
  * Displayed when user cancels the payment process at Safepay checkout.
- * Provides option to retry subscription.
+ * Redesigned with editorial luxury aesthetic matching the blogs page.
  *
  * @module SubscribeCancelPage
- *
- * @example
- * Accessible at /subscribe/cancel (redirect from Safepay on cancellation)
  */
 
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { XCircle } from 'lucide-react';
+import { motion } from 'framer-motion';
+import styles from './page.module.css';
 
-/**
- * Subscription cancel page component
- */
 export default function SubscribeCancelPage() {
   return (
-    <div className="container mx-auto px-4 py-12">
-      <div className="mx-auto max-w-2xl">
-        <Card>
-          <CardHeader className="text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-yellow-100">
-              <XCircle className="h-10 w-10 text-yellow-600" />
-            </div>
-            <CardTitle className="text-2xl">Subscription Cancelled</CardTitle>
-            <CardDescription>
-              Your payment was not completed and the subscription was not activated
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="text-center space-y-6">
-            <div className="rounded-lg bg-muted p-4 text-sm text-muted-foreground">
-              <p>
-                If you experienced any issues during the payment process, please try again or contact our support team for assistance.
-              </p>
-            </div>
+    <div className={styles.page}>
+      <div className={styles.atmosphereGlow} />
+      <div className={styles.grainOverlay} />
 
-            <div className="flex flex-col sm:flex-row gap-3">
-              <Button asChild size="lg" className="flex-1">
-                <Link href="/subscribe">
-                  Try Again
-                </Link>
-              </Button>
-              <Button asChild size="lg" variant="outline" className="flex-1">
-                <Link href="/">
-                  Return to Homepage
-                </Link>
-              </Button>
-            </div>
+      <div className={styles.container}>
+        <motion.div
+          className={styles.card}
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <div className={styles.iconWrapper}>
+            <XCircle className={styles.icon} />
+          </div>
 
-            <p className="text-xs text-muted-foreground">
-              Need help? Contact us at{' '}
-              <a href="mailto:support@arco.com" className="text-primary hover:underline">
-                support@arco.com
-              </a>
+          <h1 className={styles.title}>Subscription Cancelled</h1>
+          <p className={styles.subtitle}>
+            Your payment was not completed and the subscription was not activated
+          </p>
+
+          <div className={styles.message}>
+            <p>
+              If you experienced any issues during the payment process, please try again or contact our support team for assistance.
             </p>
-          </CardContent>
-        </Card>
+          </div>
+
+          <div className={styles.buttonGroup}>
+            <Link href="/subscribe" className={styles.button}>
+              <span className={styles.buttonText}>Try Again</span>
+            </Link>
+            <Link href="/" className={`${styles.button} ${styles.buttonSecondary}`}>
+              <span className={styles.buttonText}>Return to Homepage</span>
+            </Link>
+          </div>
+
+          <p className={styles.note}>
+            Need help? Contact us at{' '}
+            <a href="mailto:support@arco.com" className={styles.contactLink}>
+              support@arco.com
+            </a>
+          </p>
+        </motion.div>
       </div>
     </div>
   );
