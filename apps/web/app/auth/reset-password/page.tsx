@@ -6,12 +6,11 @@ import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { createBrowserClient } from '@/lib/supabase/client';
 import { confirmPasswordReset } from '@/lib/auth/auth-actions';
 import { PasswordSchema } from '@repo/shared';
+import { motion } from 'framer-motion';
+import styles from '@/components/auth/auth.module.css';
 
 const schema = z
   .object({
@@ -75,83 +74,95 @@ export default function ResetPasswordPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4 py-12">
-      <div className="w-full max-w-md space-y-6">
-        <div className="text-center space-y-2">
-          <h1 className="text-2xl font-bold tracking-tight">
-            Set new password
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Enter your new password below
-          </p>
-        </div>
+    <div className={styles.page}>
+      <div className={styles.atmosphereGlow} />
+      <div className={styles.grainOverlay} />
 
-        {success ? (
-          <div className="rounded-md bg-green-50 dark:bg-green-950 p-4 text-sm text-green-800 dark:text-green-200 text-center space-y-3">
-            <p>Password has been reset successfully. Redirecting to sign in...</p>
+      <motion.div
+        className={styles.container}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+      >
+        <div className={styles.card}>
+          <div className={styles.header}>
+            <h1 className={styles.title}>Set New Password</h1>
+            <p className={styles.subtitle}>
+              Enter your new password below
+            </p>
           </div>
-        ) : (
-          <>
-            {error && (
-              <div className="rounded-md bg-destructive/15 p-3 text-sm text-destructive">
-                {error}
-                {error.includes('expired') && (
-                  <div className="mt-2">
-                    <Link
-                      href="/auth/forgot-password"
-                      className="underline underline-offset-4"
-                    >
-                      Request a new reset link
-                    </Link>
-                  </div>
-                )}
-              </div>
-            )}
 
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="newPassword">New Password</Label>
-                <Input
-                  id="newPassword"
-                  type="password"
-                  placeholder="Min. 8 characters"
-                  autoComplete="new-password"
-                  {...register('newPassword')}
-                />
-                {errors.newPassword && (
-                  <p className="text-xs text-destructive">
-                    {errors.newPassword.message}
-                  </p>
-                )}
-              </div>
+          {success ? (
+            <div style={{
+              background: 'rgba(34, 197, 94, 0.1)',
+              border: '1px solid rgba(34, 197, 94, 0.2)',
+              padding: '1.5rem',
+              textAlign: 'center'
+            }}>
+              <p className={styles.subtitle}>
+                Password has been reset successfully. Redirecting to sign in...
+              </p>
+            </div>
+          ) : (
+            <>
+              {error && (
+                <div className={styles.error}>
+                  {error}
+                  {error.includes('expired') && (
+                    <div style={{ marginTop: '0.75rem' }}>
+                      <Link href="/auth/forgot-password" className={styles.link}>
+                        Request a new reset link
+                      </Link>
+                    </div>
+                  )}
+                </div>
+              )}
 
-              <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirm Password</Label>
-                <Input
-                  id="confirmPassword"
-                  type="password"
-                  placeholder="Repeat your password"
-                  autoComplete="new-password"
-                  {...register('confirmPassword')}
-                />
-                {errors.confirmPassword && (
-                  <p className="text-xs text-destructive">
-                    {errors.confirmPassword.message}
-                  </p>
-                )}
-              </div>
+              <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
+                <div className={styles.formGroup}>
+                  <label htmlFor="newPassword" className={styles.label}>New Password</label>
+                  <input
+                    id="newPassword"
+                    type="password"
+                    placeholder="Min. 8 characters"
+                    autoComplete="new-password"
+                    className={styles.input}
+                    {...register('newPassword')}
+                  />
+                  {errors.newPassword && (
+                    <p className={styles.fieldError}>{errors.newPassword.message}</p>
+                  )}
+                </div>
 
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={isSubmitting || !accessToken}
-              >
-                {isSubmitting ? 'Resetting...' : 'Reset Password'}
-              </Button>
-            </form>
-          </>
-        )}
-      </div>
+                <div className={styles.formGroup}>
+                  <label htmlFor="confirmPassword" className={styles.label}>Confirm Password</label>
+                  <input
+                    id="confirmPassword"
+                    type="password"
+                    placeholder="Repeat your password"
+                    autoComplete="new-password"
+                    className={styles.input}
+                    {...register('confirmPassword')}
+                  />
+                  {errors.confirmPassword && (
+                    <p className={styles.fieldError}>{errors.confirmPassword.message}</p>
+                  )}
+                </div>
+
+                <button
+                  type="submit"
+                  className={styles.button}
+                  disabled={isSubmitting || !accessToken}
+                >
+                  <span className={styles.buttonText}>
+                    {isSubmitting ? 'Resetting...' : 'Reset Password'}
+                  </span>
+                </button>
+              </form>
+            </>
+          )}
+        </div>
+      </motion.div>
     </div>
   );
 }

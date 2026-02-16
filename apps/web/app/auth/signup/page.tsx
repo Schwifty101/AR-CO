@@ -1,4 +1,5 @@
 import { SignupForm } from '@/components/auth/signup-form';
+import styles from '@/components/auth/auth.module.css';
 
 export const metadata = {
   title: 'Create Account | AR&CO Law Firm',
@@ -7,7 +8,9 @@ export const metadata = {
 
 export default function SignupPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center px-4 py-12">
+    <div className={styles.page}>
+      <div className={styles.atmosphereGlow} />
+      <div className={styles.grainOverlay} />
       <SignupForm />
     </div>
   );

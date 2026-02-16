@@ -65,7 +65,7 @@ export default function ServiceLayout({ children, params }: LayoutProps) {
 
       <div className={styles.pageContent}>
         {/* Breadcrumb Navigation — Editorial Style */}
-        <div style={{ padding: '2rem 4rem 1.5rem' }}>
+        <div style={{ padding: 0 }}>
           <nav className={styles.breadcrumb}>
             {STEPS.map((step, index) => {
               const isActive = index === currentStepIndex

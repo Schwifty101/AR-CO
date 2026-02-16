@@ -43,7 +43,7 @@ export default function Home() {
             <AboutSection />
 
             {/* Practice Areas Horizontal Scroll with Abstract Layout */}
-            <PracticeAreasHorizontal />
+          
             {/* Testimonials Section */}
             <Testimonials />
         </main>

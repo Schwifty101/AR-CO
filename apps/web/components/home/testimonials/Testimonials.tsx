@@ -4,7 +4,7 @@ import { useRef } from "react"
 import gsap from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
 import { useGSAP } from "@gsap/react"
-import { pauseScroll, resumeScroll, getSmoother } from "../../SmoothScroll"
+import { smoothPause } from "../../SmoothScroll"
 import styles from "./Testimonials.module.css"
 
 // Register GSAP plugins
@@ -100,6 +100,9 @@ const column1 = testimonials.slice(0, 4)
 const column2 = testimonials.slice(4, 8)
 const column3 = testimonials.slice(8, 12)
 
+// Combine all for mobile view (single column)
+const allTestimonials = [...column1, ...column2, ...column3]
+
 interface TestimonialCardProps {
   testimonial: Testimonial
 }
@@ -172,7 +175,8 @@ export default function Testimonials() {
     const allCards = [
       ...column1.querySelectorAll(`.${styles.card}`),
       ...column2.querySelectorAll(`.${styles.card}`),
-      ...column3.querySelectorAll(`.${styles.card}`)
+      ...column3.querySelectorAll(`.${styles.card}`),
+      ...(section.querySelectorAll(`.${styles.mobileContainer} .${styles.card}`) || [])
     ]
 
     gsap.fromTo(allCards,
@@ -184,11 +188,6 @@ export default function Testimonials() {
         opacity: 1,
         y: 0,
         duration: 0.8,
-        stagger: {
-          amount: 0.6,
-          from: "start",
-          ease: "power2.out"
-        },
         ease: "power3.out",
         scrollTrigger: {
           trigger: section,
@@ -216,15 +215,7 @@ export default function Testimonials() {
       onEnter: () => {
         if (!hasTriggeredPause) {
           hasTriggeredPause = true
-          pauseScroll()
-          setTimeout(() => {
-            // Capture position before resuming to kill accumulated momentum
-            const smoother = getSmoother()
-            const currentPos = smoother?.scrollTop() ?? 0
-            resumeScroll()
-            // Snap back to where we paused so momentum doesn't carry over
-            smoother?.scrollTo(currentPos, false)
-          }, 800)
+          smoothPause(800)
         }
       },
     })
@@ -250,14 +241,14 @@ export default function Testimonials() {
       y: -scrollDistance * 1.3, // 30% faster
       ease: "none"
     }, 0)
-    .to(column2, {
-      y: -scrollDistance * 0.7, // 30% slower (middle column)
-      ease: "none"
-    }, 0)
-    .to(column3, {
-      y: -scrollDistance * 1.3, // 30% faster
-      ease: "none"
-    }, 0)
+      .to(column2, {
+        y: -scrollDistance * 1.0, // slightly slower (middle column)
+        ease: "none"
+      }, 0)
+      .to(column3, {
+        y: -scrollDistance * 1.3, // 30% faster
+        ease: "none"
+      }, 0)
 
     return () => {
       ScrollTrigger.getAll().forEach(trigger => {
@@ -296,6 +287,15 @@ export default function Testimonials() {
           <div ref={column3Ref} className={styles.column}>
             {column3.map((testimonial, index) => (
               <TestimonialCard key={`col3-${index}`} testimonial={testimonial} />
+            ))}
+          </div>
+        </div>
+
+        {/* Mobile View - Single Column */}
+        <div className={styles.mobileContainer}>
+          <div className={styles.mobileColumn}>
+            {allTestimonials.map((testimonial, index) => (
+              <TestimonialCard key={`mobile-${index}`} testimonial={testimonial} />
             ))}
           </div>
         </div>

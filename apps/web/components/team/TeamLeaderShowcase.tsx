@@ -34,16 +34,17 @@ export default function TeamLeaderShowcase({ leader }: TeamLeaderShowcaseProps) 
                         {/* Decorative Label */}
                         <div className="flex items-center gap-4 mb-8">
                             <div className="h-[1px] w-12 bg-heritage-gold"></div>
-                            <span className="text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] text-heritage-gold">
+                            <span className="text-[10px] md:text-xs font-medium uppercase tracking-[0.4em] text-heritage-gold" style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}>
                                 Principal Counsel
                             </span>
                         </div>
 
                         {/* Name - Massive Typography */}
                         <h1
-                            className="text-5xl md:text-7xl font-bold mb-6 leading-[0.9]"
+                            className="text-5xl md:text-7xl font-light mb-6 leading-[0.9]"
                             style={{
-                                fontFamily: 'var(--font-cabinet-grotesk, sans-serif)',
+                                fontFamily: "'Lora', Georgia, serif",
+                                letterSpacing: '-0.04em',
                                 color: 'var(--heritage-cream)'
                             }}
                         >
@@ -53,12 +54,12 @@ export default function TeamLeaderShowcase({ leader }: TeamLeaderShowcaseProps) 
                         </h1>
 
                         {/* Role */}
-                        <p className="text-xl md:text-2xl font-light text-heritage-gold/80 mb-10 italic font-serif">
+                        <p className="text-xl md:text-2xl font-light text-heritage-gold/80 mb-10 italic" style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}>
                             {leader.role}
                         </p>
 
                         {/* Bio */}
-                        <p className="text-sm md:text-base leading-relaxed text-heritage-cream/70 mb-12 max-w-lg border-l border-heritage-gold/20 pl-6">
+                        <p className="text-sm md:text-base leading-relaxed text-heritage-cream/70 mb-12 max-w-lg border-l border-heritage-gold/20 pl-6" style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}>
                             {leader.bio}
                         </p>
 
@@ -80,8 +81,8 @@ export default function TeamLeaderShowcase({ leader }: TeamLeaderShowcaseProps) 
                         <div className="mt-12 pt-8 border-t border-heritage-gold/10 grid grid-cols-2 gap-8">
                             <div>
                                 <span className="block text-[10px] uppercase tracking-widest text-heritage-cream/40 mb-2">Experience</span>
-                                <span className="text-2xl font-bold" style={{
-                                    fontFamily: 'var(--font-cabinet-grotesk, sans-serif)',
+                                <span className="text-2xl font-normal" style={{
+                                    fontFamily: "'Lora', Georgia, serif",
                                     color: 'var(--heritage-cream)'
                                 }}>
                                     {leader.yearsOfExperience}+ Years

@@ -3,15 +3,10 @@
 /**
  * Sign-Up Form Component
  *
+ * Redesigned with editorial luxury aesthetic matching the blogs page.
  * Registration form for client email/password accounts.
- * Includes validation for name, email, password, and optional phone.
  *
  * @module SignupForm
- *
- * @example
- * ```typescript
- * <SignupForm />
- * ```
  */
 
 import { useState } from 'react';
@@ -20,13 +15,12 @@ import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { OAuthButton } from './oauth-button';
 import { useAuth } from '@/lib/auth/use-auth';
 import { signUp, signInWithGoogle } from '@/lib/auth/auth-actions';
 import { SignupSchema } from '@repo/shared';
+import { motion } from 'framer-motion';
+import styles from './auth.module.css';
 
 /** Signup form validation schema (extends shared schema with confirmPassword) */
 const signupFormSchema = SignupSchema.extend({
@@ -83,127 +77,126 @@ export function SignupForm() {
   };
 
   return (
-    <div className="w-full max-w-md space-y-6">
-      <div className="text-center space-y-2">
-        <h1 className="text-2xl font-bold tracking-tight">Create an account</h1>
-        <p className="text-sm text-muted-foreground">
-          Register for a client account
-        </p>
+    <motion.div
+      className={styles.container}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+    >
+      <div className={styles.card}>
+        <div className={styles.header}>
+          <h1 className={styles.title}>Create Account</h1>
+          <p className={styles.subtitle}>
+            Register for a client account
+          </p>
+        </div>
+
+        {error && <div className={styles.error}>{error}</div>}
+
+        <OAuthButton onClick={handleGoogleSignIn} isLoading={oauthLoading} />
+
+        <div className={styles.divider}>
+          <span className={styles.dividerText}>Or register with email</span>
+        </div>
+
+        <form onSubmit={handleSubmit(handleSignUp)} className={styles.form}>
+          <div className={styles.formGroup}>
+            <label htmlFor="fullName" className={styles.label}>Full Name</label>
+            <input
+              id="fullName"
+              type="text"
+              placeholder="John Doe"
+              autoComplete="name"
+              className={styles.input}
+              {...register('fullName')}
+            />
+            {errors.fullName && (
+              <p className={styles.fieldError}>{errors.fullName.message}</p>
+            )}
+          </div>
+
+          <div className={styles.formGroup}>
+            <label htmlFor="signup-email" className={styles.label}>Email</label>
+            <input
+              id="signup-email"
+              type="email"
+              placeholder="you@example.com"
+              autoComplete="email"
+              className={styles.input}
+              {...register('email')}
+            />
+            {errors.email && (
+              <p className={styles.fieldError}>{errors.email.message}</p>
+            )}
+          </div>
+
+          <div className={styles.formGroup}>
+            <label htmlFor="signup-password" className={styles.label}>Password</label>
+            <input
+              id="signup-password"
+              type="password"
+              placeholder="Min. 8 characters"
+              autoComplete="new-password"
+              className={styles.input}
+              {...register('password')}
+            />
+            {errors.password && (
+              <p className={styles.fieldError}>{errors.password.message}</p>
+            )}
+          </div>
+
+          <div className={styles.formGroup}>
+            <label htmlFor="confirmPassword" className={styles.label}>Confirm Password</label>
+            <input
+              id="confirmPassword"
+              type="password"
+              placeholder="Repeat your password"
+              autoComplete="new-password"
+              className={styles.input}
+              {...register('confirmPassword')}
+            />
+            {errors.confirmPassword && (
+              <p className={styles.fieldError}>{errors.confirmPassword.message}</p>
+            )}
+          </div>
+
+          <div className={styles.formGroup}>
+            <label htmlFor="phoneNumber" className={styles.label}>
+              Phone Number <span style={{ opacity: 0.5 }}>(optional)</span>
+            </label>
+            <input
+              id="phoneNumber"
+              type="tel"
+              placeholder="+92-300-1234567"
+              autoComplete="tel"
+              className={styles.input}
+              {...register('phoneNumber')}
+            />
+            {errors.phoneNumber && (
+              <p className={styles.fieldError}>{errors.phoneNumber.message}</p>
+            )}
+          </div>
+
+          <button
+            type="submit"
+            className={styles.button}
+            disabled={isSubmitting}
+          >
+            <span className={styles.buttonText}>
+              {isSubmitting ? 'Creating account...' : 'Create Account'}
+            </span>
+          </button>
+        </form>
+
+        <div className={styles.footer}>
+          <p className={styles.footerText}>
+            Already have an account?{' '}
+            <Link href="/auth/signin" className={styles.link}>
+              Sign in
+            </Link>
+          </p>
+        </div>
       </div>
-
-      {error && (
-        <div className="rounded-md bg-destructive/15 p-3 text-sm text-destructive">
-          {error}
-        </div>
-      )}
-
-      <OAuthButton onClick={handleGoogleSignIn} isLoading={oauthLoading} />
-
-      <div className="relative">
-        <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t" />
-        </div>
-        <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-background px-2 text-muted-foreground">
-            Or register with email
-          </span>
-        </div>
-      </div>
-
-      <form onSubmit={handleSubmit(handleSignUp)} className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="fullName">Full Name</Label>
-          <Input
-            id="fullName"
-            placeholder="John Doe"
-            autoComplete="name"
-            {...register('fullName')}
-          />
-          {errors.fullName && (
-            <p className="text-xs text-destructive">
-              {errors.fullName.message}
-            </p>
-          )}
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="signup-email">Email</Label>
-          <Input
-            id="signup-email"
-            type="email"
-            placeholder="you@example.com"
-            autoComplete="email"
-            {...register('email')}
-          />
-          {errors.email && (
-            <p className="text-xs text-destructive">{errors.email.message}</p>
-          )}
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="signup-password">Password</Label>
-          <Input
-            id="signup-password"
-            type="password"
-            placeholder="Min. 8 characters"
-            autoComplete="new-password"
-            {...register('password')}
-          />
-          {errors.password && (
-            <p className="text-xs text-destructive">
-              {errors.password.message}
-            </p>
-          )}
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="confirmPassword">Confirm Password</Label>
-          <Input
-            id="confirmPassword"
-            type="password"
-            placeholder="Repeat your password"
-            autoComplete="new-password"
-            {...register('confirmPassword')}
-          />
-          {errors.confirmPassword && (
-            <p className="text-xs text-destructive">
-              {errors.confirmPassword.message}
-            </p>
-          )}
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="phoneNumber">
-            Phone Number <span className="text-muted-foreground">(optional)</span>
-          </Label>
-          <Input
-            id="phoneNumber"
-            type="tel"
-            placeholder="+92-300-1234567"
-            autoComplete="tel"
-            {...register('phoneNumber')}
-          />
-          {errors.phoneNumber && (
-            <p className="text-xs text-destructive">
-              {errors.phoneNumber.message}
-            </p>
-          )}
-        </div>
-
-        <Button type="submit" className="w-full" disabled={isSubmitting}>
-          {isSubmitting ? 'Creating account...' : 'Create Account'}
-        </Button>
-      </form>
-
-      <p className="text-center text-sm text-muted-foreground">
-        Already have an account?{' '}
-        <Link
-          href="/auth/signin"
-          className="text-foreground underline-offset-4 hover:underline"
-        >
-          Sign in
-        </Link>
-      </p>
-    </div>
+    </motion.div>
   );
 }
