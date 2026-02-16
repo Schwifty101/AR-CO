@@ -102,7 +102,7 @@ export async function createSubscription(): Promise<{
  */
 export async function activateSubscription(
   subscriptionId: string,
-  tracker: string,
+  tracker?: string,
 ): Promise<SubscriptionResponse> {
   const token = await getSessionToken();
 

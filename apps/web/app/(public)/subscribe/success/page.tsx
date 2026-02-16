@@ -4,7 +4,8 @@
  * Subscription Success Page
  *
  * Called after Safepay redirects back from card tokenization.
- * Triggers subscription activation (first charge) and shows result.
+ * Fetches the user's pending subscription from the API, then
+ * triggers activation (first charge) and shows result.
  *
  * @module SubscribeSuccessPage
  */
@@ -14,7 +15,7 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { activateSubscription } from '@/lib/api/subscriptions';
+import { activateSubscription, getMySubscription } from '@/lib/api/subscriptions';
 import styles from './page.module.css';
 
 type ActivationState = 'loading' | 'success' | 'error';
@@ -29,23 +30,46 @@ export default function SubscribeSuccessPage() {
     if (activatedRef.current) return;
     activatedRef.current = true;
 
-    const tracker = searchParams.get('tracker');
-    const subscriptionId = searchParams.get('subscription_id');
+    // Tracker may or may not be in URL depending on Safepay redirect behavior
+    const tracker = searchParams.get('tracker') || undefined;
 
-    if (!tracker || !subscriptionId) {
-      setState('error');
-      setErrorMessage('Missing payment information. Please try subscribing again.');
-      return;
+    async function activate() {
+      // Fetch the user's subscription to get its ID and status
+      let subscription;
+      try {
+        subscription = await getMySubscription();
+      } catch {
+        setState('error');
+        setErrorMessage('Could not find your subscription. Please sign in and try again.');
+        return;
+      }
+
+      // Already active — show success immediately
+      if (subscription.status === 'active') {
+        setState('success');
+        return;
+      }
+
+      // Not pending — can't activate
+      if (subscription.status !== 'pending') {
+        setState('error');
+        setErrorMessage(`Subscription status is "${subscription.status}". Please contact support.`);
+        return;
+      }
+
+      // Activate: charge first month
+      try {
+        await activateSubscription(subscription.id, tracker);
+        setState('success');
+      } catch (error: unknown) {
+        setState('error');
+        setErrorMessage(
+          error instanceof Error ? error.message : 'Subscription activation failed',
+        );
+      }
     }
 
-    activateSubscription(subscriptionId, tracker)
-      .then(() => {
-        setState('success');
-      })
-      .catch((error: Error) => {
-        setState('error');
-        setErrorMessage(error.message || 'Subscription activation failed');
-      });
+    activate();
   }, [searchParams]);
 
   return (
