@@ -395,7 +395,7 @@ export class SafepayService implements OnModuleInit {
         first_name: params.firstName,
         last_name: params.lastName,
         email: params.email,
-        phone_number: params.phone || '',
+        phone_number: params.phone || undefined,
         country: 'PK',
         is_guest: false,
       });

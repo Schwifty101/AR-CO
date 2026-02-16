@@ -156,10 +156,12 @@ export class SubscriptionsService {
       } else {
         // Create Safepay Customer if not exists
         let safepayCustomerId = '';
+        const nameParts = (user.fullName || user.email.split('@')[0]).split(' ');
         const { token } = await this.safepayService.createCustomer({
           email: user.email,
-          firstName: user.email.split('@')[0],
-          lastName: '',
+          firstName: nameParts[0],
+          lastName: nameParts.slice(1).join(' ') || nameParts[0],
+          phone: user.phoneNumber || undefined,
         });
         safepayCustomerId = token;
 
@@ -186,10 +188,12 @@ export class SubscriptionsService {
       // Ensure we have a Safepay customer ID
       let customerToken = subscription.safepay_customer_id;
       if (!customerToken) {
+        const nameParts = (user.fullName || user.email.split('@')[0]).split(' ');
         const { token } = await this.safepayService.createCustomer({
           email: user.email,
-          firstName: user.email.split('@')[0],
-          lastName: '',
+          firstName: nameParts[0],
+          lastName: nameParts.slice(1).join(' ') || nameParts[0],
+          phone: user.phoneNumber || undefined,
         });
         customerToken = token;
         await adminClient
@@ -238,12 +242,12 @@ export class SubscriptionsService {
    * 3. Activates the subscription with period dates
    *
    * @param subscriptionId - Subscription UUID
-   * @param tracker - Safepay tracker token from redirect URL
+   * @param tracker - Safepay tracker token from redirect URL (optional)
    * @returns Activated subscription
    */
   async activateSubscription(
     subscriptionId: string,
-    tracker: string,
+    tracker?: string,
   ): Promise<SubscriptionResponse> {
     const adminClient = this.supabaseService.getAdminClient();
 
@@ -270,22 +274,24 @@ export class SubscriptionsService {
     }
 
     // Check for duplicate activation (same tracker already succeeded)
-    const { data: existingPayment } = (await adminClient
-      .from('subscription_payments')
-      .select('id')
-      .eq('subscription_id', subscriptionId)
-      .eq('safepay_tracker_token', tracker)
-      .eq('status', 'succeeded')
-      .single()) as DbResult<{ id: string }>;
+    if (tracker) {
+      const { data: existingPayment } = (await adminClient
+        .from('subscription_payments')
+        .select('id')
+        .eq('subscription_id', subscriptionId)
+        .eq('safepay_tracker_token', tracker)
+        .eq('status', 'succeeded')
+        .single()) as DbResult<{ id: string }>;
 
-    if (existingPayment) {
-      // Already processed this tracker — just return the subscription
-      const { data: current } = (await adminClient
-        .from('subscriptions')
-        .select('*')
-        .eq('id', subscriptionId)
-        .single()) as DbResult<SubscriptionRow>;
-      return this.mapSubscriptionRow(current!);
+      if (existingPayment) {
+        // Already processed this tracker — just return the subscription
+        const { data: current } = (await adminClient
+          .from('subscriptions')
+          .select('*')
+          .eq('id', subscriptionId)
+          .single()) as DbResult<SubscriptionRow>;
+        return this.mapSubscriptionRow(current!);
+      }
     }
 
     const customerToken = subscription.safepay_customer_id;

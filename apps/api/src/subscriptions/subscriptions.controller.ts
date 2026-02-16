@@ -91,7 +91,7 @@ export class SubscriptionsController {
   @HttpCode(HttpStatus.OK)
   async activateSubscription(
     @CurrentUser() user: AuthUser,
-    @Body() body: { subscriptionId: string; tracker: string },
+    @Body() body: { subscriptionId: string; tracker?: string },
   ): Promise<SubscriptionResponse> {
     if (!user.clientProfileId) {
       throw new BadRequestException('Only clients can activate subscriptions');
