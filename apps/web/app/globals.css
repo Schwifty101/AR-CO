@@ -186,21 +186,6 @@ html.lenis body {
   --sidebar-ring: oklch(0.439 0 0);
 }
 
-/* Reset global element colors inside dark-scoped dashboard layouts.
-   Use :where() to keep specificity at 0-0-1 so Tailwind utilities still win. */
-:where(.dark) h1,
-:where(.dark) h2,
-:where(.dark) h3 {
-  color: var(--foreground);
-}
-
-:where(.dark) p {
-  color: var(--muted-foreground);
-}
-
-:where(.dark) a {
-  color: var(--foreground);
-}
 
 @theme inline {
   --font-sans: "Geist", "Geist Fallback";
@@ -378,6 +363,18 @@ html.lenis body {
     color: #1a1a1a;
     text-decoration: none;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Dark overrides — inside @layer base so @layer utilities still wins */
+  .dark h1,
+  .dark h2,
+  .dark h3,
+  .dark a {
+    color: var(--foreground);
+  }
+
+  .dark p {
+    color: var(--muted-foreground);
   }
 }
 
