@@ -218,7 +218,7 @@ export default function ComplaintDetailPage() {
                     href={url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block text-sm text-blue-600 hover:underline"
+                    className="block text-sm text-blue-400 hover:underline"
                   >
                     Evidence {index + 1}
                   </a>
