@@ -134,6 +134,7 @@ export default function TeamClosingStatement({
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
           className="inline-block mb-12 text-xs md:text-sm tracking-[0.3em] uppercase text-[var(--heritage-gold)] font-medium"
+          style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}
         >
           Our Philosophy
         </motion.span>
@@ -162,7 +163,7 @@ export default function TeamClosingStatement({
                   className="block font-[300] tracking-tighter"
                   style={{
                     fontSize: 'clamp(3rem, 9vw, 8rem)',
-                    fontFamily: "'Cabinet Grotesk', sans-serif",
+                    fontFamily: "'Lora', Georgia, serif",
                     // Custom Gold Shine for Dark Mode
                     background: `linear-gradient(to right, 
                       var(--heritage-cream) 0%, 
@@ -195,7 +196,7 @@ export default function TeamClosingStatement({
             <p
               className="text-lg md:text-xl font-light italic"
               style={{
-                fontFamily: "'Boska', serif",
+                fontFamily: "'Georgia', 'Times New Roman', serif",
                 color: 'rgba(249, 248, 246, 0.7)'
               }}
             >

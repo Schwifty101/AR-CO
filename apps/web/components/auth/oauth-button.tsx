@@ -4,6 +4,7 @@
  * OAuth Button Component
  *
  * A styled button for Google OAuth sign-in.
+ * Redesigned with editorial luxury aesthetic matching the auth theme.
  *
  * @module OAuthButton
  *
@@ -13,7 +14,7 @@
  * ```
  */
 
-import { Button } from '@/components/ui/button';
+import styles from './auth.module.css';
 
 /** Props for OAuthButton */
 interface OAuthButtonProps {
@@ -26,7 +27,7 @@ interface OAuthButtonProps {
 /** Google icon SVG */
 function GoogleIcon() {
   return (
-    <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
+    <svg style={{ width: '18px', height: '18px' }} viewBox="0 0 24 24">
       <path
         d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"
         fill="#4285F4"
@@ -47,6 +48,31 @@ function GoogleIcon() {
   );
 }
 
+/** Loading spinner component */
+function LoadingSpinner() {
+  return (
+    <svg
+      style={{ width: '18px', height: '18px' }}
+      viewBox="0 0 24 24"
+      className={styles.spinner}
+    >
+      <circle
+        cx="12"
+        cy="12"
+        r="10"
+        stroke="currentColor"
+        strokeWidth="3"
+        fill="none"
+        strokeLinecap="round"
+        style={{
+          strokeDasharray: '60',
+          strokeDashoffset: '20',
+        }}
+      />
+    </svg>
+  );
+}
+
 /**
  * Google OAuth button
  *
@@ -54,19 +80,14 @@ function GoogleIcon() {
  */
 export function OAuthButton({ onClick, isLoading }: OAuthButtonProps) {
   return (
-    <Button
+    <button
       type="button"
-      variant="outline"
-      className="w-full"
+      className={styles.button}
       onClick={onClick}
       disabled={isLoading}
     >
-      {isLoading ? (
-        <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-      ) : (
-        <GoogleIcon />
-      )}
-      Continue with Google
-    </Button>
+      {isLoading ? <LoadingSpinner /> : <GoogleIcon />}
+      <span className={styles.buttonText}>Continue with Google</span>
+    </button>
   );
 }

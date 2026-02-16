@@ -3,20 +3,21 @@
 import React, { useState, useEffect, useLayoutEffect, useCallback } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import { motion, Variants, AnimatePresence } from 'framer-motion'
 import { Menu, X, ArrowUpRight } from 'lucide-react'
 import { useGSAP } from '@gsap/react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { NAV_ITEMS, SIDEPANEL_FOOTER_NAV_ITEMS, FACILITATION_DATA, PRACTICE_AREAS_DATA } from '../data/navData'
-import type { INavItem, INavCategory } from './types/nav.types'
+import { NAV_ITEMS, SIDEPANEL_FOOTER_NAV_ITEMS } from '../data/navData'
+import type { INavItem } from './types/nav.types'
 import styles from './Navigation.module.css'
 import SlotMachineText from "@/components/shared/animations/SlotMachineText"
 import { usePracticeAreasOverlay } from '../practice-areas'
 import { useFacilitationOverlay } from '../facilitation'
 import { useConsultationOverlay } from '../consultation'
-import { getSmoother } from '../SmoothScroll'
+import { useAboutOverlay } from '../about'
+
 
 // Register GSAP plugins
 if (typeof window !== 'undefined') {
@@ -134,13 +135,13 @@ interface IHeroNavbarProps {
     onOpenPracticeAreas: () => void
     /** Handler to open facilitation services overlay */
     onOpenFacilitation: () => void
-    /** Handler for About Us navigation */
-    onAboutClick: () => void
+    /** Handler to open about overlay */
+    onOpenAbout: () => void
     /** Whether to hide the CTA button */
     hideCta?: boolean
 }
 
-const HeroNavbar: React.FC<IHeroNavbarProps> = ({ isHidden, hasEntered, navItems, onMenuClick, onOpenPracticeAreas, onOpenFacilitation, onAboutClick, hideCta }) => {
+const HeroNavbar: React.FC<IHeroNavbarProps> = ({ isHidden, hasEntered, navItems, onMenuClick, onOpenPracticeAreas, onOpenFacilitation, onOpenAbout, hideCta }) => {
     const { openOverlay: openConsultationOverlay } = useConsultationOverlay()
     return (
         <motion.nav
@@ -177,7 +178,7 @@ const HeroNavbar: React.FC<IHeroNavbarProps> = ({ isHidden, hasEntered, navItems
                         ) : link.id === 'about' ? (
                             <button
                                 key={link.id}
-                                onClick={onAboutClick}
+                                onClick={onOpenAbout}
                                 className={styles.navLink}
                             >
                                 {link.label}
@@ -256,6 +257,45 @@ const StickyNavbar: React.FC<IStickyNavbarProps> = ({ isVisible, onMenuClick, hi
     )
 }
 
+// --- Mobile Navbar (Always visible on mobile) ---
+
+interface IMobileNavbarProps {
+    /** Handler for menu button click */
+    onMenuClick: () => void
+    /** Whether to hide the CTA button */
+    hideCta?: boolean
+}
+
+const MobileNavbar: React.FC<IMobileNavbarProps> = ({ onMenuClick, hideCta }) => {
+    const { openOverlay: openConsultationOverlay } = useConsultationOverlay()
+
+    return (
+        <nav className={styles.mobileNavbar}>
+            <div className={styles.mobileLogo}>
+                <Logo />
+            </div>
+
+            <div className={styles.mobileActions}>
+                {!hideCta && (
+                    <CtaButton
+                        variant="filled"
+                        onClick={openConsultationOverlay}
+                        className={styles.mobileCta}
+                    />
+                )}
+
+                <button
+                    onClick={onMenuClick}
+                    className={styles.menuToggle}
+                    aria-label="Open navigation menu"
+                >
+                    <Menu size={20} strokeWidth={2.5} />
+                </button>
+            </div>
+        </nav>
+    )
+}
+
 // --- Full Screen Menu (Overlay) ---
 
 interface IFullScreenMenuProps {
@@ -267,13 +307,12 @@ interface IFullScreenMenuProps {
     onOpenPracticeAreas: () => void
     /** Handler to open facilitation services overlay */
     onOpenFacilitation: () => void
-    /** Handler for About Us navigation */
-    onAboutClick: () => void
+    /** Handler to open about overlay */
+    onOpenAbout: () => void
 }
 
-const FullScreenMenu: React.FC<IFullScreenMenuProps> = ({ onClose, navItems, onOpenPracticeAreas, onOpenFacilitation, onAboutClick }) => {
+const FullScreenMenu: React.FC<IFullScreenMenuProps> = ({ onClose, navItems, onOpenPracticeAreas, onOpenFacilitation, onOpenAbout }) => {
     const [isMobile, setIsMobile] = useState(false)
-    const [hoveredLink, setHoveredLink] = useState<string | null>(null)
     const [currentTime, setCurrentTime] = useState<string>('')
     const [isOfficeOpen, setIsOfficeOpen] = useState<boolean>(false)
     const { openOverlay: openConsultationOverlay } = useConsultationOverlay()
@@ -391,7 +430,15 @@ const FullScreenMenu: React.FC<IFullScreenMenuProps> = ({ onClose, navItems, onO
                 <Logo />
 
                 <div className={styles.menuHeaderActions}>
-                    <div className="hidden md:block">
+                    <div className="hidden md:flex" style={{ gap: '0.75rem' }}>
+                        <Link href="/subscribe" className={`${styles.ctaButton} ${styles.ctaButtonUpgrade}`} onClick={onClose}>
+                            Upgrade
+                            <ArrowUpRight size={14} className={styles.ctaIcon} />
+                        </Link>
+                        <CtaButton variant="outline" onClick={openConsultationOverlay} />
+                    </div>
+                    {/* Mobile: Only Consultation button in header, Upgrade is in menu list */}
+                    <div className="md:hidden">
                         <CtaButton variant="outline" onClick={openConsultationOverlay} />
                     </div>
                     <button
@@ -404,9 +451,8 @@ const FullScreenMenu: React.FC<IFullScreenMenuProps> = ({ onClose, navItems, onO
                 </div>
             </div>
 
-            {/* Main Navigation Links with Facilitation Dropdown - Two Column Layout */}
+            {/* Main Navigation Links */}
             <div className={styles.menuContent}>
-                {/* Left Column - Navigation Items */}
                 <motion.nav
                     variants={linkContainerVariants}
                     initial="initial"
@@ -419,19 +465,33 @@ const FullScreenMenu: React.FC<IFullScreenMenuProps> = ({ onClose, navItems, onO
                         <div
                             key={link.id}
                             className={styles.menuLinkWrapper}
-                            onMouseEnter={() => (link.id === 'facilitation' || link.id === 'practice-areas') && setHoveredLink(link.id)}
-                            onMouseLeave={() => (link.id === 'facilitation' || link.id === 'practice-areas') && setHoveredLink(null)}
                         >
                             <motion.div variants={linkVariants}>
-                                {link.id === 'practice-areas' || link.id === 'facilitation' ? (
-                                    <span className={styles.menuLink}>
+                                {link.id === 'practice-areas' ? (
+                                    <button
+                                        className={styles.menuLink}
+                                        onClick={() => {
+                                            onOpenPracticeAreas()
+                                            onClose()
+                                        }}
+                                    >
                                         <SlotMachineText>{link.label}</SlotMachineText>
-                                    </span>
+                                    </button>
+                                ) : link.id === 'facilitation' ? (
+                                    <button
+                                        className={styles.menuLink}
+                                        onClick={() => {
+                                            onOpenFacilitation()
+                                            onClose()
+                                        }}
+                                    >
+                                        <SlotMachineText>{link.label}</SlotMachineText>
+                                    </button>
                                 ) : link.id === 'about' ? (
                                     <button
                                         className={styles.menuLink}
                                         onClick={() => {
-                                            onAboutClick()
+                                            onOpenAbout()
                                             onClose()
                                         }}
                                     >
@@ -449,59 +509,21 @@ const FullScreenMenu: React.FC<IFullScreenMenuProps> = ({ onClose, navItems, onO
                             </motion.div>
                         </div>
                     ))}
-                </motion.nav>
 
-                {/* Right Column - Dropdown Content */}
-                <div className={styles.rightColumn}>
-                    <AnimatePresence mode="wait">
-                        {(hoveredLink === 'facilitation' || hoveredLink === 'practice-areas') && (
-                            <motion.div
-                                key={hoveredLink}
-                                initial={{ opacity: 0, scale: 0.95 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                exit={{ opacity: 0, scale: 0.95 }}
-                                transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-                                className={styles.facilitationDropdown}
-                                onMouseEnter={() => setHoveredLink(hoveredLink)}
-                                onMouseLeave={() => setHoveredLink(null)}
+                    {/* Mobile Only: Upgrade Button as last menu item */}
+                    <div className={`${styles.menuLinkWrapper} md:hidden`}>
+                        <motion.div variants={linkVariants}>
+                            <Link
+                                href="/subscribe"
+                                className={styles.menuLink}
+                                onClick={onClose}
+                                style={{ color: 'var(--heritage-gold)' }}
                             >
-                                <div className={styles.dropdownContent}>
-                                    <h3 className={styles.dropdownTitle}>
-                                        {hoveredLink === 'practice-areas' ? PRACTICE_AREAS_DATA.title : FACILITATION_DATA.title}
-                                    </h3>
-                                    <p className={styles.dropdownDescription}>
-                                        {hoveredLink === 'practice-areas' ? PRACTICE_AREAS_DATA.description : FACILITATION_DATA.description}
-                                    </p>
-                                    <div className={styles.dropdownGrid}>
-                                        {(hoveredLink === 'practice-areas' ? PRACTICE_AREAS_DATA.categories : FACILITATION_DATA.categories).map((category: INavCategory, idx: number) => (
-                                            <div
-                                                key={idx}
-                                                className={`${styles.dropdownCategory} ${category.title === "Women's Legal Desk" ? styles.categorySpanTwo : ''}`}
-                                            >
-                                                <h4 className={`${styles.categoryTitle} ${category.highlight ? styles.categoryHighlight : ''}`}>
-                                                    {category.title}
-                                                </h4>
-                                                <ul className={styles.categoryLinks}>
-                                                    {category.links.map((link, linkIdx) => (
-                                                        <li key={linkIdx}>
-                                                            <Link
-                                                                href={link.href}
-                                                                className={styles.categoryLink}
-                                                                onClick={onClose}
-                                                            >
-                                                                {link.label}
-                                                            </Link>
-                                                        </li>
-                                                    ))}
-                                                </ul>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-                </div>
+                                <SlotMachineText>Upgrade</SlotMachineText>
+                            </Link>
+                        </motion.div>
+                    </div>
+                </motion.nav>
             </div>
 
             {/* Menu Footer - Matches Footer.tsx layout */}
@@ -589,32 +611,11 @@ export default function Navigation() {
     const [enteredPathname, setEnteredPathname] = useState<string | null>(null)
     const { openOverlay: openPracticeAreasOverlay } = usePracticeAreasOverlay()
     const { openOverlay: openFacilitationOverlay } = useFacilitationOverlay()
+    const { openOverlay: openAboutOverlay } = useAboutOverlay()
     const pathname = usePathname()
-    const router = useRouter()
 
     // Derived state: hasEntered is true when current pathname has completed entrance
     const hasEntered = enteredPathname === pathname
-
-    /**
-     * Handle About Us navigation with smooth scroll
-     */
-    const handleAboutClick = useCallback(() => {
-        if (pathname === '/') {
-            // Already on homepage, just scroll to about section
-            const aboutSection = document.getElementById('about')
-            if (aboutSection) {
-                const smoother = getSmoother()
-                if (smoother) {
-                    smoother.scrollTo(aboutSection, true)
-                } else {
-                    aboutSection.scrollIntoView({ behavior: 'smooth' })
-                }
-            }
-        } else {
-            // Navigate to homepage then scroll to about
-            router.push('/#about')
-        }
-    }, [pathname, router])
 
     /**
      * Ensure app-loaded class is present on all pages
@@ -720,11 +721,15 @@ export default function Navigation() {
                 onMenuClick={handleMenuToggle}
                 onOpenPracticeAreas={openPracticeAreasOverlay}
                 onOpenFacilitation={openFacilitationOverlay}
-                onAboutClick={handleAboutClick}
+                onOpenAbout={openAboutOverlay}
                 hideCta={hideCta}
             />
             <StickyNavbar
                 isVisible={isScrolled}
+                onMenuClick={handleMenuToggle}
+                hideCta={hideCta}
+            />
+            <MobileNavbar
                 onMenuClick={handleMenuToggle}
                 hideCta={hideCta}
             />
@@ -735,7 +740,7 @@ export default function Navigation() {
                         navItems={SIDEPANEL_FOOTER_NAV_ITEMS}
                         onOpenPracticeAreas={openPracticeAreasOverlay}
                         onOpenFacilitation={openFacilitationOverlay}
-                        onAboutClick={handleAboutClick}
+                        onOpenAbout={openAboutOverlay}
                     />
                 )}
             </AnimatePresence>

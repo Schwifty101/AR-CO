@@ -38,7 +38,7 @@ export default function TeamTransition({ label = "The Collective" }: TeamTransit
                 transition={{ duration: 0.8 }}
             >
                 <div className="w-16 h-1 bg-heritage-gold/20 mb-4" />
-                <span className="text-heritage-gold text-[10px] uppercase tracking-[0.5em] font-medium bg-heritage-charcoal/50 backdrop-blur-sm px-4 py-2 border border-heritage-gold/20 rounded-full">
+                <span className="text-heritage-gold text-[10px] uppercase tracking-[0.5em] font-medium bg-heritage-charcoal/50 backdrop-blur-sm px-4 py-2 border border-heritage-gold/20 rounded-full" style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}>
                     {label}
                 </span>
                 <div className="w-16 h-1 bg-heritage-gold/20 mt-4" />

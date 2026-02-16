@@ -4,46 +4,59 @@
  * Subscribe Landing Page
  *
  * Public landing page for the "Civic Retainer" subscription service.
- * Allows authenticated users to create a subscription or redirects
- * unauthenticated users to sign up.
+ * Redesigned with editorial luxury aesthetic matching the blogs page.
  *
  * @module SubscribePage
- *
- * @example
- * Accessible at /subscribe
- * - Anonymous users: shown signup prompt
- * - Authenticated users: can subscribe directly
  */
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth/use-auth';
 import { createSubscription } from '@/lib/api/subscriptions';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { CheckCircle2, Scale, FileText, Users } from 'lucide-react';
+import { motion } from 'framer-motion';
+import styles from './page.module.css';
 
-/**
- * Subscribe landing page component
- */
+const fadeUp = {
+  hidden: { opacity: 0, y: 32 },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] as const },
+  },
+};
+
+const stagger = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.08 } },
+};
+
+const listStagger = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.06, delayChildren: 0.1 } },
+};
+
+const itemFadeUp = {
+  hidden: { opacity: 0, y: 20 },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] as const },
+  },
+};
+
 export default function SubscribePage() {
   const router = useRouter();
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const [subscribing, setSubscribing] = useState(false);
 
-  /**
-   * Handles subscription button click
-   * - If not authenticated, redirects to signup with return URL
-   * - If authenticated, creates subscription and redirects to checkout
-   */
   const handleSubscribe = async () => {
     if (!isAuthenticated) {
       router.push('/auth/signup?redirect=/subscribe');
       return;
     }
 
-    // Only client accounts can subscribe
     if (user?.userType !== 'client') {
       toast.error('Only client accounts can subscribe. Please sign in with a client account.');
       return;
@@ -63,140 +76,187 @@ export default function SubscribePage() {
 
   if (authLoading) {
     return (
-      <div className="container mx-auto px-4 py-12">
-        <div className="flex items-center justify-center">
-          <div className="animate-pulse text-muted-foreground">Loading...</div>
+      <div className={styles.page}>
+        <div className={styles.atmosphereGlow} />
+        <div className={styles.grainOverlay} />
+        <div className={styles.loading}>
+          <p className={styles.loadingText}>Loading...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-12">
-      {/* Hero Section */}
-      <div className="mx-auto max-w-3xl text-center mb-12">
-        <h1 className="text-4xl font-bold tracking-tight mb-4">
-          Civic Retainer Service
-        </h1>
-        <p className="text-xl text-muted-foreground mb-2">
-          Your Voice, Our Advocacy
-        </p>
-        <p className="text-lg text-muted-foreground">
-          PKR 700/month - Professional legal support for government-related matters
-        </p>
-      </div>
+    <div className={styles.page}>
+      {/* Atmosphere */}
+      <div className={styles.atmosphereGlow} />
+      <div className={styles.grainOverlay} />
 
-      {/* Benefits Grid */}
-      <div className="mx-auto max-w-5xl mb-12">
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          <Card>
-            <CardHeader>
-              <FileText className="h-10 w-10 text-primary mb-2" />
-              <CardTitle>Submit Complaints</CardTitle>
-              <CardDescription>
-                File official complaints against government organizations directly through our platform
-              </CardDescription>
-            </CardHeader>
-          </Card>
+      <div className={styles.container}>
+        {/* Hero Section */}
+        <motion.div
+          className={styles.hero}
+          initial="hidden"
+          animate="show"
+          variants={stagger}
+        >
+          <motion.span className={styles.eyebrow} variants={fadeUp}>
+            Legal Subscription Service
+          </motion.span>
 
-          <Card>
-            <CardHeader>
-              <CheckCircle2 className="h-10 w-10 text-primary mb-2" />
-              <CardTitle>Track Progress</CardTitle>
-              <CardDescription>
-                Monitor your complaint status in real-time with detailed resolution tracking
-              </CardDescription>
-            </CardHeader>
-          </Card>
+          <motion.h1 className={styles.title} variants={fadeUp}>
+            Civic Retainer Service
+          </motion.h1>
 
-          <Card>
-            <CardHeader>
-              <Scale className="h-10 w-10 text-primary mb-2" />
-              <CardTitle>Legal Support</CardTitle>
-              <CardDescription>
-                Access professional legal guidance throughout the complaint resolution process
-              </CardDescription>
-            </CardHeader>
-          </Card>
-        </div>
-      </div>
+          <motion.p className={styles.subtitle} variants={fadeUp}>
+            Your Voice, Our Advocacy — Professional legal support for government-related matters
+          </motion.p>
 
-      {/* Subscription Details */}
-      <div className="mx-auto max-w-2xl mb-12">
-        <Card>
-          <CardHeader>
-            <CardTitle>What's Included</CardTitle>
-            <CardDescription>
-              Comprehensive support for your civic engagement
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-3">
-              <li className="flex items-start">
-                <CheckCircle2 className="h-5 w-5 text-primary mr-3 mt-0.5 flex-shrink-0" />
-                <span>Unlimited complaint submissions against government organizations</span>
-              </li>
-              <li className="flex items-start">
-                <CheckCircle2 className="h-5 w-5 text-primary mr-3 mt-0.5 flex-shrink-0" />
-                <span>Real-time tracking and status updates for all your complaints</span>
-              </li>
-              <li className="flex items-start">
-                <CheckCircle2 className="h-5 w-5 text-primary mr-3 mt-0.5 flex-shrink-0" />
-                <span>Professional legal review and guidance for each complaint</span>
-              </li>
-              <li className="flex items-start">
-                <CheckCircle2 className="h-5 w-5 text-primary mr-3 mt-0.5 flex-shrink-0" />
-                <span>Direct communication channel with legal experts</span>
-              </li>
-              <li className="flex items-start">
-                <CheckCircle2 className="h-5 w-5 text-primary mr-3 mt-0.5 flex-shrink-0" />
-                <span>Priority email and phone support during business hours</span>
-              </li>
-            </ul>
-          </CardContent>
-        </Card>
-      </div>
+          <motion.p className={styles.price} variants={fadeUp}>
+            PKR 700 per month
+          </motion.p>
+        </motion.div>
 
-      {/* CTA Section */}
-      <div className="mx-auto max-w-md text-center">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-2xl">Ready to Get Started?</CardTitle>
-            <CardDescription>
+        {/* Benefits Grid */}
+        <motion.div
+          className={styles.benefitsGrid}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, amount: 0.2 }}
+          variants={stagger}
+        >
+          <motion.div className={styles.benefitCard} variants={fadeUp}>
+            <FileText className={styles.benefitIcon} />
+            <h3 className={styles.benefitTitle}>Submit Complaints</h3>
+            <p className={styles.benefitDescription}>
+              File official complaints against government organizations directly through our platform
+            </p>
+          </motion.div>
+
+          <motion.div className={styles.benefitCard} variants={fadeUp}>
+            <CheckCircle2 className={styles.benefitIcon} />
+            <h3 className={styles.benefitTitle}>Track Progress</h3>
+            <p className={styles.benefitDescription}>
+              Monitor your complaint status in real-time with detailed resolution tracking
+            </p>
+          </motion.div>
+
+          <motion.div className={styles.benefitCard} variants={fadeUp}>
+            <Scale className={styles.benefitIcon} />
+            <h3 className={styles.benefitTitle}>Legal Support</h3>
+            <p className={styles.benefitDescription}>
+              Access professional legal guidance throughout the complaint resolution process
+            </p>
+          </motion.div>
+        </motion.div>
+
+        {/* Subscription Details */}
+        <motion.div
+          className={styles.detailsSection}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, amount: 0.2 }}
+          variants={stagger}
+        >
+          <motion.h2 className={styles.detailsTitle} variants={fadeUp}>
+            What's Included
+          </motion.h2>
+          <motion.p className={styles.detailsSubtitle} variants={fadeUp}>
+            Comprehensive support for your civic engagement
+          </motion.p>
+
+          <motion.ul
+            className={styles.featureList}
+            variants={listStagger}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, margin: '-40px' }}
+          >
+            <motion.li className={styles.featureItem} variants={itemFadeUp}>
+              <CheckCircle2 className={styles.featureIcon} />
+              <span className={styles.featureText}>
+                Unlimited complaint submissions against government organizations
+              </span>
+            </motion.li>
+            <motion.li className={styles.featureItem} variants={itemFadeUp}>
+              <CheckCircle2 className={styles.featureIcon} />
+              <span className={styles.featureText}>
+                Real-time tracking and status updates for all your complaints
+              </span>
+            </motion.li>
+            <motion.li className={styles.featureItem} variants={itemFadeUp}>
+              <CheckCircle2 className={styles.featureIcon} />
+              <span className={styles.featureText}>
+                Professional legal review and guidance for each complaint
+              </span>
+            </motion.li>
+            <motion.li className={styles.featureItem} variants={itemFadeUp}>
+              <CheckCircle2 className={styles.featureIcon} />
+              <span className={styles.featureText}>
+                Direct communication channel with legal experts
+              </span>
+            </motion.li>
+            <motion.li className={styles.featureItem} variants={itemFadeUp}>
+              <CheckCircle2 className={styles.featureIcon} />
+              <span className={styles.featureText}>
+                Priority email and phone support during business hours
+              </span>
+            </motion.li>
+          </motion.ul>
+        </motion.div>
+
+        {/* CTA Section */}
+        <motion.div
+          className={styles.ctaSection}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, amount: 0.3 }}
+          variants={stagger}
+        >
+          <motion.div className={styles.ctaCard} variants={fadeUp}>
+            <h2 className={styles.ctaTitle}>Ready to Get Started?</h2>
+            <p className={styles.ctaSubtitle}>
               {isAuthenticated
                 ? 'Click below to activate your subscription'
-                : 'Create an account to subscribe'
-              }
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="mb-4">
-              <p className="text-3xl font-bold">PKR 700</p>
-              <p className="text-sm text-muted-foreground">per month</p>
+                : 'Create an account to subscribe'}
+            </p>
+
+            <div className={styles.priceDisplay}>
+              <p className={styles.priceAmount}>PKR 700</p>
+              <p className={styles.pricePeriod}>per month</p>
             </div>
-            <Button
-              size="lg"
-              className="w-full"
+
+            <button
+              className={styles.ctaButton}
               onClick={handleSubscribe}
               disabled={subscribing}
             >
-              {subscribing ? 'Processing...' : isAuthenticated ? 'Subscribe Now' : 'Sign Up to Subscribe'}
-            </Button>
+              <span className={styles.buttonText}>
+                {subscribing ? 'Processing...' : isAuthenticated ? 'Subscribe Now' : 'Sign Up to Subscribe'}
+              </span>
+            </button>
+
             {isAuthenticated && (
-              <p className="text-xs text-muted-foreground mt-4">
+              <p className={styles.ctaNote}>
                 You will be redirected to our secure payment gateway
               </p>
             )}
-          </CardContent>
-        </Card>
-      </div>
+          </motion.div>
+        </motion.div>
 
-      {/* Trust Section */}
-      <div className="mx-auto max-w-3xl text-center mt-12">
-        <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-          <Users className="h-4 w-4" />
-          <p>Trusted by clients seeking fair resolution of civic matters</p>
-        </div>
+        {/* Trust Section */}
+        <motion.div
+          className={styles.trustSection}
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <div className={styles.trustText}>
+            <Users className={styles.trustIcon} />
+            <p>Trusted by clients seeking fair resolution of civic matters</p>
+          </div>
+        </motion.div>
       </div>
     </div>
   );

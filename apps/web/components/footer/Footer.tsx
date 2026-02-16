@@ -10,6 +10,7 @@ import { getSmoother } from '../SmoothScroll'
 import { SIDEPANEL_FOOTER_NAV_ITEMS } from '../data/navData'
 import { usePracticeAreasOverlay } from '../practice-areas'
 import { useFacilitationOverlay } from '../facilitation'
+import { useAboutOverlay } from '../about'
 import styles from './Footer.module.css'
 
 /**
@@ -28,31 +29,9 @@ export default function Footer() {
   const containerRef = useRef<HTMLDivElement>(null)
   const { openOverlay } = usePracticeAreasOverlay()
   const { openOverlay: openFacilitationOverlay } = useFacilitationOverlay()
+  const { openOverlay: openAboutOverlay } = useAboutOverlay()
   const router = useRouter()
   const pathname = usePathname()
-
-  /**
-   * Handle About Us navigation with smooth scroll
-   */
-  const handleAboutClick = useCallback((e: React.MouseEvent) => {
-    e.preventDefault()
-    
-    if (pathname === '/') {
-      // Already on homepage, just scroll to about section
-      const aboutSection = document.getElementById('about')
-      if (aboutSection) {
-        const smoother = getSmoother()
-        if (smoother) {
-          smoother.scrollTo(aboutSection, true)
-        } else {
-          aboutSection.scrollIntoView({ behavior: 'smooth' })
-        }
-      }
-    } else {
-      // Navigate to homepage then scroll to about
-      router.push('/#about')
-    }
-  }, [pathname, router])
 
   /**
    * Calculates if the office is currently open
@@ -220,8 +199,8 @@ export default function Footer() {
                     ) : link.id === 'about' ? (
                       <button
                         className={styles.navLink}
-                        onClick={handleAboutClick}
-                        aria-label="Scroll to About Us section"
+                        onClick={openAboutOverlay}
+                        aria-label="Open about us overlay"
                       >
                         <SlotMachineText>{link.label}</SlotMachineText>
                       </button>

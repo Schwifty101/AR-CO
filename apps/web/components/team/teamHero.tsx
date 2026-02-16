@@ -31,7 +31,9 @@ export default function TeamHero({
   brandStatement,
   subtitle,
   backgroundImage,
-  className = ''
+  className = '',
+  textPosition = 'center',
+  textOpacity = 1
 }: ITeamHeroProps) {
   // Split statement into words for stagger animation
   const words = brandStatement.split(' ')
@@ -50,7 +52,7 @@ export default function TeamHero({
         relative
         h-screen
         flex
-        items-center
+        ${textPosition === 'bottom' ? 'items-end' : 'items-center'}
         justify-center
         overflow-hidden
         ${className}
@@ -82,16 +84,17 @@ export default function TeamHero({
       )}
 
       {/* Content - Updated to fix overflow */}
-      <div className="relative z-20 text-center px-4 md:px-8 max-w-[1700px] mx-auto w-full">
+      <div className={`relative z-20 text-center px-4 md:px-8 max-w-[1700px] mx-auto w-full ${textPosition === 'bottom' ? 'pb-12 md:pb-16' : ''}`} style={{ opacity: textOpacity }}>
         {/* Massive brand statement */}
-        <div className="overflow-visible flex flex-wrap justify-center gap-x-[0.2em] md:gap-x-[0.25em] leading-[0.85]">
+        <div className="overflow-visible flex flex-wrap justify-center gap-x-[1em] md:gap-x-[1em] leading-[0.85]">
           {words.map((word, index) => (
             <motion.h1
               key={index}
               className="inline-block"
               style={{
-                fontSize: 'clamp(3.5rem, 13vw, 15rem)', // Reduced from 18vw/22rem to prevent overflow
-                fontWeight: 100,
+                fontFamily: "'Lora', Georgia, serif",
+                fontSize: 'clamp(3.5rem, 13vw, 15rem)',
+                fontWeight: 300,
                 lineHeight: 0.85,
                 letterSpacing: '-0.04em',
                 textTransform: 'uppercase',
@@ -143,6 +146,7 @@ export default function TeamHero({
 
             <motion.p
               style={{
+                fontFamily: "'Georgia', 'Times New Roman', serif",
                 fontSize: 'clamp(1rem, 2vw, 1.5rem)',
                 fontWeight: 500,
                 letterSpacing: '0.05em',

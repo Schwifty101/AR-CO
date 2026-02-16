@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X } from 'lucide-react'
 import { practiceAreas } from '@/app/(public)/practice-areas/practiceAreasData'
+import styles from './PracticeAreasOverlay.module.css'
 
 interface PracticeAreasOverlayProps {
   isOpen: boolean
@@ -24,6 +25,15 @@ export default function PracticeAreasOverlay({ isOpen, onClose }: PracticeAreasO
       onClose()
     }
   }, [onClose])
+
+  // Close overlay when a page transition is about to start
+  useEffect(() => {
+    if (!isOpen) return
+
+    const handleTransitionStart = () => onClose()
+    window.addEventListener('page-transition-start', handleTransitionStart)
+    return () => window.removeEventListener('page-transition-start', handleTransitionStart)
+  }, [isOpen, onClose])
 
   // Lock body scroll when overlay is open
   useEffect(() => {
@@ -49,7 +59,7 @@ export default function PracticeAreasOverlay({ isOpen, onClose }: PracticeAreasO
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 z-[9999] scrollbar-hide"
+          className={`fixed inset-0 z-[9999] ${styles.overlayScroll}`}
           initial={{ y: '-100%' }}
           animate={{ y: 0 }}
           exit={{ y: '-100%' }}
@@ -57,7 +67,7 @@ export default function PracticeAreasOverlay({ isOpen, onClose }: PracticeAreasO
             duration: 0.6,
             ease: [0.32, 0.72, 0, 1]
           }}
-          style={{ 
+          style={{
             background: 'var(--wood-espresso)',
             overflowY: 'auto',
             overflowX: 'hidden',
@@ -88,19 +98,23 @@ export default function PracticeAreasOverlay({ isOpen, onClose }: PracticeAreasO
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.6 }}
-              className="mb-12 md:mb-16"
+              className="mb-10 md:mb-16"
             >
               <span
                 className="text-xs md:text-sm font-medium uppercase tracking-[0.2em] mb-4 block"
-                style={{ color: 'var(--heritage-gold)' }}
+                style={{
+                  color: 'var(--heritage-gold)',
+                  fontFamily: "'Georgia', 'Times New Roman', serif",
+                }}
               >
                 (Explore Our Expertise)
               </span>
               <h1
                 className="uppercase"
                 style={{
-                  fontSize: 'clamp(3rem, 12vw, 10rem)',
-                  fontWeight: 100,
+                  fontFamily: "'Lora', Georgia, serif",
+                  fontSize: 'clamp(2rem, 8vw, 5.5rem)',
+                  fontWeight: 300,
                   lineHeight: 0.9,
                   letterSpacing: '-0.04em',
                   color: 'var(--heritage-cream)',
@@ -133,14 +147,20 @@ export default function PracticeAreasOverlay({ isOpen, onClose }: PracticeAreasO
                     <div className="flex items-center justify-between">
                       <div className="flex items-baseline gap-4">
                         <span
-                          className="text-sm font-mono transition-colors duration-300 group-hover:text-[var(--heritage-gold)]"
-                          style={{ color: 'rgba(249, 248, 246, 0.4)' }}
+                          className="text-sm text-[rgba(249,248,246,0.4)] transition-colors duration-300 group-hover:text-[var(--heritage-gold)]"
+                          style={{
+                            fontFamily: "'Georgia', 'Times New Roman', serif",
+                            letterSpacing: '0.1em',
+                          }}
                         >
                           {String(index + 1).padStart(2, '0')}
                         </span>
                         <span
-                          className="text-lg md:text-xl font-medium transition-colors duration-300 group-hover:text-[var(--heritage-gold)]"
-                          style={{ color: 'var(--heritage-cream)' }}
+                          className="text-lg md:text-xl text-[var(--heritage-cream)] transition-colors duration-300 group-hover:text-[var(--heritage-gold)]"
+                          style={{
+                            fontFamily: "'Lora', Georgia, serif",
+                            fontWeight: 400,
+                          }}
                         >
                           {area.title}
                         </span>
