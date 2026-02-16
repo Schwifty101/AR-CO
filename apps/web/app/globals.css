@@ -186,6 +186,21 @@ html.lenis body {
   --sidebar-ring: oklch(0.439 0 0);
 }
 
+/* Reset global element colors inside dark-scoped dashboard layouts */
+.dark h1,
+.dark h2,
+.dark h3 {
+  color: var(--foreground);
+}
+
+.dark p {
+  color: var(--muted-foreground);
+}
+
+.dark a {
+  color: var(--foreground);
+}
+
 @theme inline {
   --font-sans: "Geist", "Geist Fallback";
   --font-mono: "Geist Mono", "Geist Mono Fallback";
