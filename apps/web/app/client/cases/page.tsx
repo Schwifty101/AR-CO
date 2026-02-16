@@ -60,9 +60,9 @@ const STATUS_COLORS: Record<CaseStatus, string> = {
 
 /** Case priority badge color mapping */
 const PRIORITY_COLORS: Record<CasePriority, string> = {
-  [CasePriority.LOW]: 'bg-gray-100 text-gray-800',
-  [CasePriority.MEDIUM]: 'bg-blue-100 text-blue-800',
-  [CasePriority.HIGH]: 'bg-orange-100 text-orange-800',
+  [CasePriority.LOW]: 'bg-gray-500 text-white',
+  [CasePriority.MEDIUM]: 'bg-blue-500 text-white',
+  [CasePriority.HIGH]: 'bg-orange-500 text-white',
   [CasePriority.URGENT]: 'bg-red-500 text-white',
 };
 
