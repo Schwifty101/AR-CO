@@ -186,18 +186,19 @@ html.lenis body {
   --sidebar-ring: oklch(0.439 0 0);
 }
 
-/* Reset global element colors inside dark-scoped dashboard layouts */
-.dark h1,
-.dark h2,
-.dark h3 {
+/* Reset global element colors inside dark-scoped dashboard layouts.
+   Use :where() to keep specificity at 0-0-1 so Tailwind utilities still win. */
+:where(.dark) h1,
+:where(.dark) h2,
+:where(.dark) h3 {
   color: var(--foreground);
 }
 
-.dark p {
+:where(.dark) p {
   color: var(--muted-foreground);
 }
 
-.dark a {
+:where(.dark) a {
   color: var(--foreground);
 }
 
