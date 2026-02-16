@@ -1,25 +1,12 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 
 /**
- * Safepay payment callback page.
- *
- * Safepay redirects the popup window here after payment completes or is cancelled.
- * Reads URL params, sends postMessage to the opener (consultation overlay), then
- * closes itself. Shows a fallback message if the window can't auto-close.
- *
- * Success params: ?tracker=track_xxx&sig=abc123&reference=969025&order_id=CON-2026-0009
- * Cancel params: ?cancelled=true
- *
- * @example
- * ```
- * // Safepay redirects to:
- * /consultation/payment-callback?tracker=track_xxx&sig=abc&reference=123&order_id=CON-2026-0009
- * ```
+ * Inner component that reads search params and communicates with the opener window.
  */
-export default function PaymentCallbackPage() {
+function PaymentCallbackContent() {
   const searchParams = useSearchParams()
   const [message, setMessage] = useState('Processing payment...')
 
@@ -68,5 +55,43 @@ export default function PaymentCallbackPage() {
     }}>
       <p>{message}</p>
     </div>
+  )
+}
+
+/**
+ * Safepay payment callback page.
+ *
+ * Safepay redirects the popup window here after payment completes or is cancelled.
+ * Reads URL params, sends postMessage to the opener (consultation overlay), then
+ * closes itself. Shows a fallback message if the window can't auto-close.
+ *
+ * Success params: ?tracker=track_xxx&sig=abc123&reference=969025&order_id=CON-2026-0009
+ * Cancel params: ?cancelled=true
+ *
+ * @example
+ * ```
+ * // Safepay redirects to:
+ * /consultation/payment-callback?tracker=track_xxx&sig=abc&reference=123&order_id=CON-2026-0009
+ * ```
+ */
+export default function PaymentCallbackPage() {
+  return (
+    <Suspense fallback={
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '100vh',
+        fontFamily: 'Georgia, serif',
+        color: '#666',
+        fontSize: '0.9rem',
+        textAlign: 'center',
+        padding: '2rem',
+      }}>
+        <p>Processing payment...</p>
+      </div>
+    }>
+      <PaymentCallbackContent />
+    </Suspense>
   )
 }
