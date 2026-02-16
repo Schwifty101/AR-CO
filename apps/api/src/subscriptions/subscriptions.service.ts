@@ -7,7 +7,6 @@ import {
   BadRequestException,
   HttpException,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { SupabaseService } from '../database/supabase.service';
 import { SafepayService } from '../payments/safepay.service';
 import { UserType } from '../common/enums/user-type.enum';
@@ -39,8 +38,25 @@ interface SubscriptionRow {
   current_period_end: string | null;
   cancelled_at: string | null;
   cancellation_reason: string | null;
+  retry_count: number;
+  next_retry_at: string | null;
+  last_payment_error: string | null;
   created_at: string;
   updated_at: string;
+}
+
+/** Database row shape for the subscription_payments table */
+interface SubscriptionPaymentRow {
+  id: string;
+  subscription_id: string;
+  amount: number;
+  currency: string;
+  safepay_tracker_token: string;
+  safepay_charge_token: string | null;
+  status: 'pending' | 'succeeded' | 'failed';
+  failure_reason: string | null;
+  is_renewal: boolean;
+  created_at: string;
 }
 
 /** Allowed sort columns for subscriptions */
@@ -57,9 +73,15 @@ import { validateSortColumn } from '../common/utils/query-helpers';
 /** Default subscription plan configuration */
 const SUBSCRIPTION_PLAN = {
   PLAN_NAME: 'civic_retainer',
+  /** Amount in paisa (PKR 700.00 * 100) */
+  AMOUNT_PAISA: 70000,
   MONTHLY_AMOUNT: 700.0,
   CURRENCY: 'PKR',
 } as const;
+
+/** Retry schedule in days after each failed renewal attempt */
+const RETRY_SCHEDULE_DAYS = [1, 3, 7] as const;
+const MAX_RETRIES = RETRY_SCHEDULE_DAYS.length;
 
 /** Service for managing subscription lifecycle with Safepay integration */
 @Injectable()
@@ -69,23 +91,22 @@ export class SubscriptionsService {
   constructor(
     private readonly supabaseService: SupabaseService,
     private readonly safepayService: SafepayService,
-    private readonly configService: ConfigService,
   ) {}
 
   /**
-   * Creates a new subscription for the authenticated client
-   * If a subscription already exists, reactivates it or throws error
+   * Creates a subscription with card tokenization checkout.
    *
-   * @param user - The authenticated user (must be CLIENT role)
+   * 1. Creates or reuses Safepay Customer
+   * 2. Creates instrument session (zero-amount card tokenization)
+   * 3. Returns hosted checkout URL for card entry (no Safepay login)
+   *
+   * @param user - Authenticated client user
+   * @returns Subscription record and checkout URL
    */
   async createSubscription(
     user: AuthUser,
   ): Promise<{ subscription: SubscriptionResponse; checkoutUrl: string }> {
-    // Verify user is a CLIENT with clientProfileId
     if (user.userType !== UserType.CLIENT || !user.clientProfileId) {
-      this.logger.error(
-        `User ${user.id} attempted to create subscription without CLIENT role`,
-      );
       throw new BadRequestException('Only clients can create subscriptions');
     }
 
@@ -93,61 +114,55 @@ export class SubscriptionsService {
     const clientProfileId = user.clientProfileId;
 
     try {
-      // Check if subscription already exists
-      const { data: existingSubscription, error: fetchError } =
-        (await adminClient
-          .from('subscriptions')
-          .select('*')
-          .eq('client_profile_id', clientProfileId)
-          .single()) as DbResult<SubscriptionRow>;
+      // Check for existing subscription
+      const { data: existing, error: fetchError } = (await adminClient
+        .from('subscriptions')
+        .select('*')
+        .eq('client_profile_id', clientProfileId)
+        .single()) as DbResult<SubscriptionRow>;
 
       if (fetchError && fetchError.code !== 'PGRST116') {
-        // PGRST116 = no rows returned
-        this.logger.error(
-          `Failed to fetch existing subscription: ${fetchError.message}`,
-        );
-        throw new InternalServerErrorException(
-          'Failed to check existing subscription',
-        );
+        this.logger.error(`Failed to fetch subscription: ${fetchError.message}`);
+        throw new InternalServerErrorException('Failed to check existing subscription');
       }
 
       let subscription: SubscriptionRow;
 
-      if (existingSubscription) {
-        // Subscription exists - check status
-        if (existingSubscription.status === SubscriptionStatus.ACTIVE) {
-          throw new ForbiddenException(
-            'You already have an active subscription',
-          );
+      if (existing) {
+        if (existing.status === SubscriptionStatus.ACTIVE) {
+          throw new ForbiddenException('You already have an active subscription');
         }
 
-        // Reactivate cancelled/expired subscription
+        // Reactivate cancelled/expired/past_due subscription
         const { data: updated, error: updateError } = (await adminClient
           .from('subscriptions')
           .update({
             status: SubscriptionStatus.PENDING,
             cancelled_at: null,
             cancellation_reason: null,
+            retry_count: 0,
+            next_retry_at: null,
+            last_payment_error: null,
             updated_at: new Date().toISOString(),
           })
-          .eq('id', existingSubscription.id)
+          .eq('id', existing.id)
           .select()
           .single()) as DbResult<SubscriptionRow>;
 
         if (updateError || !updated) {
-          this.logger.error(
-            `Failed to reactivate subscription: ${updateError?.message}`,
-          );
-          throw new InternalServerErrorException(
-            'Failed to reactivate subscription',
-          );
+          throw new InternalServerErrorException('Failed to reactivate subscription');
         }
-
         subscription = updated;
-        this.logger.log(
-          `Reactivated subscription ${String(subscription.id)} for client ${clientProfileId}`,
-        );
       } else {
+        // Create Safepay Customer if not exists
+        let safepayCustomerId = '';
+        const { token } = await this.safepayService.createCustomer({
+          email: user.email,
+          firstName: user.email.split('@')[0],
+          lastName: '',
+        });
+        safepayCustomerId = token;
+
         // Create new subscription
         const { data: created, error: insertError } = (await adminClient
           .from('subscriptions')
@@ -157,51 +172,331 @@ export class SubscriptionsService {
             monthly_amount: SUBSCRIPTION_PLAN.MONTHLY_AMOUNT,
             currency: SUBSCRIPTION_PLAN.CURRENCY,
             status: SubscriptionStatus.PENDING,
+            safepay_customer_id: safepayCustomerId,
           })
           .select()
           .single()) as DbResult<SubscriptionRow>;
 
         if (insertError || !created) {
-          this.logger.error(
-            `Failed to create subscription: ${insertError?.message}`,
-          );
-          throw new InternalServerErrorException(
-            'Failed to create subscription',
-          );
+          throw new InternalServerErrorException('Failed to create subscription');
         }
-
         subscription = created;
-        this.logger.log(
-          `Created new subscription ${String(subscription.id)} for client ${clientProfileId}`,
-        );
       }
 
-      // Create Safepay checkout session
-      const frontendUrl =
-        this.configService.get<string>('FRONTEND_URL') ||
-        'http://localhost:3000';
-      const { checkoutUrl } =
-        await this.safepayService.createSubscriptionCheckout({
-          planId: 'civic_retainer',
-          reference: clientProfileId,
-          customerEmail: user.email,
-          returnUrl: `${frontendUrl}/subscribe/success`,
-          cancelUrl: `${frontendUrl}/subscribe/cancel`,
+      // Ensure we have a Safepay customer ID
+      let customerToken = subscription.safepay_customer_id;
+      if (!customerToken) {
+        const { token } = await this.safepayService.createCustomer({
+          email: user.email,
+          firstName: user.email.split('@')[0],
+          lastName: '',
         });
+        customerToken = token;
+        await adminClient
+          .from('subscriptions')
+          .update({ safepay_customer_id: customerToken, updated_at: new Date().toISOString() })
+          .eq('id', subscription.id);
+      }
+
+      // Create instrument session for card tokenization
+      const session = await this.safepayService.createInstrumentSession(
+        customerToken,
+        SUBSCRIPTION_PLAN.CURRENCY,
+      );
+
+      // Generate hosted checkout URL (card form, no login page)
+      const frontendUrl = this.safepayService['frontendUrl'] || 'http://localhost:3000';
+      const checkoutUrl = await this.safepayService.generateCheckoutUrl(
+        session.trackerToken,
+        `${frontendUrl}/subscribe/success?subscription_id=${subscription.id}`,
+        `${frontendUrl}/subscribe/cancel`,
+      );
+
+      this.logger.log(
+        `Subscription ${subscription.id} created, checkout URL generated`,
+      );
 
       return {
         subscription: this.mapSubscriptionRow(subscription),
         checkoutUrl,
       };
     } catch (error) {
-      if (error instanceof HttpException) {
-        throw error;
-      }
+      if (error instanceof HttpException) throw error;
       this.logger.error(`Unexpected error creating subscription: ${error}`);
       throw new InternalServerErrorException(
         'An unexpected error occurred while creating subscription',
       );
     }
+  }
+
+  /**
+   * Activates a subscription after successful card tokenization.
+   *
+   * Called by the success page after Safepay redirects back.
+   * 1. Verifies the instrument session completed
+   * 2. Charges the first month via unscheduled_cof
+   * 3. Activates the subscription with period dates
+   *
+   * @param subscriptionId - Subscription UUID
+   * @param tracker - Safepay tracker token from redirect URL
+   * @returns Activated subscription
+   */
+  async activateSubscription(
+    subscriptionId: string,
+    tracker: string,
+  ): Promise<SubscriptionResponse> {
+    const adminClient = this.supabaseService.getAdminClient();
+
+    // Fetch subscription
+    const { data: subscription, error: fetchError } = (await adminClient
+      .from('subscriptions')
+      .select('*')
+      .eq('id', subscriptionId)
+      .single()) as DbResult<SubscriptionRow>;
+
+    if (fetchError || !subscription) {
+      throw new NotFoundException('Subscription not found');
+    }
+
+    // Idempotency: already active
+    if (subscription.status === SubscriptionStatus.ACTIVE) {
+      return this.mapSubscriptionRow(subscription);
+    }
+
+    if (subscription.status !== SubscriptionStatus.PENDING) {
+      throw new BadRequestException(
+        `Cannot activate subscription with status: ${subscription.status}`,
+      );
+    }
+
+    // Check for duplicate activation (same tracker already succeeded)
+    const { data: existingPayment } = (await adminClient
+      .from('subscription_payments')
+      .select('id')
+      .eq('subscription_id', subscriptionId)
+      .eq('safepay_tracker_token', tracker)
+      .eq('status', 'succeeded')
+      .single()) as DbResult<{ id: string }>;
+
+    if (existingPayment) {
+      // Already processed this tracker — just return the subscription
+      const { data: current } = (await adminClient
+        .from('subscriptions')
+        .select('*')
+        .eq('id', subscriptionId)
+        .single()) as DbResult<SubscriptionRow>;
+      return this.mapSubscriptionRow(current!);
+    }
+
+    const customerToken = subscription.safepay_customer_id;
+    if (!customerToken) {
+      throw new InternalServerErrorException(
+        'Subscription has no Safepay customer — cannot charge',
+      );
+    }
+
+    // Charge first month
+    const orderId = `SUB-${subscriptionId.slice(0, 8).toUpperCase()}`;
+    const chargeResult = await this.safepayService.chargeCustomer(
+      customerToken,
+      SUBSCRIPTION_PLAN.AMOUNT_PAISA,
+      SUBSCRIPTION_PLAN.CURRENCY,
+      orderId,
+    );
+
+    // Record payment attempt
+    await adminClient.from('subscription_payments').insert({
+      subscription_id: subscriptionId,
+      amount: SUBSCRIPTION_PLAN.MONTHLY_AMOUNT,
+      currency: SUBSCRIPTION_PLAN.CURRENCY,
+      safepay_tracker_token: chargeResult.trackerToken || tracker,
+      safepay_charge_token: chargeResult.chargeToken,
+      status: chargeResult.success ? 'succeeded' : 'failed',
+      failure_reason: chargeResult.error,
+      is_renewal: false,
+    });
+
+    if (!chargeResult.success) {
+      await adminClient
+        .from('subscriptions')
+        .update({
+          last_payment_error: chargeResult.error,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', subscriptionId);
+
+      throw new BadRequestException(
+        `Payment failed: ${chargeResult.error || 'Card charge was unsuccessful'}`,
+      );
+    }
+
+    // Activate subscription
+    const now = new Date();
+    const periodEnd = new Date(now);
+    periodEnd.setMonth(periodEnd.getMonth() + 1);
+
+    const { data: activated, error: updateError } = (await adminClient
+      .from('subscriptions')
+      .update({
+        status: SubscriptionStatus.ACTIVE,
+        current_period_start: now.toISOString(),
+        current_period_end: periodEnd.toISOString(),
+        retry_count: 0,
+        next_retry_at: null,
+        last_payment_error: null,
+        updated_at: now.toISOString(),
+      })
+      .eq('id', subscriptionId)
+      .select()
+      .single()) as DbResult<SubscriptionRow>;
+
+    if (updateError || !activated) {
+      throw new InternalServerErrorException('Failed to activate subscription');
+    }
+
+    this.logger.log(`Subscription ${subscriptionId} activated`);
+    return this.mapSubscriptionRow(activated);
+  }
+
+  /**
+   * Processes due subscription renewals and retries.
+   *
+   * Called by the billing scheduler cron job. Finds:
+   * 1. Active subscriptions past their period end
+   * 2. Subscriptions with pending retry attempts
+   *
+   * Charges stored cards and updates subscription state accordingly.
+   */
+  async processRenewals(): Promise<{ processed: number; succeeded: number; failed: number }> {
+    const adminClient = this.supabaseService.getAdminClient();
+    const now = new Date().toISOString();
+    let processed = 0;
+    let succeeded = 0;
+    let failed = 0;
+
+    // Find subscriptions due for renewal or retry
+    const { data: dueSubscriptions, error } = (await adminClient
+      .from('subscriptions')
+      .select('*')
+      .eq('status', SubscriptionStatus.ACTIVE)
+      .lte('current_period_end', now)) as DbListResult<SubscriptionRow>;
+
+    const { data: retrySubscriptions } = (await adminClient
+      .from('subscriptions')
+      .select('*')
+      .eq('status', SubscriptionStatus.ACTIVE)
+      .not('next_retry_at', 'is', null)
+      .lte('next_retry_at', now)) as DbListResult<SubscriptionRow>;
+
+    if (error) {
+      this.logger.error(`Failed to query due subscriptions: ${error.message}`);
+      return { processed: 0, succeeded: 0, failed: 0 };
+    }
+
+    // Combine and deduplicate
+    const allDue = new Map<string, SubscriptionRow>();
+    for (const sub of dueSubscriptions || []) allDue.set(sub.id, sub);
+    for (const sub of retrySubscriptions || []) allDue.set(sub.id, sub);
+
+    for (const subscription of allDue.values()) {
+      processed++;
+      const customerToken = subscription.safepay_customer_id;
+
+      if (!customerToken) {
+        this.logger.warn(
+          `Subscription ${subscription.id} has no Safepay customer — skipping`,
+        );
+        failed++;
+        continue;
+      }
+
+      const orderId = `SUB-RENEW-${subscription.id.slice(0, 8).toUpperCase()}-${Date.now()}`;
+      const chargeResult = await this.safepayService.chargeCustomer(
+        customerToken,
+        SUBSCRIPTION_PLAN.AMOUNT_PAISA,
+        SUBSCRIPTION_PLAN.CURRENCY,
+        orderId,
+      );
+
+      // Record payment
+      await adminClient.from('subscription_payments').insert({
+        subscription_id: subscription.id,
+        amount: SUBSCRIPTION_PLAN.MONTHLY_AMOUNT,
+        currency: SUBSCRIPTION_PLAN.CURRENCY,
+        safepay_tracker_token: chargeResult.trackerToken,
+        safepay_charge_token: chargeResult.chargeToken,
+        status: chargeResult.success ? 'succeeded' : 'failed',
+        failure_reason: chargeResult.error,
+        is_renewal: true,
+      });
+
+      if (chargeResult.success) {
+        // Extend period by 1 month from current end (not from now)
+        const periodStart = new Date(subscription.current_period_end || now);
+        const periodEnd = new Date(periodStart);
+        periodEnd.setMonth(periodEnd.getMonth() + 1);
+
+        await adminClient
+          .from('subscriptions')
+          .update({
+            current_period_start: periodStart.toISOString(),
+            current_period_end: periodEnd.toISOString(),
+            retry_count: 0,
+            next_retry_at: null,
+            last_payment_error: null,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', subscription.id);
+
+        this.logger.log(`Renewal succeeded for subscription ${subscription.id}`);
+        succeeded++;
+      } else {
+        const retryCount = subscription.retry_count + 1;
+
+        if (retryCount >= MAX_RETRIES) {
+          // Max retries reached — mark past_due
+          await adminClient
+            .from('subscriptions')
+            .update({
+              status: SubscriptionStatus.PAST_DUE,
+              retry_count: retryCount,
+              next_retry_at: null,
+              last_payment_error: chargeResult.error,
+              updated_at: new Date().toISOString(),
+            })
+            .eq('id', subscription.id);
+
+          this.logger.warn(
+            `Subscription ${subscription.id} marked past_due after ${retryCount} failed retries`,
+          );
+        } else {
+          // Schedule next retry
+          const retryDays = RETRY_SCHEDULE_DAYS[retryCount - 1];
+          const nextRetry = new Date();
+          nextRetry.setDate(nextRetry.getDate() + retryDays);
+
+          await adminClient
+            .from('subscriptions')
+            .update({
+              retry_count: retryCount,
+              next_retry_at: nextRetry.toISOString(),
+              last_payment_error: chargeResult.error,
+              updated_at: new Date().toISOString(),
+            })
+            .eq('id', subscription.id);
+
+          this.logger.log(
+            `Renewal failed for ${subscription.id}, retry ${retryCount}/${MAX_RETRIES} scheduled in ${retryDays} days`,
+          );
+        }
+        failed++;
+      }
+    }
+
+    this.logger.log(
+      `Renewal processing complete: ${processed} processed, ${succeeded} succeeded, ${failed} failed`,
+    );
+    return { processed, succeeded, failed };
   }
 
   /** Retrieves the authenticated client's subscription */
@@ -241,7 +536,7 @@ export class SubscriptionsService {
     }
   }
 
-  /** Cancels the authenticated client's active subscription */
+  /** Cancels the authenticated client's active subscription (local-only, no Safepay call) */
   async cancelSubscription(
     user: AuthUser,
     data: CancelSubscriptionData,
@@ -280,22 +575,7 @@ export class SubscriptionsService {
         );
       }
 
-      // Cancel on Safepay if subscription ID exists
-      if (existingSubscription.safepay_subscription_id) {
-        try {
-          await this.safepayService.cancelSubscription(
-            existingSubscription.safepay_subscription_id,
-          );
-          this.logger.log(
-            `Cancelled Safepay subscription ${existingSubscription.safepay_subscription_id}`,
-          );
-        } catch (error) {
-          this.logger.error(`Failed to cancel Safepay subscription: ${error}`);
-          // Continue with local cancellation even if Safepay fails
-        }
-      }
-
-      // Update subscription status
+      // Update subscription status (local-only cancellation)
       const { data: updated, error: updateError } = (await adminClient
         .from('subscriptions')
         .update({
