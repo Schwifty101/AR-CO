@@ -82,6 +82,48 @@ export async function createSubscription(): Promise<{
 }
 
 /**
+ * Activate a subscription after successful card tokenization.
+ *
+ * Called by the success page with the Safepay tracker token.
+ * Verifies card save, charges first month, and activates subscription.
+ *
+ * @param subscriptionId - The subscription UUID
+ * @param tracker - Safepay tracker token from redirect URL
+ * @returns Activated subscription details
+ * @throws Error if activation or first charge fails
+ *
+ * @example
+ * ```typescript
+ * const subscription = await activateSubscription('sub-uuid', 'track_xxx');
+ * if (subscription.status === 'active') {
+ *   // Show success UI
+ * }
+ * ```
+ */
+export async function activateSubscription(
+  subscriptionId: string,
+  tracker: string,
+): Promise<SubscriptionResponse> {
+  const token = await getSessionToken();
+
+  const response = await fetch('/api/subscriptions/activate', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ subscriptionId, tracker }),
+  });
+
+  if (!response.ok) {
+    const error = (await response.json()) as { message?: string };
+    throw new Error(error.message || 'Failed to activate subscription');
+  }
+
+  return (await response.json()) as SubscriptionResponse;
+}
+
+/**
  * Fetch the current user's subscription
  *
  * Returns the authenticated client's active or most recent subscription.

@@ -26,39 +26,6 @@ import {
 import { ConfigService } from '@nestjs/config';
 import * as crypto from 'crypto';
 
-/** Parameters for creating a redirect-based checkout session (legacy) */
-export interface CreateCheckoutParams {
-  /** Amount in smallest currency unit */
-  amount: number;
-  /** ISO currency code */
-  currency: string;
-  /** Unique order identifier */
-  orderId: string;
-  /** Metadata for webhook routing */
-  metadata: {
-    type: 'consultation' | 'subscription' | 'service' | 'invoice';
-    referenceId: string;
-  };
-  /** URL to redirect after successful payment */
-  returnUrl: string;
-  /** URL to redirect after cancelled payment */
-  cancelUrl: string;
-}
-
-/** Parameters for creating a subscription checkout (legacy) */
-export interface CreateSubscriptionCheckoutParams {
-  /** Safepay plan identifier */
-  planId: string;
-  /** Our internal reference */
-  reference: string;
-  /** Customer email for Safepay */
-  customerEmail: string;
-  /** URL to redirect after successful subscription */
-  returnUrl: string;
-  /** URL to redirect after cancelled subscription */
-  cancelUrl: string;
-}
-
 /** Parameters for creating a payment session */
 export interface CreatePaymentSessionParams {
   /** Amount in paisa (PKR * 100) */
@@ -108,6 +75,36 @@ export interface PaymentVerificationResult {
   amount: number;
   /** Payment state */
   state: string;
+}
+
+/** Parameters for creating a Safepay customer */
+export interface CreateCustomerParams {
+  /** Customer email address */
+  email: string;
+  /** Customer first name */
+  firstName: string;
+  /** Customer last name */
+  lastName: string;
+  /** Customer phone number (optional) */
+  phone?: string;
+}
+
+/** Result from creating a Safepay customer */
+export interface CustomerResult {
+  /** Safepay customer token (cust_xxx) */
+  token: string;
+}
+
+/** Result from charging a customer's stored card */
+export interface ChargeResult {
+  /** Whether the charge was successful */
+  success: boolean;
+  /** Tracker token for this charge */
+  trackerToken: string;
+  /** Charge token (ch_xxx) if successful */
+  chargeToken: string | null;
+  /** Error message if failed */
+  error: string | null;
 }
 
 @Injectable()
@@ -227,22 +224,22 @@ export class SafepayService implements OnModuleInit {
   }
 
   /**
-   * Generates a Safepay hosted checkout URL for popup-based payment.
+   * Generates a Safepay hosted checkout URL for redirect-based payment.
    *
    * Creates a short-lived TBT (temporary bearer token) via passport, then
-   * builds the checkout URL that the frontend opens in a popup window.
+   * builds the checkout URL. For subscriptions, pass custom redirect URLs.
    *
-   * @param trackerToken - Tracker token from createPaymentSession
+   * @param trackerToken - Tracker token from createPaymentSession or createInstrumentSession
+   * @param redirectUrl - Optional custom redirect URL (defaults to consultation callback)
+   * @param cancelUrl - Optional custom cancel URL
    * @returns Full Safepay checkout URL string
    * @throws {InternalServerErrorException} If SDK not initialized or API fails
-   *
-   * @example
-   * ```typescript
-   * const url = await safepayService.generateCheckoutUrl('track_xxx');
-   * // url → 'https://sandbox.api.getsafepay.com/components?...'
-   * ```
    */
-  async generateCheckoutUrl(trackerToken: string): Promise<string> {
+  async generateCheckoutUrl(
+    trackerToken: string,
+    redirectUrl?: string,
+    cancelUrl?: string,
+  ): Promise<string> {
     if (!this.safepay) {
       throw new InternalServerErrorException(
         'Safepay SDK not initialized. Check SAFEPAY_SECRET_KEY.',
@@ -273,8 +270,8 @@ export class SafepayService implements OnModuleInit {
         tbt,
         env: this.environment as 'development' | 'sandbox' | 'production',
         source: 'hosted',
-        redirect_url: `${this.frontendUrl}/consultation/payment-callback`,
-        cancel_url: `${this.frontendUrl}/consultation/payment-callback?cancelled=true`,
+        redirect_url: redirectUrl || `${this.frontendUrl}/consultation/payment-callback`,
+        cancel_url: cancelUrl || `${this.frontendUrl}/consultation/payment-callback?cancelled=true`,
       });
 
       this.logger.log(`Checkout URL generated for tracker: ${trackerToken}`);
@@ -364,62 +361,237 @@ export class SafepayService implements OnModuleInit {
     };
   }
 
-  // ── Legacy stubs (used by service-registrations + subscriptions modules) ──
+  /**
+   * Creates a Safepay customer object server-side.
+   *
+   * The customer token is used to link card tokenization and
+   * merchant-initiated charges to this customer.
+   *
+   * @param params - Customer details
+   * @returns Customer token (cust_xxx)
+   * @throws {InternalServerErrorException} If SDK not initialized or API fails
+   *
+   * @example
+   * ```typescript
+   * const { token } = await safepayService.createCustomer({
+   *   email: 'client@example.com',
+   *   firstName: 'Hassan',
+   *   lastName: 'Zaidi',
+   * });
+   * // token → 'cust_a7cc6fc1-...'
+   * ```
+   */
+  async createCustomer(params: CreateCustomerParams): Promise<CustomerResult> {
+    if (!this.safepay) {
+      throw new InternalServerErrorException(
+        'Safepay SDK not initialized. Check SAFEPAY_SECRET_KEY.',
+      );
+    }
+
+    this.logger.log(`Creating Safepay customer: ${params.email}`);
+
+    try {
+      const response = await this.safepay.customers.object.create({
+        first_name: params.firstName,
+        last_name: params.lastName,
+        email: params.email,
+        phone_number: params.phone || '',
+        country: 'PK',
+        is_guest: false,
+      });
+
+      const token = (response as { data?: { token?: string } })?.data?.token;
+      if (!token) {
+        this.logger.error('Safepay customer creation returned no token', response);
+        throw new InternalServerErrorException(
+          'Failed to create customer — no token returned',
+        );
+      }
+
+      this.logger.log(`Safepay customer created: ${token}`);
+      return { token };
+    } catch (error) {
+      if (error instanceof InternalServerErrorException) throw error;
+      this.logger.error('Safepay customer creation failed', error);
+      throw new InternalServerErrorException(
+        'Payment gateway error — failed to create customer',
+      );
+    }
+  }
 
   /**
-   * Creates a redirect-based checkout session.
-   * TODO: Replace with real SDK when service-registrations module is updated.
+   * Creates an instrument session for card tokenization (zero-amount auth).
+   *
+   * The customer enters card details on Safepay's hosted page.
+   * No charge occurs — the card is saved to the customer's wallet.
+   *
+   * @param customerToken - Safepay customer token (cust_xxx)
+   * @param currency - ISO currency code
+   * @returns Internal result with tracker token for checkout URL generation
+   * @throws {InternalServerErrorException} If SDK not initialized or API fails
+   *
+   * @example
+   * ```typescript
+   * const session = await safepayService.createInstrumentSession('cust_xxx', 'PKR');
+   * const checkoutUrl = await safepayService.generateCheckoutUrl(session.trackerToken);
+   * ```
    */
-  async createCheckoutSession(
-    params: CreateCheckoutParams,
-  ): Promise<{ checkoutUrl: string; token: string }> {
+  async createInstrumentSession(
+    customerToken: string,
+    currency: string,
+  ): Promise<PaymentSessionInternalResult> {
+    if (!this.safepay) {
+      throw new InternalServerErrorException(
+        'Safepay SDK not initialized. Check SAFEPAY_SECRET_KEY.',
+      );
+    }
+
     this.logger.log(
-      `[STUB] Creating checkout: ${params.orderId} for ${params.amount} ${params.currency}`,
+      `Creating instrument session for customer: ${customerToken}`,
     );
+
+    let session: { data?: { tracker?: { token?: string } } };
+    try {
+      session = await this.safepay.payments.session.setup({
+        merchant_api_key: this.publicKey,
+        intent: 'CYBERSOURCE',
+        mode: 'instrument',
+        currency,
+        amount: 0,
+        user: customerToken,
+      });
+    } catch (error) {
+      this.logger.error('Safepay instrument session creation failed', error);
+      throw new InternalServerErrorException(
+        'Payment gateway error — failed to create card tokenization session',
+      );
+    }
+
+    const trackerToken = session?.data?.tracker?.token;
+    if (!trackerToken) {
+      this.logger.error(
+        'Safepay instrument session returned no tracker',
+        session,
+      );
+      throw new InternalServerErrorException(
+        'Card tokenization session failed — no tracker returned',
+      );
+    }
+
+    this.logger.log(`Instrument session created: tracker=${trackerToken}`);
     return {
-      checkoutUrl: `https://sandbox.api.getsafepay.com/checkout/stub-${params.orderId}`,
-      token: `tracker_stub_${Date.now()}`,
+      trackerToken,
+      amount: 0,
+      currency,
+      orderId: '',
     };
   }
 
   /**
-   * Creates a recurring subscription checkout.
-   * TODO: Replace with real SDK when subscriptions module is updated.
+   * Charges a customer's stored card via merchant-initiated transaction.
+   *
+   * Uses `mode: 'unscheduled_cof'` with `entry_mode: 'tms'` to charge
+   * a previously tokenized card without customer interaction.
+   *
+   * @param customerToken - Safepay customer token (cust_xxx)
+   * @param amount - Amount in paisa (PKR * 100)
+   * @param currency - ISO currency code
+   * @param orderId - Order ID for tracking
+   * @returns Charge result with success status and tokens
+   *
+   * @example
+   * ```typescript
+   * const result = await safepayService.chargeCustomer(
+   *   'cust_xxx', 70000, 'PKR', 'SUB-RENEW-2026-02'
+   * );
+   * if (result.success) {
+   *   // Update subscription period
+   * }
+   * ```
    */
-  async createSubscriptionCheckout(
-    params: CreateSubscriptionCheckoutParams,
-  ): Promise<{ checkoutUrl: string }> {
+  async chargeCustomer(
+    customerToken: string,
+    amount: number,
+    currency: string,
+    orderId: string,
+  ): Promise<ChargeResult> {
+    if (!this.safepay) {
+      throw new InternalServerErrorException(
+        'Safepay SDK not initialized. Check SAFEPAY_SECRET_KEY.',
+      );
+    }
+
     this.logger.log(
-      `[STUB] Creating subscription checkout: ${params.reference}`,
+      `Charging customer ${customerToken}: ${amount} ${currency} (order: ${orderId})`,
     );
-    return {
-      checkoutUrl: `https://sandbox.api.getsafepay.com/subscribe/stub-${params.reference}`,
-    };
-  }
 
-  /**
-   * Gets payment status by tracker ID.
-   * TODO: Replace with real SDK when needed.
-   */
-  async getPaymentStatus(
-    trackerId: string,
-  ): Promise<{ status: string; amount: number }> {
-    this.logger.log(`[STUB] Getting payment status for: ${trackerId}`);
-    return { status: 'completed', amount: 0 };
-  }
+    let session: { data?: { tracker?: { token?: string } } };
+    try {
+      session = await this.safepay.payments.session.setup({
+        merchant_api_key: this.publicKey,
+        intent: 'CYBERSOURCE',
+        mode: 'unscheduled_cof',
+        entry_mode: 'tms',
+        currency,
+        amount,
+        user: customerToken,
+        metadata: { order_id: orderId },
+      });
+    } catch (error) {
+      this.logger.error(`Charge failed for ${customerToken}`, error);
+      return {
+        success: false,
+        trackerToken: '',
+        chargeToken: null,
+        error: error instanceof Error ? error.message : 'Charge session creation failed',
+      };
+    }
 
-  /**
-   * Cancels a Safepay subscription.
-   * TODO: Replace with real SDK when subscriptions module is updated.
-   */
-  async cancelSubscription(
-    subscriptionId: string,
-  ): Promise<{ success: boolean }> {
-    this.logger.log(`[STUB] Cancelling subscription: ${subscriptionId}`);
-    return { success: true };
-  }
+    const trackerToken = session?.data?.tracker?.token;
+    if (!trackerToken) {
+      this.logger.error('Charge session returned no tracker', session);
+      return {
+        success: false,
+        trackerToken: '',
+        chargeToken: null,
+        error: 'No tracker returned from charge session',
+      };
+    }
 
-  // ── End legacy stubs ──
+    // Verify the charge completed
+    try {
+      const verification = await this.verifyPayment(trackerToken);
+      if (verification.isPaid) {
+        this.logger.log(
+          `Charge succeeded: tracker=${trackerToken} ref=${verification.reference}`,
+        );
+        return {
+          success: true,
+          trackerToken,
+          chargeToken: verification.reference,
+          error: null,
+        };
+      } else {
+        this.logger.warn(
+          `Charge not confirmed: tracker=${trackerToken} state=${verification.state}`,
+        );
+        return {
+          success: false,
+          trackerToken,
+          chargeToken: null,
+          error: `Payment state: ${verification.state}`,
+        };
+      }
+    } catch (error) {
+      this.logger.error(`Charge verification failed: ${trackerToken}`, error);
+      return {
+        success: false,
+        trackerToken,
+        chargeToken: null,
+        error: 'Payment verification failed',
+      };
+    }
+  }
 
   /**
    * Verifies a Safepay webhook signature using HMAC-SHA512.
