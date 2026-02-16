@@ -290,8 +290,8 @@ export class SafepayService implements OnModuleInit {
   /**
    * Verifies a payment by fetching its status via tracker token.
    *
-   * Uses the reporter API (`safepay.reporter.payments.get()`) which is the
-   * correct endpoint for payment verification per the Safepay Express Checkout docs.
+   * Uses the reporter API (`safepay.reporter.payments.fetch()`) to retrieve
+   * the full tracker record including charge and capture details.
    *
    * @param trackerToken - The tracker token from createPaymentSession
    * @returns Payment verification result with isPaid flag
@@ -317,9 +317,7 @@ export class SafepayService implements OnModuleInit {
     this.logger.log(`Verifying payment: tracker=${trackerToken}`);
 
     // Use reporter.payments.fetch() — the only query method on Reporter.Payments
-    let payment: {
-      data?: { state?: string; reference?: string; amount?: number };
-    };
+    let payment: Record<string, unknown>;
     try {
       payment = await this.safepay.reporter.payments.fetch(trackerToken);
     } catch (error) {
@@ -329,17 +327,38 @@ export class SafepayService implements OnModuleInit {
       );
     }
 
-    const state = payment?.data?.state ?? 'UNKNOWN';
-    const reference = payment?.data?.reference ?? null;
-    const amount = payment?.data?.amount ?? 0;
+    // Actual response shape (differs from Safepay docs):
+    //   data.state        — tracker state (e.g., 'TRACKER_ENDED')
+    //   data.charge.token — transaction reference (e.g., 'ch_xxx')
+    //   data.charge.capture — exists when payment was captured
+    //   data.attempts[0].is_success — explicit success flag
+    //   data.purchase_totals.quote_amount.amount — amount in paisa
+    const data = payment?.data as Record<string, unknown> | undefined;
+    const state = (data?.state as string) ?? 'UNKNOWN';
+
+    const charge = data?.charge as Record<string, unknown> | undefined;
+    const chargeToken = (charge?.token as string) ?? null;
+    const hasCapture = !!charge?.capture;
+
+    const purchaseTotals = data?.purchase_totals as
+      | { quote_amount?: { amount?: number } }
+      | undefined;
+    const amount = purchaseTotals?.quote_amount?.amount ?? 0;
 
     this.logger.log(
-      `Payment verification: tracker=${trackerToken} state=${state} ref=${reference}`,
+      `Payment verification: tracker=${trackerToken} state=${state} charge=${chargeToken} captured=${hasCapture}`,
     );
 
+    // A successful payment has TRACKER_ENDED state with a captured charge.
+    // Also accept TRACKER_COMPLETED or PAID for earlier state checks.
+    const isPaid =
+      state === 'TRACKER_COMPLETED' ||
+      state === 'PAID' ||
+      (state === 'TRACKER_ENDED' && hasCapture);
+
     return {
-      isPaid: state === 'TRACKER_COMPLETED' || state === 'PAID',
-      reference,
+      isPaid,
+      reference: chargeToken,
       amount,
       state,
     };
