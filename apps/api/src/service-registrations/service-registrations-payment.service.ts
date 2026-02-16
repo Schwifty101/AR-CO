@@ -109,12 +109,12 @@ export class ServiceRegistrationsPaymentService {
     // Get service fee
     const serviceFee = registration.services.registration_fee;
 
-    // Create Safepay checkout session
+    // Create Safepay payment session + checkout URL
     let checkoutUrl: string;
     let trackerToken: string;
 
     try {
-      const result = await this.safepayService.createCheckoutSession({
+      const session = await this.safepayService.createPaymentSession({
         amount: serviceFee,
         currency: 'PKR',
         orderId: registrationId,
@@ -122,12 +122,14 @@ export class ServiceRegistrationsPaymentService {
           type: 'service',
           referenceId: registrationId,
         },
-        returnUrl,
-        cancelUrl,
       });
 
-      checkoutUrl = result.checkoutUrl;
-      trackerToken = result.token;
+      trackerToken = session.trackerToken;
+      checkoutUrl = await this.safepayService.generateCheckoutUrl(
+        trackerToken,
+        returnUrl,
+        cancelUrl,
+      );
     } catch (error) {
       this.logger.error(
         `Failed to create Safepay checkout for registration ${registrationId}`,

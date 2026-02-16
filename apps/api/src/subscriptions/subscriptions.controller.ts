@@ -6,6 +6,7 @@ import {
   Query,
   HttpCode,
   HttpStatus,
+  BadRequestException,
 } from '@nestjs/common';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -73,6 +74,32 @@ export class SubscriptionsController {
     @CurrentUser() user: AuthUser,
   ): Promise<{ subscription: SubscriptionResponse; checkoutUrl: string }> {
     return this.subscriptionsService.createSubscription(user);
+  }
+
+  /**
+   * Activates a subscription after successful card tokenization.
+   *
+   * Called by the frontend success page with the Safepay tracker token.
+   * Verifies card tokenization, charges first month, activates subscription.
+   *
+   * @param user - Authenticated client user
+   * @param body - Object containing tracker token and subscription ID
+   * @returns Activated subscription details
+   */
+  @Post('activate')
+  @Roles(UserType.CLIENT)
+  @HttpCode(HttpStatus.OK)
+  async activateSubscription(
+    @CurrentUser() user: AuthUser,
+    @Body() body: { subscriptionId: string; tracker: string },
+  ): Promise<SubscriptionResponse> {
+    if (!user.clientProfileId) {
+      throw new BadRequestException('Only clients can activate subscriptions');
+    }
+    return this.subscriptionsService.activateSubscription(
+      body.subscriptionId,
+      body.tracker,
+    );
   }
 
   /**
