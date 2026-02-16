@@ -125,8 +125,7 @@ export class SafepayService implements OnModuleInit {
   async onModuleInit(): Promise<void> {
     const secretKey = this.configService.get<string>('safepay.secretKey');
     const host = this.configService.get<string>('safepay.host');
-    this.publicKey =
-      this.configService.get<string>('safepay.publicKey') ?? '';
+    this.publicKey = this.configService.get<string>('safepay.publicKey') ?? '';
     this.environment =
       this.configService.get<string>('safepay.environment') ?? 'sandbox';
     this.frontendUrl =
@@ -250,15 +249,16 @@ export class SafepayService implements OnModuleInit {
       );
     }
 
-    this.logger.log(
-      `Generating checkout URL for tracker: ${trackerToken}`,
-    );
+    this.logger.log(`Generating checkout URL for tracker: ${trackerToken}`);
 
     // Step 1: Create a short-lived TBT (temporary bearer token)
     let tbt: string;
     try {
-      const passportResponse = await this.safepay.client.passport.create();
-      tbt = passportResponse.data as string;
+      const passportResponse =
+        (await this.safepay.client.passport.create()) as unknown as {
+          data: string;
+        };
+      tbt = passportResponse.data;
     } catch (error) {
       this.logger.error('Safepay passport creation failed', error);
       throw new InternalServerErrorException(
@@ -272,7 +272,7 @@ export class SafepayService implements OnModuleInit {
         tracker: trackerToken,
         tbt,
         env: this.environment as 'development' | 'sandbox' | 'production',
-        source: 'popup',
+        source: 'hosted',
         redirect_url: `${this.frontendUrl}/consultation/payment-callback`,
         cancel_url: `${this.frontendUrl}/consultation/payment-callback?cancelled=true`,
       });
@@ -317,7 +317,9 @@ export class SafepayService implements OnModuleInit {
     this.logger.log(`Verifying payment: tracker=${trackerToken}`);
 
     // Use reporter.payments.fetch() — the only query method on Reporter.Payments
-    let payment: { data?: { state?: string; reference?: string; amount?: number } };
+    let payment: {
+      data?: { state?: string; reference?: string; amount?: number };
+    };
     try {
       payment = await this.safepay.reporter.payments.fetch(trackerToken);
     } catch (error) {

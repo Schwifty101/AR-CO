@@ -31,7 +31,7 @@ Switch from the embedded zoid button to a **popup window** that opens Safepay's 
    - `tracker`: tracker token from `createPaymentSession`
    - `tbt`: auth token
    - `environment`: sandbox/production
-   - `source`: `'popup'`
+   - `source`: `'hosted'` (NOT `'popup'` — `'popup'` triggers Safepay's embedded completion page instead of redirecting)
    - `redirect_url`: `{FRONTEND_URL}/consultation/payment-callback`
    - `cancel_url`: `{FRONTEND_URL}/consultation/payment-callback?cancelled=true`
 3. Returns the checkout URL string
