@@ -59,6 +59,8 @@ export interface ITeamHeroProps {
   subtitle?: string
   backgroundImage?: string
   className?: string
+  textPosition?: 'center' | 'bottom'
+  textOpacity?: number
 }
 
 /**

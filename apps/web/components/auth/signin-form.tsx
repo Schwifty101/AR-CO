@@ -3,15 +3,10 @@
 /**
  * Sign-In Form Component
  *
+ * Redesigned with editorial luxury aesthetic matching the blogs page.
  * Tabbed form supporting Google OAuth and email/password sign-in.
- * Admin users must use Google OAuth; clients can use either method.
  *
  * @module SigninForm
- *
- * @example
- * ```typescript
- * <SigninForm />
- * ```
  */
 
 import { useState } from 'react';
@@ -20,24 +15,20 @@ import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import type { z } from 'zod';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { OAuthButton } from './oauth-button';
 import { useAuth } from '@/lib/auth/use-auth';
 import { signInWithGoogle, signInWithEmail } from '@/lib/auth/auth-actions';
 import { SigninSchema } from '@repo/shared';
+import { motion } from 'framer-motion';
+import styles from './auth.module.css';
 
 type SigninFormData = z.infer<typeof SigninSchema>;
 
-/**
- * Sign-in form with Google OAuth and email/password tabs
- */
 export function SigninForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { setUser } = useAuth();
+  const [activeTab, setActiveTab] = useState<'google' | 'email'>('google');
   const [oauthLoading, setOauthLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -81,93 +72,111 @@ export function SigninForm() {
   };
 
   return (
-    <div className="w-full max-w-md space-y-6">
-      <div className="text-center space-y-2">
-        <h1 className="text-2xl font-bold tracking-tight">
-          Sign in to your account
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          Choose your preferred sign-in method
-        </p>
-      </div>
-
-      {error && (
-        <div className="rounded-md bg-destructive/15 p-3 text-sm text-destructive">
-          {error}
-        </div>
-      )}
-
-      <Tabs defaultValue="google" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="google">Google</TabsTrigger>
-          <TabsTrigger value="email">Email</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="google" className="space-y-4 pt-4">
-          <OAuthButton onClick={handleGoogleSignIn} isLoading={oauthLoading} />
-          <p className="text-xs text-center text-muted-foreground">
-            Admin users must sign in with Google
+    <motion.div
+      className={styles.container}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+    >
+      <div className={styles.card}>
+        <div className={styles.header}>
+          <h1 className={styles.title}>Sign In</h1>
+          <p className={styles.subtitle}>
+            Choose your preferred sign-in method
           </p>
-        </TabsContent>
+        </div>
 
-        <TabsContent value="email" className="space-y-4 pt-4">
-          <form
-            onSubmit={handleSubmit(handleEmailSignIn)}
-            className="space-y-4"
-          >
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="you@example.com"
-                autoComplete="email"
-                {...register('email')}
-              />
-              {errors.email && (
-                <p className="text-xs text-destructive">
-                  {errors.email.message}
-                </p>
-              )}
-            </div>
+        {error && <div className={styles.error}>{error}</div>}
 
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="Enter your password"
-                autoComplete="current-password"
-                {...register('password')}
-              />
-              {errors.password && (
-                <p className="text-xs text-destructive">
-                  {errors.password.message}
-                </p>
-              )}
-            </div>
-
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
-              {isSubmitting ? 'Signing in...' : 'Sign In'}
-            </Button>
-          </form>
-
-          <div className="flex items-center justify-between text-sm">
-            <Link
-              href="/auth/forgot-password"
-              className="text-muted-foreground hover:text-foreground underline-offset-4 hover:underline"
+        <div className={styles.tabs}>
+          <div className={styles.tabsList}>
+            <button
+              type="button"
+              className={`${styles.tabsTrigger} ${activeTab === 'google' ? styles.tabsTriggerActive : ''}`}
+              onClick={() => setActiveTab('google')}
             >
-              Forgot password?
-            </Link>
-            <Link
-              href="/auth/signup"
-              className="text-muted-foreground hover:text-foreground underline-offset-4 hover:underline"
+              Google
+            </button>
+            <button
+              type="button"
+              className={`${styles.tabsTrigger} ${activeTab === 'email' ? styles.tabsTriggerActive : ''}`}
+              onClick={() => setActiveTab('email')}
             >
+              Email
+            </button>
+          </div>
+
+          {activeTab === 'google' && (
+            <div className={styles.tabsContent}>
+              <OAuthButton onClick={handleGoogleSignIn} isLoading={oauthLoading} />
+              <p className={styles.subtitle} style={{ textAlign: 'center', marginTop: '1rem' }}>
+                Admin users must sign in with Google
+              </p>
+            </div>
+          )}
+
+          {activeTab === 'email' && (
+            <div className={styles.tabsContent}>
+              <form onSubmit={handleSubmit(handleEmailSignIn)} className={styles.form}>
+                <div className={styles.formGroup}>
+                  <label htmlFor="email" className={styles.label}>Email</label>
+                  <input
+                    id="email"
+                    type="email"
+                    placeholder="you@example.com"
+                    autoComplete="email"
+                    className={styles.input}
+                    {...register('email')}
+                  />
+                  {errors.email && (
+                    <p className={styles.fieldError}>{errors.email.message}</p>
+                  )}
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label htmlFor="password" className={styles.label}>Password</label>
+                  <input
+                    id="password"
+                    type="password"
+                    placeholder="Enter your password"
+                    autoComplete="current-password"
+                    className={styles.input}
+                    {...register('password')}
+                  />
+                  {errors.password && (
+                    <p className={styles.fieldError}>{errors.password.message}</p>
+                  )}
+                </div>
+
+                <div className={styles.forgotPassword}>
+                  <Link href="/auth/forgot-password" className={styles.link}>
+                    Forgot password?
+                  </Link>
+                </div>
+
+                <button
+                  type="submit"
+                  className={styles.button}
+                  disabled={isSubmitting}
+                >
+                  <span className={styles.buttonText}>
+                    {isSubmitting ? 'Signing in...' : 'Sign In'}
+                  </span>
+                </button>
+              </form>
+            </div>
+          )}
+        </div>
+
+        <div className={styles.footer}>
+          <p className={styles.footerText}>
+            Don't have an account?{' '}
+            <Link href="/auth/signup" className={styles.link}>
               Create account
             </Link>
-          </div>
-        </TabsContent>
-      </Tabs>
-    </div>
+          </p>
+        </div>
+      </div>
+    </motion.div>
   );
 }

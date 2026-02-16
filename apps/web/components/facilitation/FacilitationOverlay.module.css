@@ -6,11 +6,12 @@
   cursor: pointer;
   overflow: hidden;
   border-bottom: 1px solid rgba(249, 248, 246, 0.08);
+  border-radius: 1rem;
   transition: background 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .categoryPanel:hover {
-  background: rgba(212, 175, 55, 0.03);
+  background: transparent;
 }
 
 .categoryPanel::before {
@@ -28,7 +29,6 @@
   transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.categoryPanel:hover::before,
 .categoryPanelActive::before {
   width: 100%;
 }
@@ -66,11 +66,12 @@
 
 .categoryTitle {
   flex: 1;
+  font-family: 'Lora', Georgia, serif;
   font-size: clamp(1.25rem, 3vw, 2.25rem);
-  font-weight: 200;
+  font-weight: 300;
   letter-spacing: -0.02em;
   color: var(--heritage-cream);
-  transition: color 0.3s ease, letter-spacing 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: color 0.3s ease;
   text-transform: uppercase;
   line-height: 1.1;
 }
@@ -78,10 +79,10 @@
 .categoryPanelActive .categoryTitle,
 .categoryPanel:hover .categoryTitle {
   color: var(--heritage-gold);
-  letter-spacing: 0.02em;
 }
 
 .serviceCount {
+  font-family: 'Georgia', 'Times New Roman', serif;
   font-size: 0.7rem;
   letter-spacing: 0.2em;
   text-transform: uppercase;
@@ -109,11 +110,15 @@
   margin-left: 1.5rem;
 }
 
-.categoryPanelActive .expandIcon,
-.categoryPanel:hover .expandIcon {
+.categoryPanelActive .expandIcon {
   border-color: var(--heritage-gold);
   color: var(--heritage-gold);
   transform: rotate(45deg);
+}
+
+.categoryPanel:hover .expandIcon {
+  border-color: var(--heritage-gold);
+  color: var(--heritage-gold);
 }
 
 /* ─── Sub-services Grid ─── */
@@ -174,6 +179,7 @@
 }
 
 .serviceLabel {
+  font-family: 'Georgia', 'Times New Roman', serif;
   font-size: 0.875rem;
   line-height: 1.5;
   letter-spacing: 0.01em;
@@ -202,6 +208,7 @@
 
 /* ─── Category Tagline ─── */
 .categoryTagline {
+  font-family: 'Georgia', 'Times New Roman', serif;
   font-size: 0.75rem;
   letter-spacing: 0.15em;
   text-transform: uppercase;

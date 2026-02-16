@@ -3,7 +3,7 @@
   position: relative;
   background: var(--wood-espresso);
   overflow: hidden;
-  margin-bottom: -15rem;
+  margin-bottom: -20rem;
 }
 
 .stickyWrapper {
@@ -22,14 +22,15 @@
 }
 
 .title {
-  font-family: 'Cabinet Grotesk', sans-serif;
+  font-family: 'Lora', Georgia, serif;
   font-size: clamp(4rem, 8vw, 8rem);
-  font-weight: 100;
+  font-weight: 300;
   letter-spacing: -0.02em;
   color: var(--heritage-cream);
   margin: 0;
   text-transform: uppercase;
-  opacity: 0; /* Initial hidden state for reveal animation */
+  opacity: 0;
+  /* Initial hidden state for reveal animation */
 }
 
 /* Columns Container */
@@ -56,7 +57,7 @@
 
 /* Middle column starts offset */
 .middleColumn {
-  margin-top: 4rem;
+  margin-top: 1.5rem;
 }
 
 /* Testimonial Card */
@@ -69,7 +70,8 @@
   padding: 2rem;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
-  opacity: 0; /* Initial hidden state for reveal animation */
+  opacity: 0;
+  /* Initial hidden state for reveal animation */
 }
 
 .card::before {
@@ -103,16 +105,16 @@
 }
 
 .company {
-  font-family: 'Cabinet Grotesk', sans-serif;
+  font-family: 'Lora', Georgia, serif;
   font-size: 1.25rem;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--heritage-cream);
   margin: 0 0 0.5rem 0;
   line-height: 1.3;
 }
 
 .person {
-  font-family: 'Cabinet Grotesk', sans-serif;
+  font-family: 'Georgia', 'Times New Roman', serif;
   font-size: 0.95rem;
   font-weight: 500;
   color: var(--heritage-gold);
@@ -153,7 +155,7 @@
 }
 
 .quote {
-  font-family: 'Lora', serif;
+  font-family: 'Georgia', 'Times New Roman', serif;
   font-size: 0.95rem;
   font-weight: 400;
   line-height: 1.7;
@@ -177,20 +179,21 @@
   right: 10%;
   width: 600px;
   height: 600px;
-  background: radial-gradient(
-    circle,
-    rgba(212, 175, 55, 0.08) 0%,
-    transparent 70%
-  );
+  background: radial-gradient(circle,
+      rgba(212, 175, 55, 0.08) 0%,
+      transparent 70%);
   border-radius: 50%;
   filter: blur(60px);
   animation: orbFloat 20s ease-in-out infinite;
 }
 
 @keyframes orbFloat {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translate(0, 0) scale(1);
   }
+
   50% {
     transform: translate(50px, -50px) scale(1.1);
   }
@@ -206,7 +209,24 @@
     linear-gradient(rgba(249, 248, 246, 0.02) 1px, transparent 1px),
     linear-gradient(90deg, rgba(249, 248, 246, 0.02) 1px, transparent 1px);
   background-size: 60px 60px;
+
+
   opacity: 0.5;
+}
+
+/* Mobile-only container (hidden by default) */
+.mobileContainer {
+  display: none;
+  width: 100%;
+  max-width: 100%;
+  padding-top: 2rem;
+}
+
+.mobileColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
 }
 
 /* Responsive */
@@ -234,7 +254,8 @@
 
 @media (max-width: 768px) {
   .stickyWrapper {
-    padding: 3rem 1.5rem 2rem;
+    padding: 6rem 1.5rem 2rem;
+    /* Increased top padding from 3rem */
   }
 
   .title {
@@ -246,13 +267,14 @@
     margin-bottom: 2rem;
   }
 
+  /* Hide desktop columns on mobile */
   .columnsContainer {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
+    display: none;
   }
 
-  .middleColumn {
-    margin-top: 0;
+  /* Show mobile container */
+  .mobileContainer {
+    display: block;
   }
 
   .card {

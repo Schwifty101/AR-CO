@@ -1,0 +1,376 @@
+/* ============================================================
+   Practice Area Detail Page
+   Editorial luxury aesthetic — espresso + gold + cream
+   Fonts: Lora (headings), Georgia (body) — matching blogs
+   ============================================================ */
+
+/* ─── Page Root ─── */
+.page {
+  min-height: 100vh;
+  background: var(--wood-espresso);
+  color: var(--heritage-cream);
+}
+
+/* ─── Grain Texture ─── */
+.grain {
+  position: absolute;
+  inset: 0;
+  opacity: 0.3;
+  pointer-events: none;
+  z-index: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  background-size: 256px 256px;
+}
+
+/* ─── Atmospheric Glow ─── */
+.glow {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 55% 60% at 20% 40%, rgba(212, 175, 55, 0.04) 0%, transparent 100%),
+    radial-gradient(ellipse 40% 50% at 80% 70%, rgba(249, 248, 246, 0.015) 0%, transparent 100%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ─── Vertical Accent Line ─── */
+.verticalLine {
+  position: absolute;
+  left: 4rem;
+  top: 0;
+  width: 1px;
+  height: 100%;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(212, 175, 55, 0.15) 30%,
+    rgba(212, 175, 55, 0.15) 70%,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ============================================================
+   Hero / Title Section
+   ============================================================ */
+.hero {
+  position: relative;
+  z-index: 2;
+  padding: 10rem 0 4rem;
+}
+
+.heroInner {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 4rem;
+}
+
+.heroEyebrow {
+  display: block;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 0.65rem;
+  font-weight: 500;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: var(--heritage-gold);
+  opacity: 0.7;
+  margin-bottom: 1.25rem;
+}
+
+.heroTitle {
+  font-family: 'Lora', Georgia, serif;
+  font-size: clamp(2.8rem, 6vw, 5.5rem);
+  font-weight: 300;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  color: var(--heritage-cream);
+  margin: 0 0 1.5rem;
+  white-space: nowrap;
+}
+
+.heroSubtitle {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: clamp(0.88rem, 1.2vw, 1.05rem);
+  line-height: 1.7;
+  color: rgba(249, 248, 246, 0.45);
+  max-width: 700px;
+  margin: 0;
+}
+
+.heroDivider {
+  width: 60px;
+  height: 1px;
+  background: linear-gradient(90deg, var(--heritage-gold), transparent);
+  margin-top: 2.5rem;
+  opacity: 0.5;
+}
+
+/* ============================================================
+   Content Section
+   ============================================================ */
+.content {
+  position: relative;
+  z-index: 2;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 4rem 6rem;
+}
+
+/* ─── Section Block ─── */
+.section {
+  margin-bottom: 5rem;
+}
+
+.sectionEyebrow {
+  display: block;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 0.6rem;
+  font-weight: 500;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: var(--heritage-gold);
+  opacity: 0.6;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.08);
+}
+
+/* ─── Overview ─── */
+.overviewText {
+  font-family: 'Lora', Georgia, serif;
+  font-size: clamp(1.3rem, 2.5vw, 1.8rem);
+  font-weight: 400;
+  line-height: 1.6;
+  letter-spacing: -0.01em;
+  color: rgba(249, 248, 246, 0.85);
+  max-width: 900px;
+  margin: 0 0 2rem;
+}
+
+.descriptionText {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: clamp(0.88rem, 1.1vw, 0.95rem);
+  line-height: 1.8;
+  color: rgba(249, 248, 246, 0.45);
+  max-width: 800px;
+  margin: 0;
+}
+
+/* ============================================================
+   Services & Cases List
+   ============================================================ */
+.listGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0;
+}
+
+@media (min-width: 768px) {
+  .listGrid {
+    grid-template-columns: 1fr 1fr;
+    gap: 0 3rem;
+  }
+}
+
+.listItem {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid rgba(249, 248, 246, 0.05);
+  transition: border-color 0.3s ease;
+}
+
+.listItem:hover {
+  border-color: rgba(212, 175, 55, 0.15);
+}
+
+.listNumber {
+  font-family: 'Lora', Georgia, serif;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  color: var(--heritage-gold);
+  opacity: 0.4;
+  transition: opacity 0.3s ease;
+  flex-shrink: 0;
+}
+
+.listItem:hover .listNumber {
+  opacity: 1;
+}
+
+.listText {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: rgba(249, 248, 246, 0.7);
+  transition: color 0.3s ease;
+}
+
+.listItem:hover .listText {
+  color: var(--heritage-cream);
+}
+
+/* ============================================================
+   Client Portfolio Tags
+   ============================================================ */
+.tagGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.tag {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+  color: rgba(249, 248, 246, 0.5);
+  padding: 0.4rem 1rem;
+  border: 1px solid rgba(249, 248, 246, 0.08);
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+.tag:hover {
+  border-color: rgba(212, 175, 55, 0.3);
+  color: var(--heritage-gold);
+  background: rgba(212, 175, 55, 0.04);
+}
+
+/* ============================================================
+   Key Personnel
+   ============================================================ */
+.personnelList {
+  display: flex;
+  flex-direction: column;
+}
+
+.personnelRow {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  padding: 2rem 0;
+  border-bottom: 1px solid rgba(249, 248, 246, 0.05);
+  transition: border-color 0.3s ease;
+}
+
+@media (min-width: 768px) {
+  .personnelRow {
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+  }
+}
+
+.personnelRow:first-child {
+  border-top: 1px solid rgba(249, 248, 246, 0.05);
+}
+
+.personnelRow:hover {
+  border-color: rgba(212, 175, 55, 0.15);
+}
+
+.personnelName {
+  font-family: 'Lora', Georgia, serif;
+  font-size: clamp(1.15rem, 2vw, 1.5rem);
+  font-weight: 400;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  color: var(--heritage-cream);
+  margin: 0 0 0.5rem;
+  transition: color 0.3s ease;
+}
+
+.personnelRow:hover .personnelName {
+  color: var(--heritage-gold);
+}
+
+.personnelRole {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--heritage-gold);
+  opacity: 0.55;
+}
+
+.personnelExpertise {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 0.85rem;
+  line-height: 1.75;
+  color: rgba(249, 248, 246, 0.45);
+  margin: 0;
+}
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+@media (max-width: 1024px) {
+  .heroInner,
+  .content {
+    padding-left: 2.5rem;
+    padding-right: 2.5rem;
+  }
+
+  .verticalLine {
+    left: 2.5rem;
+  }
+
+  .heroTitle {
+    font-size: clamp(2.2rem, 5vw, 4rem);
+  }
+}
+
+@media (max-width: 768px) {
+  .hero {
+    padding-top: 7rem;
+  }
+
+  .heroInner,
+  .content {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+
+  .verticalLine {
+    display: none;
+  }
+
+  .grain {
+    display: none;
+  }
+
+  .heroTitle {
+    font-size: clamp(1.8rem, 7vw, 3rem);
+    white-space: normal;
+  }
+
+  .section {
+    margin-bottom: 3.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero {
+    padding-top: 6rem;
+  }
+
+  .heroInner,
+  .content {
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+  }
+
+  .content {
+    padding-bottom: 4rem;
+  }
+}
+
+/* ─── Reduced Motion ─── */
+@media (prefers-reduced-motion: reduce) {
+  .listItem,
+  .personnelRow,
+  .tag {
+    transition: none !important;
+  }
+}

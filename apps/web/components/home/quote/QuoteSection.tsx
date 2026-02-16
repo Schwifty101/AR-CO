@@ -7,7 +7,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger"
 import { useGSAP } from "@gsap/react"
 import { ArrowUpRight } from "lucide-react"
 import { useFacilitationOverlay } from "@/components/facilitation"
-import { setSlowScroll, setNormalScroll } from "../../SmoothScroll"
+import { smoothPause } from "../../SmoothScroll"
 import styles from "./QuoteSection.module.css"
 
 // Register GSAP plugins
@@ -61,21 +61,37 @@ export default function QuoteSection() {
   const contentRef = useRef<HTMLDivElement>(null)
   const { openOverlay } = useFacilitationOverlay()
 
-  // GSAP scroll-speed control & entrance animation
+  // GSAP scroll-pause & entrance animation
   useGSAP(() => {
     if (!sectionRef.current || !contentRef.current) return
 
     const section = sectionRef.current
     const content = contentRef.current
+    let hasTriggeredPause = false
 
+    // Reset pause flag when section leaves viewport
     ScrollTrigger.create({
       trigger: section,
       start: "top bottom",
       end: "bottom top",
-      onEnter: () => setSlowScroll(),
-      onLeaveBack: () => setSlowScroll(),
+      onLeave: () => { hasTriggeredPause = false },
+      onLeaveBack: () => { hasTriggeredPause = false },
     })
 
+    // Smooth pause when section reaches top of viewport
+    ScrollTrigger.create({
+      trigger: section,
+      start: "top top",
+      end: "top top",
+      onEnter: () => {
+        if (!hasTriggeredPause) {
+          hasTriggeredPause = true
+          smoothPause(800)
+        }
+      },
+    })
+
+    // Content entrance animation
     gsap.fromTo(
       content,
       { opacity: 0.8, y: 30 },
@@ -138,21 +154,7 @@ export default function QuoteSection() {
                   delay: idx * 0.08,
                   ease: [0.16, 1, 0.3, 1],
                 }}
-                onMouseEnter={() => {}}
-                onMouseLeave={() => {}}
-                onClick={openOverlay}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault()
-                    openOverlay()
-                  }
-                }}
               >
-                {/* Hover fill — pure CSS */}
-                <div className={styles.rowFill} />
-
                 {/* Roman numeral */}
                 <span className={styles.rowNumber}>{service.number}</span>
 
@@ -161,14 +163,6 @@ export default function QuoteSection() {
 
                 {/* Headline description */}
                 <p className={styles.rowHeadline}>{service.headline}</p>
-
-                {/* CTA arrow */}
-                <span className={styles.rowArrow}>
-                  <ArrowUpRight />
-                </span>
-
-                {/* CTA text (visible on hover / always on mobile) */}
-                <span className={styles.rowCta}>{service.cta}</span>
               </motion.div>
             ))}
           </div>

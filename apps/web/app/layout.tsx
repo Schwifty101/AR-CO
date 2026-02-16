@@ -6,6 +6,8 @@ import { PracticeAreasProvider } from "@/components/practice-areas"
 import PracticeAreasOverlayWrapper from "@/components/practice-areas/PracticeAreasOverlayWrapper"
 import { FacilitationProvider, FacilitationOverlayWrapper } from "@/components/facilitation"
 import { ConsultationProvider, ConsultationOverlayWrapper } from "@/components/consultation"
+import { AboutProvider, AboutOverlayWrapper } from "@/components/about"
+import PageTransition from "@/components/PageTransition"
 import "./globals.css"
 
 export const metadata: Metadata = {
@@ -54,10 +56,14 @@ export default function RootLayout({
           <PracticeAreasProvider>
             <FacilitationProvider>
               <ConsultationProvider>
-                {children}
-                <PracticeAreasOverlayWrapper />
-                <FacilitationOverlayWrapper />
-                <ConsultationOverlayWrapper />
+                <AboutProvider>
+                  <PageTransition />
+                  {children}
+                  <PracticeAreasOverlayWrapper />
+                  <FacilitationOverlayWrapper />
+                  <ConsultationOverlayWrapper />
+                  <AboutOverlayWrapper />
+                </AboutProvider>
               </ConsultationProvider>
             </FacilitationProvider>
           </PracticeAreasProvider>

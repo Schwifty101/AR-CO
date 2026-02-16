@@ -10,6 +10,7 @@
   background: var(--wood-espresso);
   color: var(--heritage-cream);
   position: relative;
+  padding-top: 0;
 }
 
 /* ─── Atmospheric Overlays ─── */
@@ -28,11 +29,9 @@
   inset: 0;
   pointer-events: none;
   z-index: 0;
-  background: radial-gradient(
-    ellipse 50% 60% at 50% 40%,
-    rgba(212, 175, 55, 0.04) 0%,
-    transparent 100%
-  );
+  background: radial-gradient(ellipse 50% 60% at 50% 40%,
+      rgba(212, 175, 55, 0.04) 0%,
+      transparent 100%);
 }
 
 .pageContent {
@@ -70,6 +69,7 @@
   letter-spacing: -0.03em;
   color: var(--heritage-cream);
   margin: 0;
+
 }
 
 /* Subsection titles */
@@ -149,11 +149,9 @@
 .goldRule {
   width: 100%;
   height: 1px;
-  background: linear-gradient(
-    90deg,
-    rgba(212, 175, 55, 0.3) 0%,
-    rgba(212, 175, 55, 0.08) 100%
-  );
+  background: linear-gradient(90deg,
+      rgba(212, 175, 55, 0.3) 0%,
+      rgba(212, 175, 55, 0.08) 100%);
 }
 
 .subtleRule {
@@ -166,13 +164,11 @@
   position: absolute;
   width: 1px;
   height: 100%;
-  background: linear-gradient(
-    180deg,
-    transparent 0%,
-    rgba(212, 175, 55, 0.15) 30%,
-    rgba(212, 175, 55, 0.15) 70%,
-    transparent 100%
-  );
+  background: linear-gradient(180deg,
+      transparent 0%,
+      rgba(212, 175, 55, 0.15) 30%,
+      rgba(212, 175, 55, 0.15) 70%,
+      transparent 100%);
   pointer-events: none;
 }
 
@@ -193,7 +189,7 @@
   color: var(--wood-espresso);
   background: var(--heritage-gold);
   border: none;
-  border-radius: 2px;
+  border-radius: 100px;
   cursor: pointer;
   transition: all 0.4s cubic-bezier(0.32, 0.72, 0, 1);
 }
@@ -218,7 +214,7 @@
   color: rgba(249, 248, 246, 0.6);
   background: transparent;
   border: 1px solid rgba(249, 248, 246, 0.15);
-  border-radius: 2px;
+  border-radius: 100px;
   cursor: pointer;
   transition: all 0.3s ease;
 }
@@ -254,6 +250,7 @@
   position: relative;
   padding: 2.5rem 2rem;
   border: 1px solid rgba(249, 248, 246, 0.08);
+  border-radius: 1rem;
   background: rgba(26, 17, 10, 0.3);
   backdrop-filter: blur(8px);
   transition: all 0.4s cubic-bezier(0.32, 0.72, 0, 1);
@@ -287,7 +284,13 @@
 .breadcrumb {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 0.75rem;
+  padding: 2rem 4rem 1.5rem;
+  /* Moved from inline style */
+  width: 100%;
+  justify-content: flex-start;
+  box-sizing: border-box;
   font-family: 'Georgia', 'Times New Roman', serif;
   font-size: 0.7rem;
   letter-spacing: 0.08em;
@@ -317,6 +320,7 @@
    Responsive
    ============================================================ */
 @media (max-width: 1024px) {
+
   .container,
   .containerNarrow {
     padding-left: 2.5rem;
@@ -325,6 +329,7 @@
 }
 
 @media (max-width: 768px) {
+
   .container,
   .containerNarrow {
     padding-left: 1.5rem;
@@ -344,9 +349,22 @@
     font-size: 0.68rem;
     padding: 0.75rem 1.5rem;
   }
+
+  /* Add top padding to page for mobile header */
+  .page {
+    padding-top: 3rem;
+  }
+
+  .breadcrumb {
+    gap: 0.5rem;
+    padding: 2rem 1.5rem 0.5rem !important;
+    /* Reduced bottom padding and side padding for mobile */
+    justify-content: flex-start;
+  }
 }
 
 @media (max-width: 480px) {
+
   .container,
   .containerNarrow {
     padding-left: 1.25rem;
@@ -364,6 +382,7 @@
 
 /* ─── Reduced Motion ─── */
 @media (prefers-reduced-motion: reduce) {
+
   .card,
   .buttonPrimary,
   .buttonSecondary,
