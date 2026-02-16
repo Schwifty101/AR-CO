@@ -16,7 +16,16 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth/use-auth';
-import { Skeleton } from '@/components/ui/skeleton';
+import { motion } from 'framer-motion';
+import {
+  Users,
+  Scale,
+  CalendarClock,
+  CreditCard,
+  MessageSquareWarning,
+  ClipboardList
+} from 'lucide-react';
+import { DashboardCard } from '@/components/dashboard/dashboard-card';
 import { getAdminDashboardStats } from '@/lib/api/dashboard';
 import type { AdminDashboardStats } from '@repo/shared';
 
@@ -61,89 +70,96 @@ export default function AdminDashboardPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Admin Dashboard</h1>
-        <p className="text-muted-foreground">
-          Welcome back, {user?.fullName || 'Admin'}
-        </p>
+    <div className="space-y-8 p-8">
+      <div className="flex flex-col gap-2">
+        <motion.h1
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-4xl font-bold tracking-tight"
+        >
+          Admin Dashboard
+        </motion.h1>
+        <motion.p
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="text-lg text-muted-foreground"
+        >
+          Welcome back, {user?.fullName || 'Admin'}. Here's what's happening today.
+        </motion.p>
       </div>
 
       {statsError && (
-        <div className="rounded-md bg-destructive/15 p-4 text-destructive text-sm">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="rounded-lg bg-destructive/10 p-4 text-destructive border border-destructive/20"
+        >
           {statsError}
-        </div>
+        </motion.div>
       )}
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <div className="rounded-lg border p-6 transition-shadow hover:shadow-md">
-          <h3 className="text-sm font-medium text-muted-foreground">
-            Total Clients
-          </h3>
-          {statsLoading ? (
-            <Skeleton className="mt-2 h-9 w-16" />
-          ) : (
-            <p className="mt-2 text-3xl font-bold">
-              {stats?.totalClients ?? 0}
-            </p>
-          )}
-        </div>
-        <Link href="/admin/cases?status=active">
-          <div className="rounded-lg border p-6 transition-shadow hover:shadow-md cursor-pointer">
-            <h3 className="text-sm font-medium text-muted-foreground">
-              Active Cases
-            </h3>
-            {statsLoading ? (
-              <Skeleton className="mt-2 h-9 w-16" />
-            ) : (
-              <p className="mt-2 text-3xl font-bold">
-                {stats?.activeCases ?? 0}
-              </p>
-            )}
-          </div>
+      {/* Primary Stats */}
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <Link href="/admin/users">
+          <DashboardCard
+            title="Total Clients"
+            value={statsLoading ? "..." : stats?.totalClients ?? 0}
+            icon={Users}
+            description="Registered users"
+            delay={0.2}
+          />
         </Link>
-        <div className="rounded-lg border p-6 transition-shadow hover:shadow-md">
-          <h3 className="text-sm font-medium text-muted-foreground">
-            Pending Appointments
-          </h3>
-          {statsLoading ? (
-            <Skeleton className="mt-2 h-9 w-16" />
-          ) : (
-            <p className="mt-2 text-3xl font-bold">
-              {stats?.pendingAppointments ?? 0}
-            </p>
-          )}
-        </div>
-        {/* TODO: Fetch from backend when dashboard stats are expanded */}
-        <div className="rounded-lg border p-6 transition-shadow hover:shadow-md">
-          <h3 className="text-sm font-medium text-muted-foreground">
-            Active Subscribers
-          </h3>
-          {statsLoading ? (
-            <Skeleton className="mt-2 h-9 w-16" />
-          ) : (
-            <p className="mt-2 text-3xl font-bold">0</p>
-          )}
-        </div>
-        <div className="rounded-lg border p-6 transition-shadow hover:shadow-md">
-          <h3 className="text-sm font-medium text-muted-foreground">
-            Open Complaints
-          </h3>
-          {statsLoading ? (
-            <Skeleton className="mt-2 h-9 w-16" />
-          ) : (
-            <p className="mt-2 text-3xl font-bold">0</p>
-          )}
-        </div>
-        <div className="rounded-lg border p-6 transition-shadow hover:shadow-md">
-          <h3 className="text-sm font-medium text-muted-foreground">
-            Pending Registrations
-          </h3>
-          {statsLoading ? (
-            <Skeleton className="mt-2 h-9 w-16" />
-          ) : (
-            <p className="mt-2 text-3xl font-bold">0</p>
-          )}
+        <Link href="/admin/cases?status=active">
+          <DashboardCard
+            title="Active Cases"
+            value={statsLoading ? "..." : stats?.activeCases ?? 0}
+            icon={Scale}
+            description="Cases currently in progress"
+            delay={0.3}
+          />
+        </Link>
+        <DashboardCard
+          title="Pending Appointments"
+          value={statsLoading ? "..." : stats?.pendingAppointments ?? 0}
+          icon={CalendarClock}
+          description="Awaiting confirmation"
+          delay={0.4}
+        />
+      </div>
+
+      {/* Secondary Stats / Coming Soon */}
+      <div>
+        <motion.h2
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+          className="mb-4 text-xl font-semibold tracking-tight"
+        >
+          Analytics Overview
+        </motion.h2>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 opacity-60 pointer-events-none grayscale-[0.5]">
+          <DashboardCard
+            title="Active Subscribers"
+            value="0"
+            icon={CreditCard}
+            description="Premium plan members"
+            delay={0.6}
+          />
+          <DashboardCard
+            title="Open Complaints"
+            value="0"
+            icon={MessageSquareWarning}
+            description="Unresolved issues"
+            delay={0.7}
+          />
+          <DashboardCard
+            title="Pending Registrations"
+            value="0"
+            icon={ClipboardList}
+            description="Service requests"
+            delay={0.8}
+          />
         </div>
       </div>
     </div>
