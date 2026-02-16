@@ -82,7 +82,8 @@ export function mapConsultationRow(row: ConsultationRow): ConsultationResponse {
     opposingParty: row.opposing_party,
     additionalNotes: row.additional_notes,
     consultationFee: row.consultation_fee,
-    paymentStatus: row.payment_status as unknown as ConsultationResponse['paymentStatus'],
+    paymentStatus:
+      row.payment_status as unknown as ConsultationResponse['paymentStatus'],
     safepayTrackerToken: row.safepay_tracker_token,
     safepayTransactionRef: row.safepay_transaction_ref,
     calcomBookingUid: row.calcom_booking_uid,
@@ -90,7 +91,8 @@ export function mapConsultationRow(row: ConsultationRow): ConsultationResponse {
     bookingDate: row.booking_date,
     bookingTime: row.booking_time,
     meetingLink: row.meeting_link,
-    bookingStatus: row.booking_status as unknown as ConsultationResponse['bookingStatus'],
+    bookingStatus:
+      row.booking_status as unknown as ConsultationResponse['bookingStatus'],
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };

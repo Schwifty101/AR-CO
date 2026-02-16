@@ -65,7 +65,9 @@ describe('SafepayService', () => {
 
   describe('verifyWebhookSignature', () => {
     it('should return false when webhook secret is not configured', () => {
-      expect(service.verifyWebhookSignature({ tracker: 'track_xxx' }, 'sig')).toBe(false);
+      expect(
+        service.verifyWebhookSignature({ tracker: 'track_xxx' }, 'sig'),
+      ).toBe(false);
     });
   });
 });
