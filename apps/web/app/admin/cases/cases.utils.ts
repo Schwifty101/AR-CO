@@ -26,22 +26,22 @@ export const STATUS_COLORS: Record<CaseStatus, string> = {
 
 /** Case priority badge color mapping */
 export const PRIORITY_COLORS: Record<CasePriority, string> = {
-  [CasePriority.LOW]: 'bg-gray-100 text-gray-800',
-  [CasePriority.MEDIUM]: 'bg-blue-100 text-blue-800',
-  [CasePriority.HIGH]: 'bg-orange-100 text-orange-800',
+  [CasePriority.LOW]: 'bg-gray-500 text-white',
+  [CasePriority.MEDIUM]: 'bg-blue-500 text-white',
+  [CasePriority.HIGH]: 'bg-orange-500 text-white',
   [CasePriority.URGENT]: 'bg-red-500 text-white',
 };
 
 /** Case activity type badge color mapping */
 export const ACTIVITY_TYPE_COLORS: Record<CaseActivityType, string> = {
-  [CaseActivityType.CASE_CREATED]: 'bg-indigo-100 text-indigo-800',
-  [CaseActivityType.STATUS_CHANGED]: 'bg-blue-100 text-blue-800',
-  [CaseActivityType.NOTE_ADDED]: 'bg-gray-100 text-gray-800',
-  [CaseActivityType.ATTORNEY_ASSIGNED]: 'bg-purple-100 text-purple-800',
-  [CaseActivityType.DOCUMENT_UPLOADED]: 'bg-green-100 text-green-800',
-  [CaseActivityType.HEARING_SCHEDULED]: 'bg-orange-100 text-orange-800',
-  [CaseActivityType.PAYMENT_RECEIVED]: 'bg-emerald-100 text-emerald-800',
-  [CaseActivityType.OTHER]: 'bg-slate-100 text-slate-800',
+  [CaseActivityType.CASE_CREATED]: 'bg-indigo-500 text-white',
+  [CaseActivityType.STATUS_CHANGED]: 'bg-blue-500 text-white',
+  [CaseActivityType.NOTE_ADDED]: 'bg-gray-500 text-white',
+  [CaseActivityType.ATTORNEY_ASSIGNED]: 'bg-purple-500 text-white',
+  [CaseActivityType.DOCUMENT_UPLOADED]: 'bg-green-500 text-white',
+  [CaseActivityType.HEARING_SCHEDULED]: 'bg-orange-500 text-white',
+  [CaseActivityType.PAYMENT_RECEIVED]: 'bg-emerald-500 text-white',
+  [CaseActivityType.OTHER]: 'bg-slate-500 text-white',
 };
 
 /** Items per page for paginated lists */
