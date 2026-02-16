@@ -463,7 +463,7 @@ export default function AdminUsersPage() {
                             <Badge
                               className={
                                 USER_TYPE_COLORS[user.userType] ||
-                                'bg-gray-500'
+                                'bg-gray-500 text-white'
                               }
                             >
                               {user.userType.toUpperCase()}
