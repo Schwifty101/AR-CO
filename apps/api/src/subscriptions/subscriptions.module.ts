@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { SubscriptionsController } from './subscriptions.controller';
 import { SubscriptionsService } from './subscriptions.service';
 import { BillingSchedulerService } from './billing-scheduler.service';
@@ -16,21 +16,11 @@ import { PaymentsModule } from '../payments/payments.module';
  * - Staff access to all subscriptions
  * - Daily billing cron for renewals and retries
  *
- * Exports SubscriptionsService for use by other modules (e.g., ComplaintsModule)
- * to verify subscription status.
- *
- * @example
- * ```typescript
- * // In ComplaintsModule
- * @Module({
- *   imports: [SubscriptionsModule],
- *   // ...
- * })
- * export class ComplaintsModule {}
- * ```
+ * Exports SubscriptionsService for use by other modules (e.g., ComplaintsModule,
+ * PaymentsModule webhook handler)
  */
 @Module({
-  imports: [PaymentsModule],
+  imports: [forwardRef(() => PaymentsModule)],
   controllers: [SubscriptionsController],
   providers: [SubscriptionsService, BillingSchedulerService],
   exports: [SubscriptionsService],

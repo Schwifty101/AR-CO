@@ -56,6 +56,7 @@ interface SubscriptionPaymentRow {
   status: 'pending' | 'succeeded' | 'failed';
   failure_reason: string | null;
   is_renewal: boolean;
+  safepay_webhook_data: Record<string, unknown> | null;
   created_at: string;
 }
 
@@ -64,8 +65,8 @@ const ALLOWED_SUBSCRIPTION_SORT_COLUMNS = [
   'created_at',
   'updated_at',
   'status',
-  'start_date',
-  'end_date',
+  'current_period_start',
+  'current_period_end',
 ] as const;
 
 import { validateSortColumn } from '../common/utils/query-helpers';
@@ -122,15 +123,21 @@ export class SubscriptionsService {
         .single()) as DbResult<SubscriptionRow>;
 
       if (fetchError && fetchError.code !== 'PGRST116') {
-        this.logger.error(`Failed to fetch subscription: ${fetchError.message}`);
-        throw new InternalServerErrorException('Failed to check existing subscription');
+        this.logger.error(
+          `Failed to fetch subscription: ${fetchError.message}`,
+        );
+        throw new InternalServerErrorException(
+          'Failed to check existing subscription',
+        );
       }
 
       let subscription: SubscriptionRow;
 
       if (existing) {
         if (existing.status === SubscriptionStatus.ACTIVE) {
-          throw new ForbiddenException('You already have an active subscription');
+          throw new ForbiddenException(
+            'You already have an active subscription',
+          );
         }
 
         // Reactivate cancelled/expired/past_due subscription
@@ -150,13 +157,17 @@ export class SubscriptionsService {
           .single()) as DbResult<SubscriptionRow>;
 
         if (updateError || !updated) {
-          throw new InternalServerErrorException('Failed to reactivate subscription');
+          throw new InternalServerErrorException(
+            'Failed to reactivate subscription',
+          );
         }
         subscription = updated;
       } else {
         // Create Safepay Customer if not exists
         let safepayCustomerId = '';
-        const nameParts = (user.fullName || user.email.split('@')[0]).split(' ');
+        const nameParts = (user.fullName || user.email.split('@')[0]).split(
+          ' ',
+        );
         const { token } = await this.safepayService.createCustomer({
           email: user.email,
           firstName: nameParts[0],
@@ -180,7 +191,9 @@ export class SubscriptionsService {
           .single()) as DbResult<SubscriptionRow>;
 
         if (insertError || !created) {
-          throw new InternalServerErrorException('Failed to create subscription');
+          throw new InternalServerErrorException(
+            'Failed to create subscription',
+          );
         }
         subscription = created;
       }
@@ -188,7 +201,9 @@ export class SubscriptionsService {
       // Ensure we have a Safepay customer ID
       let customerToken = subscription.safepay_customer_id;
       if (!customerToken) {
-        const nameParts = (user.fullName || user.email.split('@')[0]).split(' ');
+        const nameParts = (user.fullName || user.email.split('@')[0]).split(
+          ' ',
+        );
         const { token } = await this.safepayService.createCustomer({
           email: user.email,
           firstName: nameParts[0],
@@ -198,7 +213,10 @@ export class SubscriptionsService {
         customerToken = token;
         await adminClient
           .from('subscriptions')
-          .update({ safepay_customer_id: customerToken, updated_at: new Date().toISOString() })
+          .update({
+            safepay_customer_id: customerToken,
+            updated_at: new Date().toISOString(),
+          })
           .eq('id', subscription.id);
       }
 
@@ -209,7 +227,8 @@ export class SubscriptionsService {
       );
 
       // Generate hosted checkout URL (card form, no login page)
-      const frontendUrl = this.safepayService['frontendUrl'] || 'http://localhost:3000';
+      const frontendUrl =
+        this.safepayService['frontendUrl'] || 'http://localhost:3000';
       const checkoutUrl = await this.safepayService.generateCheckoutUrl(
         session.trackerToken,
         `${frontendUrl}/subscribe/success?subscription_id=${subscription.id}`,
@@ -234,24 +253,23 @@ export class SubscriptionsService {
   }
 
   /**
-   * Activates a subscription after successful card tokenization.
+   * Initiates subscription activation after card tokenization.
    *
-   * Called by the success page after Safepay redirects back.
-   * 1. Verifies the instrument session completed
-   * 2. Charges the first month via unscheduled_cof
-   * 3. Activates the subscription with period dates
+   * Creates an async charge via chargeCustomer(). The actual activation
+   * happens when the Safepay webhook confirms payment.
+   * Frontend should poll GET /api/subscriptions/me until status changes.
    *
    * @param subscriptionId - Subscription UUID
    * @param tracker - Safepay tracker token from redirect URL (optional)
-   * @returns Activated subscription
+   * @returns Subscription (still pending — webhook will activate)
    */
   async activateSubscription(
     subscriptionId: string,
+    clientProfileId: string,
     tracker?: string,
   ): Promise<SubscriptionResponse> {
     const adminClient = this.supabaseService.getAdminClient();
 
-    // Fetch subscription
     const { data: subscription, error: fetchError } = (await adminClient
       .from('subscriptions')
       .select('*')
@@ -260,6 +278,13 @@ export class SubscriptionsService {
 
     if (fetchError || !subscription) {
       throw new NotFoundException('Subscription not found');
+    }
+
+    // Verify the subscription belongs to the requesting client
+    if (subscription.client_profile_id !== clientProfileId) {
+      throw new ForbiddenException(
+        'You do not have permission to activate this subscription',
+      );
     }
 
     // Idempotency: already active
@@ -273,18 +298,17 @@ export class SubscriptionsService {
       );
     }
 
-    // Check for duplicate activation (same tracker already succeeded)
+    // Check for duplicate activation (same tracker already processed)
     if (tracker) {
       const { data: existingPayment } = (await adminClient
         .from('subscription_payments')
-        .select('id')
+        .select('id, status')
         .eq('subscription_id', subscriptionId)
         .eq('safepay_tracker_token', tracker)
-        .eq('status', 'succeeded')
-        .single()) as DbResult<{ id: string }>;
+        .neq('status', 'failed')
+        .single()) as DbResult<{ id: string; status: string }>;
 
       if (existingPayment) {
-        // Already processed this tracker — just return the subscription
         const { data: current } = (await adminClient
           .from('subscriptions')
           .select('*')
@@ -301,28 +325,29 @@ export class SubscriptionsService {
       );
     }
 
-    // Charge first month
+    // Initiate async charge (webhook will confirm)
     const orderId = `SUB-${subscriptionId.slice(0, 8).toUpperCase()}`;
     const chargeResult = await this.safepayService.chargeCustomer(
       customerToken,
       SUBSCRIPTION_PLAN.AMOUNT_PAISA,
       SUBSCRIPTION_PLAN.CURRENCY,
       orderId,
+      { type: 'subscription', referenceId: subscriptionId },
     );
 
-    // Record payment attempt
-    await adminClient.from('subscription_payments').insert({
-      subscription_id: subscriptionId,
-      amount: SUBSCRIPTION_PLAN.MONTHLY_AMOUNT,
-      currency: SUBSCRIPTION_PLAN.CURRENCY,
-      safepay_tracker_token: chargeResult.trackerToken || tracker,
-      safepay_charge_token: chargeResult.chargeToken,
-      status: chargeResult.success ? 'succeeded' : 'failed',
-      failure_reason: chargeResult.error,
-      is_renewal: false,
-    });
+    if (chargeResult.status === 'failed') {
+      // Session creation itself failed — record and throw
+      await adminClient.from('subscription_payments').insert({
+        subscription_id: subscriptionId,
+        amount: SUBSCRIPTION_PLAN.MONTHLY_AMOUNT,
+        currency: SUBSCRIPTION_PLAN.CURRENCY,
+        safepay_tracker_token: chargeResult.trackerToken || 'no-tracker',
+        safepay_charge_token: null,
+        status: 'failed',
+        failure_reason: chargeResult.error,
+        is_renewal: false,
+      });
 
-    if (!chargeResult.success) {
       await adminClient
         .from('subscriptions')
         .update({
@@ -332,61 +357,56 @@ export class SubscriptionsService {
         .eq('id', subscriptionId);
 
       throw new BadRequestException(
-        `Payment failed: ${chargeResult.error || 'Card charge was unsuccessful'}`,
+        `Payment initiation failed: ${chargeResult.error || 'Could not create charge session'}`,
       );
     }
 
-    // Activate subscription
-    const now = new Date();
-    const periodEnd = new Date(now);
-    periodEnd.setMonth(periodEnd.getMonth() + 1);
+    // Record pending payment — webhook will update to succeeded/failed
+    await adminClient.from('subscription_payments').insert({
+      subscription_id: subscriptionId,
+      amount: SUBSCRIPTION_PLAN.MONTHLY_AMOUNT,
+      currency: SUBSCRIPTION_PLAN.CURRENCY,
+      safepay_tracker_token: chargeResult.trackerToken,
+      safepay_charge_token: null,
+      status: 'pending',
+      failure_reason: null,
+      is_renewal: false,
+    });
 
-    const { data: activated, error: updateError } = (await adminClient
-      .from('subscriptions')
-      .update({
-        status: SubscriptionStatus.ACTIVE,
-        current_period_start: now.toISOString(),
-        current_period_end: periodEnd.toISOString(),
-        retry_count: 0,
-        next_retry_at: null,
-        last_payment_error: null,
-        updated_at: now.toISOString(),
-      })
-      .eq('id', subscriptionId)
-      .select()
-      .single()) as DbResult<SubscriptionRow>;
+    this.logger.log(
+      `Subscription ${subscriptionId} charge initiated (tracker: ${chargeResult.trackerToken}) — awaiting webhook`,
+    );
 
-    if (updateError || !activated) {
-      throw new InternalServerErrorException('Failed to activate subscription');
-    }
-
-    this.logger.log(`Subscription ${subscriptionId} activated`);
-    return this.mapSubscriptionRow(activated);
+    // Return the subscription as-is (still pending)
+    return this.mapSubscriptionRow(subscription);
   }
 
   /**
    * Processes due subscription renewals and retries.
    *
-   * Called by the billing scheduler cron job. Finds:
-   * 1. Active subscriptions past their period end
-   * 2. Subscriptions with pending retry attempts
-   *
-   * Charges stored cards and updates subscription state accordingly.
+   * Called by the billing scheduler cron job. Initiates async charges
+   * for due subscriptions. Actual success/failure handled by webhook.
+   * Also cleans up stale pending payments older than 24h.
    */
-  async processRenewals(): Promise<{ processed: number; succeeded: number; failed: number }> {
+  async processRenewals(): Promise<{
+    processed: number;
+    initiated: number;
+    failed: number;
+  }> {
     const adminClient = this.supabaseService.getAdminClient();
     const now = new Date().toISOString();
     let processed = 0;
-    let succeeded = 0;
+    let initiated = 0;
     let failed = 0;
 
-    // Find subscriptions due for renewal or retry
+    // Find subscriptions due for renewal
     const { data: dueSubscriptions, error } = (await adminClient
       .from('subscriptions')
       .select('*')
       .eq('status', SubscriptionStatus.ACTIVE)
       .lte('current_period_end', now)) as DbListResult<SubscriptionRow>;
 
+    // Find subscriptions due for retry
     const { data: retrySubscriptions } = (await adminClient
       .from('subscriptions')
       .select('*')
@@ -396,7 +416,7 @@ export class SubscriptionsService {
 
     if (error) {
       this.logger.error(`Failed to query due subscriptions: ${error.message}`);
-      return { processed: 0, succeeded: 0, failed: 0 };
+      return { processed: 0, initiated: 0, failed: 0 };
     }
 
     // Combine and deduplicate
@@ -416,51 +436,48 @@ export class SubscriptionsService {
         continue;
       }
 
+      // Skip if there's already a pending payment for this subscription
+      const { data: pendingPayment } = (await adminClient
+        .from('subscription_payments')
+        .select('id')
+        .eq('subscription_id', subscription.id)
+        .eq('status', 'pending')
+        .eq('is_renewal', true)
+        .single()) as DbResult<{ id: string }>;
+
+      if (pendingPayment) {
+        this.logger.log(
+          `Subscription ${subscription.id} already has a pending renewal — skipping`,
+        );
+        continue;
+      }
+
       const orderId = `SUB-RENEW-${subscription.id.slice(0, 8).toUpperCase()}-${Date.now()}`;
       const chargeResult = await this.safepayService.chargeCustomer(
         customerToken,
         SUBSCRIPTION_PLAN.AMOUNT_PAISA,
         SUBSCRIPTION_PLAN.CURRENCY,
         orderId,
+        { type: 'subscription', referenceId: subscription.id },
       );
 
-      // Record payment
+      // Record payment attempt
       await adminClient.from('subscription_payments').insert({
         subscription_id: subscription.id,
         amount: SUBSCRIPTION_PLAN.MONTHLY_AMOUNT,
         currency: SUBSCRIPTION_PLAN.CURRENCY,
-        safepay_tracker_token: chargeResult.trackerToken,
-        safepay_charge_token: chargeResult.chargeToken,
-        status: chargeResult.success ? 'succeeded' : 'failed',
+        safepay_tracker_token: chargeResult.trackerToken || 'no-tracker',
+        safepay_charge_token: null,
+        status: chargeResult.status === 'failed' ? 'failed' : 'pending',
         failure_reason: chargeResult.error,
         is_renewal: true,
       });
 
-      if (chargeResult.success) {
-        // Extend period by 1 month from current end (not from now)
-        const periodStart = new Date(subscription.current_period_end || now);
-        const periodEnd = new Date(periodStart);
-        periodEnd.setMonth(periodEnd.getMonth() + 1);
-
-        await adminClient
-          .from('subscriptions')
-          .update({
-            current_period_start: periodStart.toISOString(),
-            current_period_end: periodEnd.toISOString(),
-            retry_count: 0,
-            next_retry_at: null,
-            last_payment_error: null,
-            updated_at: new Date().toISOString(),
-          })
-          .eq('id', subscription.id);
-
-        this.logger.log(`Renewal succeeded for subscription ${subscription.id}`);
-        succeeded++;
-      } else {
+      if (chargeResult.status === 'failed') {
+        // Session creation failed — handle retry logic
         const retryCount = subscription.retry_count + 1;
 
         if (retryCount >= MAX_RETRIES) {
-          // Max retries reached — mark past_due
           await adminClient
             .from('subscriptions')
             .update({
@@ -476,7 +493,6 @@ export class SubscriptionsService {
             `Subscription ${subscription.id} marked past_due after ${retryCount} failed retries`,
           );
         } else {
-          // Schedule next retry
           const retryDays = RETRY_SCHEDULE_DAYS[retryCount - 1];
           const nextRetry = new Date();
           nextRetry.setDate(nextRetry.getDate() + retryDays);
@@ -492,17 +508,322 @@ export class SubscriptionsService {
             .eq('id', subscription.id);
 
           this.logger.log(
-            `Renewal failed for ${subscription.id}, retry ${retryCount}/${MAX_RETRIES} scheduled in ${retryDays} days`,
+            `Renewal session failed for ${subscription.id}, retry ${retryCount}/${MAX_RETRIES} in ${retryDays} days`,
           );
         }
         failed++;
+      } else {
+        this.logger.log(
+          `Renewal charge initiated for ${subscription.id} (tracker: ${chargeResult.trackerToken})`,
+        );
+        initiated++;
       }
     }
 
+    // Clean up stale pending payments (older than 24h)
+    await this.cleanupStalePendingPayments();
+
     this.logger.log(
-      `Renewal processing complete: ${processed} processed, ${succeeded} succeeded, ${failed} failed`,
+      `Renewal processing: ${processed} processed, ${initiated} charges initiated, ${failed} session failures`,
     );
-    return { processed, succeeded, failed };
+    return { processed, initiated, failed };
+  }
+
+  /**
+   * Checks stale pending payments (>24h) against Safepay reporter API.
+   * Marks them as succeeded or failed based on actual state.
+   * Handles edge cases where webhooks were lost.
+   */
+  private async cleanupStalePendingPayments(): Promise<void> {
+    const adminClient = this.supabaseService.getAdminClient();
+    const cutoff = new Date();
+    cutoff.setHours(cutoff.getHours() - 24);
+
+    const { data: stalePayments } = (await adminClient
+      .from('subscription_payments')
+      .select('*')
+      .eq('status', 'pending')
+      .lt(
+        'created_at',
+        cutoff.toISOString(),
+      )) as DbListResult<SubscriptionPaymentRow>;
+
+    if (!stalePayments?.length) return;
+
+    this.logger.log(
+      `Found ${stalePayments.length} stale pending payments to check`,
+    );
+
+    for (const payment of stalePayments) {
+      if (
+        !payment.safepay_tracker_token ||
+        payment.safepay_tracker_token === 'no-tracker'
+      ) {
+        await adminClient
+          .from('subscription_payments')
+          .update({
+            status: 'failed',
+            failure_reason: 'No tracker token — stale cleanup',
+          })
+          .eq('id', payment.id);
+        continue;
+      }
+
+      try {
+        const verification = await this.safepayService.verifyPayment(
+          payment.safepay_tracker_token,
+        );
+
+        if (verification.isPaid) {
+          this.logger.log(`Stale payment ${payment.id} verified as paid`);
+          await this.handlePaymentSuccess(
+            payment.safepay_tracker_token,
+            verification.reference,
+            null,
+          );
+        } else {
+          this.logger.log(
+            `Stale payment ${payment.id} verified as not paid (${verification.state})`,
+          );
+          await this.handlePaymentFailure(
+            payment.safepay_tracker_token,
+            `Stale cleanup: ${verification.state}`,
+            null,
+          );
+        }
+      } catch (error) {
+        this.logger.error(
+          `Failed to verify stale payment ${payment.id}`,
+          error,
+        );
+        await adminClient
+          .from('subscription_payments')
+          .update({
+            status: 'failed',
+            failure_reason: 'Verification error during stale cleanup',
+          })
+          .eq('id', payment.id);
+      }
+    }
+  }
+
+  /**
+   * Handles successful payment webhook for a subscription.
+   *
+   * Called by PaymentsWebhookService when `payment.succeeded` arrives.
+   * Updates subscription_payments status and activates/renews subscription.
+   *
+   * @param trackerToken - Safepay tracker token
+   * @param chargeToken - Safepay charge token (ch_xxx)
+   * @param webhookData - Full webhook payload for audit
+   */
+  async handlePaymentSuccess(
+    trackerToken: string,
+    chargeToken: string | null,
+    webhookData: Record<string, unknown> | null,
+  ): Promise<void> {
+    const adminClient = this.supabaseService.getAdminClient();
+
+    // Find the pending payment by tracker
+    const { data: payment, error } = (await adminClient
+      .from('subscription_payments')
+      .select('*')
+      .eq('safepay_tracker_token', trackerToken)
+      .eq('status', 'pending')
+      .single()) as DbResult<SubscriptionPaymentRow>;
+
+    if (error || !payment) {
+      // Check if already processed (idempotency)
+      const { data: processed } = (await adminClient
+        .from('subscription_payments')
+        .select('id')
+        .eq('safepay_tracker_token', trackerToken)
+        .eq('status', 'succeeded')
+        .single()) as DbResult<{ id: string }>;
+
+      if (processed) {
+        this.logger.log(`Payment ${trackerToken} already processed — skipping`);
+        return;
+      }
+
+      this.logger.warn(`No pending payment found for tracker: ${trackerToken}`);
+      return;
+    }
+
+    // Update payment to succeeded
+    await adminClient
+      .from('subscription_payments')
+      .update({
+        status: 'succeeded',
+        safepay_charge_token: chargeToken,
+        safepay_webhook_data: webhookData,
+      })
+      .eq('id', payment.id);
+
+    // Fetch the subscription
+    const { data: subscription } = (await adminClient
+      .from('subscriptions')
+      .select('*')
+      .eq('id', payment.subscription_id)
+      .single()) as DbResult<SubscriptionRow>;
+
+    if (!subscription) {
+      this.logger.error(`Subscription not found for payment: ${payment.id}`);
+      return;
+    }
+
+    if (payment.is_renewal) {
+      // Renewal: extend period by 1 month from current end
+      const periodStart = new Date(
+        subscription.current_period_end || new Date().toISOString(),
+      );
+      const periodEnd = new Date(periodStart);
+      periodEnd.setMonth(periodEnd.getMonth() + 1);
+
+      await adminClient
+        .from('subscriptions')
+        .update({
+          current_period_start: periodStart.toISOString(),
+          current_period_end: periodEnd.toISOString(),
+          retry_count: 0,
+          next_retry_at: null,
+          last_payment_error: null,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', subscription.id);
+
+      this.logger.log(`Renewal succeeded for subscription ${subscription.id}`);
+    } else {
+      // First payment: activate subscription
+      const now = new Date();
+      const periodEnd = new Date(now);
+      periodEnd.setMonth(periodEnd.getMonth() + 1);
+
+      await adminClient
+        .from('subscriptions')
+        .update({
+          status: SubscriptionStatus.ACTIVE,
+          current_period_start: now.toISOString(),
+          current_period_end: periodEnd.toISOString(),
+          retry_count: 0,
+          next_retry_at: null,
+          last_payment_error: null,
+          updated_at: now.toISOString(),
+        })
+        .eq('id', subscription.id);
+
+      this.logger.log(`Subscription ${subscription.id} activated via webhook`);
+    }
+  }
+
+  /**
+   * Handles failed payment webhook for a subscription.
+   *
+   * Called by PaymentsWebhookService when `payment.failed` arrives.
+   * Updates subscription_payments status and handles retry logic.
+   *
+   * @param trackerToken - Safepay tracker token
+   * @param failureReason - Error message from Safepay
+   * @param webhookData - Full webhook payload for audit
+   */
+  async handlePaymentFailure(
+    trackerToken: string,
+    failureReason: string,
+    webhookData: Record<string, unknown> | null,
+  ): Promise<void> {
+    const adminClient = this.supabaseService.getAdminClient();
+
+    // Find the pending payment
+    const { data: payment, error } = (await adminClient
+      .from('subscription_payments')
+      .select('*')
+      .eq('safepay_tracker_token', trackerToken)
+      .eq('status', 'pending')
+      .single()) as DbResult<SubscriptionPaymentRow>;
+
+    if (error || !payment) {
+      this.logger.warn(
+        `No pending payment found for failed tracker: ${trackerToken}`,
+      );
+      return;
+    }
+
+    // Update payment to failed
+    await adminClient
+      .from('subscription_payments')
+      .update({
+        status: 'failed',
+        failure_reason: failureReason,
+        safepay_webhook_data: webhookData,
+      })
+      .eq('id', payment.id);
+
+    // Fetch subscription
+    const { data: subscription } = (await adminClient
+      .from('subscriptions')
+      .select('*')
+      .eq('id', payment.subscription_id)
+      .single()) as DbResult<SubscriptionRow>;
+
+    if (!subscription) {
+      this.logger.error(
+        `Subscription not found for failed payment: ${payment.id}`,
+      );
+      return;
+    }
+
+    if (payment.is_renewal) {
+      // Renewal failure: handle retry logic
+      const retryCount = subscription.retry_count + 1;
+
+      if (retryCount >= MAX_RETRIES) {
+        await adminClient
+          .from('subscriptions')
+          .update({
+            status: SubscriptionStatus.PAST_DUE,
+            retry_count: retryCount,
+            next_retry_at: null,
+            last_payment_error: failureReason,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', subscription.id);
+
+        this.logger.warn(
+          `Subscription ${subscription.id} marked past_due after ${retryCount} failed retries`,
+        );
+      } else {
+        const retryDays = RETRY_SCHEDULE_DAYS[retryCount - 1];
+        const nextRetry = new Date();
+        nextRetry.setDate(nextRetry.getDate() + retryDays);
+
+        await adminClient
+          .from('subscriptions')
+          .update({
+            retry_count: retryCount,
+            next_retry_at: nextRetry.toISOString(),
+            last_payment_error: failureReason,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', subscription.id);
+
+        this.logger.log(
+          `Renewal failed for ${subscription.id}, retry ${retryCount}/${MAX_RETRIES} in ${retryDays} days`,
+        );
+      }
+    } else {
+      // First payment failure: update subscription error
+      await adminClient
+        .from('subscriptions')
+        .update({
+          last_payment_error: failureReason,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', subscription.id);
+
+      this.logger.warn(
+        `First payment failed for subscription ${subscription.id}: ${failureReason}`,
+      );
+    }
   }
 
   /** Retrieves the authenticated client's subscription */

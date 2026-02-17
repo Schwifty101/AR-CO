@@ -9,7 +9,7 @@ import { SupabaseService } from './database/supabase.service';
 import { AdminWhitelistService } from './database/admin-whitelist.service';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { rawBody: true });
 
   // Set global API prefix
   app.setGlobalPrefix('api');

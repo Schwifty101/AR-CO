@@ -95,16 +95,22 @@ export interface CustomerResult {
   token: string;
 }
 
-/** Result from charging a customer's stored card */
+/** Result from initiating a customer charge (async — webhook confirms) */
 export interface ChargeResult {
-  /** Whether the charge was successful */
-  success: boolean;
-  /** Tracker token for this charge */
+  /** Tracker token for this charge session */
   trackerToken: string;
-  /** Charge token (ch_xxx) if successful */
-  chargeToken: string | null;
-  /** Error message if failed */
+  /** Always 'pending' — actual result arrives via webhook */
+  status: 'pending' | 'failed';
+  /** Error message if session creation itself failed */
   error: string | null;
+}
+
+/** Metadata passed to Safepay for webhook routing */
+export interface ChargeMetadata {
+  /** Payment type for webhook routing */
+  type: 'subscription' | 'consultation' | 'service' | 'invoice';
+  /** Reference ID in our system (subscription ID, booking ID, etc.) */
+  referenceId: string;
 }
 
 @Injectable()
@@ -185,7 +191,7 @@ export class SafepayService implements OnModuleInit {
 
     let session: { data?: { tracker?: { token?: string } } };
     try {
-      session = await this.safepay.payments.session.setup({
+      session = (await this.safepay.payments.session.setup({
         merchant_api_key: this.publicKey,
         intent: 'CYBERSOURCE',
         mode: 'payment',
@@ -194,7 +200,7 @@ export class SafepayService implements OnModuleInit {
         metadata: {
           order_id: params.orderId,
         },
-      });
+      })) as unknown as { data?: { tracker?: { token?: string } } };
     } catch (error) {
       this.logger.error('Safepay session creation failed', error);
       throw new InternalServerErrorException(
@@ -270,8 +276,11 @@ export class SafepayService implements OnModuleInit {
         tbt,
         env: this.environment as 'development' | 'sandbox' | 'production',
         source: 'hosted',
-        redirect_url: redirectUrl || `${this.frontendUrl}/consultation/payment-callback`,
-        cancel_url: cancelUrl || `${this.frontendUrl}/consultation/payment-callback?cancelled=true`,
+        redirect_url:
+          redirectUrl || `${this.frontendUrl}/consultation/payment-callback`,
+        cancel_url:
+          cancelUrl ||
+          `${this.frontendUrl}/consultation/payment-callback?cancelled=true`,
       });
 
       this.logger.log(`Checkout URL generated for tracker: ${trackerToken}`);
@@ -316,7 +325,9 @@ export class SafepayService implements OnModuleInit {
     // Use reporter.payments.fetch() — the only query method on Reporter.Payments
     let payment: Record<string, unknown>;
     try {
-      payment = await this.safepay.reporter.payments.fetch(trackerToken);
+      payment = (await this.safepay.reporter.payments.fetch(
+        trackerToken,
+      )) as unknown as Record<string, unknown>;
     } catch (error) {
       this.logger.error('Safepay payment verification failed', error);
       throw new InternalServerErrorException(
@@ -391,18 +402,21 @@ export class SafepayService implements OnModuleInit {
     this.logger.log(`Creating Safepay customer: ${params.email}`);
 
     try {
-      const response = await this.safepay.customers.object.create({
+      const response = (await this.safepay.customers.object.create({
         first_name: params.firstName,
         last_name: params.lastName,
         email: params.email,
         phone_number: params.phone || undefined,
         country: 'PK',
         is_guest: false,
-      });
+      })) as unknown as { data?: { token?: string } };
 
-      const token = (response as { data?: { token?: string } })?.data?.token;
+      const token = response?.data?.token;
       if (!token) {
-        this.logger.error('Safepay customer creation returned no token', response);
+        this.logger.error(
+          'Safepay customer creation returned no token',
+          response,
+        );
         throw new InternalServerErrorException(
           'Failed to create customer — no token returned',
         );
@@ -452,14 +466,14 @@ export class SafepayService implements OnModuleInit {
 
     let session: { data?: { tracker?: { token?: string } } };
     try {
-      session = await this.safepay.payments.session.setup({
+      session = (await this.safepay.payments.session.setup({
         merchant_api_key: this.publicKey,
         intent: 'CYBERSOURCE',
         mode: 'instrument',
         currency,
         amount: 0,
         user: customerToken,
-      });
+      })) as unknown as { data?: { tracker?: { token?: string } } };
     } catch (error) {
       this.logger.error('Safepay instrument session creation failed', error);
       throw new InternalServerErrorException(
@@ -488,25 +502,26 @@ export class SafepayService implements OnModuleInit {
   }
 
   /**
-   * Charges a customer's stored card via merchant-initiated transaction.
+   * Initiates an async charge on a customer's stored card.
    *
-   * Uses `mode: 'unscheduled_cof'` with `entry_mode: 'tms'` to charge
-   * a previously tokenized card without customer interaction.
+   * Creates an `unscheduled_cof` session — the charge processes asynchronously.
+   * Actual confirmation arrives via Safepay webhook (`payment.succeeded` / `payment.failed`).
+   * Do NOT call verifyPayment() — it will see TRACKER_STARTED.
    *
    * @param customerToken - Safepay customer token (cust_xxx)
    * @param amount - Amount in paisa (PKR * 100)
    * @param currency - ISO currency code
    * @param orderId - Order ID for tracking
-   * @returns Charge result with success status and tokens
+   * @param metadata - Routing metadata for webhook handler
+   * @returns Charge result with tracker (always pending or failed)
    *
    * @example
    * ```typescript
    * const result = await safepayService.chargeCustomer(
-   *   'cust_xxx', 70000, 'PKR', 'SUB-RENEW-2026-02'
+   *   'cust_xxx', 70000, 'PKR', 'SUB-RENEW-2026-02',
+   *   { type: 'subscription', referenceId: 'sub-uuid' },
    * );
-   * if (result.success) {
-   *   // Update subscription period
-   * }
+   * // result.status === 'pending' — wait for webhook
    * ```
    */
   async chargeCustomer(
@@ -514,6 +529,7 @@ export class SafepayService implements OnModuleInit {
     amount: number,
     currency: string,
     orderId: string,
+    metadata: ChargeMetadata,
   ): Promise<ChargeResult> {
     if (!this.safepay) {
       throw new InternalServerErrorException(
@@ -527,7 +543,7 @@ export class SafepayService implements OnModuleInit {
 
     let session: { data?: { tracker?: { token?: string } } };
     try {
-      session = await this.safepay.payments.session.setup({
+      session = (await this.safepay.payments.session.setup({
         merchant_api_key: this.publicKey,
         intent: 'CYBERSOURCE',
         mode: 'unscheduled_cof',
@@ -535,15 +551,23 @@ export class SafepayService implements OnModuleInit {
         currency,
         amount,
         user: customerToken,
-        metadata: { order_id: orderId },
-      });
+        metadata: {
+          order_id: `${metadata.referenceId}`,
+          source: metadata.type,
+        },
+      })) as unknown as { data?: { tracker?: { token?: string } } };
     } catch (error) {
-      this.logger.error(`Charge failed for ${customerToken}`, error);
+      this.logger.error(
+        `Charge session creation failed for ${customerToken}`,
+        error,
+      );
       return {
-        success: false,
         trackerToken: '',
-        chargeToken: null,
-        error: error instanceof Error ? error.message : 'Charge session creation failed',
+        status: 'failed',
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Charge session creation failed',
       };
     }
 
@@ -551,46 +575,21 @@ export class SafepayService implements OnModuleInit {
     if (!trackerToken) {
       this.logger.error('Charge session returned no tracker', session);
       return {
-        success: false,
         trackerToken: '',
-        chargeToken: null,
+        status: 'failed',
         error: 'No tracker returned from charge session',
       };
     }
 
-    // Verify the charge completed
-    try {
-      const verification = await this.verifyPayment(trackerToken);
-      if (verification.isPaid) {
-        this.logger.log(
-          `Charge succeeded: tracker=${trackerToken} ref=${verification.reference}`,
-        );
-        return {
-          success: true,
-          trackerToken,
-          chargeToken: verification.reference,
-          error: null,
-        };
-      } else {
-        this.logger.warn(
-          `Charge not confirmed: tracker=${trackerToken} state=${verification.state}`,
-        );
-        return {
-          success: false,
-          trackerToken,
-          chargeToken: null,
-          error: `Payment state: ${verification.state}`,
-        };
-      }
-    } catch (error) {
-      this.logger.error(`Charge verification failed: ${trackerToken}`, error);
-      return {
-        success: false,
-        trackerToken,
-        chargeToken: null,
-        error: 'Payment verification failed',
-      };
-    }
+    this.logger.log(
+      `Charge initiated (async): tracker=${trackerToken} — awaiting webhook confirmation`,
+    );
+
+    return {
+      trackerToken,
+      status: 'pending',
+      error: null,
+    };
   }
 
   /**
@@ -608,7 +607,7 @@ export class SafepayService implements OnModuleInit {
    * );
    * ```
    */
-  verifyWebhookSignature(payload: unknown, signature: string): boolean {
+  verifyWebhookSignature(rawBody: Buffer | string, signature: string): boolean {
     const webhookSecret = this.configService.get<string>(
       'safepay.webhookSecret',
     );
@@ -617,7 +616,9 @@ export class SafepayService implements OnModuleInit {
       return false;
     }
 
-    const data = Buffer.from(JSON.stringify(payload));
+    const data = Buffer.isBuffer(rawBody)
+      ? rawBody
+      : Buffer.from(rawBody, 'utf-8');
     const expectedSignature = crypto
       .createHmac('sha512', webhookSecret)
       .update(data)
