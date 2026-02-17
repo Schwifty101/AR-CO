@@ -44,6 +44,9 @@ importers:
       '@sendgrid/mail':
         specifier: ^8.1.6
         version: 8.1.6
+      '@sfpy/node-core':
+        specifier: ^0.3.5
+        version: 0.3.5
       '@supabase/supabase-js':
         specifier: ^2.91.0
         version: 2.93.3
@@ -2030,6 +2033,9 @@ packages:
   '@sendgrid/mail@8.1.6':
     resolution: {integrity: sha512-/ZqxUvKeEztU9drOoPC/8opEPOk+jLlB2q4+xpx6HVLq6aFu3pMpalkTpAQz8XfRfpLp8O25bh6pGPcHDCYpqg==}
     engines: {node: '>=12.*'}
+
+  '@sfpy/node-core@0.3.5':
+    resolution: {integrity: sha512-idA/srpwhbENyyEO+5J4rIVYqqv7E2SKb2fpv37YDf9mr6sAHMoYLzmeQdNjRqs4Sd8xz+wBflnScIQD4d7XIA==}
 
   '@sinclair/typebox@0.34.48':
     resolution: {integrity: sha512-kKJTNuK3AQOrgjjotVxMrCn1sUJwM76wMszfq1kdU4uYVJjvEWuFQ6HgvLt4Xz3fSmZlTOxJ/Ie13KnIcWQXFA==}
@@ -7574,6 +7580,10 @@ snapshots:
       '@sendgrid/helpers': 8.0.0
     transitivePeerDependencies:
       - debug
+
+  '@sfpy/node-core@0.3.5':
+    dependencies:
+      qs: 6.14.1
 
   '@sinclair/typebox@0.34.48': {}
 

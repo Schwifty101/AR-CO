@@ -69,6 +69,24 @@ export interface AdminConfig {
 }
 
 /**
+ * Safepay payment gateway configuration interface
+ */
+export interface SafepayConfig {
+  /** Secret API key for backend SDK (sec_xxx) */
+  secretKey: string;
+  /** Public API key for session creation and frontend checkout */
+  publicKey: string;
+  /** Current environment ('sandbox' | 'production') */
+  environment: 'sandbox' | 'production';
+  /** HMAC secret for webhook signature verification */
+  webhookSecret: string;
+  /** API host URL based on environment */
+  host: string;
+  /** Frontend URL for payment redirect callbacks */
+  frontendUrl: string;
+}
+
+/**
  * Complete application configuration interface
  */
 export interface Configuration {
@@ -78,6 +96,7 @@ export interface Configuration {
   email: EmailConfig;
   fileUpload: FileUploadConfig;
   admin: AdminConfig;
+  safepay: SafepayConfig;
 }
 
 /**
@@ -135,5 +154,18 @@ export default (): Configuration => ({
   admin: {
     emails:
       process.env.ADMIN_EMAILS?.split(',').map((email) => email.trim()) || [],
+  },
+  safepay: {
+    secretKey: process.env.SAFEPAY_SECRET_KEY || '',
+    publicKey: process.env.SAFEPAY_PUBLIC_KEY || '',
+    environment:
+      (process.env.SAFEPAY_ENVIRONMENT as 'sandbox' | 'production') ||
+      'sandbox',
+    webhookSecret: process.env.SAFEPAY_WEBHOOK_SECRET || '',
+    host:
+      process.env.SAFEPAY_ENVIRONMENT === 'production'
+        ? 'https://api.getsafepay.com'
+        : 'https://sandbox.api.getsafepay.com',
+    frontendUrl: process.env.FRONTEND_URL || 'http://localhost:3000',
   },
 });

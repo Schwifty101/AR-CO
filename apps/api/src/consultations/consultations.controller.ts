@@ -54,6 +54,7 @@ import {
   ConsultationStatusCheckSchema,
   PaginationSchema,
   ConsultationFiltersSchema,
+  ConfirmConsultationPaymentSchema,
 } from '@repo/shared';
 import type {
   CreateConsultationData,
@@ -63,6 +64,8 @@ import type {
   PaginatedConsultationsResponse,
   ConsultationFilters,
   PaginationParams,
+  ConsultationPaymentInitResponse,
+  ConfirmConsultationPaymentData,
 } from '@repo/shared';
 import type { CalcomWebhookPayload } from './consultations.types';
 
@@ -200,6 +203,67 @@ export class ConsultationsController {
       filtersQuery,
       search,
     );
+  }
+
+  /**
+   * Initiate payment for a consultation booking (Guest endpoint - Step 2)
+   *
+   * Creates Safepay checkout session and returns URL for guest to complete payment.
+   * Guest submits payment via Safepay popup, then returns to callback page.
+   *
+   * Rate limited to 10 requests per minute per IP.
+   *
+   * @param id - UUID of the consultation booking
+   * @returns Safepay checkout URL, amount, currency, order ID
+   *
+   * @example
+   * ```bash
+   * curl -X POST http://localhost:4000/api/consultations/abc-uuid/pay
+   * ```
+   */
+  @Post(':id/pay')
+  @Public()
+  @UseGuards(ThrottlerGuard)
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
+  @HttpCode(HttpStatus.OK)
+  async initiatePayment(
+    @Param('id') id: string,
+  ): Promise<ConsultationPaymentInitResponse> {
+    return this.consultationsService.initiatePayment(id);
+  }
+
+  /**
+   * Confirm Safepay payment (Guest endpoint - Step 3)
+   *
+   * Verifies payment via Safepay Reporter API and updates booking status.
+   * This gates access to Cal.com scheduling (Step 4).
+   *
+   * Idempotent: safe to call multiple times (returns existing booking if already paid).
+   *
+   * Rate limited to 10 requests per minute per IP.
+   *
+   * @param id - UUID of the consultation booking
+   * @param dto - Contains trackerToken from payment redirect callback
+   * @returns Updated booking with payment_confirmed status
+   *
+   * @example
+   * ```bash
+   * curl -X POST http://localhost:4000/api/consultations/abc-uuid/confirm-payment \
+   *   -H "Content-Type: application/json" \
+   *   -d '{ "trackerToken": "track_xxx" }'
+   * ```
+   */
+  @Post(':id/confirm-payment')
+  @Public()
+  @UseGuards(ThrottlerGuard)
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
+  @HttpCode(HttpStatus.OK)
+  async confirmPayment(
+    @Param('id') id: string,
+    @Body(new ZodValidationPipe(ConfirmConsultationPaymentSchema))
+    dto: ConfirmConsultationPaymentData,
+  ): Promise<ConsultationResponse> {
+    return this.consultationsService.confirmPayment(id, dto);
   }
 
   /**
