@@ -17,6 +17,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
+import { motion, LayoutGroup } from 'framer-motion';
 import {
   LayoutDashboard,
   User,
@@ -89,25 +90,35 @@ export function DashboardSidebar({ userType }: DashboardSidebarProps) {
           {userType === 'admin' ? 'Admin Panel' : 'Client Portal'}
         </h2>
       </div>
-      <nav className="space-y-1">
-        {navItems.map((item) => {
-          const Icon = item.icon;
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
-                pathname === item.href
-                  ? 'bg-primary text-primary-foreground'
-                  : 'text-muted-foreground hover:bg-muted hover:text-foreground',
-              )}
-            >
-              <Icon className="h-4 w-4 flex-shrink-0" />
-              {item.label}
-            </Link>
-          );
-        })}
+      <nav className="space-y-1 relative">
+        <LayoutGroup>
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = pathname === item.href;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={cn(
+                  'group relative flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors z-10',
+                  isActive
+                    ? 'text-primary-foreground'
+                    : 'text-muted-foreground hover:text-foreground',
+                )}
+              >
+                {isActive && (
+                  <motion.div
+                    layoutId="active-nav"
+                    className="absolute inset-0 rounded-md bg-primary"
+                    transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                  />
+                )}
+                <Icon className="h-4 w-4 flex-shrink-0 relative z-10" />
+                <span className="relative z-10">{item.label}</span>
+              </Link>
+            );
+          })}
+        </LayoutGroup>
       </nav>
       <div className="mt-auto pt-4 border-t">
         <Button

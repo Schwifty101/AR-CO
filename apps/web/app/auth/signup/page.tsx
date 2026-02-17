@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { SignupForm } from '@/components/auth/signup-form';
 import styles from '@/components/auth/auth.module.css';
 
@@ -11,7 +12,9 @@ export default function SignupPage() {
     <div className={styles.page}>
       <div className={styles.atmosphereGlow} />
       <div className={styles.grainOverlay} />
-      <SignupForm />
+      <Suspense fallback={<div className={styles.loading}>Loading...</div>}>
+        <SignupForm />
+      </Suspense>
     </div>
   );
 }
