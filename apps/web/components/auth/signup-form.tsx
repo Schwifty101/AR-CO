@@ -10,7 +10,7 @@
  */
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -37,6 +37,8 @@ type SignupFormData = z.infer<typeof signupFormSchema>;
  */
 export function SignupForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get('redirect');
   const { setUser } = useAuth();
   const [oauthLoading, setOauthLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -53,6 +55,9 @@ export function SignupForm() {
     try {
       setError(null);
       setOauthLoading(true);
+      if (redirectTo) {
+        document.cookie = `auth_redirect=${encodeURIComponent(redirectTo)}; path=/; max-age=600; SameSite=Lax`;
+      }
       await signInWithGoogle();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Google sign-in failed');
@@ -70,7 +75,7 @@ export function SignupForm() {
         phoneNumber: data.phoneNumber,
       });
       setUser(result.user);
-      router.push('/client/dashboard');
+      router.push(redirectTo || '/client/dashboard');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Sign up failed');
     }

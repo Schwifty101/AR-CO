@@ -16,6 +16,7 @@
  */
 
 import { NextResponse, type NextRequest } from 'next/server';
+import { cookies } from 'next/headers';
 import { createServerClient } from '@/lib/supabase/server';
 
 export async function GET(request: NextRequest) {
@@ -72,7 +73,18 @@ export async function GET(request: NextRequest) {
     userType = (profile as { user_type: string } | null)?.user_type ?? null;
   }
 
-  // 3. Redirect based on userType
+  // 3. Check for auth_redirect cookie (e.g., from /subscribe flow)
+  const cookieStore = await cookies();
+  const authRedirect = cookieStore.get('auth_redirect')?.value;
+
+  if (authRedirect) {
+    const redirectPath = decodeURIComponent(authRedirect);
+    const response = NextResponse.redirect(`${origin}${redirectPath}`);
+    response.cookies.delete('auth_redirect');
+    return response;
+  }
+
+  // 4. Default: redirect based on userType
   const dashboard =
     userType === 'admin' || userType === 'staff'
       ? '/admin/dashboard'

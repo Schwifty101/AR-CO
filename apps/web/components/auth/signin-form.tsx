@@ -46,6 +46,9 @@ export function SigninForm() {
     try {
       setError(null);
       setOauthLoading(true);
+      if (redirectTo) {
+        document.cookie = `auth_redirect=${encodeURIComponent(redirectTo)}; path=/; max-age=600; SameSite=Lax`;
+      }
       await signInWithGoogle();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Google sign-in failed');
