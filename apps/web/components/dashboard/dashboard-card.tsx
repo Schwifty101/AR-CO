@@ -36,7 +36,7 @@ export function DashboardCard({
             whileHover={{ y: -5 }}
             className={cn('h-full', className)}
         >
-            <Card className="h-full overflow-hidden border-muted/40 bg-card/50 backdrop-blur-sm transition-colors hover:bg-card/80 hover:shadow-lg hover:shadow-primary/5">
+            <Card className="h-full overflow-hidden border-border bg-card transition-colors hover:bg-card/90 hover:shadow-lg hover:shadow-primary/5">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground">
                         {title}

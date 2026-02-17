@@ -33,7 +33,7 @@ export function DashboardHeader() {
   };
 
   return (
-    <header className="sticky top-0 z-50 flex h-14 items-center justify-between border-b bg-background/60 px-6 backdrop-blur-md transition-all supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-50 flex h-14 items-center justify-between border-b border-border bg-background/95 px-6 backdrop-blur-md transition-all supports-[backdrop-filter]:bg-background/80">
       <div className="flex items-center gap-2">
         <Link href="/" className="font-bold text-lg tracking-tight hover:text-primary transition-colors">
           AR&CO

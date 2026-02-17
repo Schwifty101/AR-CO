@@ -305,12 +305,6 @@ html.lenis body {
   body {
     @apply text-foreground;
     font-family: 'Cabinet Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
-    /* background: linear-gradient(
-        180deg,
-        rgba(250, 248, 245, 1) 0%,
-        rgba(245, 243, 240, 1) 50%,
-        rgba(240, 238, 235, 1) 100%
-      ); */
     background: var(--heritage-cream);
     background-attachment: fixed;
     color: #1a1a1a;
@@ -365,10 +359,19 @@ html.lenis body {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  /* Dark overrides — inside @layer base so @layer utilities still wins */
+  /* Dark overrides for private dashboard routes (admin/*, client/*).
+     Scoped to .dark so the public heritage site is unaffected. */
+  .dark {
+    background: var(--background);
+    color: var(--foreground);
+  }
+
   .dark h1,
   .dark h2,
   .dark h3,
+  .dark h4,
+  .dark h5,
+  .dark h6,
   .dark a {
     color: var(--foreground);
   }
