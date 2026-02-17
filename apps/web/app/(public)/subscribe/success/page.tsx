@@ -10,7 +10,7 @@
  * @module SubscribeSuccessPage
  */
 
-import { useEffect, useState, useRef } from 'react';
+import { Suspense, useEffect, useState, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
@@ -21,6 +21,22 @@ import styles from './page.module.css';
 type ActivationState = 'loading' | 'success' | 'error';
 
 export default function SubscribeSuccessPage() {
+  return (
+    <Suspense fallback={
+      <div className={styles.page}>
+        <div className={styles.container}>
+          <div className={styles.card}>
+            <Loader2 className={`${styles.icon} ${styles.spinning}`} />
+          </div>
+        </div>
+      </div>
+    }>
+      <SubscribeSuccessContent />
+    </Suspense>
+  );
+}
+
+function SubscribeSuccessContent() {
   const searchParams = useSearchParams();
   const [state, setState] = useState<ActivationState>('loading');
   const [errorMessage, setErrorMessage] = useState('');
