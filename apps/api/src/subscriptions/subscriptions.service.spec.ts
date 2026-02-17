@@ -4,7 +4,6 @@ import {
   ForbiddenException,
   BadRequestException,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { SubscriptionsService } from './subscriptions.service';
 import { SupabaseService } from '../database/supabase.service';
 import { SafepayService } from '../payments/safepay.service';
@@ -18,8 +17,13 @@ describe('SubscriptionsService', () => {
     from: jest.Mock;
   };
   let mockSafepayService: {
-    createSubscriptionCheckout: jest.Mock;
-    cancelSubscription: jest.Mock;
+    createCustomer: jest.Mock;
+    createInstrumentSession: jest.Mock;
+    generateCheckoutUrl: jest.Mock;
+    chargeCustomer: jest.Mock;
+    verifyPayment: jest.Mock;
+    verifyWebhookSignature: jest.Mock;
+    frontendUrl: string;
   };
 
   const mockStaffUser: AuthUser = {
@@ -52,6 +56,9 @@ describe('SubscriptionsService', () => {
     current_period_end: '2024-02-01T00:00:00Z',
     cancelled_at: null,
     cancellation_reason: null,
+    retry_count: 0,
+    next_retry_at: null,
+    last_payment_error: null,
     created_at: '2024-01-01T00:00:00Z',
     updated_at: '2024-01-01T00:00:00Z',
   };
@@ -62,8 +69,13 @@ describe('SubscriptionsService', () => {
     };
 
     mockSafepayService = {
-      createSubscriptionCheckout: jest.fn(),
-      cancelSubscription: jest.fn(),
+      createCustomer: jest.fn(),
+      createInstrumentSession: jest.fn(),
+      generateCheckoutUrl: jest.fn(),
+      chargeCustomer: jest.fn(),
+      verifyPayment: jest.fn(),
+      verifyWebhookSignature: jest.fn(),
+      frontendUrl: 'http://localhost:3000',
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -79,17 +91,6 @@ describe('SubscriptionsService', () => {
           provide: SafepayService,
           useValue: mockSafepayService,
         },
-        {
-          provide: ConfigService,
-          useValue: {
-            get: jest.fn((key: string) => {
-              if (key === 'FRONTEND_URL') {
-                return 'http://localhost:3000';
-              }
-              return undefined;
-            }),
-          },
-        },
       ],
     }).compile();
 
@@ -104,44 +105,64 @@ describe('SubscriptionsService', () => {
     it('should create new subscription and return checkout URL', async () => {
       const checkoutUrl = 'https://sandbox.api.getsafepay.pk/checkout/xyz';
 
+      // Mock: no existing subscription
       mockAdminClient.from.mockReturnValueOnce({
         select: jest.fn().mockReturnValue({
           eq: jest.fn().mockReturnValue({
             single: jest.fn().mockResolvedValue({
               data: null,
-              error: { code: 'PGRST116' }, // No rows
+              error: { code: 'PGRST116' },
             }),
           }),
         }),
       });
 
+      // Mock: createCustomer
+      mockSafepayService.createCustomer.mockResolvedValue({
+        token: 'cust_new',
+      });
+
+      // Mock: insert subscription
       mockAdminClient.from.mockReturnValueOnce({
         insert: jest.fn().mockReturnValue({
           select: jest.fn().mockReturnValue({
             single: jest.fn().mockResolvedValue({
-              data: mockSubscriptionRow,
+              data: {
+                ...mockSubscriptionRow,
+                status: SubscriptionStatus.PENDING,
+                safepay_customer_id: 'cust_new',
+              },
               error: null,
             }),
           }),
         }),
       });
 
-      mockSafepayService.createSubscriptionCheckout.mockResolvedValue({
-        checkoutUrl,
+      // Mock: createInstrumentSession
+      mockSafepayService.createInstrumentSession.mockResolvedValue({
+        trackerToken: 'track_instrument',
+        amount: 0,
+        currency: 'PKR',
+        orderId: '',
       });
+
+      // Mock: generateCheckoutUrl
+      mockSafepayService.generateCheckoutUrl.mockResolvedValue(checkoutUrl);
 
       const result = await service.createSubscription(mockClientUser);
 
       expect(result.subscription.id).toBe('subscription-id');
       expect(result.checkoutUrl).toBe(checkoutUrl);
-      expect(
-        mockSafepayService.createSubscriptionCheckout,
-      ).toHaveBeenCalledWith(
+      expect(mockSafepayService.createCustomer).toHaveBeenCalledWith(
         expect.objectContaining({
-          planId: 'civic_retainer',
-          reference: 'client-profile-id',
-          customerEmail: 'client@example.com',
+          email: 'client@example.com',
+          firstName: 'Test',
+          lastName: 'Client',
         }),
+      );
+      expect(mockSafepayService.createInstrumentSession).toHaveBeenCalledWith(
+        'cust_new',
+        'PKR',
       );
     });
 
@@ -169,8 +190,10 @@ describe('SubscriptionsService', () => {
       const cancelledSubscription = {
         ...mockSubscriptionRow,
         status: SubscriptionStatus.CANCELLED,
+        safepay_customer_id: 'cust_existing',
       };
 
+      // Mock: fetch existing cancelled subscription
       mockAdminClient.from.mockReturnValueOnce({
         select: jest.fn().mockReturnValue({
           eq: jest.fn().mockReturnValue({
@@ -182,13 +205,14 @@ describe('SubscriptionsService', () => {
         }),
       });
 
+      // Mock: update subscription to pending
       mockAdminClient.from.mockReturnValueOnce({
         update: jest.fn().mockReturnValue({
           eq: jest.fn().mockReturnValue({
             select: jest.fn().mockReturnValue({
               single: jest.fn().mockResolvedValue({
                 data: {
-                  ...mockSubscriptionRow,
+                  ...cancelledSubscription,
                   status: SubscriptionStatus.PENDING,
                 },
                 error: null,
@@ -198,7 +222,16 @@ describe('SubscriptionsService', () => {
         }),
       });
 
-      mockSafepayService.createSubscriptionCheckout.mockResolvedValue(
+      // Mock: createInstrumentSession (customer already exists)
+      mockSafepayService.createInstrumentSession.mockResolvedValue({
+        trackerToken: 'track_reactivate',
+        amount: 0,
+        currency: 'PKR',
+        orderId: '',
+      });
+
+      // Mock: generateCheckoutUrl
+      mockSafepayService.generateCheckoutUrl.mockResolvedValue(
         'https://checkout.url',
       );
 
@@ -259,7 +292,8 @@ describe('SubscriptionsService', () => {
   });
 
   describe('cancelSubscription', () => {
-    it('should cancel active subscription', async () => {
+    it('should cancel active subscription (local-only, no Safepay call)', async () => {
+      // Mock: fetch existing active subscription
       mockAdminClient.from.mockReturnValueOnce({
         select: jest.fn().mockReturnValue({
           eq: jest.fn().mockReturnValue({
@@ -271,8 +305,6 @@ describe('SubscriptionsService', () => {
         }),
       });
 
-      mockSafepayService.cancelSubscription.mockResolvedValue(undefined);
-
       const cancelledSubscription = {
         ...mockSubscriptionRow,
         status: SubscriptionStatus.CANCELLED,
@@ -280,6 +312,7 @@ describe('SubscriptionsService', () => {
         cancellation_reason: 'No longer needed',
       };
 
+      // Mock: update subscription to cancelled
       mockAdminClient.from.mockReturnValueOnce({
         update: jest.fn().mockReturnValue({
           eq: jest.fn().mockReturnValue({
@@ -299,9 +332,7 @@ describe('SubscriptionsService', () => {
 
       expect(result.status).toBe(SubscriptionStatus.CANCELLED);
       expect(result.cancellationReason).toBe('No longer needed');
-      expect(mockSafepayService.cancelSubscription).toHaveBeenCalledWith(
-        'safepay-sub-id',
-      );
+      // No Safepay call — cancellation is local-only
     });
 
     it('should throw ForbiddenException if subscription is not active', async () => {

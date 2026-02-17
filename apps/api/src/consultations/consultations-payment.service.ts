@@ -222,6 +222,16 @@ export class ConsultationsPaymentService {
       return mapConsultationRow(booking);
     }
 
+    // Verify tracker token matches what was stored during initiatePayment
+    if (
+      booking.safepay_tracker_token &&
+      dto.trackerToken !== booking.safepay_tracker_token
+    ) {
+      throw new BadRequestException(
+        'Tracker token does not match the payment session for this booking',
+      );
+    }
+
     // Verify payment with Safepay
     const verification = await this.safepayService.verifyPayment(
       dto.trackerToken,
