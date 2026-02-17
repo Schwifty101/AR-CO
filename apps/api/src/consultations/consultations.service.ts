@@ -34,6 +34,7 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { SupabaseService } from '../database/supabase.service';
+import { SafepayService } from '../payments/safepay.service';
 import type { DbResult, DbListResult } from '../database/db-result.types';
 import {
   validateSortColumn,
@@ -47,6 +48,8 @@ import type {
   PaginatedConsultationsResponse,
   ConsultationFilters,
   PaginationParams,
+  ConsultationPaymentInitResponse,
+  ConfirmConsultationPaymentData,
 } from '@repo/shared';
 import {
   ConsultationBookingStatus,
@@ -75,7 +78,10 @@ const ALLOWED_SORT_COLUMNS = [
 export class ConsultationsService {
   private readonly logger = new Logger(ConsultationsService.name);
 
-  constructor(private readonly supabaseService: SupabaseService) {}
+  constructor(
+    private readonly supabaseService: SupabaseService,
+    private readonly safepayService: SafepayService,
+  ) {}
 
   /**
    * Creates a new consultation booking (Step 1: Guest intake form)
@@ -136,6 +142,180 @@ export class ConsultationsService {
       `Booking created: ${booking.reference_number} (ID: ${booking.id})`,
     );
     return mapConsultationRow(booking);
+  }
+
+  /**
+   * Initiates Safepay payment session for a consultation booking (Step 2: Payment)
+   *
+   * Creates a Safepay checkout session and returns the URL for guest payment.
+   * Stores the tracker token in the database for later verification.
+   *
+   * @param bookingId - UUID of the consultation booking
+   * @returns Safepay checkout URL, amount, currency, and order ID
+   * @throws {NotFoundException} If booking not found
+   * @throws {BadRequestException} If payment already completed
+   *
+   * @example
+   * ```typescript
+   * const payment = await consultationsService.initiatePayment('booking-uuid');
+   * // payment.checkoutUrl → 'https://sandbox.api.getsafepay.com/checkout/...'
+   * // payment.amount → 50000000 (500 PKR in paisa)
+   * // payment.currency → 'PKR'
+   * // payment.orderId → 'CON-2026-0042'
+   * ```
+   */
+  async initiatePayment(
+    bookingId: string,
+  ): Promise<ConsultationPaymentInitResponse> {
+    this.logger.log(`Initiating payment for booking: ${bookingId}`);
+
+    const adminClient = this.supabaseService.getAdminClient();
+
+    // Fetch booking
+    const { data: booking, error } = (await adminClient
+      .from('consultation_bookings')
+      .select('*')
+      .eq('id', bookingId)
+      .single()) as DbResult<ConsultationRow>;
+
+    if (error || !booking) {
+      throw new NotFoundException('Booking not found');
+    }
+
+    // Check if already paid
+    if (
+      (booking.payment_status as unknown as ConsultationPaymentStatus) ===
+      ConsultationPaymentStatus.PAID
+    ) {
+      throw new BadRequestException('Payment already completed');
+    }
+
+    // Calculate amount in paisa (Safepay requires smallest currency unit)
+    const amountInPaisa = CONSULTATION_FEE_PKR * 100;
+
+    // Step 1: Create Safepay payment session (tracker)
+    const session = await this.safepayService.createPaymentSession({
+      amount: amountInPaisa,
+      currency: 'PKR',
+      orderId: booking.reference_number,
+    });
+
+    // Step 2: Generate checkout URL with TBT auth token
+    const checkoutUrl = await this.safepayService.generateCheckoutUrl(
+      session.trackerToken,
+    );
+
+    // Store tracker token in database
+    const { error: updateError } = await adminClient
+      .from('consultation_bookings')
+      .update({ safepay_tracker_token: session.trackerToken })
+      .eq('id', bookingId);
+
+    if (updateError) {
+      this.logger.error('Failed to store tracker token', updateError);
+      throw new BadRequestException('Failed to initiate payment session');
+    }
+
+    this.logger.log(
+      `Payment session created for ${booking.reference_number}: ${session.trackerToken}`,
+    );
+
+    return {
+      checkoutUrl,
+      amount: session.amount,
+      currency: session.currency,
+      orderId: session.orderId,
+    };
+  }
+
+  /**
+   * Confirms Safepay payment and updates booking status (Step 3: Verify Payment)
+   *
+   * Verifies payment via Safepay Reporter API and updates booking to 'payment_confirmed' status.
+   * This gating step must complete before guest can access Cal.com scheduling (Step 4).
+   *
+   * Idempotent: Returns existing booking if already paid (safe to call multiple times).
+   *
+   * @param bookingId - UUID of the consultation booking
+   * @param dto - Contains trackerToken from payment redirect callback
+   * @returns Updated booking with payment_confirmed status
+   * @throws {NotFoundException} If booking not found
+   * @throws {BadRequestException} If payment verification fails
+   *
+   * @example
+   * ```typescript
+   * const confirmed = await consultationsService.confirmPayment('booking-uuid', {
+   *   trackerToken: 'track_xxx',
+   * });
+   * // confirmed.paymentStatus → 'paid'
+   * // confirmed.bookingStatus → 'payment_confirmed'
+   * // confirmed.safepayTransactionRef → 'ch_xxx' (charge token)
+   * ```
+   */
+  async confirmPayment(
+    bookingId: string,
+    dto: ConfirmConsultationPaymentData,
+  ): Promise<ConsultationResponse> {
+    this.logger.log(`Confirming payment for booking: ${bookingId}`);
+
+    const adminClient = this.supabaseService.getAdminClient();
+
+    // Fetch booking
+    const { data: booking, error } = (await adminClient
+      .from('consultation_bookings')
+      .select('*')
+      .eq('id', bookingId)
+      .single()) as DbResult<ConsultationRow>;
+
+    if (error || !booking) {
+      throw new NotFoundException('Booking not found');
+    }
+
+    // Idempotency: if already paid, return existing booking
+    if (
+      (booking.payment_status as unknown as ConsultationPaymentStatus) ===
+      ConsultationPaymentStatus.PAID
+    ) {
+      this.logger.log(
+        `Booking ${booking.reference_number} already paid, returning existing data`,
+      );
+      return mapConsultationRow(booking);
+    }
+
+    // Verify payment via Safepay Reporter API
+    const verification = await this.safepayService.verifyPayment(
+      dto.trackerToken,
+    );
+
+    if (!verification.isPaid) {
+      throw new BadRequestException(
+        `Payment not confirmed. Status: ${verification.state}`,
+      );
+    }
+
+    // Update booking with payment confirmation
+    const { data: updated, error: updateError } = (await adminClient
+      .from('consultation_bookings')
+      .update({
+        payment_status: ConsultationPaymentStatus.PAID,
+        booking_status: ConsultationBookingStatus.PAYMENT_CONFIRMED,
+        safepay_transaction_ref: verification.reference,
+        safepay_tracker_token: dto.trackerToken,
+      })
+      .eq('id', bookingId)
+      .select()
+      .single()) as DbResult<ConsultationRow>;
+
+    if (updateError || !updated) {
+      this.logger.error('Failed to update booking after payment', updateError);
+      throw new BadRequestException('Failed to confirm payment');
+    }
+
+    this.logger.log(
+      `Payment confirmed for ${updated.reference_number}: ${verification.reference}`,
+    );
+
+    return mapConsultationRow(updated);
   }
 
   /**
