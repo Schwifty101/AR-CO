@@ -2,7 +2,7 @@
  * Consultations Controller
  *
  * Exposes REST endpoints for consultation booking management:
- * - Guest endpoints: Create booking, initiate payment, confirm payment, check status
+ * - Guest endpoints: Create booking, check status
  * - Cal.com webhook: Receive appointment scheduling events
  * - Staff endpoints: List bookings, view details, cancel bookings
  *
@@ -14,15 +14,6 @@
  * POST /api/consultations
  * Body: { fullName, email, phoneNumber, practiceArea, issueSummary, ... }
  * Returns: { id, referenceNumber, ... }
- *
- * // Guest initiates payment
- * POST /api/consultations/:id/pay
- * Returns: { trackerToken, publicKey, amount, ... } // For SafepayButton
- *
- * // Guest confirms payment
- * POST /api/consultations/:id/confirm-payment
- * Body: { trackerToken }
- * Returns: Updated booking with payment_confirmed status
  *
  * // Guest checks status
  * GET /api/consultations/status?referenceNumber=CON-2026-0042&email=jane@example.com
@@ -54,25 +45,18 @@ import {
 } from '@nestjs/common';
 import { ThrottlerGuard, Throttle } from '@nestjs/throttler';
 import { ConsultationsService } from './consultations.service';
-import {
-  ConsultationsPaymentService,
-  type CalcomWebhookPayload,
-} from './consultations-payment.service';
 import { Public } from '../common/decorators/public.decorator';
 import { Roles } from '../common/decorators/roles.decorator';
 import { UserType } from '../common/enums/user-type.enum';
 import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
 import {
   CreateConsultationSchema,
-  ConfirmConsultationPaymentSchema,
   ConsultationStatusCheckSchema,
   PaginationSchema,
   ConsultationFiltersSchema,
 } from '@repo/shared';
 import type {
   CreateConsultationData,
-  ConsultationPaymentInitResponse,
-  ConfirmConsultationPaymentData,
   ConsultationStatusCheckData,
   ConsultationResponse,
   ConsultationStatusResponse,
@@ -80,6 +64,7 @@ import type {
   ConsultationFilters,
   PaginationParams,
 } from '@repo/shared';
+import type { CalcomWebhookPayload } from './consultations.types';
 
 /**
  * Consultations REST API controller
@@ -89,10 +74,7 @@ import type {
  */
 @Controller('consultations')
 export class ConsultationsController {
-  constructor(
-    private readonly consultationsService: ConsultationsService,
-    private readonly consultationsPaymentService: ConsultationsPaymentService,
-  ) {}
+  constructor(private readonly consultationsService: ConsultationsService) {}
 
   /**
    * Create a new consultation booking (Guest endpoint - Step 1)
@@ -129,65 +111,6 @@ export class ConsultationsController {
     dto: CreateConsultationData,
   ): Promise<ConsultationResponse> {
     return this.consultationsService.createBooking(dto);
-  }
-
-  /**
-   * Initiate payment for a booking (Guest endpoint - Step 2)
-   *
-   * Creates a Safepay payment session and returns credentials for SafepayButton.
-   * Guest must complete payment before proceeding to Cal.com scheduling.
-   *
-   * Rate limited to 10 requests per minute per IP.
-   *
-   * @param id - UUID of the consultation booking
-   * @returns Payment session credentials (trackerToken, publicKey, etc.)
-   *
-   * @example
-   * ```bash
-   * curl -X POST http://localhost:4000/api/consultations/abc-uuid/pay
-   * ```
-   */
-  @Post(':id/pay')
-  @Public()
-  @UseGuards(ThrottlerGuard)
-  @Throttle({ default: { limit: 10, ttl: 60000 } })
-  @HttpCode(HttpStatus.OK)
-  async initiatePayment(
-    @Param('id') id: string,
-  ): Promise<ConsultationPaymentInitResponse> {
-    return this.consultationsPaymentService.initiatePayment(id);
-  }
-
-  /**
-   * Confirm payment after Safepay callback (Guest endpoint - Step 3)
-   *
-   * Guest submits tracker token after Safepay onPayment event.
-   * Service verifies payment with Safepay SDK and updates booking status.
-   *
-   * Rate limited to 10 requests per minute per IP.
-   *
-   * @param id - UUID of the consultation booking
-   * @param dto - Tracker token from SafepayButton onPayment callback
-   * @returns Updated booking with payment_confirmed status
-   *
-   * @example
-   * ```bash
-   * curl -X POST http://localhost:4000/api/consultations/abc-uuid/confirm-payment \
-   *   -H "Content-Type: application/json" \
-   *   -d '{ "trackerToken": "track_xxx" }'
-   * ```
-   */
-  @Post(':id/confirm-payment')
-  @Public()
-  @UseGuards(ThrottlerGuard)
-  @Throttle({ default: { limit: 10, ttl: 60000 } })
-  @HttpCode(HttpStatus.OK)
-  async confirmPayment(
-    @Param('id') id: string,
-    @Body(new ZodValidationPipe(ConfirmConsultationPaymentSchema))
-    dto: ConfirmConsultationPaymentData,
-  ): Promise<ConsultationResponse> {
-    return this.consultationsPaymentService.confirmPayment(id, dto);
   }
 
   /**
@@ -242,7 +165,7 @@ export class ConsultationsController {
   async handleCalcomWebhook(
     @Body() payload: CalcomWebhookPayload,
   ): Promise<{ received: boolean }> {
-    await this.consultationsPaymentService.handleCalcomWebhook(payload);
+    await this.consultationsService.handleCalcomWebhook(payload);
     return { received: true };
   }
 

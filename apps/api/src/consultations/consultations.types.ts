@@ -10,6 +10,34 @@
 import type { ConsultationResponse } from '@repo/shared';
 
 /**
+ * Cal.com v2 webhook payload structure for BOOKING_CREATED events.
+ *
+ * Cal.com webhooks use `responses.email.value` for attendee email (v2 format)
+ * rather than `attendees[0].email` (v1 format).
+ *
+ * @see https://cal.com/docs/api-reference/v2/introduction
+ */
+export interface CalcomWebhookPayload {
+  /** Webhook event type (e.g., 'BOOKING_CREATED', 'BOOKING_CANCELLED') */
+  triggerEvent: string;
+  /** Booking data payload */
+  payload: {
+    /** Cal.com booking UID */
+    uid: string;
+    /** Cal.com booking numeric ID */
+    id: number;
+    /** ISO 8601 start time */
+    startTime: string;
+    /** Optional meeting URL */
+    meetingUrl?: string;
+    /** Optional metadata with custom fields */
+    metadata?: Record<string, unknown>;
+    /** v2 format: form responses including email */
+    responses?: Record<string, { value: string }>;
+  };
+}
+
+/**
  * Database row interface for consultation_bookings table (snake_case)
  *
  * Maps to the consultation_bookings table schema:

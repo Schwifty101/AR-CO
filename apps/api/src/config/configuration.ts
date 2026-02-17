@@ -45,24 +45,6 @@ export interface JwtConfig {
 }
 
 /**
- * Safepay configuration interface
- */
-export interface SafepayConfig {
-  /** Secret API key for backend SDK (sec_xxx) */
-  secretKey: string;
-  /** Public API key for session creation and frontend checkout */
-  publicKey: string;
-  /** Current environment */
-  environment: 'sandbox' | 'production';
-  /** HMAC secret for webhook signature verification */
-  webhookSecret: string;
-  /** API host URL based on environment */
-  host: string;
-  /** Frontend URL for payment redirect callbacks */
-  frontendUrl: string;
-}
-
-/**
  * Email configuration interface
  */
 export interface EmailConfig {
@@ -93,7 +75,6 @@ export interface Configuration {
   app: AppConfig;
   supabase: SupabaseConfig;
   jwt: JwtConfig;
-  safepay: SafepayConfig;
   email: EmailConfig;
   fileUpload: FileUploadConfig;
   admin: AdminConfig;
@@ -134,19 +115,6 @@ export default (): Configuration => ({
     secret: process.env.JWT_SECRET || 'default-secret-change-in-production',
     accessTokenExpiration: process.env.JWT_ACCESS_TOKEN_EXPIRATION || '15m',
     refreshTokenExpiration: process.env.JWT_REFRESH_TOKEN_EXPIRATION || '7d',
-  },
-  safepay: {
-    secretKey: process.env.SAFEPAY_SECRET_KEY || '',
-    publicKey: process.env.SAFEPAY_PUBLIC_KEY || '',
-    environment:
-      (process.env.SAFEPAY_ENVIRONMENT as 'sandbox' | 'production') ||
-      'sandbox',
-    webhookSecret: process.env.SAFEPAY_WEBHOOK_SECRET || '',
-    host:
-      process.env.SAFEPAY_ENVIRONMENT === 'production'
-        ? 'https://api.getsafepay.com'
-        : 'https://sandbox.api.getsafepay.com',
-    frontendUrl: process.env.FRONTEND_URL || 'http://localhost:3000',
   },
   email: {
     sendgridApiKey: process.env.SENDGRID_API_KEY || '',

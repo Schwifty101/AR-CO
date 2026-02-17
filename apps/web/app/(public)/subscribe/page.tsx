@@ -12,7 +12,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth/use-auth';
-import { createSubscription } from '@/lib/api/subscriptions';
 import { toast } from 'sonner';
 import { CheckCircle2, Scale, FileText, Users } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -63,15 +62,8 @@ export default function SubscribePage() {
     }
 
     setSubscribing(true);
-    try {
-      const { checkoutUrl } = await createSubscription();
-      toast.success('Subscription created! Redirecting to payment...');
-      window.location.href = checkoutUrl;
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to create subscription';
-      toast.error(message);
-      setSubscribing(false);
-    }
+    toast.error('Subscription service is currently unavailable.');
+    setSubscribing(false);
   };
 
   if (authLoading) {

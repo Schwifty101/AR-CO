@@ -75,7 +75,6 @@ const ALLOWED_REGISTRATION_SORT_COLUMNS = [
 /**
  * Service for managing facilitation service registration lifecycle
  * Handles guest registration, status tracking, and staff management.
- * Payment initiation is handled by ServiceRegistrationsPaymentService.
  *
  * @class ServiceRegistrationsService
  */

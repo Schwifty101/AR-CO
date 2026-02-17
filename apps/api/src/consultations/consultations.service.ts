@@ -1,13 +1,11 @@
 /**
  * Consultations Service
  *
- * Manages consultation booking CRUD and status tracking for guest users:
+ * Manages consultation booking CRUD, status tracking, and Cal.com integration:
  * - Booking creation (guest intake form)
  * - Status checking (guest tracking by reference number)
  * - Booking listing, detail view, and cancellation (staff)
- *
- * Payment processing and Cal.com webhook handling are in
- * {@link ConsultationsPaymentService}.
+ * - Cal.com webhook handling for appointment scheduling
  *
  * Shared types (ConsultationRow, mapConsultationRow, CONSULTATION_FEE_PKR) are
  * defined in {@link ./consultations.types consultations.types.ts}.
@@ -58,6 +56,7 @@ import {
   ConsultationRow,
   CONSULTATION_FEE_PKR,
   mapConsultationRow,
+  type CalcomWebhookPayload,
 } from './consultations.types';
 
 /**
@@ -379,6 +378,136 @@ export class ConsultationsService {
     }
 
     this.logger.log(`Booking ${id} cancelled successfully`);
+    return mapConsultationRow(updated);
+  }
+
+  /**
+   * Handles Cal.com webhook for appointment scheduling
+   *
+   * Triggered when guest books an appointment via embedded Cal.com.
+   * Matches booking by:
+   * 1. metadata.referenceNumber (if present)
+   * 2. Fallback: attendee email + payment_confirmed status + no existing calcom_booking_uid
+   *
+   * Idempotent: skips update if calcom_booking_uid already linked.
+   *
+   * @param payload - Cal.com webhook payload (BOOKING_CREATED event)
+   * @returns Updated booking or null if not found
+   *
+   * @example
+   * ```typescript
+   * const updated = await consultationsService.handleCalcomWebhook({
+   *   triggerEvent: 'BOOKING_CREATED',
+   *   payload: {
+   *     uid: 'calcom-uid',
+   *     id: 12345,
+   *     startTime: '2026-03-15T10:00:00Z',
+   *     metadata: { referenceNumber: 'CON-2026-0042' },
+   *     responses: { email: { value: 'jane@example.com' } },
+   *   },
+   * });
+   * ```
+   */
+  async handleCalcomWebhook(
+    payload: CalcomWebhookPayload,
+  ): Promise<ConsultationResponse | null> {
+    this.logger.log(
+      `Handling Cal.com webhook: ${payload.triggerEvent ?? 'unknown event'}`,
+    );
+
+    if (payload.triggerEvent !== 'BOOKING_CREATED') {
+      this.logger.log('Ignoring non-BOOKING_CREATED event');
+      return null;
+    }
+
+    const bookingData = payload.payload;
+    const calcomUid = bookingData.uid;
+    const calcomId = bookingData.id;
+    const startTime = bookingData.startTime;
+    const metadata = bookingData.metadata;
+
+    const adminClient = this.supabaseService.getAdminClient();
+
+    // Strategy 1: Match by metadata.referenceNumber
+    const referenceNumber = metadata?.referenceNumber as string | undefined;
+    let booking: ConsultationRow | null = null;
+
+    if (referenceNumber) {
+      this.logger.log(
+        `Attempting match by referenceNumber: ${referenceNumber}`,
+      );
+      const { data } = (await adminClient
+        .from('consultation_bookings')
+        .select('*')
+        .eq('reference_number', referenceNumber)
+        .maybeSingle()) as DbResult<ConsultationRow>;
+      booking = data;
+    }
+
+    // Strategy 2: Fallback - match by attendee email + payment_confirmed + no calcom_booking_uid
+    if (!booking) {
+      const attendeeEmail = bookingData.responses?.email?.value;
+
+      if (attendeeEmail) {
+        this.logger.log(`Attempting match by attendee email: ${attendeeEmail}`);
+        const { data } = (await adminClient
+          .from('consultation_bookings')
+          .select('*')
+          .eq('email', attendeeEmail)
+          .eq('booking_status', ConsultationBookingStatus.PAYMENT_CONFIRMED)
+          .is('calcom_booking_uid', null)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle()) as DbResult<ConsultationRow>;
+        booking = data;
+      }
+    }
+
+    if (!booking) {
+      this.logger.warn(
+        `No matching booking found for Cal.com webhook: ${calcomUid}`,
+      );
+      return null;
+    }
+
+    // Idempotency: skip if already linked
+    if (booking.calcom_booking_uid) {
+      this.logger.log(
+        `Booking ${booking.reference_number} already linked to Cal.com UID ${booking.calcom_booking_uid}`,
+      );
+      return mapConsultationRow(booking);
+    }
+
+    // Update booking with Cal.com details
+    const bookingDateTime = new Date(startTime);
+    const meetingUrl =
+      (metadata?.videoCallUrl as string) ?? bookingData.meetingUrl ?? null;
+
+    const { data: updated, error } = (await adminClient
+      .from('consultation_bookings')
+      .update({
+        calcom_booking_uid: calcomUid,
+        calcom_booking_id: calcomId,
+        booking_date: bookingDateTime.toISOString().split('T')[0],
+        booking_time: bookingDateTime.toISOString().split('T')[1].slice(0, 5),
+        meeting_link: meetingUrl,
+        booking_status: ConsultationBookingStatus.BOOKED,
+      })
+      .eq('id', booking.id)
+      .select()
+      .single()) as DbResult<ConsultationRow>;
+
+    if (error || !updated) {
+      this.logger.error('Failed to update booking with Cal.com data', error);
+      throw new BadRequestException(
+        'Failed to update booking with Cal.com data',
+      );
+    }
+
+    this.logger.log(
+      `Booking ${booking.reference_number} linked to Cal.com UID ${calcomUid}`,
+    );
+
     return mapConsultationRow(updated);
   }
 }

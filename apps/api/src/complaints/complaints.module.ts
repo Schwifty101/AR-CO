@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { SubscriptionsModule } from '../subscriptions/subscriptions.module';
 import { ComplaintsController } from './complaints.controller';
 import { ComplaintsService } from './complaints.service';
 
@@ -8,11 +7,10 @@ import { ComplaintsService } from './complaints.service';
  *
  * @remarks
  * This module provides complaint submission, tracking, assignment, and resolution
- * functionality. It integrates with the SubscriptionsModule to enforce subscription-based
- * access control for complaint submissions.
+ * functionality.
  *
  * Features:
- * - Complaint submission with subscription validation
+ * - Complaint submission
  * - Complaint tracking and filtering
  * - Staff assignment and status management
  * - Auto-generated complaint numbers (CMP-YYYY-NNNN)
@@ -28,7 +26,6 @@ import { ComplaintsService } from './complaints.service';
  * ```
  */
 @Module({
-  imports: [SubscriptionsModule],
   controllers: [ComplaintsController],
   providers: [ComplaintsService],
   exports: [ComplaintsService],
