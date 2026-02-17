@@ -7,7 +7,6 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import { SupabaseService } from '../database/supabase.service';
-import { SubscriptionsService } from '../subscriptions/subscriptions.service';
 import { STAFF_ROLES } from '../common/constants/roles';
 import {
   validateSortColumn,
@@ -68,9 +67,7 @@ const ALLOWED_COMPLAINT_SORT_COLUMNS = [
  * Handles submission, tracking, assignment, and resolution of complaints
  *
  * @remarks
- * This service integrates with Supabase for persistence and enforces
- * subscription-based access control. Only clients with active subscriptions
- * can submit new complaints.
+ * This service integrates with Supabase for persistence.
  *
  * @example
  * ```typescript
@@ -88,36 +85,25 @@ const ALLOWED_COMPLAINT_SORT_COLUMNS = [
 export class ComplaintsService {
   private readonly logger = new Logger(ComplaintsService.name);
 
-  constructor(
-    private readonly supabaseService: SupabaseService,
-    private readonly subscriptionsService: SubscriptionsService,
-  ) {}
+  constructor(private readonly supabaseService: SupabaseService) {}
 
   /**
    * Submits a new complaint on behalf of a client
-   * Requires an active subscription to submit
    *
    * @param user - The authenticated client user
    * @param dto - The complaint creation data
    * @returns The created complaint with auto-generated complaint number
-   * @throws {ForbiddenException} If client does not have an active subscription
    * @throws {InternalServerErrorException} If database operation fails
    *
    * @example
    * ```typescript
-   * try {
-   *   const result = await service.submitComplaint(clientUser, {
-   *     title: 'Water Supply Issue',
-   *     description: 'No water for 3 days in our area',
-   *     targetOrganization: 'Water & Sanitation Authority',
-   *     location: 'Block 5, Gulshan-e-Iqbal',
-   *     category: ComplaintCategory.UTILITIES
-   *   });
-   * } catch (error) {
-   *   if (error instanceof ForbiddenException) {
-   *     // Handle subscription requirement
-   *   }
-   * }
+   * const result = await service.submitComplaint(clientUser, {
+   *   title: 'Water Supply Issue',
+   *   description: 'No water for 3 days in our area',
+   *   targetOrganization: 'Water & Sanitation Authority',
+   *   location: 'Block 5, Gulshan-e-Iqbal',
+   *   category: ComplaintCategory.UTILITIES
+   * });
    * ```
    */
   async submitComplaint(
@@ -129,20 +115,6 @@ export class ComplaintsService {
     }
 
     this.logger.log(`Client ${user.clientProfileId} submitting complaint`);
-
-    // CRITICAL: Check subscription first
-    const isActive = await this.subscriptionsService.isSubscriptionActive(
-      user.clientProfileId,
-    );
-
-    if (!isActive) {
-      this.logger.warn(
-        `Client ${user.clientProfileId} attempted to submit complaint without active subscription`,
-      );
-      throw new ForbiddenException(
-        'Active subscription required to submit complaints',
-      );
-    }
 
     const adminClient = this.supabaseService.getAdminClient();
 

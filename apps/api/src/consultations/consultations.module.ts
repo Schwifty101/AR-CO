@@ -20,21 +20,18 @@
  */
 
 import { Module } from '@nestjs/common';
-import { PaymentsModule } from '../payments/payments.module';
 import { ConsultationsController } from './consultations.controller';
 import { ConsultationsService } from './consultations.service';
-import { ConsultationsPaymentService } from './consultations-payment.service';
 
 /**
  * Consultations feature module
  *
- * Registers controller and services, imports PaymentsModule for SafepayService.
- * Exports both services for potential use in other modules.
+ * Registers controller and service.
+ * Exports service for potential use in other modules.
  */
 @Module({
-  imports: [PaymentsModule],
   controllers: [ConsultationsController],
-  providers: [ConsultationsService, ConsultationsPaymentService],
-  exports: [ConsultationsService, ConsultationsPaymentService],
+  providers: [ConsultationsService],
+  exports: [ConsultationsService],
 })
 export class ConsultationsModule {}

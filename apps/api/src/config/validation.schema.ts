@@ -78,21 +78,6 @@ export const validationSchema = Joi.object({
         'JWT_REFRESH_TOKEN_EXPIRATION must be in format: 15m, 1h, 7d, etc.',
     }),
 
-  // Safepay Configuration (Optional for development, required for production)
-  SAFEPAY_API_KEY: Joi.string().when('NODE_ENV', {
-    is: 'production',
-    then: Joi.required(),
-    otherwise: Joi.optional(),
-  }),
-  SAFEPAY_ENVIRONMENT: Joi.string()
-    .valid('sandbox', 'production')
-    .default('sandbox'),
-  SAFEPAY_WEBHOOK_SECRET: Joi.string().when('NODE_ENV', {
-    is: 'production',
-    then: Joi.required(),
-    otherwise: Joi.optional(),
-  }),
-
   // Email Configuration (Optional for development, required for production)
   SENDGRID_API_KEY: Joi.string().when('NODE_ENV', {
     is: 'production',

@@ -18,7 +18,6 @@ import { UserType } from '../common/enums/user-type.enum';
 import type { AuthUser } from '../common/interfaces/auth-user.interface';
 import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
 import { ServiceRegistrationsService } from './service-registrations.service';
-import { ServiceRegistrationsPaymentService } from './service-registrations-payment.service';
 import {
   CreateServiceRegistrationSchema,
   GuestStatusCheckSchema,
@@ -34,18 +33,6 @@ import {
   type PaginatedServiceRegistrationsResponse,
   type PaginationParams,
 } from '@repo/shared';
-import { z } from 'zod';
-
-/**
- * Schema for initiating payment on a service registration
- * Requires return and cancel URLs for Safepay redirect flow
- */
-const InitiatePaymentSchema = z.object({
-  returnUrl: z.string().url('Valid return URL required'),
-  cancelUrl: z.string().url('Valid cancel URL required'),
-});
-
-type InitiatePaymentData = z.infer<typeof InitiatePaymentSchema>;
 
 /**
  * Controller responsible for handling service registration-related HTTP requests
@@ -73,13 +60,6 @@ type InitiatePaymentData = z.infer<typeof InitiatePaymentSchema>;
  *   descriptionOfNeed: "Need SECP registration"
  * }
  *
- * // Guest initiates payment (no auth required)
- * POST /api/service-registrations/:id/pay
- * Body: {
- *   returnUrl: "https://arco.pk/payment/success",
- *   cancelUrl: "https://arco.pk/payment/cancel"
- * }
- *
  * // Guest checks status (no auth required)
  * GET /api/service-registrations/status?ref=REG-2026-0001&email=ahmed@example.com
  *
@@ -95,7 +75,6 @@ type InitiatePaymentData = z.infer<typeof InitiatePaymentSchema>;
 export class ServiceRegistrationsController {
   constructor(
     private readonly serviceRegistrationsService: ServiceRegistrationsService,
-    private readonly paymentService: ServiceRegistrationsPaymentService,
   ) {}
 
   /**
@@ -132,50 +111,6 @@ export class ServiceRegistrationsController {
     dto: CreateServiceRegistrationData,
   ): Promise<ServiceRegistrationResponse> {
     return this.serviceRegistrationsService.createRegistration(dto);
-  }
-
-  /**
-   * Initiate payment for a service registration (guest/unauthenticated access)
-   * Creates Safepay checkout session and returns checkout URL
-   *
-   * @param id - The registration ID
-   * @param dto - Payment initiation data (returnUrl, cancelUrl)
-   * @returns Checkout URL and registration ID
-   * @throws {NotFoundException} If registration does not exist
-   * @throws {BadRequestException} If payment already completed
-   *
-   * @example
-   * ```typescript
-   * POST /api/service-registrations/registration-uuid-123/pay
-   * Content-Type: application/json
-   *
-   * {
-   *   "returnUrl": "https://arco.pk/payment/success",
-   *   "cancelUrl": "https://arco.pk/payment/cancel"
-   * }
-   *
-   * Response:
-   * {
-   *   "checkoutUrl": "https://sandbox.api.getsafepay.com/checkout/...",
-   *   "registrationId": "registration-uuid-123"
-   * }
-   * ```
-   */
-  @Post(':id/pay')
-  @Public()
-  @UseGuards(ThrottlerGuard)
-  @Throttle({ default: { limit: 10, ttl: 60000 } })
-  @HttpCode(HttpStatus.OK)
-  async initiatePayment(
-    @Param('id') id: string,
-    @Body(new ZodValidationPipe(InitiatePaymentSchema))
-    dto: InitiatePaymentData,
-  ): Promise<{ checkoutUrl: string; registrationId: string }> {
-    return this.paymentService.initiatePayment(
-      id,
-      dto.returnUrl,
-      dto.cancelUrl,
-    );
   }
 
   /**

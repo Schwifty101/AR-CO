@@ -1,7 +1,6 @@
 export {
   UserType,
   CompanyType,
-  SubscriptionStatus,
   ComplaintStatus,
   ComplaintCategory,
   ServiceRegistrationStatus,

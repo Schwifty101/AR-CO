@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -8,9 +7,7 @@ import { DatabaseModule } from './database/database.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { DashboardModule } from './dashboard/dashboard.module';
-import { PaymentsModule } from './payments/payments.module';
 import { ClientsModule } from './clients/clients.module';
-import { SubscriptionsModule } from './subscriptions/subscriptions.module';
 import { ComplaintsModule } from './complaints/complaints.module';
 import { ServiceRegistrationsModule } from './service-registrations/service-registrations.module';
 import { ServicesModule } from './services/services.module';
@@ -23,13 +20,10 @@ import { ConsultationsModule } from './consultations/consultations.module';
     AppConfigModule,
     DatabaseModule,
     ThrottlerModule.forRoot([{ ttl: 60000, limit: 100 }]),
-    ScheduleModule.forRoot(),
     AuthModule,
     UsersModule,
     DashboardModule,
-    PaymentsModule,
     ClientsModule,
-    SubscriptionsModule,
     ComplaintsModule,
     ServiceRegistrationsModule,
     ServicesModule,

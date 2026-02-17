@@ -40,12 +40,6 @@ export {
 } from './clients.schemas';
 
 export {
-  SubscriptionResponseSchema,
-  CancelSubscriptionSchema,
-  PaginatedSubscriptionsResponseSchema,
-} from './subscriptions.schemas';
-
-export {
   CreateComplaintSchema,
   UpdateComplaintStatusSchema,
   ComplaintFiltersSchema,

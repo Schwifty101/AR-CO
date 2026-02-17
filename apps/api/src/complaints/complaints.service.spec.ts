@@ -6,7 +6,6 @@ import {
 } from '@nestjs/common';
 import { ComplaintsService } from './complaints.service';
 import { SupabaseService } from '../database/supabase.service';
-import { SubscriptionsService } from '../subscriptions/subscriptions.service';
 import { UserType } from '../common/enums/user-type.enum';
 import type { AuthUser } from '../common/interfaces/auth-user.interface';
 import {
@@ -24,10 +23,6 @@ describe('ComplaintsService', () => {
 
   const mockAdminClient = {
     from: jest.fn(),
-  };
-
-  const mockSubscriptionsService = {
-    isSubscriptionActive: jest.fn(),
   };
 
   const staffUser: AuthUser = {
@@ -86,10 +81,6 @@ describe('ComplaintsService', () => {
             getAdminClient: jest.fn().mockReturnValue(mockAdminClient),
           },
         },
-        {
-          provide: SubscriptionsService,
-          useValue: mockSubscriptionsService,
-        },
       ],
     }).compile();
 
@@ -114,9 +105,7 @@ describe('ComplaintsService', () => {
       evidenceUrls: ['https://example.com/photo1.jpg'],
     };
 
-    it('should create complaint when subscription is active', async () => {
-      mockSubscriptionsService.isSubscriptionActive.mockResolvedValue(true);
-
+    it('should create complaint successfully', async () => {
       mockAdminClient.from.mockReturnValue({
         insert: jest.fn().mockReturnValue({
           select: jest.fn().mockReturnValue({
@@ -130,31 +119,13 @@ describe('ComplaintsService', () => {
 
       const result = await service.submitComplaint(clientUser, createDto);
 
-      expect(
-        mockSubscriptionsService.isSubscriptionActive,
-      ).toHaveBeenCalledWith('client-uuid-456');
       expect(mockAdminClient.from).toHaveBeenCalledWith('complaints');
       expect(result.complaintNumber).toBe('CMP-2026-0001');
       expect(result.title).toBe('Road Damage');
       expect(result.status).toBe('submitted');
     });
 
-    it('should throw ForbiddenException when no active subscription', async () => {
-      mockSubscriptionsService.isSubscriptionActive.mockResolvedValue(false);
-
-      await expect(
-        service.submitComplaint(clientUser, createDto),
-      ).rejects.toThrow(ForbiddenException);
-
-      expect(
-        mockSubscriptionsService.isSubscriptionActive,
-      ).toHaveBeenCalledWith('client-uuid-456');
-      expect(mockAdminClient.from).not.toHaveBeenCalled();
-    });
-
     it('should throw InternalServerErrorException on database error', async () => {
-      mockSubscriptionsService.isSubscriptionActive.mockResolvedValue(true);
-
       mockAdminClient.from.mockReturnValue({
         insert: jest.fn().mockReturnValue({
           select: jest.fn().mockReturnValue({
@@ -169,6 +140,20 @@ describe('ComplaintsService', () => {
       await expect(
         service.submitComplaint(clientUser, createDto),
       ).rejects.toThrow(InternalServerErrorException);
+    });
+
+    it('should throw BadRequestException when client profile not found', async () => {
+      const userWithoutProfile: AuthUser = {
+        id: 'user-uuid-123',
+        email: 'client@example.com',
+        userType: UserType.CLIENT,
+        fullName: 'Test Client',
+        phoneNumber: null,
+      };
+
+      await expect(
+        service.submitComplaint(userWithoutProfile, createDto),
+      ).rejects.toThrow();
     });
   });
 

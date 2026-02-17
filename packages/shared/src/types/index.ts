@@ -39,12 +39,6 @@ export type {
 } from './clients.types';
 
 export type {
-  SubscriptionResponse,
-  CancelSubscriptionData,
-  PaginatedSubscriptionsResponse,
-} from './subscriptions.types';
-
-export type {
   CreateComplaintData,
   UpdateComplaintStatusData,
   ComplaintFilters,

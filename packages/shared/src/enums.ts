@@ -16,15 +16,6 @@ export enum CompanyType {
   OTHER = 'other',
 }
 
-/** Subscription status for civic retainer plans */
-export enum SubscriptionStatus {
-  PENDING = 'pending',
-  ACTIVE = 'active',
-  PAST_DUE = 'past_due',
-  CANCELLED = 'cancelled',
-  EXPIRED = 'expired',
-}
-
 /** Complaint lifecycle status */
 export enum ComplaintStatus {
   SUBMITTED = 'submitted',
