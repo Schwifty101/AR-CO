@@ -84,7 +84,7 @@ export function DashboardSidebar({ userType }: DashboardSidebarProps) {
   const navItems = userType === 'admin' ? ADMIN_NAV : CLIENT_NAV;
 
   return (
-    <aside className="hidden md:flex h-full w-64 flex-col border-r bg-muted/40 p-4">
+    <aside className="hidden md:flex h-full w-64 flex-col border-r border-border bg-sidebar p-4">
       <div className="mb-6">
         <h2 className="text-lg font-semibold">
           {userType === 'admin' ? 'Admin Panel' : 'Client Portal'}
@@ -102,14 +102,14 @@ export function DashboardSidebar({ userType }: DashboardSidebarProps) {
                 className={cn(
                   'group relative flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors z-10',
                   isActive
-                    ? 'text-primary-foreground'
+                    ? 'text-accent-foreground'
                     : 'text-muted-foreground hover:text-foreground',
                 )}
               >
                 {isActive && (
                   <motion.div
                     layoutId="active-nav"
-                    className="absolute inset-0 rounded-md bg-primary"
+                    className="absolute inset-0 rounded-md bg-accent"
                     transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                   />
                 )}
