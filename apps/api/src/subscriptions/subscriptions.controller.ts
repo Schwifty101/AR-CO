@@ -98,6 +98,7 @@ export class SubscriptionsController {
     }
     return this.subscriptionsService.activateSubscription(
       body.subscriptionId,
+      user.clientProfileId,
       body.tracker,
     );
   }
