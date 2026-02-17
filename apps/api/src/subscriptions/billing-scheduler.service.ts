@@ -30,7 +30,7 @@ export class BillingSchedulerService {
       const result = await this.subscriptionsService.processRenewals();
       this.logger.log(
         `Renewal processing complete: ${result.processed} processed, ` +
-          `${result.succeeded} succeeded, ${result.failed} failed`,
+          `${result.initiated} charges initiated, ${result.failed} failed`,
       );
     } catch (error) {
       this.logger.error('Renewal processing failed', error);
