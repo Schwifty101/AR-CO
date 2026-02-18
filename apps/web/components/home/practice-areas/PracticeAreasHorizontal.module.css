@@ -61,7 +61,7 @@
   background: transparent;
   border: none;
   cursor: pointer;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   text-align: right;
 }
 
@@ -80,7 +80,7 @@
   font-weight: 300;
   line-height: 1.1;
   color: rgba(249, 248, 246, 0.35);
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: color 0.4s cubic-bezier(0.4, 0, 0.2, 1), font-weight 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   letter-spacing: -0.02em;
 }
 
@@ -91,16 +91,6 @@
 
 .navItem:hover .navLabel {
   color: rgba(249, 248, 246, 0.65);
-}
-
-/* Active state - bold and dark like the reference */
-.navItemActive .navLabel {
-  color: var(--heritage-gold, #D4AF37);
-}
-
-.navItemActive .navTitle {
-  font-weight: 500;
-  color: var(--heritage-cream, #F9F8F6);
 }
 
 /* Skip Button - styled like navItem, positioned at bottom */
@@ -117,7 +107,7 @@
   background: transparent;
   border: none;
   cursor: pointer;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   text-align: right;
 }
 
@@ -126,13 +116,13 @@
   font-weight: 300;
   line-height: 1.1;
   color: rgba(249, 248, 246, 0.35);
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   letter-spacing: -0.02em;
 }
 
 .skipButton svg {
   color: rgba(249, 248, 246, 0.35);
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .skipButton:hover span {
@@ -220,11 +210,10 @@
   background: rgba(92, 61, 46, 0.7);
   border-radius: 4px;
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
-  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
   z-index: 10;
-  transform: translate(-50%, -50%) rotate(var(--card-rotation, 0deg)) scale(0.9);
-  backdrop-filter: blur(10px);
+  transform: translate(-50%, -50%) rotate(var(--card-rotation, 0deg)) scale(1);
+  opacity: 1;
 }
 
 /* Card Sizes - Varied for visual interest */
@@ -249,7 +238,7 @@
   font-weight: 500;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: rgba(249, 248, 246, 0.5);
+  color: var(--heritage-gold, #D4AF37);
   margin-bottom: 0.5rem;
 }
 
@@ -268,52 +257,12 @@
   color: rgba(249, 248, 246, 0.8);
   line-height: 1.6;
   margin: 0;
-  opacity: 0;
-  max-height: 0;
-  overflow: hidden;
-  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Card States */
-.cardActive {
-  transform: translate(-50%, -50%) rotate(var(--card-rotation, 0deg)) scale(1.15);
-  box-shadow:
-    0 8px 50px rgba(0, 0, 0, 0.5),
-    0 2px 20px rgba(212, 175, 55, 0.3);
-  z-index: 20;
-  background: rgba(101, 67, 33, 0.9);
-}
-
-.cardActive .cardLabel {
-  color: var(--heritage-gold, #D4AF37);
-}
-
-.cardActive .cardDescription {
-  opacity: 1;
-  max-height: 200px;
-}
-
-.cardPast {
-  opacity: 0.25;
-  filter: grayscale(0.4);
-  transform: translate(-50%, -50%) rotate(var(--card-rotation, 0deg)) scale(0.85);
-}
-
-.cardFuture {
-  opacity: 0.3;
-  transform: translate(-50%, -50%) rotate(var(--card-rotation, 0deg)) scale(0.85);
 }
 
 /* Card Hover */
 .card:hover {
-  transform: translate(-50%, -50%) rotate(var(--card-rotation, 0deg)) scale(0.95);
   box-shadow: 0 8px 40px rgba(0, 0, 0, 0.4);
   z-index: 15;
-  background: rgba(101, 67, 33, 0.8);
-}
-
-.cardActive:hover {
-  transform: translate(-50%, -50%) rotate(var(--card-rotation, 0deg)) scale(1.18);
 }
 
 /* ====================================================
@@ -391,7 +340,6 @@
   border-radius: 4px;
   padding: 1.5rem;
   box-shadow: 0 2px 20px rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(10px);
 }
 
 .mobileLabel {
@@ -459,28 +407,15 @@
     transition: none;
   }
 
-  .card,
   .navItem,
-  .navTitle,
-  .cardDescription {
+  .navTitle {
     transition: none;
-  }
-
-  .cardActive {
-    transform: none;
-  }
-
-  .cardPast,
-  .cardFuture {
-    transform: none;
-    opacity: 0.6;
   }
 }
 
 /* ====================================================
    Performance Optimization
    ==================================================== */
-.card,
 .scrollContainer {
   will-change: transform;
 }

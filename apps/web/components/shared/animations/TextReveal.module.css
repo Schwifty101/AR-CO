@@ -1,0 +1,25 @@
+/* ─── TextReveal ─────────────────────────────────────────────────────────────
+   Clips its child behind an overflow:hidden boundary.
+   The inner element starts fully below the clip (translateY 110%) and
+   eases upward into view when the `revealed` class is applied.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+.revealWrapper {
+  overflow: hidden;
+  /* block keeps the wrapper from collapsing; flex parents treat it as
+     a flex item and size it to its content naturally */
+  display: block;
+}
+
+.revealInner {
+  display: block;
+  transform: translateY(110%);
+  transition-property: transform;
+  /* Easing: fast start → smooth deceleration (feels weighty, intentional) */
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+}
+
+.revealed {
+  transform: translateY(0%);
+}

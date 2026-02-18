@@ -7,7 +7,6 @@ import { ScrollTrigger } from "gsap/ScrollTrigger"
 import { useGSAP } from "@gsap/react"
 import styles from "./Hero.module.css"
 import LoadingScreen from "../../LoadingScreen"
-import { setSlowScroll } from "../../SmoothScroll"
 
 // Register GSAP plugins
 if (typeof window !== "undefined") {
@@ -272,14 +271,8 @@ export default function Hero() {
       anticipatePin: 1,
       invalidateOnRefresh: true,
       pinReparent: true,
-      scrub: true, // Enable scrub - ScrollSmoother will handle the smoothing
+      scrub: 0.5, // 0.5s smoothing to prevent jumpy frame transitions
       // markers: true,
-
-      // Slow down scroll when entering hero section for smooth frame playback
-      // Note: onLeave/onLeaveBack removed to prevent momentum burst between sections
-      // QuoteSection immediately takes over scroll speed control via its own handlers
-      onEnter: () => setSlowScroll(),
-      onEnterBack: () => setSlowScroll(),
 
       onUpdate: (self) => {
         // Calculate frame directly from scroll progress

@@ -124,18 +124,18 @@ export default function FacilitationOverlay({ isOpen, onClose }: FacilitationOve
       document.body.style.paddingRight = `${scrollbarWidth}px`
       window.addEventListener('keydown', handleKeyDown)
 
-      // Pause ScrollSmoother so it stops intercepting wheel/touch events
+      // Pause Lenis so it stops intercepting wheel/touch events
       if (smoother) {
-        smoother.paused(true)
+        smoother.stop()
       }
     } else {
       document.body.style.overflow = ''
       document.body.style.paddingRight = ''
       setExpandedId(null)
 
-      // Resume ScrollSmoother
+      // Resume Lenis
       if (smoother) {
-        smoother.paused(false)
+        smoother.start()
       }
     }
 
@@ -145,7 +145,7 @@ export default function FacilitationOverlay({ isOpen, onClose }: FacilitationOve
       window.removeEventListener('keydown', handleKeyDown)
       // Ensure smoother is resumed on unmount
       const sm = getSmoother()
-      if (sm) sm.paused(false)
+      if (sm) sm.start()
     }
   }, [isOpen, handleKeyDown])
 
@@ -158,6 +158,7 @@ export default function FacilitationOverlay({ isOpen, onClose }: FacilitationOve
       {isOpen && (
         <motion.div
           className={`fixed inset-0 z-[9999] ${styles.overlayScroll}`}
+          data-lenis-prevent
           initial={{ y: '-100%' }}
           animate={{ y: 0 }}
           exit={{ y: '-100%' }}

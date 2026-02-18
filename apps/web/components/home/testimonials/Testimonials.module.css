@@ -1,7 +1,7 @@
 /* Testimonials Section */
 .testimonials {
   position: relative;
-  background: var(--wood-espresso);
+  background: transparent;
   overflow: hidden;
   margin-bottom: -20rem;
 }
@@ -52,7 +52,6 @@
   display: flex;
   flex-direction: column;
   gap: 2rem;
-  will-change: transform;
 }
 
 /* Middle column starts offset */
@@ -63,12 +62,11 @@
 /* Testimonial Card */
 .card {
   position: relative;
-  background: rgba(92, 61, 46, 0.3);
-  backdrop-filter: blur(10px);
+  background: rgba(92, 61, 46, 0.55);
   border: 1px solid rgba(249, 248, 246, 0.1);
   border-radius: 12px;
   padding: 2rem;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
   opacity: 0;
   /* Initial hidden state for reveal animation */
@@ -184,7 +182,6 @@
       transparent 70%);
   border-radius: 50%;
   filter: blur(60px);
-  animation: orbFloat 20s ease-in-out infinite;
 }
 
 @keyframes orbFloat {

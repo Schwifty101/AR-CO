@@ -2,7 +2,7 @@
 
 import { useEffect } from "react"
 import { usePathname } from "next/navigation"
-import { setNormalScroll, getSmoother } from "./SmoothScroll"
+import { getSmoother } from "./SmoothScroll"
 
 /**
  * ScrollRestoration Component
@@ -27,19 +27,12 @@ export default function ScrollRestoration() {
 
     if (smoother) {
       // Scroll to top instantly
-      smoother.scrollTo(0, false)
+      smoother.scrollTo(0, { immediate: true })
     } else {
       // Fallback for non-smooth scroll pages
       window.scrollTo(0, 0)
     }
 
-    // Reset scroll speed to normal for non-home pages
-    // Home page (/) has Hero which manages its own slow scroll
-    // This fixes the issue where Hero's slow scroll (0.3 speed, 10 smoothness)
-    // persists when navigating to other pages like /practice-areas or /team
-    if (pathname !== "/") {
-      setNormalScroll()
-    }
   }, [pathname])
 
   return null
