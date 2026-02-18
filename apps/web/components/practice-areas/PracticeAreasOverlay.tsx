@@ -60,6 +60,7 @@ export default function PracticeAreasOverlay({ isOpen, onClose }: PracticeAreasO
       {isOpen && (
         <motion.div
           className={`fixed inset-0 z-[9999] ${styles.overlayScroll}`}
+          data-lenis-prevent
           initial={{ y: '-100%' }}
           animate={{ y: 0 }}
           exit={{ y: '-100%' }}

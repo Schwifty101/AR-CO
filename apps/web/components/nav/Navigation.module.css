@@ -25,9 +25,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    mix-blend-mode: difference;
     color: #fff;
-    will-change: transform;
 }
 
 .heroNavbarInner {
@@ -155,8 +153,8 @@
     background: transparent;
     color: inherit;
     border: 1px solid rgba(255, 255, 255, 0.3);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
 }
 
 .ctaButtonOutline:hover {
@@ -220,7 +218,6 @@
     gap: 1rem;
     justify-content: flex-end;
     pointer-events: none;
-    will-change: transform;
 }
 
 .stickyContent {
@@ -258,7 +255,6 @@
 }
 
 .mobileLogo {
-    mix-blend-mode: difference;
     color: #fff;
     /* Ensure visibility against various backgrounds */
     position: relative;
@@ -322,7 +318,6 @@
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    will-change: clip-path, opacity;
 }
 
 .menuHeader {
@@ -445,8 +440,8 @@
     box-shadow:
         0 20px 60px rgba(0, 0, 0, 0.4),
         0 0 0 1px rgba(249, 248, 246, 0.08);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
 }
 
 .dropdownContent {

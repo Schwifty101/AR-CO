@@ -73,6 +73,7 @@ export default function TeamPhilosophyAbstract({
                         className="mb-8 flex items-center gap-4"
                         initial={{ opacity: 0, x: -20 }}
                         whileInView={{ opacity: 1, x: 0 }}
+                        viewport={{ once: true }}
                         transition={{ duration: 0.6 }}
                     >
                         <div className="h-[1px] w-12 bg-heritage-gold" />
@@ -86,6 +87,7 @@ export default function TeamPhilosophyAbstract({
                         className="text-4xl md:text-5xl lg:text-7xl font-light leading-tight mb-12"
                         initial={{ opacity: 0, y: 30 }}
                         whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
                         transition={{ duration: 0.8, delay: 0.2 }}
                         style={{ fontFamily: "'Lora', Georgia, serif", letterSpacing: '-0.04em', color: 'var(--heritage-cream)' }}
                     >
@@ -101,6 +103,7 @@ export default function TeamPhilosophyAbstract({
                         className="pl-8 border-l border-heritage-gold/20"
                         initial={{ opacity: 0 }}
                         whileInView={{ opacity: 1 }}
+                        viewport={{ once: true }}
                         transition={{ duration: 0.8, delay: 0.4 }}
                     >
                         <p className="text-lg leading-relaxed font-light max-w-xl" style={{ fontFamily: "'Georgia', 'Times New Roman', serif", color: 'var(--heritage-cream)', opacity: 0.6 }}>

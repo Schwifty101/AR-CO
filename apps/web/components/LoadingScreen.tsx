@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useCallback, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { pauseScroll, resumeScroll } from "./SmoothScroll"
 import styles from "./LoadingScreen.module.css"
 
 const BASE_WORDS = ["Justice", "Integrity", "Advocacy", "Equity", "Resolution"]
@@ -133,8 +132,6 @@ export default function LoadingScreen({ progress, isComplete }: LoadingScreenPro
       window.removeEventListener('touchmove', preventTouchMove, { capture: true } as EventListenerOptions)
       window.removeEventListener('keydown', preventKeyScroll, true)
 
-      resumeScroll()
-
       const timer = setTimeout(() => {
         setIsHidden(true)
       }, 1500)
@@ -150,14 +147,7 @@ export default function LoadingScreen({ progress, isComplete }: LoadingScreenPro
       window.addEventListener('touchmove', preventTouchMove, { capture: true, passive: false })
       window.addEventListener('keydown', preventKeyScroll, { capture: true })
 
-      pauseScroll()
-
-      const retryPause = setTimeout(() => {
-        pauseScroll()
-      }, 100)
-
       return () => {
-        clearTimeout(retryPause)
         window.removeEventListener('scroll', preventScroll, true)
         window.removeEventListener('wheel', preventWheel, { capture: true } as EventListenerOptions)
         window.removeEventListener('touchmove', preventTouchMove, { capture: true } as EventListenerOptions)

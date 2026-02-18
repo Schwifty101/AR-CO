@@ -96,7 +96,7 @@ const practiceAreas: PracticeArea[] = [
 // Card spacing configuration - cards placed in horizontal sequence
 const CARD_SPACING = 40 // vw units between each card center
 const CARD_INITIAL_OFFSET = 80 // vw units - where first card starts (higher = enters from further right)
-const ACTIVATION_THRESHOLD = 22 // vw units - card must be within this distance of center to expand
+
 
 // Hardcoded navigation progress for each card (0 to 1)
 // Adjust these values to fine-tune where clicking each menu item scrolls to
@@ -141,7 +141,6 @@ export default function PracticeAreasHorizontal() {
   const sectionRef = useRef<HTMLDivElement>(null)
   const triggerRef = useRef<HTMLDivElement>(null)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
-  const [activeIndex, setActiveIndex] = useState(-1)
   const [isMobile, setIsMobile] = useState(false)
 
   // Check for mobile
@@ -184,11 +183,10 @@ export default function PracticeAreasHorizontal() {
     const nextSection = sectionRef.current?.nextElementSibling as HTMLElement | null
 
     if (nextSection) {
-      // Use ScrollSmoother if available for proper smooth scrolling to element
+      // Use Lenis if available for proper smooth scrolling to element
       const smoother = getSmoother()
       if (smoother) {
-        // ScrollSmoother.scrollTo can accept an element directly
-        smoother.scrollTo(nextSection, true)
+        smoother.scrollTo(nextSection, { duration: 1.2 })
       } else {
         // Fallback to gsap scrollTo
         gsap.to(window, {
@@ -248,39 +246,9 @@ export default function PracticeAreasHorizontal() {
           end: () => `+=${Math.abs(getScrollAmount()) * PIN_SPACING_MULTIPLIER}`,
           pin: true,
           animation: tween,
-          scrub: 1, // Smooth scrubbing (1 second lag) - try 0.5 for snappier, 2 for smoother
+          scrub: 0.3, // Snappy scrubbing (0.3s lag) - lower = more responsive
           invalidateOnRefresh: true,
           anticipatePin: 1,
-          // pinType: 'transform' is auto-detected inside ScrollSmoother
-          onUpdate: (self) => {
-            const progress = self.progress
-
-            // Calculate which card is closest to the center of the viewport
-            // Right column is 66.67% wide, center is at ~33vw from its left edge
-            const vw = window.innerWidth / 100
-            const scrollX = Math.abs(getScrollAmount() * progress)
-            const centerViewport = vw * 33 // Center of right column (66.67vw / 2)
-
-            // Each card is at (index * CARD_SPACING + CARD_INITIAL_OFFSET)vw
-            // Find which card index is closest to centerViewport + scrollX
-            // Only activate if within ACTIVATION_THRESHOLD
-            const cardsPositions = practiceAreas.map((_, idx) => (idx * CARD_SPACING + CARD_INITIAL_OFFSET) * vw)
-            const currentCenter = centerViewport + scrollX
-            const thresholdPx = ACTIVATION_THRESHOLD * vw
-
-            let closestIdx = -1 // -1 means no card is active
-            let minDistance = Infinity
-
-            for (let i = 0; i < cardsPositions.length; i++) {
-              const distance = Math.abs(cardsPositions[i] - currentCenter)
-              if (distance < minDistance && distance < thresholdPx) {
-                minDistance = distance
-                closestIdx = i
-              }
-            }
-
-            setActiveIndex(closestIdx)
-          },
         })
 
         // Refresh after setup to ensure measurements are correct
@@ -331,7 +299,7 @@ export default function PracticeAreasHorizontal() {
             {practiceAreas.map((area, index) => (
               <button
                 key={area.id}
-                className={`${styles.navItem} ${activeIndex === index ? styles.navItemActive : ''}`}
+                className={styles.navItem}
                 onClick={() => navigateToPanel(index)}
               >
                 <span className={styles.navLabel}>{area.tagline}</span>
@@ -387,18 +355,13 @@ export default function PracticeAreasHorizontal() {
 
             {/* Practice area cards placed in sequential order with random vertical positions */}
             {practiceAreas.map((area, index) => {
-              const isActive = activeIndex === index
-              const isPast = index < activeIndex
-              const isFuture = index > activeIndex
               const variation = cardVariations[index % cardVariations.length]
-
-              // Calculate horizontal position: each card at index * CARD_SPACING
               const leftPosition = `${index * CARD_SPACING + CARD_INITIAL_OFFSET}vw`
 
               return (
                 <article
                   key={area.id}
-                  className={`${styles.card} ${styles.large} ${isActive ? styles.cardActive : ''} ${isPast ? styles.cardPast : ''} ${isFuture ? styles.cardFuture : ''}`}
+                  className={`${styles.card} ${styles.large}`}
                   style={{
                     '--card-top': variation.top,
                     '--card-left': leftPosition,

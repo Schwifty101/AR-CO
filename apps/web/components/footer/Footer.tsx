@@ -56,7 +56,7 @@ export default function Footer() {
   const scrollToTop = useCallback(() => {
     const smoother = getSmoother()
     if (smoother) {
-      smoother.scrollTo(0, true) // Smooth scroll to top
+      smoother.scrollTo(0, { duration: 1.2 }) // Smooth scroll to top
     } else {
       // Fallback if ScrollSmoother isn't available
       window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -133,8 +133,8 @@ export default function Footer() {
     // Initial update
     updateClock()
 
-    // Update every second
-    const interval = setInterval(updateClock, 1000)
+    // Update every 30 seconds (no need for per-second updates in a footer)
+    const interval = setInterval(updateClock, 30000)
 
     return () => clearInterval(interval)
   }, [])

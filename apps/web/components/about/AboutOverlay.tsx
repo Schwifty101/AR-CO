@@ -34,9 +34,9 @@ export default function AboutOverlay({ isOpen, onClose }: AboutOverlayProps) {
       document.body.style.paddingRight = `${scrollbarWidth}px`
       window.addEventListener('keydown', handleKeyDown)
 
-      // Pause ScrollSmoother so it stops intercepting wheel/touch events
+      // Pause Lenis so it stops intercepting wheel/touch events
       if (smoother) {
-        smoother.paused(true)
+        smoother.stop()
       }
     } else {
       document.body.style.overflow = ''
@@ -44,7 +44,7 @@ export default function AboutOverlay({ isOpen, onClose }: AboutOverlayProps) {
       window.removeEventListener('keydown', handleKeyDown)
 
       if (smoother) {
-        smoother.paused(false)
+        smoother.start()
       }
     }
 
@@ -54,7 +54,7 @@ export default function AboutOverlay({ isOpen, onClose }: AboutOverlayProps) {
       window.removeEventListener('keydown', handleKeyDown)
 
       if (smoother) {
-        smoother.paused(false)
+        smoother.start()
       }
     }
   }, [isOpen, handleKeyDown])

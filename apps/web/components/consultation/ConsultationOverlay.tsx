@@ -77,7 +77,7 @@ export default function ConsultationOverlay({ isOpen, onClose }: ConsultationOve
       document.body.style.overflow = 'hidden'
       document.body.style.paddingRight = `${scrollbarWidth}px`
       window.addEventListener('keydown', handleKeyDown)
-      if (smoother) smoother.paused(true)
+      if (smoother) smoother.stop()
     } else {
       document.body.style.overflow = ''
       document.body.style.paddingRight = ''
@@ -88,7 +88,7 @@ export default function ConsultationOverlay({ isOpen, onClose }: ConsultationOve
         setErrors({})
         setFormData({ name: '', email: '', phone: '', practiceArea: '', caseDescription: '' })
       }, 400)
-      if (smoother) smoother.paused(false)
+      if (smoother) smoother.start()
     }
 
     return () => {
@@ -96,7 +96,7 @@ export default function ConsultationOverlay({ isOpen, onClose }: ConsultationOve
       document.body.style.paddingRight = ''
       window.removeEventListener('keydown', handleKeyDown)
       const sm = getSmoother()
-      if (sm) sm.paused(false)
+      if (sm) sm.start()
     }
   }, [isOpen, handleKeyDown])
 
@@ -213,6 +213,7 @@ export default function ConsultationOverlay({ isOpen, onClose }: ConsultationOve
           <div className={styles.overlay}>
             <motion.div
               className={styles.card}
+              data-lenis-prevent
               variants={cardVariants}
               initial="hidden"
               animate="visible"
