@@ -285,6 +285,11 @@ button.navLink:focus-visible {
   text-align: left;
 }
 
+.contactItem a {
+  color: inherit;
+  text-decoration: none;
+}
+
 .contactPrefix {
   font-weight: 800;
   font-size: 1.25rem;

@@ -115,7 +115,7 @@ export default function PrivacyPolicy() {
                         </p>
                         <p className="text-heritage-cream/90">
                             <span className="font-semibold text-heritage-gold">Phone: </span>
-                            <a href="tel:+9251XXXXXXX" className="text-heritage-gold hover:text-white transition-colors hover:underline">+92 51 XXX XXXX</a>
+                            <a href="tel:+92512252144" className="text-heritage-gold hover:text-white transition-colors hover:underline">+92 51 2252144</a>
                         </p>
                     </section>
                 </div>

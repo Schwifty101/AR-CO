@@ -45,7 +45,7 @@ export interface DocumentRequirement {
     /** Operator for comparison */
     operator: 'equals' | 'notEquals' | 'includes' | 'greaterThan' | 'lessThan';
     /** Value to compare against */
-    value: any;
+    value: string | number | boolean;
   };
   /** Alternative documents that can be used instead */
   alternatives?: string[];

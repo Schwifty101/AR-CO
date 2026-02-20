@@ -1,7 +1,7 @@
 'use client'
 
 import { useRef, useEffect, useState } from 'react'
-import { motion, useScroll, useTransform, useSpring } from 'framer-motion'
+import { motion } from 'framer-motion'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import type { ITeamClosingStatementProps } from './types/teamInterfaces'
@@ -30,10 +30,9 @@ export default function TeamClosingStatement({
   const words = statement.split(' ')
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Intentional: isMounted pattern for hydration-safe rendering
     setIsMounted(true)
     let ctx: gsap.Context | undefined
-    let resizeObserver: ResizeObserver | undefined
-    let refreshTimeout: NodeJS.Timeout
 
     const initScrollTrigger = () => {
       if (ctx) return

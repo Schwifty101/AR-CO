@@ -102,7 +102,7 @@ export class SupabaseService {
       global: {
         headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {},
       },
-    });
+    }) as SupabaseClient<any, 'public', any>;
   }
 
   /**
@@ -125,14 +125,14 @@ export class SupabaseService {
    * // This bypasses RLS and returns ALL cases
    * ```
    */
+
   getAdminClient(): SupabaseClient<any, 'public', any> {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return createClient(this.supabaseUrl, this.supabaseServiceRoleKey, {
       auth: {
         persistSession: false,
         autoRefreshToken: false,
       },
-    });
+    }) as SupabaseClient<any, 'public', any>;
   }
 
   /**

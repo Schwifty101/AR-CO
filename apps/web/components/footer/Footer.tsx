@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react'
 import Link from 'next/link'
-import { useRouter, usePathname } from 'next/navigation'
 import Image from 'next/image'
 import gsap from 'gsap'
 import SlotMachineText from '../shared/animations/SlotMachineText'
@@ -30,9 +29,6 @@ export default function Footer() {
   const { openOverlay } = usePracticeAreasOverlay()
   const { openOverlay: openFacilitationOverlay } = useFacilitationOverlay()
   const { openOverlay: openAboutOverlay } = useAboutOverlay()
-  const router = useRouter()
-  const pathname = usePathname()
-
   /**
    * Calculates if the office is currently open
    * Office hours: Monday-Friday, 9:00 AM - 5:00 PM PKT time
@@ -241,7 +237,11 @@ export default function Footer() {
                   </p>
                   <p className={styles.contactItem}>
                     <span className={styles.contactPrefix}>P:</span>
-                    +92 51 XXX XXXX
+                    <a href="tel:+92512252144">+92 51 2252144</a>
+                  </p>
+                  <p className={styles.contactItem}>
+                    <span className={styles.contactPrefix}>M:</span>
+                    <a href="tel:+923060599916">+92 306 0599916</a>
                   </p>
                   <p className={styles.contactItem}>
                     <span className={styles.contactPrefix}>H:</span>

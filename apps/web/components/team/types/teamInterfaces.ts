@@ -3,7 +3,6 @@
  * Supports OH Architecture-inspired editorial layout
  */
 
-import type React from 'react'
 
 /**
  * Extended team member data structure for redesigned team page

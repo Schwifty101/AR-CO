@@ -56,9 +56,9 @@ export default function Hero() {
   const overlayRef = useRef<HTMLDivElement>(null)
   // Always start with loading screen to avoid hydration mismatch.
   // sessionStorage check happens in useEffect after hydration.
-  const [showLoadingScreen, setShowLoadingScreen] = useState(true)
+  const [showLoadingScreen] = useState(true)
   const [initialImagesLoaded, setInitialImagesLoaded] = useState(false) // First 100 images
-  const [allImagesLoaded, setAllImagesLoaded] = useState(false) // All 518 images
+  const [, setAllImagesLoaded] = useState(false) // All 518 images
   const [loadingProgress, setLoadingProgress] = useState(0)
   // Track if this is a cached visit for fast animation (separate from skipping)
   const [isCachedVisit, setIsCachedVisit] = useState(false)

@@ -10,14 +10,14 @@ import TeamBackgroundElements from '@/components/team/decorative/TeamBackgroundE
 import TeamClosingStatement from '@/components/team/teamClosingStatement'
 
 // Mock data for the recognition section to match the "rich" feel
-const AWARDS = [
+const AWARDS: Array<{ year: string; name: string; award: string }> = [
     { year: '2025', name: 'Legal 500 Asia Pacific', award: 'Top Tier Firm - Dispute Resolution' },
     { year: '2024', name: 'Chambers Global', award: 'Band 1 - Corporate & Commercial' },
     { year: '2024', name: 'Asian Legal Business', award: 'Employer of Choice' },
     { year: '2023', name: 'Pakistan Law Awards', award: 'Litigation Firm of the Year' },
 ];
 
-const PUBLICATIONS = [
+const PUBLICATIONS: Array<{ year: string; publication: string; article: string }> = [
     { year: '2025', publication: 'Bloomberg Law', article: 'Energy Regulation in Emerging Markets' },
     { year: '2024', publication: 'The Law Reviews', article: 'International Arbitration: Pakistan Chapter' },
     { year: '2024', publication: 'Dawn News', article: 'Constitutional Rights & Corporate Responsibility' },
@@ -123,7 +123,7 @@ export default function TeamPage() {
                             (Recognition)
                         </div>
                         <p className="text-sm font-normal leading-relaxed mb-6 text-heritage-cream/80">
-                            Awards and media recognition aren't the goal, but they remind us that thoughtful legal practice leaves a lasting impact.
+                            Awards and media recognition aren&apos;t the goal, but they remind us that thoughtful legal practice leaves a lasting impact.
                         </p>
                     </div>
 

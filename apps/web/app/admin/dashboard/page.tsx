@@ -85,7 +85,7 @@ export default function AdminDashboardPage() {
           transition={{ delay: 0.1 }}
           className="text-lg text-muted-foreground"
         >
-          Welcome back, {user?.fullName || 'Admin'}. Here's what's happening today.
+          Welcome back, {user?.fullName || 'Admin'}. Here&apos;s what&apos;s happening today.
         </motion.p>
       </div>
 

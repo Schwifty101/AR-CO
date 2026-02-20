@@ -18,18 +18,20 @@ interface PageProps {
 export default function ServiceFAQ({ params }: PageProps) {
   const { category, slug } = use(params)
 
-  // Validate category
-  if (!isValidCategory(category)) return notFound()
-
-  // Find service
-  const service = findServiceBySlug(category as CategoryType, slug)
-  if (!service) return notFound()
-
+  // All hooks must be called before any conditional returns
   const [openIndex, setOpenIndex] = useState<number | null>(null)
+
+  // Validate category
+  const categoryValid = isValidCategory(category)
+  const service = categoryValid ? findServiceBySlug(category as CategoryType, slug) : null
 
   const toggleFAQ = (index: number) => {
     setOpenIndex(openIndex === index ? null : index)
   }
+
+  // Early returns after all hooks
+  if (!categoryValid) return notFound()
+  if (!service) return notFound()
 
   return (
     <div className={styles.containerNarrow} style={{ paddingTop: '2rem', paddingBottom: '6rem' }}>

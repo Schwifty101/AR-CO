@@ -12,7 +12,7 @@ import type { DocumentRequirement, DocumentCategory, FacilitationService } from 
  */
 export function getRequiredDocuments(
   documents: DocumentRequirement[],
-  formData: Record<string, any>
+  formData: Record<string, unknown>
 ): DocumentRequirement[] {
   return documents.filter((doc) => {
     // If document has no condition, include it if it's marked as required
@@ -82,7 +82,7 @@ export function groupDocumentsByCategory(
  */
 export function getServiceRequiredDocuments(
   service: FacilitationService,
-  formData: Record<string, any> = {}
+  formData: Record<string, unknown> = {}
 ): DocumentRequirement[] {
   const allDocuments = service.requiredDocuments;
   const requiredDocs = getRequiredDocuments(allDocuments, formData);
@@ -126,7 +126,7 @@ export function getServiceRequiredDocuments(
  */
 export function getCategorizedDocuments(
   service: FacilitationService,
-  formData: Record<string, any> = {}
+  formData: Record<string, unknown> = {}
 ): Array<{ category: DocumentCategory; documents: DocumentRequirement[] }> {
   const requiredDocs = getServiceRequiredDocuments(service, formData);
   const categories = service.documentCategories || [];
@@ -164,7 +164,7 @@ export function validateDocuments(
  */
 export function generateDocumentChecklist(
   service: FacilitationService,
-  formData: Record<string, any> = {}
+  formData: Record<string, unknown> = {}
 ): string {
   const categorized = getCategorizedDocuments(service, formData);
   

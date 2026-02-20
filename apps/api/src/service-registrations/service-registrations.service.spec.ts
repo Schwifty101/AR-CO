@@ -3,7 +3,6 @@ import {
   NotFoundException,
   ForbiddenException,
   InternalServerErrorException,
-  BadRequestException,
 } from '@nestjs/common';
 import { ServiceRegistrationsService } from './service-registrations.service';
 import { SupabaseService } from '../database/supabase.service';

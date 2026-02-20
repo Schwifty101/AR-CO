@@ -173,7 +173,7 @@ export function SigninForm() {
 
         <div className={styles.footer}>
           <p className={styles.footerText}>
-            Don't have an account?{' '}
+            Don&apos;t have an account?{' '}
             <Link href="/auth/signup" className={styles.link}>
               Create account
             </Link>

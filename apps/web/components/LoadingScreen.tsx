@@ -42,6 +42,7 @@ export default function LoadingScreen({ progress, isComplete }: LoadingScreenPro
   useEffect(() => {
     if (!isComplete) return
     maxProgressRef.current = 100
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Intentional: syncing derived state from prop
     setDisplayProgress(100)
     const timer = setTimeout(() => setReadyToDismiss(true), 2000)
     return () => clearTimeout(timer)
@@ -54,6 +55,7 @@ export default function LoadingScreen({ progress, isComplete }: LoadingScreenPro
   useEffect(() => {
     if (readyToDismiss) return
     isFirstWordRef.current = true
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Intentional: initializing word animation cycle
     setWordIndex(0)
     return () => {
       if (wordTimerRef.current) clearTimeout(wordTimerRef.current)
@@ -168,7 +170,7 @@ export default function LoadingScreen({ progress, isComplete }: LoadingScreenPro
               key={wordIndex}
               className={styles.word}
             >
-              {words[wordIndex]?.split("").map((char, i, arr) => (
+              {words[wordIndex]?.split("").map((char, i) => (
                 <span key={i} className={styles.charWrapper}>
                   <motion.span
                     className={styles.char}
