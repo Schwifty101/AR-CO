@@ -2,6 +2,13 @@
 
 import { useEffect, ReactNode } from "react"
 import Lenis from "lenis"
+import gsap from "gsap"
+import { ScrollTrigger } from "gsap/ScrollTrigger"
+
+// Register GSAP plugins
+if (typeof window !== "undefined") {
+  gsap.registerPlugin(ScrollTrigger)
+}
 
 // Global Lenis instance
 let lenisInstance: Lenis | null = null
@@ -16,22 +23,28 @@ interface SmoothScrollProps {
 export default function SmoothScroll({ children }: SmoothScrollProps) {
   useEffect(() => {
     const lenis = new Lenis({
-      lerp: 0.1,
+      lerp: 0.08,
       smoothWheel: true,
-      touchMultiplier: 0.5,
+      syncTouch: true,
+      syncTouchLerp: 0.04,
     })
 
     lenisInstance = lenis
 
-    function raf(time: number) {
-      lenis.raf(time)
-      requestAnimationFrame(raf)
+    // Connect Lenis scroll events to GSAP ScrollTrigger
+    lenis.on("scroll", ScrollTrigger.update)
+
+    // Use GSAP ticker as the single animation heartbeat
+    const tickerCallback = (time: number) => {
+      lenis.raf(time * 1000) // GSAP ticker uses seconds, Lenis expects ms
     }
-    requestAnimationFrame(raf)
+    gsap.ticker.add(tickerCallback)
+    gsap.ticker.lagSmoothing(0)
 
     window.dispatchEvent(new CustomEvent("scroll-smoother-ready", { detail: lenis }))
 
     return () => {
+      gsap.ticker.remove(tickerCallback)
       lenis.destroy()
       lenisInstance = null
     }
