@@ -44,10 +44,7 @@ export default function TeamClosingStatement({
           start: 'top top',
           end: '+=100%',
           pin: true,
-          pinSpacing: false, // Keep false to allow footer to scroll over (parallax)
-          onUpdate: (self) => {
-            // Optional: Parallax or other GSAP specific updates
-          }
+          pinSpacing: true, // true = footer scrolls AFTER this section, not ON TOP of it
         })
       }, containerRef)
 
@@ -105,6 +102,7 @@ export default function TeamClosingStatement({
         <motion.div
           initial={{ height: 0 }}
           whileInView={{ height: '100%' }}
+          viewport={{ once: true }}
           transition={{ duration: 1.5, ease: 'circOut' }}
           className="absolute left-1/2 top-0 w-px -translate-x-1/2 opacity-20"
           style={{ background: 'var(--wood-cedar)' }}
@@ -113,6 +111,7 @@ export default function TeamClosingStatement({
         <motion.div
           initial={{ width: 0 }}
           whileInView={{ width: '100%' }}
+          viewport={{ once: true }}
           transition={{ duration: 1.5, ease: 'circOut', delay: 0.2 }}
           className="absolute top-1/2 left-0 h-px -translate-y-1/2 opacity-20"
           style={{ background: 'var(--wood-cedar)' }}
@@ -121,6 +120,7 @@ export default function TeamClosingStatement({
         <motion.div
           initial={{ opacity: 0, scale: 0.5 }}
           whileInView={{ opacity: 0.1, scale: 1 }}
+          viewport={{ once: true }}
           transition={{ duration: 2, ease: "easeOut" }}
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60vh] h-[60vh] border border-[var(--wood-cedar)] rounded-full"
         />
@@ -132,6 +132,7 @@ export default function TeamClosingStatement({
         <motion.span
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.1 }}
           className="inline-block mb-12 text-xs md:text-sm tracking-[0.3em] uppercase text-[var(--heritage-gold)] font-medium"
           style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}
@@ -140,7 +141,7 @@ export default function TeamClosingStatement({
         </motion.span>
 
         {/* 3. Main Statement - "Cinematic Typography" */}
-        <div ref={textRef} className="relative mix-blend-screen perspective-1000">
+        <div ref={textRef} className="relative perspective-1000">
           <h2 className="sr-only">{statement}</h2>
           <div
             className="flex flex-wrap justify-center gap-x-[0.25em] gap-y-[0.1em] leading-[0.9]"
@@ -152,7 +153,7 @@ export default function TeamClosingStatement({
                 className="inline-block relative overflow-hidden"
                 initial={{ opacity: 0, y: 100, rotateX: 20 }}
                 whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
-                viewport={{ margin: "-10%" }}
+                viewport={{ once: true, margin: "-10%" }}
                 transition={{
                   duration: 0.9,
                   ease: [0.16, 1, 0.3, 1], // Custom ease for "luxury" feel
@@ -175,7 +176,7 @@ export default function TeamClosingStatement({
                     WebkitBackgroundClip: 'text',
                     backgroundClip: 'text',
                     color: 'transparent',
-                    animation: isMounted ? 'text-shine 6s cubic-bezier(0.4, 0, 0.2, 1) infinite' : 'none'
+                    animation: isMounted ? 'text-shine 6s cubic-bezier(0.4, 0, 0.2, 1) 1' : 'none'
                   }}
                 >
                   {word}
@@ -190,6 +191,7 @@ export default function TeamClosingStatement({
           <motion.div
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
             transition={{ duration: 1, delay: 0.8 }}
             className="mt-12 max-w-2xl mx-auto"
           >
@@ -207,6 +209,7 @@ export default function TeamClosingStatement({
             <motion.div
               initial={{ scaleX: 0 }}
               whileInView={{ scaleX: 1 }}
+              viewport={{ once: true }}
               transition={{ duration: 1, delay: 1 }}
               className="h-px w-24 mx-auto mt-8 bg-[var(--heritage-gold)] opacity-50"
             />

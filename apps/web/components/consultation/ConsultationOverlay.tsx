@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, ArrowRight, ArrowLeft, Check, Loader2, AlertCircle } from 'lucide-react'
 import { toast } from 'sonner'
-import { getSmoother } from '@/components/SmoothScroll'
+import { useScrollLock } from '@/lib/hooks/useScrollLock'
 import { createConsultation, initiatePayment } from '@/lib/api/consultations'
 import type { ConsultationPaymentInitResponse, CreateConsultationData } from '@repo/shared'
 import { PersonalInfoStep, CaseDetailsStep, INITIAL_FORM_DATA } from './ConsultationFormSteps'
@@ -107,19 +107,16 @@ export default function ConsultationOverlay({ isOpen, onClose }: ConsultationOve
     [onClose],
   )
 
-  /* ─── Body lock & ScrollSmoother pause ─── */
-  useEffect(() => {
-    const smoother = getSmoother()
+  const { lock, unlock } = useScrollLock()
 
+  /* ─── Body lock & Lenis pause ─── */
+  useEffect(() => {
     if (isOpen) {
-      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth
-      document.body.style.overflow = 'hidden'
-      document.body.style.paddingRight = `${scrollbarWidth}px`
+      lock()
       window.addEventListener('keydown', handleKeyDown)
-      if (smoother) smoother.paused(true)
     } else {
-      document.body.style.overflow = ''
-      document.body.style.paddingRight = ''
+      unlock()
+      // Reset form when closing
       setTimeout(() => {
         setStep(1)
         setSubmitted(false)
@@ -132,17 +129,13 @@ export default function ConsultationOverlay({ isOpen, onClose }: ConsultationOve
         setIsSubmitting(false)
         setApiError(null)
       }, 400)
-      if (smoother) smoother.paused(false)
     }
 
     return () => {
-      document.body.style.overflow = ''
-      document.body.style.paddingRight = ''
+      unlock()
       window.removeEventListener('keydown', handleKeyDown)
-      const sm = getSmoother()
-      if (sm) sm.paused(false)
     }
-  }, [isOpen, handleKeyDown])
+  }, [isOpen, handleKeyDown, lock, unlock])
 
   /* ─── Field change handler ─── */
   const updateField = (field: keyof ConsultationFormData, value: string) => {
@@ -251,6 +244,7 @@ export default function ConsultationOverlay({ isOpen, onClose }: ConsultationOve
           <div className={styles.overlay}>
             <motion.div
               className={styles.card}
+              data-lenis-prevent
               variants={cardVariants}
               initial="hidden"
               animate="visible"

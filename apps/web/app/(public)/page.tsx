@@ -1,13 +1,12 @@
 'use client'
 
 import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import Hero from "@/components/home/hero/Hero"
+import Hero from "@/components/home/hero/HeroV2"
 import QuoteSection from "@/components/home/quote/QuoteSection"
 import AboutSection from "@/components/home/about/AboutSection"
-import PracticeAreasHorizontal from "@/components/home/practice-areas/PracticeAreasHorizontal"
 import Testimonials from "@/components/home/testimonials/Testimonials"
 import { getSmoother } from '@/components/SmoothScroll'
+
 
 import styles from "./page.module.css"
 
@@ -22,7 +21,7 @@ export default function Home() {
                 if (aboutSection) {
                     const smoother = getSmoother()
                     if (smoother) {
-                        smoother.scrollTo(aboutSection, true)
+                        smoother.scrollTo(aboutSection, { duration: 1.2 })
                     } else {
                         aboutSection.scrollIntoView({ behavior: 'smooth' })
                     }
@@ -34,7 +33,10 @@ export default function Home() {
     }, [])
 
     return (
-        <main className="page-transition">
+        <main className={`page-transition ${styles.homePage}`}>
+            {/* Fixed espresso background + atmospheric gold glow — shared by all sections */}
+            <div className={styles.pageBackground} aria-hidden="true" />
+
             {/* Hero Section with Integrated Logo Carousel */}
             <Hero />
             <QuoteSection />

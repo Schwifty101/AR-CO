@@ -1,19 +1,11 @@
 "use client"
 
 import { useRef } from "react"
-import { motion } from "framer-motion"
-import gsap from "gsap"
-import { ScrollTrigger } from "gsap/ScrollTrigger"
-import { useGSAP } from "@gsap/react"
+import { motion, useScroll, useTransform, useSpring } from "framer-motion"
 import { ArrowUpRight } from "lucide-react"
 import { useFacilitationOverlay } from "@/components/facilitation"
-import { smoothPause } from "../../SmoothScroll"
+import TextReveal from "@/components/shared/animations/TextReveal"
 import styles from "./QuoteSection.module.css"
-
-// Register GSAP plugins
-if (typeof window !== "undefined") {
-  gsap.registerPlugin(ScrollTrigger)
-}
 
 /**
  * Service verticals displayed as full-width editorial rows.
@@ -58,139 +50,117 @@ const SERVICES = [
 
 export default function QuoteSection() {
   const sectionRef = useRef<HTMLElement>(null)
-  const contentRef = useRef<HTMLDivElement>(null)
   const { openOverlay } = useFacilitationOverlay()
 
-  // GSAP scroll-pause & entrance animation
-  useGSAP(() => {
-    if (!sectionRef.current || !contentRef.current) return
+  // ── Content entrance ────────────────────────────────────────────────────────
+  // Framer reads window.scrollY which Lenis updates on each frame — no conflict.
+  const { scrollYProgress: entranceProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start 80%", "start 30%"],
+  })
+  const contentY = useTransform(entranceProgress, [0, 1], [30, 0])
+  const contentOpacity = useTransform(entranceProgress, [0, 1], [0.8, 1])
 
-    const section = sectionRef.current
-    const content = contentRef.current
-    let hasTriggeredPause = false
-
-    // Reset pause flag when section leaves viewport
-    ScrollTrigger.create({
-      trigger: section,
-      start: "top bottom",
-      end: "bottom top",
-      onLeave: () => { hasTriggeredPause = false },
-      onLeaveBack: () => { hasTriggeredPause = false },
-    })
-
-    // Smooth pause when section reaches top of viewport
-    ScrollTrigger.create({
-      trigger: section,
-      start: "top top",
-      end: "top top",
-      onEnter: () => {
-        if (!hasTriggeredPause) {
-          hasTriggeredPause = true
-          smoothPause(800)
-        }
-      },
-    })
-
-    // Content entrance animation
-    gsap.fromTo(
-      content,
-      { opacity: 0.8, y: 30 },
-      {
-        opacity: 1,
-        y: 0,
-        ease: "power2.out",
-        scrollTrigger: {
-          trigger: section,
-          start: "top 80%",
-          end: "top 30%",
-          scrub: 0.5,
-        },
-      }
-    )
-  }, [])
+  // ── Golden timeline line ─────────────────────────────────────────────────────
+  // Tracks the full section scroll range; spring adds natural deceleration.
+  const { scrollYProgress: lineProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start 55%", "end 45%"],
+  })
+  const lineScaleY = useSpring(lineProgress, {
+    stiffness: 60,
+    damping: 20,
+    restDelta: 0.001,
+  })
 
   return (
-    <>
-      <motion.section
-        ref={sectionRef}
-        className={styles.section}
-        data-section="services-showcase"
-        id="services-showcase"
-        viewport={{ once: false, amount: 0.3 }}
+    <motion.section
+      ref={sectionRef}
+      className={styles.section}
+      data-section="services-showcase"
+      id="services-showcase"
+    >
+      {/* Vertical side text */}
+      <span className={styles.sideText}>Services</span>
+
+      {/* Container — subtle entrance driven by scroll */}
+      <motion.div
+        className={styles.container}
+        style={{ y: contentY, opacity: contentOpacity }}
       >
-        {/* Atmosphere */}
-        <div className={styles.atmosphereGlow} />
-        <div className={styles.grainOverlay} />
-
-        {/* Vertical side text */}
-        <span className={styles.sideText}>Services</span>
-
-        <div ref={contentRef} className={styles.container}>
-          {/* Eyebrow + Title */}
-          <motion.header
-            className={styles.header}
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-          >
-            <span className={styles.eyebrow}>What We Do</span>
+        {/* Eyebrow + Title */}
+        <motion.header
+          className={styles.header}
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
+        >
+          <span className={styles.eyebrow}>What We Do</span>
+          <TextReveal delay={100} duration={1.1}>
             <h2 className={styles.sectionTitle}>
               Our <em>Legal</em> Services
             </h2>
-          </motion.header>
+          </TextReveal>
+        </motion.header>
 
-          {/* Service rows */}
-          <div className={styles.servicesList}>
-            {SERVICES.map((service, idx) => (
-              <motion.div
-                key={service.id}
-                className={styles.serviceRow}
-                initial={{ opacity: 0, y: 50 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.25 }}
-                transition={{
-                  duration: 0.7,
-                  delay: idx * 0.08,
-                  ease: [0.16, 1, 0.3, 1],
-                }}
-              >
-                {/* Roman numeral */}
-                <span className={styles.rowNumber}>{service.number}</span>
-
-                {/* Title — the dominant element */}
-                <h3 className={styles.rowTitle}>{service.title}</h3>
-
-                {/* Headline description */}
-                <p className={styles.rowHeadline}>{service.headline}</p>
-              </motion.div>
-            ))}
-          </div>
-
-          {/* Bottom CTA */}
+        {/* Service rows */}
+        <div className={styles.servicesList}>
+          {/* Scroll-driven golden timeline line — scaleY 0→1 via Framer spring */}
           <motion.div
-            className={styles.bottomArea}
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-          >
-            <div className={styles.bottomRule} />
+            className={styles.goldenLine}
+            style={{ scaleY: lineScaleY }}
+          />
 
-            <motion.button
-              onClick={openOverlay}
-              className={styles.ctaButton}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.97 }}
+          {SERVICES.map((service, idx) => (
+            <motion.div
+              key={service.id}
+              className={styles.serviceRow}
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.2 }}
+              transition={{
+                duration: 0.7,
+                delay: idx * 0.08,
+                ease: [0.16, 1, 0.3, 1],
+              }}
             >
-              <span>Explore All Services</span>
-              <ArrowUpRight className={styles.ctaBtnArrow} />
-            </motion.button>
+              <span className={styles.rowNumber}>{service.number}</span>
 
-            <p className={styles.firmStamp}>AR&CO — Trusted Legal Partners</p>
-          </motion.div>
+              <TextReveal delay={80} duration={1}>
+                <h3 className={styles.rowTitle}>{service.title}</h3>
+              </TextReveal>
+
+              <TextReveal delay={200} duration={0.9}>
+                <p className={styles.rowHeadline}>{service.headline}</p>
+              </TextReveal>
+            </motion.div>
+          ))}
         </div>
-      </motion.section>
-    </>
+
+        {/* Bottom CTA */}
+        <motion.div
+          className={styles.bottomArea}
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.3 }}
+        >
+          <div className={styles.bottomRule} />
+
+          <motion.button
+            onClick={openOverlay}
+            className={styles.ctaButton}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.97 }}
+          >
+            <span>Explore All Services</span>
+            <ArrowUpRight className={styles.ctaBtnArrow} />
+          </motion.button>
+
+          <p className={styles.firmStamp}>AR&CO — Trusted Legal Partners</p>
+        </motion.div>
+      </motion.div>
+    </motion.section>
   )
 }

@@ -3,7 +3,7 @@
 import { useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X } from 'lucide-react'
-import { getSmoother } from '@/components/SmoothScroll'
+import { useScrollLock } from '@/lib/hooks/useScrollLock'
 import styles from './AboutOverlay.module.css'
 
 interface AboutOverlayProps {
@@ -25,45 +25,28 @@ export default function AboutOverlay({ isOpen, onClose }: AboutOverlayProps) {
     [onClose],
   )
 
+  const { lock, unlock } = useScrollLock()
+
   useEffect(() => {
-    const smoother = getSmoother()
-
     if (isOpen) {
-      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth
-      document.body.style.overflow = 'hidden'
-      document.body.style.paddingRight = `${scrollbarWidth}px`
+      lock()
       window.addEventListener('keydown', handleKeyDown)
-
-      // Pause ScrollSmoother so it stops intercepting wheel/touch events
-      if (smoother) {
-        smoother.paused(true)
-      }
     } else {
-      document.body.style.overflow = ''
-      document.body.style.paddingRight = ''
-      window.removeEventListener('keydown', handleKeyDown)
-
-      if (smoother) {
-        smoother.paused(false)
-      }
+      unlock()
     }
 
     return () => {
-      document.body.style.overflow = ''
-      document.body.style.paddingRight = ''
+      unlock()
       window.removeEventListener('keydown', handleKeyDown)
-
-      if (smoother) {
-        smoother.paused(false)
-      }
     }
-  }, [isOpen, handleKeyDown])
+  }, [isOpen, handleKeyDown, lock, unlock])
 
   return (
     <AnimatePresence mode="wait">
       {isOpen && (
         <motion.div
           className={`fixed inset-0 z-[9999] ${styles.overlayScroll}`}
+          data-lenis-prevent
           initial={{ y: '-100%' }}
           animate={{ y: 0 }}
           exit={{ y: '-100%' }}

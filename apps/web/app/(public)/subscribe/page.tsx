@@ -358,7 +358,7 @@ export default function SubscribePage() {
             viewport={{ once: true, margin: '-40px' }}
           >
             {planFeatures.length > 0
-              ? planFeatures.map((feature) => (
+              ? planFeatures.map((feature: string) => (
                   <motion.li
                     key={feature}
                     className={styles.featureItem}

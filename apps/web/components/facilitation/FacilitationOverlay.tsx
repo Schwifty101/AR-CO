@@ -9,7 +9,7 @@ import { facilitationServices } from '@/components/data/facilitationCenterData'
 import { regulatoryServices } from '@/components/data/regulatoryServiceData'
 import { overseasServices } from '@/components/data/overseasServicesData'
 import { womenDeskServices } from '@/components/data/womenDeskData'
-import { getSmoother } from '@/components/SmoothScroll'
+import { useScrollLock } from '@/lib/hooks/useScrollLock'
 import { useConsultationOverlay } from '@/components/consultation'
 import styles from './FacilitationOverlay.module.css'
 
@@ -115,39 +115,20 @@ export default function FacilitationOverlay({ isOpen, onClose }: FacilitationOve
     return () => window.removeEventListener('page-transition-start', handleTransitionStart)
   }, [isOpen, onClose])
 
+  const { lock, unlock } = useScrollLock()
+
   useEffect(() => {
-    const smoother = getSmoother()
+    if (!isOpen) return
 
-    if (isOpen) {
-      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth
-      document.body.style.overflow = 'hidden'
-      document.body.style.paddingRight = `${scrollbarWidth}px`
-      window.addEventListener('keydown', handleKeyDown)
-
-      // Pause ScrollSmoother so it stops intercepting wheel/touch events
-      if (smoother) {
-        smoother.paused(true)
-      }
-    } else {
-      document.body.style.overflow = ''
-      document.body.style.paddingRight = ''
-      setExpandedId(null)
-
-      // Resume ScrollSmoother
-      if (smoother) {
-        smoother.paused(false)
-      }
-    }
+    lock()
+    window.addEventListener('keydown', handleKeyDown)
 
     return () => {
-      document.body.style.overflow = ''
-      document.body.style.paddingRight = ''
+      unlock()
       window.removeEventListener('keydown', handleKeyDown)
-      // Ensure smoother is resumed on unmount
-      const sm = getSmoother()
-      if (sm) sm.paused(false)
+      setExpandedId(null)
     }
-  }, [isOpen, handleKeyDown])
+  }, [isOpen, handleKeyDown, lock, unlock])
 
   const toggleCategory = (id: string) => {
     setExpandedId((prev) => (prev === id ? null : id))
@@ -158,6 +139,7 @@ export default function FacilitationOverlay({ isOpen, onClose }: FacilitationOve
       {isOpen && (
         <motion.div
           className={`fixed inset-0 z-[9999] ${styles.overlayScroll}`}
+          data-lenis-prevent
           initial={{ y: '-100%' }}
           animate={{ y: 0 }}
           exit={{ y: '-100%' }}

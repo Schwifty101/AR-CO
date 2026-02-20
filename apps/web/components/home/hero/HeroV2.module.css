@@ -1,0 +1,358 @@
+/* ─── HeroV2 ─────────────────────────────────────────────────────────────────
+   Dark espresso hero with floating legal words, a parchment square,
+   and a full-viewport-width "AR&CO" in Lora gold at the bottom.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+/* ── Core ───────────────────────────────────────────────────────────────── */
+.hero {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  min-height: 640px;
+  overflow: hidden;
+
+  /* Background provided by the page-level fixed layer */
+  background: transparent;
+}
+
+/* ── Atmospheric grain ──────────────────────────────────────────────────── */
+.grain {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+
+  /* Inline SVG fractal-noise — no external image request */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+  background-size: 200px 200px;
+  opacity: 0.04;
+  mix-blend-mode: overlay;
+}
+
+/* ── Radial vignette ────────────────────────────────────────────────────── */
+.vignette {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 85% 85% at 50% 50%,
+    transparent 35%,
+    rgba(8, 4, 2, 0.72) 100%
+  );
+}
+
+/* ── Parallax law maxims ────────────────────────────────────────────────── */
+/*
+  Each quote reads --px / --py (set on the section by JS) and its own
+  --depth / --rotate (set as inline style) to produce independent
+  parallax drift on mouse movement.
+
+  calc() arithmetic:
+    var(--px) × var(--depth) × 1px  →  a pixel translate
+  Both --px and --depth are unitless numbers, so the result is valid CSS.
+*/
+.parallaxQuote {
+  position: absolute;
+  font-family: 'Lora', serif;
+  font-style: italic;
+  font-weight: 300;
+  color: #ffffff;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+  pointer-events: none;
+  user-select: none;
+  z-index: 2;
+
+  transform: translate(
+    calc(var(--px, 0) * var(--depth, 0.3) * 1px),
+    calc(var(--py, 0) * var(--depth, 0.3) * 1px)
+  );
+  will-change: transform;
+}
+
+/* Hide on mobile — too cluttered on small viewports */
+@media (max-width: 768px) {
+  .parallaxQuote { display: none; }
+}
+
+/* ── Centre stage ───────────────────────────────────────────────────────── */
+/*
+  Explicitly centred with position:absolute so the layout is
+  independent of flex/padding on the hero. top:40% balances the content
+  between the viewport top and the large AR&CO text at the bottom.
+*/
+.centerStage {
+  position: absolute;
+  top: 42%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 5;   /* above brandBottom (4) so the square covers the heading top */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2.75rem;
+}
+
+/* ── Infinite horizontal marquee strip ──────────────────────────────────── */
+/*
+  Full-viewport-width strip that scrolls all legal words in a single line
+  from right to left, infinitely.  Two copies of the word list are rendered
+  side-by-side; the animation translates by -50% (= one copy width) so the
+  loop is perfectly seamless.
+*/
+.marqueeStrip {
+  position: absolute;
+  top: 44%;
+  left: 0;
+  width: 100%;
+  transform: translateY(-50%);
+  z-index: 6;   /* above centerStage (5) — scrolls over the square */
+  overflow: hidden;
+  pointer-events: none;
+
+  padding: 1.1rem 0;
+}
+
+.marqueeTrack {
+  display: flex;
+  align-items: center;
+  gap: 0;   /* gaps are handled by padding on each word */
+  width: max-content;
+  animation: marqueeScroll 55s linear infinite;
+  will-change: transform;
+}
+
+.marqueeWord {
+  font-family: 'Lora', serif;
+  font-style: italic;
+  font-weight: 300;
+  font-size: clamp(5rem, 3.2vw, 3.2rem);
+  /* Prominent by default — the window dims inside the square */
+  color: rgba(255, 255, 255, 0.72);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  user-select: none;
+  padding: 0 0.6rem;
+}
+
+
+/* ── Lit highlight window ────────────────────────────────────────────────── */
+/*
+  Positioned over the square (same top as .marqueeStrip, width = square width).
+  overflow:hidden clips the bright track to the square's horizontal bounds.
+
+  The inner .marqueeTrack is shifted left by calc(-50vw + half-square-width)
+  so its x-coordinates match those of the base strip's track exactly — both
+  animate with the same keyframe, staying perfectly in sync. The result:
+  each letter "lights up" as it crosses into the window, then dims on exit.
+*/
+.marqueeHighlight {
+  position: absolute;
+  top: 44%;                        /* same as .marqueeStrip */
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 500px;                    /* = desktop square width */
+  z-index: 7;
+  overflow: hidden;
+  pointer-events: none;
+  padding: 1.1rem 0;               /* same as .marqueeStrip */
+  /* Cover the bright base strip inside the square zone */
+  background-color: #32241c;
+}
+
+.marqueeHighlight .marqueeTrack {
+  position: relative;
+  /* Shift so track x=0 aligns with viewport x=0 */
+  left: calc(-50vw + 250px);
+}
+
+.marqueeHighlight .marqueeWord {
+  color: rgba(255, 255, 255, 0.08);
+}
+
+/*
+  Translate by -50% = exactly one copy of the word list.
+  When the first copy exits left the second copy is in place → seamless.
+*/
+@keyframes marqueeScroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+@media (max-width: 768px) {
+  .marqueeWord {
+    font-size: clamp(1.3rem, 4vw, 2rem);
+    padding: 0 0.5rem;
+  }
+  .marqueeHighlight {
+    width: 200px;
+  }
+  .marqueeHighlight .marqueeTrack {
+    left: calc(-50vw + 100px);
+  }
+}
+
+@media (max-width: 480px) {
+  .marqueeWord {
+    font-size: clamp(1.1rem, 4.5vw, 1.6rem);
+    padding: 0 0.4rem;
+  }
+  .marqueeHighlight {
+    width: 160px;
+  }
+  .marqueeHighlight .marqueeTrack {
+    left: calc(-50vw + 80px);
+  }
+}
+
+/* ── Decorative square ──────────────────────────────────────────────────── */
+.square {
+  position: relative;
+  width: 500px;
+  height: 265px;
+
+  /* Muted cedar-brown — less bright than before, warm but not glowing */
+  background-color: #32241c;
+
+  /* Clip the word ticker to the square's bounds */
+  overflow: hidden;
+
+  /* Reveal animation: fade + subtle scale-in */
+  opacity: 0;
+  transform: scale(0.94) translateY(6px);
+  transition:
+    opacity 1s cubic-bezier(0.16, 1, 0.3, 1) 0.15s,
+    transform 1s cubic-bezier(0.16, 1, 0.3, 1) 0.15s;
+}
+
+.squareVisible {
+  opacity: 1;
+  transform: scale(1) translateY(0px);
+}
+
+/* Inner diagonal highlight — creates a subtle lit-from-top-left feeling */
+.squareHighlight {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.11) 0%,
+    transparent 45%,
+    rgba(0, 0, 0, 0.09) 100%
+  );
+  pointer-events: none;
+}
+
+/* Corner accent lines — thin gold inset marks at two opposing corners */
+.cornerTL,
+.cornerBR {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  pointer-events: none;
+}
+
+.cornerTL {
+  top: 10px;
+  left: 10px;
+  border-top: 1px solid rgba(212, 175, 55, 0.55);
+  border-left: 1px solid rgba(212, 175, 55, 0.55);
+}
+
+.cornerBR {
+  bottom: 10px;
+  right: 10px;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.55);
+  border-right: 1px solid rgba(212, 175, 55, 0.55);
+}
+
+/* ── Brand name bottom ──────────────────────────────────────────────────── */
+.brandBottom {
+  position: absolute;
+  bottom: 0%;
+  left: 0;
+  width: 100%;
+  z-index: 10;   /* above quotes (2), below centerStage (5) */
+
+  /* Prevent descenders from adding unwanted space */
+  line-height: 0;
+}
+
+.brandTitle {
+  font-family: 'Lora', serif;
+  font-weight: 300;
+  color: rgba(212, 175, 55, 0.55);
+  
+
+  /* Tighter line-height so the text sits flush with the viewport edge */
+  
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+
+  /*
+    At ~20 vw, "AR&CO" (5 chars, ≈3.8 em wide at Lora Bold metrics)
+    spans approximately 100 vw.
+    Fine-tune with letter-spacing if the exact font render shifts slightly.
+  */
+}
+
+/* Desktop: single line, centred */
+.brandDesktop {
+  display: block;
+}
+
+.brandDesktop .brandTitle {
+  font-size: clamp(5rem, 20.5vw, 21rem);
+  text-align: center;
+  width: 100%;
+}
+
+/* Mobile: hidden on desktop */
+.brandMobile {
+  display: none;
+}
+
+.brandMobile .brandTitle {
+  /* Each word alone is wider relative to the viewport */
+  font-size: clamp(4rem, 30vw, 11rem);
+  text-align: center;
+  width: 100%;
+  line-height: 0.83;
+}
+
+/* ── Responsive ─────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .centerStage {
+    top: 42%;
+  }
+
+  .square {
+    width: 200px;
+    height: 200px;
+  }
+
+  .brandDesktop { display: none; }
+  .brandMobile  { display: block; }
+}
+
+@media (max-width: 480px) {
+  .centerStage {
+    top: 38%;
+  }
+
+  .square {
+    width: 160px;
+    height: 160px;
+  }
+
+  .cornerTL,
+  .cornerBR {
+    width: 14px;
+    height: 14px;
+  }
+
+  .cornerTL { top: 7px; left: 7px; }
+  .cornerBR { bottom: 7px; right: 7px; }
+}

@@ -1,8 +1,8 @@
 /* Hero Section */
 .hero {
   position: relative;
-  height: 700vh;
-  /* Increased height to slow down frame-by-frame animation (772 frames over 700vh) */
+  height: 2000vh;
+  /* 772 frames over 2000vh — replaces the old dynamic speed:0.3 approach */
   z-index: 1;
   background: #000;
 }
@@ -33,7 +33,6 @@
   height: 100%;
   z-index: 0;
   transform-origin: center center;
-  will-change: transform, opacity, filter;
 }
 
 .video {
@@ -79,7 +78,6 @@
   transform: translate(-50%, -50%);
   text-align: center;
   z-index: 10;
-  will-change: transform, top, opacity;
 }
 
 .titleScrolled {
@@ -254,7 +252,6 @@
   align-items: center;
   gap: 0.35rem;
   transition: opacity 0.3s ease-out, visibility 0.3s ease-out;
-  will-change: opacity;
 }
 
 .trustedLabel {
@@ -336,8 +333,7 @@
      Quote section overlaps via its own margin-top: -100vh. */
 
   .hero {
-    /* Same 700vh scroll height — video plays identically on mobile */
-    height: 700vh;
+    height: 2000vh;
   }
 
   .stickyWrapper {
