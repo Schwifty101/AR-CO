@@ -125,15 +125,16 @@ export default function TeamInteractiveList({ members }: TeamInteractiveListProp
                                             {member.role}
                                         </p>
 
-                                        {/* Expanded Details */}
+                                        {/* Expanded Details - Animate Height */}
                                         <motion.div
                                             initial={false}
                                             animate={{
-                                                height: isActive ? 'auto' : 0,
-                                                opacity: isActive ? 1 : 0
+                                                height: activeMemberId === member.id ? 'auto' : 0,
+                                                opacity: activeMemberId === member.id ? 1 : 0
                                             }}
-                                            transition={{ duration: 0.5, ease: [0.32, 0.72, 0, 1] }}
+                                            transition={{ duration: 0.4, ease: [0.32, 0.72, 0, 1] }}
                                             className="overflow-hidden"
+                                            style={{ willChange: 'height, opacity' }}
                                         >
                                             <div className="pt-8 pb-4 pl-4 border-l border-[var(--heritage-gold)]/20 ml-2 space-y-8">
                                                 {member.bio && (
@@ -181,12 +182,13 @@ export default function TeamInteractiveList({ members }: TeamInteractiveListProp
                                                 initial={false}
                                                 animate={{
                                                     opacity: isActive ? 1 : 0,
-                                                    scale: isActive ? 1 : 0.92,
+                                                    scale: isActive ? 1 : 0.9,
                                                     rotate: isActive ? 0 : -2,
-                                                    filter: isActive ? 'blur(0px)' : 'blur(10px)',
+                                                    zIndex: isActive ? 10 : 0
                                                 }}
                                                 transition={{ duration: 0.4, ease: "easeOut" }}
-                                                className="w-full h-full relative"
+                                                className="absolute inset-0 w-full h-full"
+                                                style={{ willChange: 'opacity, transform, z-index' }}
                                             >
                                                 <div className="absolute inset-0 bg-heritage-gold/10 transform translate-x-4 translate-y-4" />
                                                 <div className="relative w-full h-full overflow-hidden shadow-2xl bg-heritage-walnut">

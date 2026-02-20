@@ -14,7 +14,7 @@ export default function TeamTransition({ label = "The Collective" }: TeamTransit
         offset: ["start end", "end start"]
     })
 
-    const height = useTransform(scrollYProgress, [0, 1], ["0%", "100%"])
+    const scaleY = useTransform(scrollYProgress, [0, 1], [0, 1])
     const opacity = useTransform(scrollYProgress, [0, 0.2], [0, 1])
 
     return (
@@ -23,8 +23,8 @@ export default function TeamTransition({ label = "The Collective" }: TeamTransit
             <div className="absolute inset-0 flex justify-center">
                 <div className="h-full w-[1px] bg-heritage-walnut/5 relative">
                     <motion.div
-                        className="absolute top-0 w-full bg-heritage-gold shadow-[0_0_15px_rgba(212,175,55,0.6)]"
-                        style={{ height, opacity }}
+                        className="absolute top-0 w-full h-full bg-heritage-gold shadow-[0_0_15px_rgba(212,175,55,0.4)]"
+                        style={{ scaleY, opacity, transformOrigin: 'top', willChange: 'transform, opacity' }}
                     />
                 </div>
             </div>
@@ -38,7 +38,7 @@ export default function TeamTransition({ label = "The Collective" }: TeamTransit
                 transition={{ duration: 0.8 }}
             >
                 <div className="w-16 h-1 bg-heritage-gold/20 mb-4" />
-                <span className="text-heritage-gold text-[10px] uppercase tracking-[0.5em] font-medium bg-heritage-charcoal/50 backdrop-blur-sm px-4 py-2 border border-heritage-gold/20 rounded-full" style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}>
+                <span className="text-heritage-gold text-[10px] uppercase tracking-[0.5em] font-medium bg-heritage-charcoal px-4 py-2 border border-heritage-gold/20 rounded-full" style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}>
                     {label}
                 </span>
                 <div className="w-16 h-1 bg-heritage-gold/20 mt-4" />
