@@ -119,10 +119,10 @@ export default function TeamLeaderShowcase({ leader }: TeamLeaderShowcaseProps) 
 
                         {/* Decorative Frames/Elements behind */}
                         <div className="absolute -top-12 -right-12 w-full h-full border border-heritage-gold/20 z-0 hidden lg:block" />
-                        <div className="absolute -bottom-12 -left-12 w-2/3 h-2/3 bg-heritage-walnut/10 z-0 hidden lg:block backdrop-blur-sm" />
+                        <div className="absolute -bottom-12 -left-12 w-2/3 h-2/3 bg-heritage-walnut/20 z-0 hidden lg:block" />
 
                         {/* Floating Badge */}
-                        <div className="absolute bottom-8 right-8 z-20 bg-heritage-gold/90 text-wood-espresso p-6 backdrop-blur-md shadow-xl rounded-sm max-w-[200px] hidden lg:block">
+                        <div className="absolute bottom-8 right-8 z-20 bg-heritage-gold text-wood-espresso p-6 shadow-xl rounded-sm max-w-[200px] hidden lg:block">
                             <span className="block text-4xl font-bold mb-1">“</span>
                             <p className="text-xs font-medium leading-normal">
                                 Justice is not just a profession, it is a covenant with society.
