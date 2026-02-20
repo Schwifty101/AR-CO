@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect, useLayoutEffect, useCallback } from 'react'
+import React, { useState, useEffect, useLayoutEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
@@ -17,6 +17,7 @@ import { usePracticeAreasOverlay } from '../practice-areas'
 import { useFacilitationOverlay } from '../facilitation'
 import { useConsultationOverlay } from '../consultation'
 import { useAboutOverlay } from '../about'
+import { useScrollLock } from '@/lib/hooks/useScrollLock'
 
 
 // Register GSAP plugins
@@ -325,13 +326,15 @@ const FullScreenMenu: React.FC<IFullScreenMenuProps> = ({ onClose, navItems, onO
         return () => window.removeEventListener('resize', checkMobile)
     }, [])
 
-    // Lock body scroll when menu is open
+    const { lock, unlock } = useScrollLock()
+
+    // Lock body scroll + pause Lenis when menu is open
     useEffect(() => {
-        document.body.style.overflow = 'hidden'
+        lock()
         return () => {
-            document.body.style.overflow = ''
+            unlock()
         }
-    }, [])
+    }, [lock, unlock])
 
     // Live clock effect - updates every second with Pakistan timezone
     useEffect(() => {
@@ -605,6 +608,7 @@ const FullScreenMenu: React.FC<IFullScreenMenuProps> = ({ onClose, navItems, onO
  */
 export default function Navigation() {
     const [isScrolled, setIsScrolled] = useState(false)
+    const navTriggerRef = useRef<globalThis.ScrollTrigger | null>(null)
     const [isMenuOpen, setIsMenuOpen] = useState(false)
     // Track which pathname has completed entrance animation
     // hasEntered is derived: true only when enteredPathname matches current pathname
@@ -671,23 +675,23 @@ export default function Navigation() {
      * Re-runs when pathname changes to detect new page's hero section
      */
     useGSAP(() => {
-        // Kill existing ScrollTriggers before creating new ones
-        ScrollTrigger.getAll().forEach(st => st.kill())
+        // Kill only our own ScrollTrigger, not others
+        if (navTriggerRef.current) {
+            navTriggerRef.current.kill()
+            navTriggerRef.current = null
+        }
 
         const setupTrigger = () => {
-            // Find hero section by data attribute
             const heroSection = document.querySelector('[data-hero-section="true"]')
 
             if (heroSection) {
-                // Page HAS hero section - show HeroNavbar initially
                 setIsScrolled(false)
 
-                ScrollTrigger.create({
+                navTriggerRef.current = ScrollTrigger.create({
                     trigger: heroSection,
                     start: "top top",
                     end: "bottom top",
                     onUpdate: (self) => {
-                        // Show sticky navbar after 5% scroll through hero
                         const shouldBeScrolled = self.progress > 0.05
                         setIsScrolled(shouldBeScrolled)
                     },
@@ -696,17 +700,18 @@ export default function Navigation() {
                     onLeaveBack: () => setIsScrolled(false)
                 })
             } else {
-                // Page has NO hero section - show StickyNavbar (CTA+hamburger) immediately
                 setIsScrolled(true)
             }
         }
 
-        // Small delay to ensure DOM is ready after route change
         const timer = setTimeout(setupTrigger, 100)
 
         return () => {
             clearTimeout(timer)
-            ScrollTrigger.getAll().forEach(st => st.kill())
+            if (navTriggerRef.current) {
+                navTriggerRef.current.kill()
+                navTriggerRef.current = null
+            }
         }
     }, [pathname])
 
