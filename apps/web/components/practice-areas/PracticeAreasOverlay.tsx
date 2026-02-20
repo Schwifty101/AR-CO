@@ -2,6 +2,7 @@
 
 import { useEffect, useCallback } from 'react'
 import Link from 'next/link'
+import { useScrollLock } from '@/lib/hooks/useScrollLock'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X } from 'lucide-react'
 import { practiceAreas } from '@/app/(public)/practice-areas/practiceAreasData'
@@ -35,31 +36,29 @@ export default function PracticeAreasOverlay({ isOpen, onClose }: PracticeAreasO
     return () => window.removeEventListener('page-transition-start', handleTransitionStart)
   }, [isOpen, onClose])
 
-  // Lock body scroll when overlay is open
+  const { lock, unlock } = useScrollLock()
+
+  // Lock body scroll + pause Lenis when overlay is open
   useEffect(() => {
     if (isOpen) {
-      // Prevent body scroll while allowing overlay scroll
-      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth
-      document.body.style.overflow = 'hidden'
-      document.body.style.paddingRight = `${scrollbarWidth}px`
+      lock()
       window.addEventListener('keydown', handleKeyDown)
     } else {
-      document.body.style.overflow = ''
-      document.body.style.paddingRight = ''
+      unlock()
     }
 
     return () => {
-      document.body.style.overflow = ''
-      document.body.style.paddingRight = ''
+      unlock()
       window.removeEventListener('keydown', handleKeyDown)
     }
-  }, [isOpen, handleKeyDown])
+  }, [isOpen, handleKeyDown, lock, unlock])
 
   return (
     <AnimatePresence>
       {isOpen && (
         <motion.div
           className={`fixed inset-0 z-[9999] ${styles.overlayScroll}`}
+          data-lenis-prevent
           initial={{ y: '-100%' }}
           animate={{ y: 0 }}
           exit={{ y: '-100%' }}

@@ -3,21 +3,13 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* ScrollSmoother wrapper styles */
-#smooth-wrapper {
-  overflow: hidden;
-  position: fixed;
-  height: 100%;
-  width: 100%;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-}
-
-#smooth-content {
-  overflow: visible;
-  width: 100%;
+/* ── Global canvas colour ── */
+/* Provides the espresso fallback for every page so the browser
+   never flashes white. The home page floats its content over a
+   fixed atmospheric layer; all other pages inherit this base. */
+html,
+body {
+  background-color: #1a110a;
 }
 
 /* Loading screen active - prevent all scroll */
@@ -32,12 +24,7 @@ html.loading-active body {
   touch-action: none !important;
 }
 
-html.loading-active #smooth-wrapper {
-  overflow: hidden !important;
-  pointer-events: none !important;
-}
-
-/* Legacy Lenis styles (can be removed if not needed) */
+/* Lenis styles */
 html.lenis,
 html.lenis body {
   height: auto;
@@ -389,7 +376,6 @@ button {
   cursor: pointer;
   border: none;
   font-family: inherit;
-  transition: all 0.3s ease;
 }
 
 /* Primary Transition Animation - Change animation details here to apply across all pages */
@@ -424,7 +410,7 @@ body.app-loaded header {
 
 /* Button Hover Effect */
 .button-hover {
-  transition: all 0.3s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .button-hover:hover {
@@ -438,7 +424,7 @@ body.app-loaded header {
 
 /* Card Hover Effect */
 .card-hover {
-  transition: all 0.3s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
 }
 
 .card-hover:hover {
@@ -1006,5 +992,5 @@ body.app-loaded header {
   color: transparent;
   -webkit-background-clip: text;
   background-clip: text;
-  animation: text-shine 4s linear infinite;
+  animation: text-shine 4s linear 1;
 }

@@ -7,10 +7,9 @@
 .section {
   position: relative;
   min-height: 100vh;
-  background: var(--wood-espresso);
+  background: transparent;
   padding: 8rem 0 6rem;
   overflow: hidden;
-  margin-top: -100vh;
   z-index: 10;
   will-change: transform;
 }
@@ -67,6 +66,7 @@
 .header {
   margin-bottom: 5rem;
   position: relative;
+  text-align: center;
 }
 
 .eyebrow {
@@ -85,7 +85,7 @@
   font-family: 'Lora', Georgia, serif;
   font-size: clamp(3rem, 7vw, 6.5rem);
   font-weight: 300;
-  line-height: 0.95;
+  line-height: 1.25;
   letter-spacing: -0.04em;
   color: var(--heritage-cream);
   margin: 0;
@@ -97,7 +97,7 @@
   color: var(--heritage-gold);
 }
 
-/* Thin gold rule under header */
+/* Thin gold rule under header — centered gradient */
 .header::after {
   content: '';
   display: block;
@@ -105,28 +105,46 @@
   height: 1px;
   margin-top: 2.5rem;
   background: linear-gradient(90deg,
-      var(--heritage-gold) 0%,
-      rgba(212, 175, 55, 0.15) 60%,
+      transparent 0%,
+      var(--heritage-gold) 50%,
       transparent 100%);
 }
 
 /* ============================================================
    Service Rows — The Core
-   Each row is a full-width interactive strip with huge title
+   Each row is a full-width editorial strip with huge title
    ============================================================ */
 .servicesList {
   display: flex;
   flex-direction: column;
+  position: relative;
+}
+
+/* ─── Scroll-driven golden timeline line ─── */
+.goldenLine {
+  position: absolute;
+  left: calc(50% - 1px);
+  top: 0;
+  width: 2px;
+  height: 100%;
+  background: linear-gradient(
+    180deg,
+    var(--heritage-gold) 0%,
+    rgba(212, 175, 55, 0.5) 70%,
+    rgba(212, 175, 55, 0.1) 100%
+  );
+  transform-origin: top center;
+  /* scaleY controlled by Framer Motion via style prop */
 }
 
 /* ─── Individual Row ─── */
 .serviceRow {
   position: relative;
-  display: grid;
-  grid-template-columns: 4rem 1fr;
-  grid-template-rows: auto auto;
-  align-items: baseline;
-  padding: 2.75rem 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 5rem 0;
   border-bottom: 1px solid rgba(249, 248, 246, 0.06);
   overflow: hidden;
 }
@@ -137,42 +155,36 @@
 
 /* ─── Roman Numeral ─── */
 .rowNumber {
-  grid-column: 1;
-  grid-row: 1;
   font-family: 'Lora', Georgia, serif;
   font-size: 0.8rem;
   font-weight: 400;
   letter-spacing: 0.12em;
   color: var(--heritage-gold);
   opacity: 0.4;
-  padding-top: 0.4rem;
+  margin-bottom: 1.25rem;
 }
 
 /* ─── Row Title — The dominant typographic element ─── */
 .rowTitle {
-  grid-column: 2;
-  grid-row: 1;
   font-family: 'Lora', Georgia, serif;
-  font-size: clamp(2rem, 4.5vw, 4.2rem);
+  font-size: clamp(3.5rem, 7vw, 7rem);
+  font-style: italic;
   font-weight: 300;
-  line-height: 1.05;
+  line-height: 1.25;
   letter-spacing: -0.025em;
   color: var(--heritage-cream);
   margin: 0;
-  padding-right: 2rem;
 }
 
 /* ─── Headline Description ─── */
 .rowHeadline {
-  grid-column: 2;
-  grid-row: 2;
-  font-family: 'Georgia', 'Times New Roman', serif;
-  font-size: clamp(0.82rem, 1.1vw, 0.95rem);
-  line-height: 1.75;
+  font-family: 'Lora', 'Times New Roman', serif;
+  font-size: clamp(1.5rem, 1.3vw, 1.15rem);
+ 
   letter-spacing: 0.015em;
-  color: rgba(249, 248, 246, 0.4);
-  margin: 0.75rem 0 0;
-  max-width: 700px;
+  color: rgba(249, 248, 246, 0.2);
+  margin-top: 1rem;
+ 
 }
 
 
@@ -289,9 +301,6 @@
 @media (max-width: 768px) {
   .section {
     padding: 8rem 0 4rem;
-    /* Increased top padding from 5rem */
-    /* MOBILE: Maintain same overlap with hero section as desktop */
-    margin-top: -100vh;
   }
 
   .container {
@@ -303,12 +312,15 @@
   }
 
   .serviceRow {
-    grid-template-columns: 2.5rem 1fr;
-    padding: 2rem 0;
+    padding: 3.5rem 0;
   }
 
   .rowTitle {
-    padding-right: 1rem;
+    font-size: clamp(2.5rem, 9vw, 4.5rem);
+  }
+
+  .rowHeadline {
+    font-size: clamp(0.9rem, 3.5vw, 1.05rem);
   }
 
   .grainOverlay {
@@ -329,8 +341,6 @@
 @media (max-width: 480px) {
   .section {
     padding: 4rem 0 3rem;
-    /* MOBILE SMALL: Maintain same overlap with hero section */
-    margin-top: -100vh;
   }
 
   .container {
@@ -338,24 +348,11 @@
   }
 
   .serviceRow {
-    grid-template-columns: 1fr;
-    gap: 0;
-  }
-
-  .rowNumber {
-    grid-column: 1;
-    margin-bottom: 0.25rem;
+    padding: 3rem 0;
   }
 
   .rowTitle {
-    grid-column: 1;
-    grid-row: 2;
-    padding-right: 1rem;
-  }
-
-  .rowHeadline {
-    grid-column: 1;
-    grid-row: 3;
+    font-size: clamp(2rem, 10vw, 3.5rem);
   }
 }
 
@@ -364,4 +361,6 @@
   .ctaButton::before {
     transition: none !important;
   }
+
+  /* golden line: Framer Motion respects prefers-reduced-motion via its own system */
 }
