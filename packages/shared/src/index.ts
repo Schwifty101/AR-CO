@@ -11,6 +11,8 @@ export {
   ConsultationBookingStatus,
   ConsultationUrgency,
   ConsultationPaymentStatus,
+  SubscriptionStatus,
+  BillingInterval,
 } from './enums';
 export * from './schemas';
 export * from './types';

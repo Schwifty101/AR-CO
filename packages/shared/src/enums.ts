@@ -108,3 +108,21 @@ export enum ConsultationPaymentStatus {
   FAILED = 'failed',
   REFUNDED = 'refunded',
 }
+
+/** Status of a user's subscription lifecycle */
+export enum SubscriptionStatus {
+  PENDING = 'pending',
+  ACTIVE = 'active',
+  PAUSED = 'paused',
+  CANCELLED = 'cancelled',
+  ENDED = 'ended',
+  FAILED = 'failed',
+  UNPAID = 'unpaid',
+}
+
+/** Billing interval for subscription plans */
+export enum BillingInterval {
+  DAY = 'DAY',
+  WEEK = 'WEEK',
+  MONTH = 'MONTH',
+}

@@ -82,3 +82,16 @@ export type {
   PaginatedConsultationsResponse,
   ConsultationFilters,
 } from './consultations.types';
+
+// Subscriptions
+export type {
+  SubscriptionPlan,
+  UserSubscription,
+  SubscriptionEvent,
+  InitiateSubscriptionData,
+  SubscriptionCheckoutResponse,
+  CancelSubscriptionData,
+  SubscriptionFilters,
+  PaginatedSubscriptionsResponse,
+  SubscriptionDetail,
+} from './subscriptions.types';

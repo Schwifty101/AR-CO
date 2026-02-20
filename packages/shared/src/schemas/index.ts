@@ -83,3 +83,16 @@ export {
   PaginatedConsultationsResponseSchema,
   ConsultationFiltersSchema,
 } from './consultations.schemas';
+
+// Subscriptions
+export {
+  SubscriptionPlanSchema,
+  UserSubscriptionSchema,
+  SubscriptionEventSchema,
+  InitiateSubscriptionSchema,
+  SubscriptionCheckoutResponseSchema,
+  CancelSubscriptionSchema,
+  SubscriptionFiltersSchema,
+  PaginatedSubscriptionsResponseSchema,
+  SubscriptionDetailSchema,
+} from './subscriptions.schemas';
