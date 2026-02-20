@@ -542,6 +542,7 @@ export default function ServiceForm({ params }: PageProps) {
       {/* Main container */}
       <div
         ref={formWrapperRef}
+        data-lenis-prevent
         className="relative rounded-xl overflow-hidden border"
         style={{
           background: 'transparent',
