@@ -49,6 +49,13 @@ export function usePaymentPopup({
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [isOpen, setIsOpen] = useState(false);
 
+  const cleanup = useCallback(() => {
+    if (pollRef.current) {
+      clearInterval(pollRef.current);
+      pollRef.current = null;
+    }
+  }, []);
+
   // Listen for postMessage from the callback page
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
@@ -70,14 +77,7 @@ export function usePaymentPopup({
 
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
-  }, [source, onSuccess, onCancel]);
-
-  const cleanup = useCallback(() => {
-    if (pollRef.current) {
-      clearInterval(pollRef.current);
-      pollRef.current = null;
-    }
-  }, []);
+  }, [source, onSuccess, onCancel, cleanup]);
 
   // Cleanup on unmount
   useEffect(() => cleanup, [cleanup]);

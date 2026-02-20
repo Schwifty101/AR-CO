@@ -46,6 +46,37 @@ import type {
   PaginatedUsersResponse,
 } from '@repo/shared';
 
+/** Database row shape for user_profiles table (snake_case) */
+interface UserProfileRow {
+  id: string;
+  full_name: string;
+  phone_number: string | null;
+  user_type: string;
+  created_at: string;
+  updated_at: string;
+}
+
+/** Database row shape for client_profiles table (snake_case) */
+interface ClientProfileRow {
+  id: string;
+  company_name: string | null;
+  company_type: string | null;
+  tax_id: string | null;
+  address: string | null;
+  city: string | null;
+  country: string | null;
+}
+
+/** Database row shape for attorney_profiles table (snake_case) */
+interface AttorneyProfileRow {
+  id: string;
+  bar_number: string | null;
+  specializations: string[] | null;
+  education: string | null;
+  experience_years: number | null;
+  hourly_rate: number | null;
+}
+
 /**
  * Users service for profile management
  *
@@ -97,6 +128,8 @@ export class UsersService {
       throw new NotFoundException(`User profile with ID ${userId} not found`);
     }
 
+    const typedProfile = userProfile as unknown as UserProfileRow;
+
     // If email not provided, fetch it from auth.users
     let userEmail = email;
     if (!userEmail) {
@@ -111,17 +144,17 @@ export class UsersService {
     }
 
     const response: UserProfile = {
-      id: userProfile.id,
+      id: typedProfile.id,
       email: userEmail,
-      fullName: userProfile.full_name,
-      phoneNumber: userProfile.phone_number,
-      userType: userProfile.user_type,
-      createdAt: userProfile.created_at,
-      updatedAt: userProfile.updated_at,
+      fullName: typedProfile.full_name,
+      phoneNumber: typedProfile.phone_number,
+      userType: typedProfile.user_type,
+      createdAt: typedProfile.created_at,
+      updatedAt: typedProfile.updated_at,
     };
 
     // Fetch client profile if user is a client
-    if (userProfile.user_type === 'client') {
+    if (typedProfile.user_type === 'client') {
       const { data: clientProfile, error: clientError } = await adminClient
         .from('client_profiles')
         .select(
@@ -131,20 +164,21 @@ export class UsersService {
         .single();
 
       if (!clientError && clientProfile) {
+        const typedClient = clientProfile as unknown as ClientProfileRow;
         response.clientProfile = {
-          id: clientProfile.id,
-          companyName: clientProfile.company_name,
-          companyType: clientProfile.company_type,
-          taxId: clientProfile.tax_id,
-          address: clientProfile.address,
-          city: clientProfile.city,
-          country: clientProfile.country,
+          id: typedClient.id,
+          companyName: typedClient.company_name,
+          companyType: typedClient.company_type,
+          taxId: typedClient.tax_id,
+          address: typedClient.address,
+          city: typedClient.city,
+          country: typedClient.country,
         };
       }
     }
 
     // Fetch attorney profile if user is an attorney
-    if (userProfile.user_type === 'attorney') {
+    if (typedProfile.user_type === 'attorney') {
       const { data: attorneyProfile, error: attorneyError } = await adminClient
         .from('attorney_profiles')
         .select(
@@ -154,13 +188,14 @@ export class UsersService {
         .single();
 
       if (!attorneyError && attorneyProfile) {
+        const typedAttorney = attorneyProfile as unknown as AttorneyProfileRow;
         response.attorneyProfile = {
-          id: attorneyProfile.id,
-          barNumber: attorneyProfile.bar_number,
-          specializations: attorneyProfile.specializations,
-          education: attorneyProfile.education,
-          experienceYears: attorneyProfile.experience_years,
-          hourlyRate: attorneyProfile.hourly_rate,
+          id: typedAttorney.id,
+          barNumber: typedAttorney.bar_number,
+          specializations: typedAttorney.specializations,
+          education: typedAttorney.education,
+          experienceYears: typedAttorney.experience_years,
+          hourlyRate: typedAttorney.hourly_rate,
         };
       }
     }
@@ -475,8 +510,9 @@ export class UsersService {
     }
 
     // Fetch role-specific profiles for each user
+    const typedUsers = (users || []) as unknown as Array<{ id: string }>;
     const userProfiles: UserProfile[] = await Promise.all(
-      (users || []).map((user) => this.getUserProfile(user.id)),
+      typedUsers.map((user) => this.getUserProfile(user.id)),
     );
 
     return {

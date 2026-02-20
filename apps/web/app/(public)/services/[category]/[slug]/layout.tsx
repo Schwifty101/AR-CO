@@ -21,15 +21,10 @@ export default function ServiceLayout({ children, params }: LayoutProps) {
   const { category, slug } = use(params)
   const pathname = usePathname()
 
-  // Validate category
-  if (!isValidCategory(category)) return notFound()
-
-  // Find service
-  const service = findServiceBySlug(category as CategoryType, slug)
-  if (!service) return notFound()
-
-  // Check if documents exist for this category
-  const documents = getCategoryDocuments(category as CategoryType)
+  // Validate category and find service before useMemo (hooks must come before returns)
+  const categoryValid = isValidCategory(category)
+  const service = categoryValid ? findServiceBySlug(category as CategoryType, slug) : null
+  const documents = categoryValid ? getCategoryDocuments(category as CategoryType) : []
   const hasDocuments = documents && documents.length > 0
 
   // Build dynamic steps based on whether documents exist
@@ -50,6 +45,10 @@ export default function ServiceLayout({ children, params }: LayoutProps) {
 
     return baseSteps
   }, [hasDocuments])
+
+  // Early returns after all hooks
+  if (!categoryValid) return notFound()
+  if (!service) return notFound()
 
   const basePath = `/services/${category}/${slug}`
   const currentStepIndex = STEPS.findIndex((step) => {

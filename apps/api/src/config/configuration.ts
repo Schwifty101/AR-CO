@@ -169,6 +169,7 @@ export default (): Configuration => ({
         ? 'https://api.getsafepay.com'
         : 'https://sandbox.api.getsafepay.com',
     frontendUrl: process.env.FRONTEND_URL || 'http://localhost:3000',
-    v1Secret: process.env.SAFEPAY_V1_SECRET || process.env.SAFEPAY_PUBLIC_KEY || '',
+    v1Secret:
+      process.env.SAFEPAY_V1_SECRET || process.env.SAFEPAY_PUBLIC_KEY || '',
   },
 });

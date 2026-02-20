@@ -23,7 +23,7 @@ export default function TermsAndConditions() {
                     <section>
                         <h2 className="text-2xl font-bold mb-4 text-heritage-gold">IMPORTANT LEGAL NOTICE</h2>
                         <p className="mb-4 text-heritage-cream">
-                            This page sets out the terms and conditions ("Terms") on which we, AR&Co, provide access to our website{' '}
+                            This page sets out the terms and conditions (&ldquo;Terms&rdquo;) on which we, AR&amp;Co, provide access to our website{' '}
                             <Link href="/" className="underline text-heritage-gold hover:text-white transition-colors">
                                 https://arco.law
                             </Link>{' '}
@@ -39,7 +39,7 @@ export default function TermsAndConditions() {
                             </Link>.
                         </p>
                         <p className="mb-4 text-heritage-cream">
-                            For the avoidance of doubt, please note that references to "Platform" in these Terms include any current or future version of our website{' '}
+                            For the avoidance of doubt, please note that references to &ldquo;Platform&rdquo; in these Terms include any current or future version of our website{' '}
                             <Link href="/" className="underline text-heritage-gold hover:text-white transition-colors">
                                 https://arco.law
                             </Link>{' '}
@@ -85,7 +85,7 @@ export default function TermsAndConditions() {
                             <div>
                                 <h3 className="text-xl font-semibold mb-3 text-heritage-gold">User Responsibilities</h3>
                                 <p className="text-heritage-cream/90">
-                                    You agree to provide accurate information, supply required documents promptly, comply with applicable laws, and ensure documents meet official requirements. Delays or rejections caused by incomplete or incorrect information are the user's responsibility.
+                                    You agree to provide accurate information, supply required documents promptly, comply with applicable laws, and ensure documents meet official requirements. Delays or rejections caused by incomplete or incorrect information are the user&apos;s responsibility.
                                 </p>
                             </div>
 
@@ -129,7 +129,7 @@ export default function TermsAndConditions() {
                         </p>
                         <p className="text-heritage-cream/90">
                             <span className="font-semibold text-heritage-gold">Phone: </span>
-                            <a href="tel:+9251XXXXXXX" className="text-heritage-gold hover:text-white transition-colors hover:underline">+92 51 XXX XXXX</a>
+                            <a href="tel:+92512252144" className="text-heritage-gold hover:text-white transition-colors hover:underline">+92 51 2252144</a>
                         </p>
                     </section>
                 </div>

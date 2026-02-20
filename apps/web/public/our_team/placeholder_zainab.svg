@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="750" viewBox="0 0 600 750">
+  <rect width="600" height="750" fill="#1a1a2e"/>
+  <rect width="600" height="750" fill="url(#grad)" opacity="0.5"/>
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#2d2d44;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#1a1a2e;stop-opacity:1"/>
+    </linearGradient>
+  </defs>
+  <circle cx="300" cy="280" r="120" fill="#2d2d44" stroke="#c9a84c" stroke-width="2"/>
+  <text x="300" y="300" font-family="Georgia, serif" font-size="96" fill="#c9a84c" text-anchor="middle" dominant-baseline="middle">ZG</text>
+  <text x="300" y="460" font-family="Georgia, serif" font-size="24" fill="#e8e0d0" text-anchor="middle">Syeda Zainab Hameed</text>
+  <text x="300" y="496" font-family="Georgia, serif" font-size="24" fill="#e8e0d0" text-anchor="middle">Gillani</text>
+  <text x="300" y="536" font-family="Georgia, serif" font-size="20" fill="#c9a84c" text-anchor="middle">Advocate</text>
+</svg>

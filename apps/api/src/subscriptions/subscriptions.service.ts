@@ -20,13 +20,8 @@
  * ```
  */
 
-import {
-  Injectable,
-  Logger,
-  HttpException,
-  HttpStatus,
-} from '@nestjs/common';
-import { SubscriptionStatus } from '@repo/shared';
+import { Injectable, Logger, HttpException, HttpStatus } from '@nestjs/common';
+import { SubscriptionStatus, UserType } from '@repo/shared';
 import type {
   SubscriptionPlan,
   SubscriptionCheckoutResponse,
@@ -119,7 +114,8 @@ export class SubscriptionsService {
   async getMySubscription(userId: string): Promise<SubscriptionDetail | null> {
     const client = this.supabaseService.getAdminClient();
 
-    const { data: sub, error } = await client
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const { data: rawSub, error } = await client
       .from('user_subscriptions')
       .select('*, subscription_plans(*)')
       .eq('user_id', userId)
@@ -137,10 +133,12 @@ export class SubscriptionsService {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
 
-    if (!sub) return null;
+    if (!rawSub) return null;
 
-    const plan = sub.subscription_plans as unknown as SubscriptionPlanRow;
-    const subRow = sub as unknown as UserSubscriptionRow;
+    const sub = rawSub as unknown as UserSubscriptionRow & {
+      subscription_plans: SubscriptionPlanRow;
+    };
+    const plan = sub.subscription_plans;
 
     // Fetch events for detail view
     const { data: events } = await client
@@ -151,7 +149,7 @@ export class SubscriptionsService {
       .limit(20);
 
     return {
-      ...mapSubscriptionRow(subRow, plan),
+      ...mapSubscriptionRow(sub, plan),
       events: ((events || []) as SubscriptionEventRow[]).map(mapEventRow),
     };
   }
@@ -183,7 +181,8 @@ export class SubscriptionsService {
     const client = this.supabaseService.getAdminClient();
 
     // 1. Check no active/pending subscription
-    const { data: existing } = await client
+
+    const { data: rawExisting } = await client
       .from('user_subscriptions')
       .select('id, status')
       .eq('user_id', user.id)
@@ -191,7 +190,7 @@ export class SubscriptionsService {
       .limit(1)
       .maybeSingle();
 
-    if (existing) {
+    if (rawExisting) {
       throw new HttpException(
         'You already have an active or pending subscription',
         HttpStatus.CONFLICT,
@@ -199,18 +198,19 @@ export class SubscriptionsService {
     }
 
     // 2. Fetch plan
-    const { data: plan, error: planError } = await client
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const { data: rawPlan, error: planError } = await client
       .from('subscription_plans')
       .select('*')
       .eq('slug', planSlug)
       .eq('is_active', true)
       .single();
 
-    if (planError || !plan) {
+    if (planError || !rawPlan) {
       throw new HttpException('Plan not found', HttpStatus.NOT_FOUND);
     }
 
-    const planRow = plan as unknown as SubscriptionPlanRow;
+    const planRow = rawPlan as unknown as SubscriptionPlanRow;
     if (!planRow.safepay_plan_token) {
       throw new HttpException(
         'Plan not yet synced with Safepay. Contact admin.',
@@ -220,7 +220,8 @@ export class SubscriptionsService {
 
     // 3. Create pending subscription record
     const reference = `SUB-${randomUUID()}`;
-    const { data: subscription, error: insertError } = await client
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const { data: rawSubscription, error: insertError } = await client
       .from('user_subscriptions')
       .insert({
         user_id: user.id,
@@ -232,11 +233,10 @@ export class SubscriptionsService {
       .single();
 
     if (insertError) {
-      throw new HttpException(
-        insertError.message,
-        HttpStatus.BAD_REQUEST,
-      );
+      throw new HttpException(insertError.message, HttpStatus.BAD_REQUEST);
     }
+
+    const subscription = rawSubscription as unknown as { id: string };
 
     // 4. Generate checkout URL
     const checkoutUrl =
@@ -293,7 +293,10 @@ export class SubscriptionsService {
 
     // Normalize event type (handle both dot and underscore variants)
     const normalizedType = eventType
-      .replace('subscription.payment_succeeded', 'subscription.payment.succeeded')
+      .replace(
+        'subscription.payment_succeeded',
+        'subscription.payment.succeeded',
+      )
       .replace('subscription.payment_failed', 'subscription.payment.failed');
 
     switch (normalizedType) {
@@ -344,29 +347,30 @@ export class SubscriptionsService {
   ): Promise<void> {
     const client = this.supabaseService.getAdminClient();
 
-    const { data: sub, error } = await client
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const { data: rawSub, error } = await client
       .from('user_subscriptions')
       .select('*')
       .eq('id', subscriptionId)
       .single();
 
-    if (error || !sub) {
+    if (error || !rawSub) {
       throw new HttpException('Subscription not found', HttpStatus.NOT_FOUND);
     }
 
-    const subRow = sub as unknown as UserSubscriptionRow;
+    const subRow = rawSub as unknown as UserSubscriptionRow;
 
     // Clients can only cancel their own subscription
     if (
-      cancelledBy.userType === 'client' &&
+      cancelledBy.userType === UserType.CLIENT &&
       subRow.user_id !== cancelledBy.id
     ) {
       throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
     }
 
     if (
-      subRow.status === SubscriptionStatus.CANCELLED ||
-      subRow.status === SubscriptionStatus.ENDED
+      subRow.status === (SubscriptionStatus.CANCELLED as string) ||
+      subRow.status === (SubscriptionStatus.ENDED as string)
     ) {
       throw new HttpException(
         'Subscription is already cancelled or ended',
@@ -491,18 +495,21 @@ export class SubscriptionsService {
   async getSubscriptionById(id: string): Promise<SubscriptionDetail> {
     const client = this.supabaseService.getAdminClient();
 
-    const { data: sub, error } = await client
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const { data: rawSubById, error } = await client
       .from('user_subscriptions')
       .select('*, subscription_plans(*)')
       .eq('id', id)
       .single();
 
-    if (error || !sub) {
+    if (error || !rawSubById) {
       throw new HttpException('Subscription not found', HttpStatus.NOT_FOUND);
     }
 
-    const plan = sub.subscription_plans as unknown as SubscriptionPlanRow;
-    const subRow = sub as unknown as UserSubscriptionRow;
+    const subRow = rawSubById as unknown as UserSubscriptionRow & {
+      subscription_plans: SubscriptionPlanRow;
+    };
+    const plan = subRow.subscription_plans;
 
     const { data: events } = await client
       .from('subscription_events')
@@ -536,17 +543,18 @@ export class SubscriptionsService {
   async syncPlanToSafepay(planId: string): Promise<string> {
     const client = this.supabaseService.getAdminClient();
 
-    const { data: plan, error } = await client
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const { data: rawPlanSync, error } = await client
       .from('subscription_plans')
       .select('*')
       .eq('id', planId)
       .single();
 
-    if (error || !plan) {
+    if (error || !rawPlanSync) {
       throw new HttpException('Plan not found', HttpStatus.NOT_FOUND);
     }
 
-    const planRow = plan as unknown as SubscriptionPlanRow;
+    const planRow = rawPlanSync as unknown as SubscriptionPlanRow;
     if (planRow.safepay_plan_token) {
       return planRow.safepay_plan_token;
     }
@@ -591,13 +599,14 @@ export class SubscriptionsService {
     // Match by reference (our internal UUID passed during checkout)
     let sub: UserSubscriptionRow | null = null;
     if (reference) {
-      const { data: found } = await client
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      const { data: rawFound } = await client
         .from('user_subscriptions')
         .select('*')
         .eq('reference', reference)
         .eq('status', SubscriptionStatus.PENDING)
         .maybeSingle();
-      sub = found as unknown as UserSubscriptionRow;
+      sub = rawFound ? (rawFound as unknown as UserSubscriptionRow) : null;
     }
 
     if (!sub) {
@@ -615,9 +624,7 @@ export class SubscriptionsService {
         current_period_start: safepayTimestampToISO(
           data.current_period_start_date,
         ),
-        current_period_end: safepayTimestampToISO(
-          data.current_period_end_date,
-        ),
+        current_period_end: safepayTimestampToISO(data.current_period_end_date),
         updated_at: new Date().toISOString(),
       })
       .eq('id', sub.id);
@@ -637,18 +644,20 @@ export class SubscriptionsService {
 
     if (!safepaySubId) return;
 
-    const { data: sub } = await client
+    const { data: rawSub } = await client
       .from('user_subscriptions')
       .select('id')
       .eq('safepay_subscription_id', safepaySubId)
       .maybeSingle();
 
-    if (!sub) {
+    if (!rawSub) {
       this.logger.warn(
         `payment.succeeded: no subscription found for ${safepaySubId}`,
       );
       return;
     }
+
+    const sub = rawSub as unknown as { id: string };
 
     await client
       .from('user_subscriptions')
@@ -658,10 +667,9 @@ export class SubscriptionsService {
         current_period_start: safepayTimestampToISO(
           data.current_period_start_date,
         ),
-        current_period_end: safepayTimestampToISO(
-          data.current_period_end_date,
-        ),
-        last_paid_at: safepayTimestampToISO(data.last_paid_date) ||
+        current_period_end: safepayTimestampToISO(data.current_period_end_date),
+        last_paid_at:
+          safepayTimestampToISO(data.last_paid_date) ||
           new Date().toISOString(),
         updated_at: new Date().toISOString(),
       })
@@ -683,13 +691,15 @@ export class SubscriptionsService {
 
     if (!safepaySubId) return;
 
-    const { data: sub } = await client
+    const { data: rawSub } = await client
       .from('user_subscriptions')
       .select('id')
       .eq('safepay_subscription_id', safepaySubId)
       .maybeSingle();
 
-    if (!sub) return;
+    if (!rawSub) return;
+
+    const sub = rawSub as unknown as { id: string };
 
     await client
       .from('user_subscriptions')
@@ -714,20 +724,22 @@ export class SubscriptionsService {
 
     if (!safepaySubId) return;
 
-    const { data: sub } = await client
+    const { data: rawSub } = await client
       .from('user_subscriptions')
       .select('id')
       .eq('safepay_subscription_id', safepaySubId)
       .maybeSingle();
 
-    if (!sub) return;
+    if (!rawSub) return;
+
+    const sub = rawSub as unknown as { id: string };
 
     await client
       .from('user_subscriptions')
       .update({
         status: SubscriptionStatus.CANCELLED,
-        cancelled_at: safepayTimestampToISO(data.canceled_at) ||
-          new Date().toISOString(),
+        cancelled_at:
+          safepayTimestampToISO(data.canceled_at) || new Date().toISOString(),
         updated_at: new Date().toISOString(),
       })
       .eq('id', sub.id);
@@ -746,13 +758,15 @@ export class SubscriptionsService {
 
     if (!safepaySubId) return;
 
-    const { data: sub } = await client
+    const { data: rawSub } = await client
       .from('user_subscriptions')
       .select('id')
       .eq('safepay_subscription_id', safepaySubId)
       .maybeSingle();
 
-    if (!sub) return;
+    if (!rawSub) return;
+
+    const sub = rawSub as unknown as { id: string };
 
     await client
       .from('user_subscriptions')
@@ -777,20 +791,22 @@ export class SubscriptionsService {
 
     if (!safepaySubId) return;
 
-    const { data: sub } = await client
+    const { data: rawSub } = await client
       .from('user_subscriptions')
       .select('id')
       .eq('safepay_subscription_id', safepaySubId)
       .maybeSingle();
 
-    if (!sub) return;
+    if (!rawSub) return;
+
+    const sub = rawSub as unknown as { id: string };
 
     await client
       .from('user_subscriptions')
       .update({
         status: SubscriptionStatus.PAUSED,
-        paused_at: safepayTimestampToISO(data.paused_at) ||
-          new Date().toISOString(),
+        paused_at:
+          safepayTimestampToISO(data.paused_at) || new Date().toISOString(),
         updated_at: new Date().toISOString(),
       })
       .eq('id', sub.id);
@@ -809,13 +825,15 @@ export class SubscriptionsService {
 
     if (!safepaySubId) return;
 
-    const { data: sub } = await client
+    const { data: rawSub } = await client
       .from('user_subscriptions')
       .select('id')
       .eq('safepay_subscription_id', safepaySubId)
       .maybeSingle();
 
-    if (!sub) return;
+    if (!rawSub) return;
+
+    const sub = rawSub as unknown as { id: string };
 
     await client
       .from('user_subscriptions')
@@ -851,7 +869,7 @@ export class SubscriptionsService {
       billing_cycle: extra?.billingCycle ?? null,
       amount: extra?.amount ?? null,
       status:
-        (eventData as Record<string, unknown>)?.status as string ?? null,
+        ((eventData as Record<string, unknown>)?.status as string) ?? null,
     });
   }
 }

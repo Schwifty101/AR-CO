@@ -32,10 +32,17 @@ export type ServiceType =
 
 export type CategoryType = 'facilitation' | 'overseas' | 'women-desk' | 'regulatory'
 
+export interface CategoryDocument {
+  id: string
+  name: string
+  description?: string
+  required: boolean
+}
+
 interface CategoryData {
   services: ServiceType[]
   form: FormSection[]
-  documents?: any[]
+  documents?: CategoryDocument[]
 }
 
 /**
@@ -97,7 +104,7 @@ export function getCategoryForm(category: CategoryType): FormSection[] {
 /**
  * Get documents for a specific category (if available)
  */
-export function getCategoryDocuments(category: CategoryType): any[] {
+export function getCategoryDocuments(category: CategoryType): CategoryDocument[] {
   const categoryData = getCategoryData(category)
   return categoryData?.documents || []
 }

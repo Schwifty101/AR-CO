@@ -88,10 +88,8 @@ export class SafepayService implements OnModuleInit {
   constructor(private readonly configService: ConfigService) {}
 
   async onModuleInit(): Promise<void> {
-    const secretKey =
-      this.configService.get<string>('safepay.secretKey') ?? '';
-    this.publicKey =
-      this.configService.get<string>('safepay.publicKey') ?? '';
+    const secretKey = this.configService.get<string>('safepay.secretKey') ?? '';
+    this.publicKey = this.configService.get<string>('safepay.publicKey') ?? '';
     this.environment =
       this.configService.get<string>('safepay.environment') ?? 'sandbox';
     this.frontendUrl =

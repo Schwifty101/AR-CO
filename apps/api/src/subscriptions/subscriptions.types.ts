@@ -14,7 +14,11 @@
  * ```
  */
 
-import type { SubscriptionPlan, UserSubscription, SubscriptionEvent } from '@repo/shared';
+import type {
+  SubscriptionPlan,
+  UserSubscription,
+  SubscriptionEvent,
+} from '@repo/shared';
 
 /**
  * Database row shape for subscription_plans table (snake_case)

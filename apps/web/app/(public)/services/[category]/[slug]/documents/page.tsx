@@ -44,28 +44,24 @@ function formatFileSize(bytes: number): string {
 export default function ServiceDocuments({ params }: PageProps) {
   const { category, slug } = use(params)
 
-  // Validate category
-  if (!isValidCategory(category)) return notFound()
-
-  // Find service
-  const service = findServiceBySlug(category as CategoryType, slug)
-  if (!service) return notFound()
-
-  // Get category-specific documents
-  const documents = getCategoryDocuments(category as CategoryType)
-
-  const total = documents.length
-
+  // All hooks must be called before any conditional returns
   const [currentIndex, setCurrentIndex] = useState(0)
   const [direction, setDirection] = useState(1)
   const [uploadedFiles, setUploadedFiles] = useState<Record<string, UploadedFile[]>>({})
   const [isDragging, setIsDragging] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const currentDoc = documents[currentIndex]
-  const currentFiles = uploadedFiles[currentDoc.id] ?? []
+  // Validate category
+  const categoryValid = isValidCategory(category)
+  const service = categoryValid ? findServiceBySlug(category as CategoryType, slug) : null
+  const documents = categoryValid ? getCategoryDocuments(category as CategoryType) : []
+  const total = documents.length
+
+  const currentDoc = total > 0 ? documents[currentIndex] : null
+  const currentDocId = currentDoc?.id ?? ''
+  const currentFiles = uploadedFiles[currentDocId] ?? []
   const isFirst = currentIndex === 0
-  const isLast = currentIndex === total - 1
+  const isLast = total > 0 ? currentIndex === total - 1 : true
 
   const goNext = useCallback(() => {
     if (isLast) return
@@ -87,25 +83,25 @@ export default function ServiceDocuments({ params }: PageProps) {
       }))
       setUploadedFiles((prev) => ({
         ...prev,
-        [currentDoc.id]: [...(prev[currentDoc.id] ?? []), ...newFiles],
+        [currentDocId]: [...(prev[currentDocId] ?? []), ...newFiles],
       }))
     },
-    [currentDoc.id]
+    [currentDocId]
   )
 
   const removeFile = useCallback(
     (index: number) => {
       setUploadedFiles((prev) => {
-        const existing = prev[currentDoc.id] ?? []
+        const existing = prev[currentDocId] ?? []
         const removed = existing[index]
         if (removed?.previewUrl) URL.revokeObjectURL(removed.previewUrl)
         return {
           ...prev,
-          [currentDoc.id]: existing.filter((_, i) => i !== index),
+          [currentDocId]: existing.filter((_, i) => i !== index),
         }
       })
     },
-    [currentDoc.id]
+    [currentDocId]
   )
 
   const handleDrop = useCallback(
@@ -138,6 +134,11 @@ export default function ServiceDocuments({ params }: PageProps) {
     },
     [addFiles]
   )
+
+  // Early returns after all hooks
+  if (!categoryValid) return notFound()
+  if (!service) return notFound()
+  if (!currentDoc) return notFound()
 
   return (
     <div className="px-4 md:px-12 lg:px-20 pt-2 md:pt-4 pb-16 md:pb-24">

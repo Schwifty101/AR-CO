@@ -22,35 +22,34 @@ const slideVariants = {
   exit: (dir: number) => ({ x: dir > 0 ? -300 : 300, opacity: 0 }),
 }
 
+/** Form field value type */
+type FormFieldValue = string | boolean | string[] | FileList | null
+
 /** Step 4: Dynamic category-specific form */
 export default function ServiceForm({ params }: PageProps) {
   const { category, slug } = use(params)
   const router = useRouter()
 
-  // Validate category
-  if (!isValidCategory(category)) return notFound()
-
-  // Find service
-  const service = findServiceBySlug(category as CategoryType, slug)
-  if (!service) return notFound()
-
-  // Get category-specific form sections
-  const formSections = getCategoryForm(category as CategoryType)
-  const total = formSections.length
-
+  // All hooks must be called before any conditional returns
   const [currentIndex, setCurrentIndex] = useState(0)
   const [direction, setDirection] = useState(1)
-  const [formData, setFormData] = useState<Record<string, any>>({})
+  const [formData, setFormData] = useState<Record<string, FormFieldValue>>({})
 
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const formWrapperRef = useRef<HTMLDivElement>(null)
 
-  const currentSection = formSections[currentIndex]
+  // Validate category and find service
+  const categoryValid = isValidCategory(category)
+  const service = categoryValid ? findServiceBySlug(category as CategoryType, slug) : null
+  const formSections = categoryValid ? getCategoryForm(category as CategoryType) : []
+  const total = formSections.length
+
+  const currentSection = total > 0 ? formSections[currentIndex] : null
   const isFirst = currentIndex === 0
-  const isLast = currentIndex === total - 1
+  const isLast = total > 0 ? currentIndex === total - 1 : true
 
   // Use single column if section has 4 or fewer fields
-  const useSingleColumn = currentSection.fields.length <= 4
+  const useSingleColumn = currentSection ? currentSection.fields.length <= 4 : false
 
   // Handle mouse wheel scrolling (intercept before GSAP ScrollSmoother)
   useEffect(() => {
@@ -206,15 +205,21 @@ export default function ServiceForm({ params }: PageProps) {
     setCurrentIndex((i) => i - 1)
   }, [isFirst])
 
-  const handleFieldChange = useCallback((fieldId: string, value: any) => {
+  const handleFieldChange = useCallback((fieldId: string, value: FormFieldValue) => {
     setFormData((prev) => ({
       ...prev,
       [fieldId]: value,
     }))
   }, [])
 
+  // Early returns after all hooks
+  if (!categoryValid) return notFound()
+  if (!service) return notFound()
+  if (!currentSection) return notFound()
+
   const renderField = (field: FormField, index: number) => {
-    const fieldValue = formData[field.id] || ''
+    const fieldValue = formData[field.id] ?? ''
+    const stringValue = typeof fieldValue === 'string' ? fieldValue : ''
 
     return (
       <div key={`${field.id}-${index}`} className="space-y-2">
@@ -251,7 +256,7 @@ export default function ServiceForm({ params }: PageProps) {
 
         {field.type === 'textarea' ? (
           <textarea
-            value={fieldValue}
+            value={stringValue}
             onChange={(e) => handleFieldChange(field.id, e.target.value)}
             placeholder={field.placeholder}
             required={field.required}
@@ -283,7 +288,7 @@ export default function ServiceForm({ params }: PageProps) {
           />
         ) : field.type === 'select' ? (
           <select
-            value={fieldValue}
+            value={stringValue}
             onChange={(e) => handleFieldChange(field.id, e.target.value)}
             required={field.required}
             className="w-full transition-all duration-300 focus:outline-none cursor-pointer"
@@ -294,7 +299,7 @@ export default function ServiceForm({ params }: PageProps) {
               borderRadius: '100px',
               fontFamily: "'Georgia', 'Times New Roman', serif",
               fontSize: '0.88rem',
-              color: fieldValue ? 'var(--heritage-cream)' : 'rgba(249, 248, 246, 0.18)',
+              color: stringValue ? 'var(--heritage-cream)' : 'rgba(249, 248, 246, 0.18)',
               letterSpacing: '0.01em',
               appearance: 'none',
               WebkitAppearance: 'none',
@@ -323,7 +328,7 @@ export default function ServiceForm({ params }: PageProps) {
         ) : field.type === 'radio' ? (
           <div className="space-y-3 w-full">
             {field.options?.map((option, optIdx) => {
-              const isChecked = fieldValue === option
+              const isChecked = stringValue === option
               return (
                 <label key={optIdx} className="flex items-start gap-3 cursor-pointer group w-full">
                   <div className="relative flex items-center justify-center mt-0.5 flex-shrink-0">
@@ -487,7 +492,7 @@ export default function ServiceForm({ params }: PageProps) {
         ) : (
           <input
             type={field.type}
-            value={fieldValue}
+            value={stringValue}
             onChange={(e) => handleFieldChange(field.id, e.target.value)}
             placeholder={field.placeholder}
             required={field.required}

@@ -166,6 +166,7 @@ export default function SubscribePage() {
   /** Fetch user's subscription when auth state is resolved */
   useEffect(() => {
     if (authLoading || !isAuthenticated) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Intentional: resetting state when auth changes
       setMySubscription(null);
       return;
     }

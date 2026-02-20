@@ -4,13 +4,6 @@ import { useEffect, useRef, useState } from "react"
 import TextReveal from "@/components/shared/animations/TextReveal"
 import styles from "./HeroV2.module.css"
 
-const MARQUEE_WORDS = [
-  "Justice", "Resolution", "Integrity", "Clarity", "Equity",
-  "Advocacy", "Precedent", "Liberty", "Counsel", "Statute",
-  "Verdict", "Litigation", "Due Process", "Jurisdiction",
-  "Testimony", "Rights", "Amendment", "Decree",
-]
-
 interface QuoteItem {
   text: string
   top: string

@@ -34,6 +34,7 @@ function PaymentCallbackContent() {
         )
       }
 
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Intentional: updating UI state after payment postMessage
       setMessage('Payment processed. You can close this window.')
       window.close()
     } else {

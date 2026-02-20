@@ -72,7 +72,11 @@ describe('AuthService', () => {
 
     // Reset all mocks
     jest.clearAllMocks();
-    supabaseService.getAdminClient.mockReturnValue(mockAdminClient as any);
+    supabaseService.getAdminClient.mockReturnValue(
+      mockAdminClient as unknown as ReturnType<
+        SupabaseService['getAdminClient']
+      >,
+    );
   });
 
   describe('signup', () => {

@@ -108,7 +108,7 @@ export const initStarfieldAnimation = (
   const stars = container.querySelectorAll('.star');
   const timelines: gsap.core.Timeline[] = [];
 
-  stars.forEach((star, _index) => {
+  stars.forEach((star) => {
     const timeline = gsap.timeline({ repeat: -1, yoyo: true });
     timeline.to(star, {
       opacity: Math.random() * 0.3 + 0.2,
@@ -135,7 +135,7 @@ export const initFadeInOnScroll = (selector: string): (() => void) => {
   const elements = document.querySelectorAll(selector);
   const triggers: ScrollTrigger[] = [];
 
-  elements.forEach((element, _index) => {
+  elements.forEach((element) => {
     const trigger = ScrollTrigger.create({
       trigger: element,
       start: 'top 80%',

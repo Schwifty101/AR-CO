@@ -97,7 +97,7 @@ export default function AboutSection() {
             >
               <p className={styles.paragraph}>
                 We combine deep legal expertise with practical insight to deliver result-driven 
-                solutions tailored to each client's needs.
+                solutions tailored to each client&apos;s needs.
               </p>
             </motion.div>
 

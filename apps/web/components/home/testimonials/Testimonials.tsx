@@ -124,9 +124,9 @@ function TestimonialCard({ testimonial }: TestimonialCardProps) {
         )}
       </div>
       <div className={styles.quoteContainer}>
-        <span className={styles.openQuote}>"</span>
+        <span className={styles.openQuote}>&ldquo;</span>
         <p className={styles.quote}>{truncatedQuote}</p>
-        <span className={styles.closeQuote}>"</span>
+        <span className={styles.closeQuote}>&rdquo;</span>
       </div>
     </div>
   )

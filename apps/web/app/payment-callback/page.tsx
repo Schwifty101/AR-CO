@@ -22,6 +22,7 @@ function PaymentCallbackContent() {
           { type: `safepay-${source}-cancelled` },
           window.location.origin,
         );
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- Intentional: updating state based on URL params after postMessage
         setStatus('cancelled');
       } else {
         window.opener.postMessage(
