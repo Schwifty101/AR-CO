@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, ArrowRight, ArrowLeft, Calendar, Check } from 'lucide-react'
-import { getSmoother } from '@/components/SmoothScroll'
+import { useScrollLock } from '@/lib/hooks/useScrollLock'
 import styles from './ConsultationOverlay.module.css'
 
 /* ─── Types ─── */
@@ -68,19 +68,15 @@ export default function ConsultationOverlay({ isOpen, onClose }: ConsultationOve
     [onClose],
   )
 
-  /* ─── Body lock & ScrollSmoother pause ─── */
-  useEffect(() => {
-    const smoother = getSmoother()
+  const { lock, unlock } = useScrollLock()
 
+  /* ─── Body lock & Lenis pause ─── */
+  useEffect(() => {
     if (isOpen) {
-      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth
-      document.body.style.overflow = 'hidden'
-      document.body.style.paddingRight = `${scrollbarWidth}px`
+      lock()
       window.addEventListener('keydown', handleKeyDown)
-      if (smoother) smoother.stop()
     } else {
-      document.body.style.overflow = ''
-      document.body.style.paddingRight = ''
+      unlock()
       // Reset form when closing
       setTimeout(() => {
         setStep(1)
@@ -88,17 +84,13 @@ export default function ConsultationOverlay({ isOpen, onClose }: ConsultationOve
         setErrors({})
         setFormData({ name: '', email: '', phone: '', practiceArea: '', caseDescription: '' })
       }, 400)
-      if (smoother) smoother.start()
     }
 
     return () => {
-      document.body.style.overflow = ''
-      document.body.style.paddingRight = ''
+      unlock()
       window.removeEventListener('keydown', handleKeyDown)
-      const sm = getSmoother()
-      if (sm) sm.start()
     }
-  }, [isOpen, handleKeyDown])
+  }, [isOpen, handleKeyDown, lock, unlock])
 
   /* ─── Field change handler ─── */
   const updateField = (field: keyof FormData, value: string) => {
