@@ -155,62 +155,68 @@ const HeroNavbar: React.FC<IHeroNavbarProps> = ({ isHidden, hasEntered, navItems
             className={styles.heroNavbar}
         >
             <div className={styles.heroNavbarInner}>
-                <Logo />
+                {/* Left Side: Logo & CTAs */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '2.5rem' }}>
+                    <Logo />
 
-                {/* Center Links - Desktop Only */}
-                <div className={styles.centerNav}>
-                    {navItems.map((link) => (
-                        link.id === 'practice-areas' ? (
-                            <button
-                                key={link.id}
-                                onClick={onOpenPracticeAreas}
-                                className={styles.navLink}
-                            >
-                                {link.label}
-                            </button>
-                        ) : link.id === 'facilitation' ? (
-                            <button
-                                key={link.id}
-                                onClick={onOpenFacilitation}
-                                className={styles.navLink}
-                            >
-                                {link.label}
-                            </button>
-                        ) : link.id === 'about' ? (
-                            <button
-                                key={link.id}
-                                onClick={onOpenAbout}
-                                className={styles.navLink}
-                            >
-                                {link.label}
-                            </button>
-                        ) : (
-                            <Link
-                                key={link.id}
-                                href={link.href}
-                                className={styles.navLink}
-                            >
-                                {link.label}
-                            </Link>
-                        )
-                    ))}
+                    {!hideCta && (
+                        <div className="hidden lg:flex" style={{ gap: '0.75rem', alignItems: 'center' }}>
+                            <CtaButton variant="outline" text="signin / signup" href="/auth/signin" />
+                            <CtaButton variant="filled" onClick={openConsultationOverlay} />
+                        </div>
+                    )}
                 </div>
 
-                {/* Right CTA - Desktop Only */}
-                {!hideCta && (
-                    <div className="hidden lg:block">
-                        <CtaButton variant="outline" onClick={openConsultationOverlay} />
+                {/* Right Side: Navigation Links & Mobile Menu */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '2.5rem' }}>
+                    {/* Center Links - Desktop Only */}
+                    <div className={styles.centerNav}>
+                        {navItems.map((link) => (
+                            link.id === 'practice-areas' ? (
+                                <button
+                                    key={link.id}
+                                    onClick={onOpenPracticeAreas}
+                                    className={styles.navLink}
+                                >
+                                    {link.label}
+                                </button>
+                            ) : link.id === 'facilitation' ? (
+                                <button
+                                    key={link.id}
+                                    onClick={onOpenFacilitation}
+                                    className={styles.navLink}
+                                >
+                                    {link.label}
+                                </button>
+                            ) : link.id === 'about' ? (
+                                <button
+                                    key={link.id}
+                                    onClick={onOpenAbout}
+                                    className={styles.navLink}
+                                >
+                                    {link.label}
+                                </button>
+                            ) : (
+                                <Link
+                                    key={link.id}
+                                    href={link.href}
+                                    className={styles.navLink}
+                                >
+                                    {link.label}
+                                </Link>
+                            )
+                        ))}
                     </div>
-                )}
 
-                {/* Mobile Menu Indicator - shows on smaller screens */}
-                <button
-                    className={styles.mobileMenuIndicator}
-                    onClick={onMenuClick}
-                    aria-label="Open navigation menu"
-                >
-                    MENU
-                </button>
+                    {/* Mobile Menu Indicator - shows on smaller screens */}
+                    <button
+                        className={styles.mobileMenuIndicator}
+                        onClick={onMenuClick}
+                        aria-label="Open navigation menu"
+                    >
+                        MENU
+                    </button>
+                </div>
             </div>
         </motion.nav>
     )
@@ -240,7 +246,8 @@ const StickyNavbar: React.FC<IStickyNavbarProps> = ({ isVisible, onMenuClick, hi
             className={styles.stickyNavbar}
         >
             {!hideCta && (
-                <div className={`${styles.stickyContent} hidden md:block`}>
+                <div className={`${styles.stickyContent} hidden md:flex`} style={{ gap: '0.75rem', alignItems: 'center' }}>
+                    <Link href="/auth/signin" className={styles.navLink} style={{ fontSize: '13px', letterSpacing: '0.05em', fontWeight: 500, color: '#fff' }}>signin / signup</Link>
                     <CtaButton variant="filled" onClick={openConsultationOverlay} />
                 </div>
             )}
@@ -434,6 +441,9 @@ const FullScreenMenu: React.FC<IFullScreenMenuProps> = ({ onClose, navItems, onO
 
                 <div className={styles.menuHeaderActions}>
                     <div className="hidden md:flex" style={{ gap: '0.75rem' }}>
+                        <Link href="/auth/signin" className={`${styles.ctaButton} ${styles.ctaButtonOutline}`} style={{ padding: '0 1.5rem' }} onClick={onClose}>
+                            signin / signup
+                        </Link>
                         <Link href="/subscribe" className={`${styles.ctaButton} ${styles.ctaButtonUpgrade}`} onClick={onClose}>
                             Upgrade
                             <ArrowUpRight size={14} className={styles.ctaIcon} />
@@ -513,7 +523,19 @@ const FullScreenMenu: React.FC<IFullScreenMenuProps> = ({ onClose, navItems, onO
                         </div>
                     ))}
 
-                    {/* Mobile Only: Upgrade Button as last menu item */}
+                    {/* Mobile Only: Sign In & Upgrade Button as last menu items */}
+                    <div className={`${styles.menuLinkWrapper} md:hidden`}>
+                        <motion.div variants={linkVariants}>
+                            <Link
+                                href="/auth/signin"
+                                className={styles.menuLink}
+                                onClick={onClose}
+                                style={{ color: 'var(--heritage-charcoal)' }}
+                            >
+                                <SlotMachineText>signin / signup</SlotMachineText>
+                            </Link>
+                        </motion.div>
+                    </div>
                     <div className={`${styles.menuLinkWrapper} md:hidden`}>
                         <motion.div variants={linkVariants}>
                             <Link

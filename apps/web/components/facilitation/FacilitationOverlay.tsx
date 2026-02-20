@@ -118,17 +118,15 @@ export default function FacilitationOverlay({ isOpen, onClose }: FacilitationOve
   const { lock, unlock } = useScrollLock()
 
   useEffect(() => {
-    if (isOpen) {
-      lock()
-      window.addEventListener('keydown', handleKeyDown)
-    } else {
-      unlock()
-      setExpandedId(null)
-    }
+    if (!isOpen) return
+
+    lock()
+    window.addEventListener('keydown', handleKeyDown)
 
     return () => {
       unlock()
       window.removeEventListener('keydown', handleKeyDown)
+      setExpandedId(null)
     }
   }, [isOpen, handleKeyDown, lock, unlock])
 

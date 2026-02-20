@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
 import Hero from "@/components/home/hero/HeroV2"
 import QuoteSection from "@/components/home/quote/QuoteSection"
 import AboutSection from "@/components/home/about/AboutSection"

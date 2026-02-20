@@ -32,8 +32,8 @@
     max-width: 1600px;
     margin: 0 auto;
     width: 100%;
-    display: grid;
-    grid-template-columns: auto 1fr auto;
+    display: flex;
+    justify-content: space-between;
     align-items: center;
     gap: 1rem;
 }
@@ -70,10 +70,7 @@
 .centerNav {
     display: none;
     gap: 2.5rem;
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
+    align-items: center;
 }
 
 .navLink {
