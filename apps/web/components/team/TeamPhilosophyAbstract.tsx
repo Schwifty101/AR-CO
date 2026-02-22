@@ -1,9 +1,14 @@
 'use client'
 
-import { useRef } from 'react'
-import { motion, useScroll, useTransform } from 'framer-motion'
+import { useRef, useEffect } from 'react'
+import { motion } from 'framer-motion'
 import Image from 'next/image'
+import gsap from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { getSmoother } from '../SmoothScroll'
 import { ITeamPhilosophyProps } from './types/teamInterfaces'
+
+gsap.registerPlugin(ScrollTrigger)
 
 export default function TeamPhilosophyAbstract({
     title,
@@ -12,15 +17,93 @@ export default function TeamPhilosophyAbstract({
     className = ''
 }: ITeamPhilosophyProps) {
     const containerRef = useRef<HTMLDivElement>(null)
-    const { scrollYProgress } = useScroll({
-        target: containerRef,
-        offset: ["start end", "end start"]
-    })
 
-    // Parallax values for images (using more subtle movements to reduce paint area)
-    const y1 = useTransform(scrollYProgress, [0, 1], [50, -50])
-    const y2 = useTransform(scrollYProgress, [0, 1], [0, -100])
-    const y3 = useTransform(scrollYProgress, [0, 1], [-50, 80])
+    // Refs for GSAP parallax — each targets the outer image wrapper div
+    const img1Ref = useRef<HTMLDivElement>(null)
+    const img2Ref = useRef<HTMLDivElement>(null)
+    const img3Ref = useRef<HTMLDivElement>(null)
+
+    // GSAP parallax using Lenis-synced ScrollTrigger.
+    // Framer Motion's useScroll reads native scroll position while Lenis virtualizes it,
+    // producing jitter. GSAP ScrollTrigger is ticked via lenis.on("scroll", ScrollTrigger.update)
+    // in SmoothScroll.tsx, so it stays perfectly in sync.
+    useEffect(() => {
+        let ctx: gsap.Context | undefined
+
+        const initParallax = () => {
+            if (ctx) return
+            if (!containerRef.current) return
+
+            ctx = gsap.context(() => {
+                // Shared trigger configuration — scrub:1 creates a 1-second lag for
+                // organic feel rather than a mechanical 1:1 lock to scroll position
+                const triggerConfig = {
+                    trigger: containerRef.current,
+                    start: 'top bottom',
+                    end: 'bottom top',
+                    scrub: 1,
+                }
+
+                // Image 1: top-left pillar — subtle upward float (+50 → -50px)
+                if (img1Ref.current) {
+                    gsap.fromTo(
+                        img1Ref.current,
+                        { y: 50 },
+                        { y: -50, ease: 'none', scrollTrigger: triggerConfig },
+                    )
+                }
+
+                // Image 2: bottom-right detail — deeper upward pull (0 → -100px)
+                if (img2Ref.current) {
+                    gsap.fromTo(
+                        img2Ref.current,
+                        { y: 0 },
+                        { y: -100, ease: 'none', scrollTrigger: { ...triggerConfig } },
+                    )
+                }
+
+                // Image 3: top-right accent — counter-direction drift (-50 → +80px)
+                if (img3Ref.current) {
+                    gsap.fromTo(
+                        img3Ref.current,
+                        { y: -50 },
+                        { y: 80, ease: 'none', scrollTrigger: { ...triggerConfig } },
+                    )
+                }
+            }, containerRef)
+
+            ScrollTrigger.refresh()
+        }
+
+        // If Lenis is already running, init immediately; otherwise wait for the
+        // scroll-smoother-ready event (or fall back after 1s for edge cases)
+        let onSmootherReady: (() => void) | undefined
+        let fallbackTimer: ReturnType<typeof setTimeout> | undefined
+
+        if (getSmoother()) {
+            initParallax()
+        } else {
+            onSmootherReady = () => {
+                initParallax()
+                window.removeEventListener('scroll-smoother-ready', onSmootherReady!)
+            }
+            window.addEventListener('scroll-smoother-ready', onSmootherReady)
+            fallbackTimer = setTimeout(() => {
+                if (!ctx) initParallax()
+                window.removeEventListener('scroll-smoother-ready', onSmootherReady!)
+            }, 1000)
+        }
+
+        return () => {
+            ctx?.revert()
+            if (onSmootherReady) {
+                window.removeEventListener('scroll-smoother-ready', onSmootherReady)
+            }
+            if (fallbackTimer) {
+                clearTimeout(fallbackTimer)
+            }
+        }
+    }, [])
 
     return (
         <section
@@ -82,10 +165,12 @@ export default function TeamPhilosophyAbstract({
 
             {/* Image 1: Top Left - Structural Pillar */}
             {images[0] && (
-                <motion.div
-                    style={{ y: y1 }}
-                    className="absolute top-[5%] left-[-10%] md:left-[2%] lg:left-[5%] w-[70%] md:w-[35%] lg:w-[25%] aspect-[3/4] z-10 hidden sm:block opacity-60 hover:opacity-100 transition-opacity duration-700"
+                // Outer div: GSAP-driven parallax target (replaces motion.div style={{ y: y1 }})
+                <div
+                    ref={img1Ref}
+                    className="absolute top-[5%] left-[-10%] md:left-[2%] lg:left-[5%] w-[70%] md:w-[35%] lg:w-[25%] aspect-[3/4] z-10 hidden sm:block opacity-60 hover:opacity-100 transition-opacity duration-700 will-change-transform"
                 >
+                    {/* Inner motion.div: whileInView reveal — unchanged */}
                     <motion.div
                         initial={{ opacity: 0, scale: 0.95 }}
                         whileInView={{ opacity: 1, scale: 1 }}
@@ -102,15 +187,17 @@ export default function TeamPhilosophyAbstract({
                         />
                         <div className="absolute inset-0 bg-wood-espresso/30 mix-blend-multiply pointer-events-none" />
                     </motion.div>
-                </motion.div>
+                </div>
             )}
 
             {/* Image 2: Bottom Right - Dynamic Detail */}
             {images[1] && (
-                <motion.div
-                    style={{ y: y2 }}
-                    className="absolute bottom-[-5%] right-[-5%] md:right-[5%] lg:right-[8%] w-[60%] md:w-[30%] lg:w-[22%] aspect-[4/5] z-10 hidden sm:block opacity-60 hover:opacity-100 transition-opacity duration-700"
+                // Outer div: GSAP-driven parallax target (replaces motion.div style={{ y: y2 }})
+                <div
+                    ref={img2Ref}
+                    className="absolute bottom-[-5%] right-[-5%] md:right-[5%] lg:right-[8%] w-[60%] md:w-[30%] lg:w-[22%] aspect-[4/5] z-10 hidden sm:block opacity-60 hover:opacity-100 transition-opacity duration-700 will-change-transform"
                 >
+                    {/* Inner motion.div: whileInView reveal — unchanged */}
                     <motion.div
                         initial={{ opacity: 0, scale: 0.95 }}
                         whileInView={{ opacity: 1, scale: 1 }}
@@ -127,15 +214,17 @@ export default function TeamPhilosophyAbstract({
                         />
                         <div className="absolute inset-0 bg-heritage-gold/5 mix-blend-overlay pointer-events-none" />
                     </motion.div>
-                </motion.div>
+                </div>
             )}
 
             {/* Image 3: Top Right - Abstract / Accent */}
             {images[2] && (
-                <motion.div
-                    style={{ y: y3 }}
-                    className="absolute top-[25%] lg:top-[15%] right-[2%] lg:right-[22%] w-[40%] md:w-[25%] lg:w-[16%] aspect-square z-0 hidden lg:block opacity-40 hover:opacity-100 transition-opacity duration-700"
+                // Outer div: GSAP-driven parallax target (replaces motion.div style={{ y: y3 }})
+                <div
+                    ref={img3Ref}
+                    className="absolute top-[25%] lg:top-[15%] right-[2%] lg:right-[22%] w-[40%] md:w-[25%] lg:w-[16%] aspect-square z-0 hidden lg:block opacity-40 hover:opacity-100 transition-opacity duration-700 will-change-transform"
                 >
+                    {/* Inner motion.div: whileInView reveal — unchanged */}
                     <motion.div
                         initial={{ opacity: 0, scale: 0.9 }}
                         whileInView={{ opacity: 1, scale: 1 }}
@@ -151,7 +240,7 @@ export default function TeamPhilosophyAbstract({
                             className="object-cover grayscale hover:grayscale-0 transition-all duration-[1.5s]"
                         />
                     </motion.div>
-                </motion.div>
+                </div>
             )}
 
             {/* Mobile Visual Stack (Fallback for small screens) */}
