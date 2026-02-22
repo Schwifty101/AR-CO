@@ -13,7 +13,7 @@ export default function ClientLayout({
   return (
     <div className="dark bg-background text-foreground min-h-screen">
       <div className="flex min-h-screen flex-col">
-        <DashboardHeader />
+        <DashboardHeader userType="client" />
         <div className="flex flex-1">
           <DashboardSidebar userType="client" />
           <main className="flex-1 p-6">{children}</main>
