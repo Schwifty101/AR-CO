@@ -110,9 +110,6 @@ export default function TeamPhilosophyAbstract({
             ref={containerRef}
             className={`relative py-32 md:py-48 px-4 md:px-8 lg:px-16 mx-auto min-h-[120vh] flex flex-col justify-center overflow-hidden w-full ${className}`}
         >
-            {/* Darker Ambient Gradient (Simplified) */}
-            <div className="absolute inset-0 z-0 pointer-events-none opacity-50 bg-gradient-to-b from-heritage-walnut/20 to-wood-espresso" />
-
             {/* Central Typography Container */}
             <div className="relative z-20 max-w-7xl mx-auto w-full flex flex-col items-center text-center px-4">
 
