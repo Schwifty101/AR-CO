@@ -196,7 +196,7 @@ export default function SubscribePage() {
   /** Determine the primary plan to display */
   const plan = plans.length > 0 ? plans[0] : null;
   const planName = plan?.name ?? 'Civic Retainer Service';
-  const planAmount = plan ? `PKR ${plan.amount.toLocaleString()}` : 'PKR 700';
+  const planAmount = plan ? `PKR ${(plan.amount / 100).toLocaleString()}` : 'PKR 700';
   const planSlug = plan?.slug ?? 'civic-retainer';
   const planFeatures = plan?.features ?? [];
   const planInterval =
