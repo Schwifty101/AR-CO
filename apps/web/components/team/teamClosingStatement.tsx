@@ -71,25 +71,38 @@ export default function TeamClosingStatement({
       ScrollTrigger.refresh()
     }
 
-    // Lenis-ready initialization (same pattern as before)
+    // Defer init by one animation frame so the DOM has painted and
+    // ScrollTrigger can measure pin positions against a settled layout.
+    // A secondary refresh after 600ms catches late-loading images.
+    let rafId: number | undefined
+    let settleTimer: ReturnType<typeof setTimeout> | undefined
     let onSmootherReady: (() => void) | undefined
     let fallbackTimer: ReturnType<typeof setTimeout> | undefined
 
+    const deferredInit = () => {
+      rafId = requestAnimationFrame(() => {
+        initScrollTrigger()
+        settleTimer = setTimeout(() => ScrollTrigger.refresh(), 600)
+      })
+    }
+
     if (getSmoother()) {
-      initScrollTrigger()
+      deferredInit()
     } else {
       onSmootherReady = () => {
-        initScrollTrigger()
+        deferredInit()
         window.removeEventListener('scroll-smoother-ready', onSmootherReady!)
       }
       window.addEventListener('scroll-smoother-ready', onSmootherReady)
       fallbackTimer = setTimeout(() => {
-        if (!ctx) initScrollTrigger()
+        if (!ctx) deferredInit()
         window.removeEventListener('scroll-smoother-ready', onSmootherReady!)
       }, 1000)
     }
 
     return () => {
+      if (rafId) cancelAnimationFrame(rafId)
+      if (settleTimer) clearTimeout(settleTimer)
       ctx?.revert()
       if (onSmootherReady) {
         window.removeEventListener('scroll-smoother-ready', onSmootherReady)
