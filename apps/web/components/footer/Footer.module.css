@@ -1,12 +1,13 @@
 .footer {
   width: 100%;
   min-height: 100vh;
-  background: var(--wood-espresso);
+  background: #0d0906;
   padding: 4rem 0 1rem;
   position: relative;
   z-index: 50;
   display: flex;
   align-items: flex-start;
+  border-top: 0.5px solid rgb(97, 97, 97, 0.4);
   box-sizing: border-box;
 }
 
@@ -131,13 +132,13 @@
   font-family: 'Lora', Georgia, serif;
   font-size: clamp(2.25rem, 4vw, 4rem);
   font-weight: 400;
+  font-style: italic;
   line-height: 1.05;
   letter-spacing: -0.02em;
   color: var(--heritage-cream);
   text-decoration: none;
   transition: color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: inline-block;
-  text-transform: uppercase;
   max-width: 100%;
   word-wrap: break-word;
   overflow-wrap: break-word;
@@ -255,6 +256,7 @@ button.navLink:focus-visible {
   font-family: 'Georgia', 'Times New Roman', serif;
   font-size: 0.85rem;
   font-weight: 400;
+  font-style: italic;
   line-height: 1.6;
   color: rgba(250, 248, 244, 0.85);
   margin: 0;
@@ -277,6 +279,7 @@ button.navLink:focus-visible {
   font-family: 'Georgia', 'Times New Roman', serif;
   font-size: 0.85rem;
   font-weight: 400;
+  font-style: italic;
   line-height: 1.5;
   color: rgba(250, 248, 244, 0.8);
   margin: 0;

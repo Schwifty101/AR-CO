@@ -38,7 +38,7 @@ export default function TeamInteractiveList({ members }: TeamInteractiveListProp
 
                             {/* Text Content */}
                             <div>
-                                <h2 className="text-5xl font-medium mb-3" style={{
+                                <h2 className="text-5xl font-medium mb-3 italic" style={{
                                     fontFamily: "'Lora', Georgia, serif",
                                     letterSpacing: '-0.02em',
                                     lineHeight: 0.9,
@@ -56,10 +56,10 @@ export default function TeamInteractiveList({ members }: TeamInteractiveListProp
 
                                 {member.education && (
                                     <div className="mb-6">
-                                        <h4 className="text-[10px] uppercase tracking-widest text-heritage-gold mb-2 opacity-70" style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}>Education</h4>
+                                        <h4 className="text-[10px] uppercase tracking-widest text-heritage-gold mb-2 opacity-70" style={{ fontFamily: "'Lora', Georgia, serif" }}>Education</h4>
                                         <ul className="space-y-1">
                                             {member.education.map((edu, i) => (
-                                                <li key={i} className="text-xs text-heritage-cream/70 font-light">{edu}</li>
+                                                <li key={i} className="text-xs text-heritage-cream/70 font-light" style={{ fontFamily: "'Lora', Georgia, serif" }}>{edu}</li>
                                             ))}
                                         </ul>
                                     </div>
@@ -68,7 +68,7 @@ export default function TeamInteractiveList({ members }: TeamInteractiveListProp
                                 {member.expertise && (
                                     <div className="flex flex-wrap gap-2">
                                         {member.expertise.map((exp, i) => (
-                                            <span key={i} className="text-[10px] uppercase tracking-wider border border-heritage-cream/10 px-3 py-1.5 rounded-full text-heritage-cream/60">
+                                            <span key={i} className="text-[10px] uppercase tracking-wider border border-heritage-cream/10 px-3 py-1.5 rounded-full text-heritage-cream/60" style={{ fontFamily: "'Lora', Georgia, serif" }}>
                                                 {exp}
                                             </span>
                                         ))}
@@ -103,7 +103,7 @@ export default function TeamInteractiveList({ members }: TeamInteractiveListProp
                                         {/* Name Row */}
                                         <div className="flex items-baseline justify-between w-full overflow-hidden">
                                             <h2
-                                                className="text-5xl md:text-7xl lg:text-8xl font-light tracking-tighter transition-all duration-500 ease-out origin-left"
+                                                className="text-5xl md:text-7xl lg:text-8xl font-light tracking-tighter transition-all duration-500 ease-out origin-left italic"
                                                 style={{
                                                     fontFamily: "'Lora', Georgia, serif",
                                                     letterSpacing: '-0.04em',
@@ -121,7 +121,7 @@ export default function TeamInteractiveList({ members }: TeamInteractiveListProp
                                         </div>
 
                                         {/* Role */}
-                                        <p className={`mt-4 text-sm md:text-base font-medium tracking-widest uppercase transition-all duration-500 ${isActive ? 'text-heritage-walnut translate-x-4' : 'text-heritage-walnut/40'}`} style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}>
+                                        <p className={`mt-4 text-sm md:text-base font-medium tracking-widest uppercase italic transition-all duration-500 ${isActive ? 'text-heritage-walnut translate-x-4' : 'text-heritage-walnut/40'}`} style={{ fontFamily: "'Lora', Georgia, serif" }}>
                                             {member.role}
                                         </p>
 
@@ -139,8 +139,8 @@ export default function TeamInteractiveList({ members }: TeamInteractiveListProp
                                             <div className="pt-8 pb-4 pl-4 border-l border-[var(--heritage-gold)]/20 ml-2 space-y-8">
                                                 {member.bio && (
                                                     <div className="max-w-2xl">
-                                                        <h4 className="text-xs uppercase tracking-widest text-[var(--heritage-gold)] mb-3 font-medium" style={{ fontFamily: "'Georgia', 'Times New Roman', serif", letterSpacing: '0.35em' }}>About</h4>
-                                                        <p className="text-base text-[var(--heritage-cream)] leading-relaxed font-light" style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}>
+                                                        <h4 className="text-xs uppercase tracking-widest text-[var(--heritage-gold)] mb-3 font-medium" style={{ fontFamily: "'Lora', Georgia, serif", letterSpacing: '0.35em' }}>About</h4>
+                                                        <p className="text-base text-[var(--heritage-cream)] leading-relaxed font-light" style={{ fontFamily: "'Lora', Georgia, serif" }}>
                                                             {member.bio}
                                                         </p>
                                                     </div>
@@ -149,10 +149,10 @@ export default function TeamInteractiveList({ members }: TeamInteractiveListProp
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                                     {member.education && (
                                                         <div>
-                                                            <h4 className="text-xs uppercase tracking-widest text-heritage-gold mb-3 font-medium" style={{ fontFamily: "'Georgia', 'Times New Roman', serif", letterSpacing: '0.35em' }}>Education</h4>
+                                                            <h4 className="text-xs uppercase tracking-widest text-heritage-gold mb-3 font-medium" style={{ fontFamily: "'Lora', Georgia, serif", letterSpacing: '0.35em' }}>Education</h4>
                                                             <ul className="space-y-1">
                                                                 {member.education.map((edu, i) => (
-                                                                    <li key={i} className="text-sm text-[var(--heritage-cream)] leading-relaxed font-light">{edu}</li>
+                                                                    <li key={i} className="text-sm text-[var(--heritage-cream)] leading-relaxed font-light" style={{ fontFamily: "'Lora', Georgia, serif" }}>{edu}</li>
                                                                 ))}
                                                             </ul>
                                                         </div>
@@ -160,10 +160,10 @@ export default function TeamInteractiveList({ members }: TeamInteractiveListProp
 
                                                     {member.expertise && (
                                                         <div>
-                                                            <h4 className="text-xs uppercase tracking-widest text-heritage-gold mb-3 font-medium" style={{ fontFamily: "'Georgia', 'Times New Roman', serif", letterSpacing: '0.35em' }}>Expertise</h4>
+                                                            <h4 className="text-xs uppercase tracking-widest text-heritage-gold mb-3 font-medium" style={{ fontFamily: "'Lora', Georgia, serif", letterSpacing: '0.35em' }}>Expertise</h4>
                                                             <div className="flex flex-wrap gap-2">
                                                                 {member.expertise.map((exp, i) => (
-                                                                    <span key={i} className="text-xs border border-[var(--heritage-cream)]/10 px-2 py-1 rounded-full text-[var(--heritage-cream)] bg-[var(--heritage-cream)]/5">
+                                                                    <span key={i} className="text-xs border border-[var(--heritage-cream)]/10 px-2 py-1 rounded-full text-[var(--heritage-cream)] bg-[var(--heritage-cream)]/5" style={{ fontFamily: "'Lora', Georgia, serif" }}>
                                                                         {exp}
                                                                     </span>
                                                                 ))}

@@ -1,28 +1,24 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
-import TextReveal from "@/components/shared/animations/TextReveal"
+import { useEffect, useState } from "react"
 import styles from "./HeroV2.module.css"
 
-interface QuoteItem {
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+interface BgItem {
   text: string
   top: string
   left: string
   fontSize: string
-  /** alpha 0–1 */
   opacity: number
-  /** parallax depth multiplier — higher = more mouse drift */
+  /** Parallax depth — higher = more vertical drift on scroll */
   depth: number
 }
 
-/**
- * English legal phrases distributed across the hero background.
- * Positions avoid the central square (≈ left 43-57%, top 27-52%)
- * and the AR&CO text band at the bottom (top > 78%).
- * Only font-size varies — no rotation.
- */
-const PARALLAX_QUOTES: QuoteItem[] = [
-  // ── Top zone (top 3-26%) ────────────────────────────────────────────────
+// ─── Legal maxims — italic serif, scattered across hero background ────────────
+
+const LEGAL_QUOTES: BgItem[] = [
+  // Top zone
   { text: "Justice delayed is justice denied",   top: "4%",  left: "2%",  fontSize: "1.10rem", opacity: 0.12, depth: 0.60 },
   { text: "No man is above the law",             top: "8%",  left: "58%", fontSize: "0.95rem", opacity: 0.10, depth: 0.30 },
   { text: "Innocent until proven guilty",        top: "14%", left: "24%", fontSize: "1.05rem", opacity: 0.11, depth: 0.50 },
@@ -39,8 +35,7 @@ const PARALLAX_QUOTES: QuoteItem[] = [
   { text: "The law protects those who are just", top: "22%", left: "30%", fontSize: "0.82rem", opacity: 0.08, depth: 0.60 },
   { text: "Actus non facit reum",                top: "15%", left: "88%", fontSize: "0.88rem", opacity: 0.08, depth: 0.45 },
   { text: "Let the facts speak for themselves",  top: "26%", left: "14%", fontSize: "0.80rem", opacity: 0.08, depth: 0.50 },
-
-  // ── Left side (top 27-52%, left 0-38%) ──────────────────────────────────
+  // Left band
   { text: "Rights must be protected",            top: "30%", left: "2%",  fontSize: "1.00rem", opacity: 0.10, depth: 0.55 },
   { text: "Due process of law",                  top: "46%", left: "4%",  fontSize: "1.10rem", opacity: 0.11, depth: 0.40 },
   { text: "The law must be fair",                top: "38%", left: "12%", fontSize: "0.85rem", opacity: 0.09, depth: 0.70 },
@@ -48,8 +43,7 @@ const PARALLAX_QUOTES: QuoteItem[] = [
   { text: "Presumption of innocence",            top: "51%", left: "8%",  fontSize: "0.92rem", opacity: 0.09, depth: 0.45 },
   { text: "No punishment without law",           top: "43%", left: "1%",  fontSize: "0.88rem", opacity: 0.08, depth: 0.60 },
   { text: "The burden of proof",                 top: "28%", left: "30%", fontSize: "1.00rem", opacity: 0.09, depth: 0.35 },
-
-  // ── Right side (top 27-52%, left 62-95%) ────────────────────────────────
+  // Right band
   { text: "Liberty under law",                   top: "33%", left: "65%", fontSize: "1.05rem", opacity: 0.10, depth: 0.30 },
   { text: "All are equal before the law",        top: "49%", left: "72%", fontSize: "0.90rem", opacity: 0.09, depth: 0.50 },
   { text: "Seek truth, defend justice",          top: "41%", left: "81%", fontSize: "0.82rem", opacity: 0.08, depth: 0.60 },
@@ -57,9 +51,8 @@ const PARALLAX_QUOTES: QuoteItem[] = [
   { text: "Stare decisis",                       top: "44%", left: "91%", fontSize: "1.00rem", opacity: 0.10, depth: 0.30 },
   { text: "Habeas corpus",                       top: "37%", left: "63%", fontSize: "1.10rem", opacity: 0.11, depth: 0.55 },
   { text: "Per curiam",                          top: "52%", left: "78%", fontSize: "0.90rem", opacity: 0.08, depth: 0.45 },
-
-  // ── Bottom zone (top 54-76%) ─────────────────────────────────────────────
-  { text: "Justice without mercy is cruelty",   top: "57%", left: "3%",  fontSize: "1.10rem", opacity: 0.12, depth: 0.30 },
+  // Bottom zone
+  { text: "Justice without mercy is cruelty",    top: "57%", left: "3%",  fontSize: "1.10rem", opacity: 0.12, depth: 0.30 },
   { text: "Equity demands fairness",             top: "66%", left: "60%", fontSize: "0.88rem", opacity: 0.09, depth: 0.50 },
   { text: "Law is the guardian of liberty",      top: "73%", left: "20%", fontSize: "1.00rem", opacity: 0.10, depth: 0.40 },
   { text: "The scales must be balanced",         top: "61%", left: "38%", fontSize: "0.82rem", opacity: 0.08, depth: 0.60 },
@@ -75,78 +68,69 @@ const PARALLAX_QUOTES: QuoteItem[] = [
   { text: "Res ipsa loquitur",                   top: "60%", left: "82%", fontSize: "0.92rem", opacity: 0.09, depth: 0.50 },
   { text: "Mens rea",                            top: "70%", left: "8%",  fontSize: "1.05rem", opacity: 0.10, depth: 0.60 },
   { text: "Ex post facto",                       top: "64%", left: "67%", fontSize: "0.85rem", opacity: 0.08, depth: 0.35 },
+  // Extended bottom zone (77–87%) — fills space above the brand title
+  { text: "Volenti non fit injuria",             top: "78%", left: "55%", fontSize: "0.88rem", opacity: 0.09, depth: 0.45 },
+  { text: "Pacta sunt servanda",                 top: "80%", left: "15%", fontSize: "0.85rem", opacity: 0.08, depth: 0.35 },
+  { text: "Nemo dat quod non habet",             top: "83%", left: "70%", fontSize: "0.80rem", opacity: 0.08, depth: 0.50 },
+  { text: "Caveat emptor",                       top: "85%", left: "38%", fontSize: "0.92rem", opacity: 0.09, depth: 0.30 },
+  { text: "Omnia praesumuntur rite esse acta",   top: "79%", left: "2%",  fontSize: "0.80rem", opacity: 0.08, depth: 0.55 },
+  { text: "In dubio pro reo",                    top: "82%", left: "84%", fontSize: "0.85rem", opacity: 0.08, depth: 0.40 },
+  { text: "Dura lex sed lex",                    top: "87%", left: "22%", fontSize: "0.90rem", opacity: 0.09, depth: 0.35 },
 ]
 
-/**
- * HeroV2 — alternative hero section for the AR&CO homepage.
- *
- * Layout:
- *  - Deep espresso-brown full-viewport background
- *  - Low-opacity Latin legal maxims scattered at different parallax depths
- *    that drift with mouse movement for a subtle 3-D feel
- *  - A muted cedar-brown square anchors the visual centre; legal terms
- *    slide through it horizontally, one at a time
- *  - "AR&CO" in Lora Bold gold fills the full viewport width at the bottom
- */
+// ─── Newspaper headlines — bold, uppercase, with rule ─────────────────────────
+// Positions avoid the center square zone (≈ left 43-57%, top 27-52%)
+
+const NEWSPAPER_HEADLINES: BgItem[] = [
+  // Top zone
+  { text: "SUPREME COURT UPHOLDS CONSTITUTIONAL RIGHTS",     top: "5%",  left: "29%", fontSize: "0.70rem", opacity: 0.08, depth: 0.35 },
+  { text: "LANDMARK CASE SETS NEW PRECEDENT IN PROPERTY LAW",top: "18%", left: "38%", fontSize: "0.65rem", opacity: 0.07, depth: 0.45 },
+  { text: "ATTORNEY GENERAL ANNOUNCES MAJOR LEGAL REFORMS",  top: "12%", left: "2%",  fontSize: "0.67rem", opacity: 0.07, depth: 0.40 },
+  // Left band
+  { text: "HIGH COURT GRANTS INJUNCTION IN MAJOR DISPUTE",   top: "36%", left: "2%",  fontSize: "0.66rem", opacity: 0.08, depth: 0.50 },
+  { text: "JUDICIAL COMMISSION LAUNCHES SWEEPING REFORMS",   top: "48%", left: "5%",  fontSize: "0.64rem", opacity: 0.07, depth: 0.40 },
+  // Right band
+  { text: "COMMERCIAL COURT RECORDS HISTORIC VERDICT",       top: "31%", left: "62%", fontSize: "0.66rem", opacity: 0.08, depth: 0.30 },
+  { text: "NEW ARBITRATION LAWS TO STREAMLINE DISPUTES",     top: "47%", left: "67%", fontSize: "0.64rem", opacity: 0.07, depth: 0.45 },
+  { text: "APPELLATE DIVISION OVERTURNS LOWER COURT RULING", top: "38%", left: "72%", fontSize: "0.64rem", opacity: 0.07, depth: 0.35 },
+  // Bottom zone
+  { text: "ATTORNEY GENERAL DEFENDS PUBLIC INTEREST",        top: "57%", left: "33%", fontSize: "0.68rem", opacity: 0.08, depth: 0.35 },
+  { text: "CORPORATE MERGER FACES REGULATORY SCRUTINY",      top: "65%", left: "45%", fontSize: "0.64rem", opacity: 0.07, depth: 0.55 },
+  { text: "COURT OF APPEAL RULES ON CONTRACT DISPUTE",       top: "72%", left: "33%", fontSize: "0.66rem", opacity: 0.08, depth: 0.40 },
+  { text: "NEW COMPLIANCE FRAMEWORK FOR CORPORATE SECTOR",   top: "62%", left: "56%", fontSize: "0.64rem", opacity: 0.07, depth: 0.30 },
+  { text: "PARLIAMENT PASSES LANDMARK CIVIL LIBERTIES BILL", top: "68%", left: "4%",  fontSize: "0.66rem", opacity: 0.08, depth: 0.50 },
+  // Extended bottom zone
+  { text: "JUDICIARY DEFENDS INDEPENDENCE OF COURTS",       top: "78%", left: "48%", fontSize: "0.66rem", opacity: 0.08, depth: 0.35 },
+  { text: "NEW LEGAL AID BILL PASSES IN PARLIAMENT",        top: "83%", left: "10%", fontSize: "0.64rem", opacity: 0.07, depth: 0.45 },
+  { text: "INTERNATIONAL ARBITRATION SEES RECORD GROWTH",   top: "86%", left: "58%", fontSize: "0.64rem", opacity: 0.07, depth: 0.40 },
+]
+
+// ─── Component ────────────────────────────────────────────────────────────────
+
 export default function HeroV2() {
-  const heroRef = useRef<HTMLElement>(null)
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
     const mountId = setTimeout(() => setMounted(true), 80)
 
-    // Signal to Navigation that the loading phase is complete (no LoadingScreen here)
+    // Signal to Navigation that the loading phase is complete
     const navId = setTimeout(() => {
       document.body.classList.add("app-loaded")
     }, 100)
 
-    // ── Mouse-parallax ──────────────────────────────────────────────────────
-    const hero = heroRef.current
-    const mouse  = { x: 0, y: 0 }   // raw normalised position (–1 to 1)
-    const smooth = { x: 0, y: 0 }   // lerped position
-    let rafId: number
-
-    const onMouseMove = (e: MouseEvent) => {
-      if (!hero) return
-      const { left, top, width, height } = hero.getBoundingClientRect()
-      mouse.x = (e.clientX - left - width  / 2) / (width  / 2)
-      mouse.y = (e.clientY - top  - height / 2) / (height / 2)
-    }
-
-    const tick = () => {
-      // Lerp factor 0.06 → smooth, slightly lagging parallax
-      smooth.x += (mouse.x - smooth.x) * 0.06
-      smooth.y += (mouse.y - smooth.y) * 0.06
-
-      if (hero) {
-        // --px / --py are unitless numbers read by each quote's CSS calc()
-        hero.style.setProperty("--px", (smooth.x * 60).toFixed(3))
-        hero.style.setProperty("--py", (smooth.y * 45).toFixed(3))
-      }
-      rafId = requestAnimationFrame(tick)
-    }
-
-    if (hero) hero.addEventListener("mousemove", onMouseMove)
-    rafId = requestAnimationFrame(tick)
-
     return () => {
       clearTimeout(mountId)
       clearTimeout(navId)
-      if (hero) hero.removeEventListener("mousemove", onMouseMove)
-      cancelAnimationFrame(rafId)
     }
   }, [])
 
   return (
-    <section
-      ref={heroRef}
-      className={styles.hero}
-      data-hero-section="true"
-    >
-      {/* ── Parallax law maxims ───────────────────────────────────────────── */}
-      {mounted && PARALLAX_QUOTES.map((q, i) => (
+    <section className={styles.hero} data-hero-section="true">
+
+      {/* ── Legal maxims — italic serif ────────────────────────────────────── */}
+      {mounted && LEGAL_QUOTES.map((q, i) => (
         <p
-          key={i}
+          key={`q-${i}`}
           className={styles.parallaxQuote}
           aria-hidden="true"
           style={{
@@ -154,7 +138,6 @@ export default function HeroV2() {
             left:     q.left,
             fontSize: q.fontSize,
             opacity:  q.opacity,
-            // CSS custom props read by .parallaxQuote transform
             "--depth": String(q.depth),
           } as React.CSSProperties}
         >
@@ -162,40 +145,59 @@ export default function HeroV2() {
         </p>
       ))}
 
-      {/* ── Centre stage: decorative square ───────────────────────────────── */}
-      <div className={styles.centerStage}>
-        <div className={`${styles.square} ${mounted ? styles.squareVisible : ""}`}>
-          <div className={styles.squareHighlight} />
-          <div className={styles.cornerTL} />
-          <div className={styles.cornerBR} />
-        </div>
-      </div>
+      {/* ── Newspaper headlines — bold uppercase with rule ─────────────────── */}
+      {mounted && NEWSPAPER_HEADLINES.map((h, i) => (
+        <p
+          key={`n-${i}`}
+          className={styles.parallaxHeadline}
+          aria-hidden="true"
+          style={{
+            top:      h.top,
+            left:     h.left,
+            fontSize: h.fontSize,
+            opacity:  h.opacity,
+            "--depth": String(h.depth),
+          } as React.CSSProperties}
+        >
+          {h.text}
+        </p>
+      ))}
 
-      {/* ── Dim base marquee — very low opacity across full width ────────────── */}
-     
+      {/* ── Centre tagline — gold, more prominent than background text ─────── */}
+      {mounted && (
+        <p className={styles.centerLabel} aria-hidden="true">
+          Top Law Associates
+        </p>
+      )}
 
-      {/* ── Lit window — full opacity, clipped to square bounds ───────────────
-          The inner track has the same animation so it stays pixel-perfect in
-          sync with the base track. A negative left offset aligns it so the
-          text appears at the same screen position as the base layer.         */}
-     
 
-      {/* ── Full-width brand name at viewport bottom ───────────────────────── */}
+
+      {/* ── Full-width brand name — flush with viewport bottom ─────────────── */}
       <div className={styles.brandBottom}>
+
+        {/* Desktop: single line */}
         <div className={styles.brandDesktop}>
-          <TextReveal delay={480} duration={1.3} eager>
-            <h1 className={styles.brandTitle}>AR&amp;CO</h1>
-          </TextReveal>
+          <div className={styles.brandLineClip}>
+            <h1 className={`${styles.brandTitle} ${mounted ? styles.brandTitleVisible : ''}`}>
+              AR&amp;CO
+            </h1>
+          </div>
         </div>
 
+        {/* Mobile: two stacked lines */}
         <div className={styles.brandMobile}>
-          <TextReveal delay={480} duration={1.2} eager>
-            <h1 className={styles.brandTitle}>AR &amp;</h1>
-          </TextReveal>
-          <TextReveal delay={630} duration={1.2} eager>
-            <h1 className={styles.brandTitle}>CO</h1>
-          </TextReveal>
+          <div className={styles.brandLineClip}>
+            <h1 className={`${styles.brandTitle} ${mounted ? styles.brandTitleVisible : ''}`}>
+              AR &amp;
+            </h1>
+          </div>
+          <div className={styles.brandLineClip}>
+            <h1 className={`${styles.brandTitle} ${styles.brandLine2} ${mounted ? styles.brandTitleVisible : ''}`}>
+              CO
+            </h1>
+          </div>
         </div>
+
       </div>
     </section>
   )
