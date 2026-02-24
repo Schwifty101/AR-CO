@@ -50,7 +50,8 @@
       "WebFetch(domain:safepay.helpscoutdocs.com)",
       "Bash(pnpm --filter api list:*)",
       "Bash(pnpm --filter api exec tsc:*)",
-      "mcp__claude_ai_Notion__notion-fetch"
+      "mcp__claude_ai_Notion__notion-fetch",
+      "Bash(tail:*)"
     ],
     "env": {
       "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"

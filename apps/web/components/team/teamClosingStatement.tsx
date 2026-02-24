@@ -34,38 +34,82 @@ export default function TeamClosingStatement({
 
     const initScrollTrigger = () => {
       if (ctx) return
+      if (!containerRef.current) return
 
       ctx = gsap.context(() => {
+        // Pin the section, no spacing so footer can overlap
         ScrollTrigger.create({
           trigger: containerRef.current,
           start: 'top top',
-          end: '+=100%',
+          end: '+=150%',
           pin: true,
-          pinSpacing: true, // true = footer scrolls AFTER this section, not ON TOP of it
+          pinSpacing: false,
         })
+
+        // Gold shimmer: animate backgroundPosition on all word spans
+        if (wordsRef.current) {
+          const wordSpans = wordsRef.current.querySelectorAll('.shimmer-word')
+          if (wordSpans.length > 0) {
+            gsap.fromTo(wordSpans,
+              { backgroundPosition: '0% 50%' },
+              {
+                backgroundPosition: '200% 50%',
+                ease: 'power2.inOut',
+                stagger: 0.03,
+                scrollTrigger: {
+                  trigger: containerRef.current,
+                  start: 'top top',
+                  end: '+=105%',
+                  scrub: 1,
+                },
+              }
+            )
+          }
+        }
       }, containerRef)
 
       ScrollTrigger.refresh()
     }
 
-    // ScrollSmoother Integration Logic
-    if (getSmoother()) {
-      initScrollTrigger()
-    } else {
-      const onSmootherReady = () => {
+    // Defer init by one animation frame so the DOM has painted and
+    // ScrollTrigger can measure pin positions against a settled layout.
+    // A secondary refresh after 600ms catches late-loading images.
+    let rafId: number | undefined
+    let settleTimer: ReturnType<typeof setTimeout> | undefined
+    let onSmootherReady: (() => void) | undefined
+    let fallbackTimer: ReturnType<typeof setTimeout> | undefined
+
+    const deferredInit = () => {
+      rafId = requestAnimationFrame(() => {
         initScrollTrigger()
-        window.removeEventListener('scroll-smoother-ready', onSmootherReady)
+        settleTimer = setTimeout(() => ScrollTrigger.refresh(), 600)
+      })
+    }
+
+    if (getSmoother()) {
+      deferredInit()
+    } else {
+      onSmootherReady = () => {
+        deferredInit()
+        window.removeEventListener('scroll-smoother-ready', onSmootherReady!)
       }
       window.addEventListener('scroll-smoother-ready', onSmootherReady)
-      setTimeout(() => {
-        if (!ctx) initScrollTrigger()
-        window.removeEventListener('scroll-smoother-ready', onSmootherReady)
+      fallbackTimer = setTimeout(() => {
+        if (!ctx) deferredInit()
+        window.removeEventListener('scroll-smoother-ready', onSmootherReady!)
       }, 1000)
     }
 
     return () => {
+      if (rafId) cancelAnimationFrame(rafId)
+      if (settleTimer) clearTimeout(settleTimer)
       ctx?.revert()
-      window.removeEventListener('scroll-smoother-ready', () => { })
+      if (onSmootherReady) {
+        window.removeEventListener('scroll-smoother-ready', onSmootherReady)
+      }
+      if (fallbackTimer) {
+        clearTimeout(fallbackTimer)
+      }
     }
   }, [])
 
@@ -132,6 +176,7 @@ export default function TeamClosingStatement({
         <div ref={textRef} className="relative perspective-1000">
           <h2 className="sr-only">{statement}</h2>
           <div
+            ref={wordsRef}
             className="flex flex-wrap justify-center gap-x-[0.25em] gap-y-[0.1em] leading-[0.9]"
             aria-hidden="true"
           >
@@ -149,16 +194,16 @@ export default function TeamClosingStatement({
                 }}
               >
                 <span
-                  className="block font-[300] tracking-tighter"
+                  className="shimmer-word block font-[300] tracking-tighter"
                   style={{
                     fontSize: 'clamp(3rem, 9vw, 8rem)',
                     fontFamily: "'Lora', Georgia, serif",
                     // Custom Gold Shine for Dark Mode
-                    background: `linear-gradient(to right, 
-                      var(--heritage-cream) 0%, 
-                      var(--heritage-cream) 40%, 
-                      var(--heritage-gold) 50%, 
-                      var(--heritage-cream) 60%, 
+                    background: `linear-gradient(to right,
+                      var(--heritage-cream) 0%,
+                      var(--heritage-cream) 40%,
+                      var(--heritage-gold) 50%,
+                      var(--heritage-cream) 60%,
                       var(--heritage-cream) 100%)`,
                     backgroundSize: '200% auto',
                     WebkitBackgroundClip: 'text',
