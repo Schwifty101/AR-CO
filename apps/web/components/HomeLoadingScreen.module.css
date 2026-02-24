@@ -1,7 +1,8 @@
 /* ─── HomeLoadingScreen ───────────────────────────────────────────────────────
-   Full-screen loading overlay — identical look to PageTransition.
-   Adds a gold progress bar pinned to the top edge.
-   Exits by sliding left (x: 0 → -100%) via Framer Motion.
+   Full-screen loading overlay — identical background to HeroV2/home page.
+   Fades to opacity 0 on exit, revealing the hero underneath.
+   The two centre texts (AR&CO + tagline) are positioned identically to
+   HeroV2's .centerWrapper so they appear stationary during the morph.
    ─────────────────────────────────────────────────────────────────────────── */
 
 .screen {
@@ -20,8 +21,7 @@
   pointer-events: all;
   user-select: none;
   -webkit-user-select: none;
-  /* Prevent any content below from peeking through during slide */
-  will-change: transform;
+  will-change: opacity;
 }
 
 /* ── Top progress bar ──────────────────────────────────────────────────────── */
@@ -43,40 +43,62 @@
   will-change: width;
 }
 
-/* ── Logo centred ──────────────────────────────────────────────────────────── */
+/* ── Centre texts ──────────────────────────────────────────────────────────── */
+/* top: 46% matches HeroV2's .centerWrapper — zero scroll offset on load */
 
-.center {
-  width: 100%;
-  height: 100%;
+.textCenter {
+  position: absolute;
+  top: 38%;
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
+  gap: 0.18rem;
+  pointer-events: none;
+  user-select: none;
+  white-space: nowrap;
 }
 
-.logoWrapper {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+/* "AR&CO" — larger than the tagline below it */
+.brandName {
+  font-family: 'Lora', Georgia, serif;
+  font-size: 1.6rem;
+  font-weight: 300;
+  font-style: italic;
+  letter-spacing: 0.15em;
+  color: var(--heritage-cream, #F9F8F6);
+  opacity: 0.38;
+  margin: 0;
 }
 
-.logo {
-  width: auto;
-  height: auto;
-  max-width: min(300px, 60vw);
-  object-fit: contain;
-  filter: brightness(1.1);
+/* "Top Law Associates" — matches .centerLabel in HeroV2 exactly */
+.tagline {
+  font-family: 'Lora', Georgia, serif;
+  font-size: 0.95rem;
+  font-weight: 500;
+  letter-spacing: 0.45em;
+  text-transform: uppercase;
+  color: var(--heritage-gold, #D4AF37);
+  opacity: 0.55;
+  padding-bottom: 0.3em;
+  border-bottom: 0.5px solid rgba(212, 175, 55, 0.45);
+  margin: 0;
 }
 
-/* ── Responsive ────────────────────────────────────────────────────────────── */
+/* ── Responsive — mirror HeroV2 breakpoints exactly ───────────────────────── */
 
 @media (max-width: 768px) {
-  .logo {
-    max-width: min(200px, 50vw);
+  .textCenter {
+    top: 35%;
   }
-}
 
-@media (max-width: 480px) {
-  .logo {
-    max-width: min(150px, 45vw);
+  .tagline {
+    font-size: 0.72rem;
+    letter-spacing: 0.28em;
+  }
+
+  .brandName {
+    font-size: 1.15rem;
   }
 }

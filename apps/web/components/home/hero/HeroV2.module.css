@@ -38,31 +38,51 @@
   );
 }
 
+/* ── Background item wrapper — handles absolute position + fall-in entrance ──
+   .bgItemWrapper   positioned wrapper, starts hidden above its resting place.
+   .bgItemVisible   class added when app-loaded fires; transitions to final pos.
+   --entrance-delay per-item inline CSS var for stagger.
+*/
+
+.bgItemWrapper {
+  position: absolute;
+  pointer-events: none;
+  user-select: none;
+  z-index: 2;
+  /* Entrance: hidden 28px above resting position */
+  opacity: 0;
+  transform: translateY(-28px);
+  transition:
+    opacity   0.95s cubic-bezier(0.16, 1, 0.3, 1) var(--entrance-delay, 0ms),
+    transform 0.95s cubic-bezier(0.16, 1, 0.3, 1) var(--entrance-delay, 0ms);
+}
+
+.bgItemVisible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 /* ── Scroll-parallax background items ──────────────────────────────────────
    --global-sy is set on :root by the home page's scroll listener.
    --depth     is set as inline style per element (unitless 0.2–0.7).
-   Result: each element moves upward at  scrollY × 0.18 × depth  pixels.
-   Faster depth = appears "closer" (more drift), slower = further away.
+   Positioning is now handled by .bgItemWrapper (position: absolute + top/left).
+   These elements are position: relative inside the wrapper.
 */
 
 .parallaxQuote {
-  position: absolute;
   font-family: 'Lora', serif;
   font-style: italic;
   font-weight: 300;
   color: #ffffff;
   letter-spacing: 0.06em;
   white-space: nowrap;
-  pointer-events: none;
-  user-select: none;
-  z-index: 2;
   transform: translateY(calc(var(--global-sy, 0) * var(--depth, 0.3) * -1px));
   will-change: transform;
+  margin: 0;
 }
 
 /* Newspaper-style headline — bold, uppercase, thin rule underneath */
 .parallaxHeadline {
-  position: absolute;
   font-family: 'Lora', Georgia, serif;
   font-style: normal;
   font-weight: 700;
@@ -70,27 +90,44 @@
   letter-spacing: 0.06em;
   text-transform: uppercase;
   white-space: nowrap;
-  pointer-events: none;
-  user-select: none;
-  z-index: 2;
   /* Thin rule mimics a newspaper column separator */
   padding-bottom: 0.22em;
   border-bottom: 0.5px solid rgba(255, 255, 255, 0.5);
   transform: translateY(calc(var(--global-sy, 0) * var(--depth, 0.3) * -1px));
   will-change: transform;
+  margin: 0;
 }
 
-/* ── Centre tagline — gold, more prominent than background text ───── */
-.centerLabel {
+/* ── Centre wrapper — AR&CO + tagline, scroll-parallaxed as one unit ──── */
+.centerWrapper {
   position: absolute;
-  top: 46%;
+  top: 38%;
   left: 50%;
   transform: translateX(-50%) translateY(calc(var(--global-sy, 0) * 0.15 * -1px));
   z-index: 3;
   pointer-events: none;
   user-select: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.18rem;
   white-space: nowrap;
+}
 
+/* "AR&CO" — larger than the tagline below it */
+.centerBrand {
+  font-family: 'Lora', Georgia, serif;
+  font-size: 1.6rem;
+  font-weight: 300;
+  font-style: italic;
+  letter-spacing: 0.15em;
+  color: var(--heritage-cream, #F9F8F6);
+  opacity: 0.38;
+  margin: 0;
+}
+
+/* "Top Law Associates" — gold, spaced, underlined */
+.centerLabel {
   font-family: 'Lora', Georgia, serif;
   font-size: 0.95rem;
   font-weight: 500;
@@ -98,20 +135,24 @@
   text-transform: uppercase;
   color: var(--heritage-gold, #D4AF37);
   opacity: 0.55;
-
   padding-bottom: 0.3em;
   border-bottom: 0.5px solid rgba(212, 175, 55, 0.45);
+  margin: 0;
 }
 
 /* Hide background text on mobile — too cluttered */
 @media (max-width: 768px) {
-  .parallaxQuote,
-  .parallaxHeadline { display: none; }
+  .bgItemWrapper { display: none; }
+
+  .centerWrapper { top: 35%; }
 
   .centerLabel {
     font-size: 0.72rem;
     letter-spacing: 0.28em;
-    top: 42%;
+  }
+
+  .centerBrand {
+    font-size: 1.15rem;
   }
 }
 

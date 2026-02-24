@@ -68,7 +68,7 @@ const LEGAL_QUOTES: BgItem[] = [
   { text: "Res ipsa loquitur",                   top: "60%", left: "82%", fontSize: "0.92rem", opacity: 0.09, depth: 0.50 },
   { text: "Mens rea",                            top: "70%", left: "8%",  fontSize: "1.05rem", opacity: 0.10, depth: 0.60 },
   { text: "Ex post facto",                       top: "64%", left: "67%", fontSize: "0.85rem", opacity: 0.08, depth: 0.35 },
-  // Extended bottom zone (77–87%) — fills space above the brand title
+  // Extended bottom zone (77–87%)
   { text: "Volenti non fit injuria",             top: "78%", left: "55%", fontSize: "0.88rem", opacity: 0.09, depth: 0.45 },
   { text: "Pacta sunt servanda",                 top: "80%", left: "15%", fontSize: "0.85rem", opacity: 0.08, depth: 0.35 },
   { text: "Nemo dat quod non habet",             top: "83%", left: "70%", fontSize: "0.80rem", opacity: 0.08, depth: 0.50 },
@@ -79,7 +79,6 @@ const LEGAL_QUOTES: BgItem[] = [
 ]
 
 // ─── Newspaper headlines — bold, uppercase, with rule ─────────────────────────
-// Positions avoid the center square zone (≈ left 43-57%, top 27-52%)
 
 const NEWSPAPER_HEADLINES: BgItem[] = [
   // Top zone
@@ -108,20 +107,25 @@ const NEWSPAPER_HEADLINES: BgItem[] = [
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function HeroV2() {
-  const [mounted, setMounted] = useState(false)
+  const [mounted,    setMounted]    = useState(false)
+  const [appLoaded,  setAppLoaded]  = useState(false)
 
+  // Delay render of background items to avoid SSR hydration mismatch
   useEffect(() => {
     const mountId = setTimeout(() => setMounted(true), 80)
+    return () => clearTimeout(mountId)
+  }, [])
 
-    // Signal to Navigation that the loading phase is complete
-    const navId = setTimeout(() => {
-      document.body.classList.add("app-loaded")
-    }, 100)
-
-    return () => {
-      clearTimeout(mountId)
-      clearTimeout(navId)
+  // Watch for the app-loaded class added by HomeLoadingScreen when it begins
+  // fading — this triggers the quote/headline fall-in entrance animation.
+  useEffect(() => {
+    const check = () => {
+      if (document.body.classList.contains('app-loaded')) setAppLoaded(true)
     }
+    check()
+    const observer = new MutationObserver(check)
+    observer.observe(document.body, { attributes: true, attributeFilter: ['class'] })
+    return () => observer.disconnect()
   }, [])
 
   return (
@@ -129,74 +133,70 @@ export default function HeroV2() {
 
       {/* ── Legal maxims — italic serif ────────────────────────────────────── */}
       {mounted && LEGAL_QUOTES.map((q, i) => (
-        <p
+        <div
           key={`q-${i}`}
-          className={styles.parallaxQuote}
+          className={`${styles.bgItemWrapper} ${appLoaded ? styles.bgItemVisible : ''}`}
           aria-hidden="true"
           style={{
-            top:      q.top,
-            left:     q.left,
-            fontSize: q.fontSize,
-            opacity:  q.opacity,
-            "--depth": String(q.depth),
+            top:  q.top,
+            left: q.left,
+            '--entrance-delay': `${i * 10}ms`,
           } as React.CSSProperties}
         >
-          {q.text}
-        </p>
+          <p
+            className={styles.parallaxQuote}
+            style={{
+              fontSize:  q.fontSize,
+              opacity:   q.opacity,
+              '--depth': String(q.depth),
+            } as React.CSSProperties}
+          >
+            {q.text}
+          </p>
+        </div>
       ))}
 
       {/* ── Newspaper headlines — bold uppercase with rule ─────────────────── */}
       {mounted && NEWSPAPER_HEADLINES.map((h, i) => (
-        <p
+        <div
           key={`n-${i}`}
-          className={styles.parallaxHeadline}
+          className={`${styles.bgItemWrapper} ${appLoaded ? styles.bgItemVisible : ''}`}
           aria-hidden="true"
           style={{
-            top:      h.top,
-            left:     h.left,
-            fontSize: h.fontSize,
-            opacity:  h.opacity,
-            "--depth": String(h.depth),
+            top:  h.top,
+            left: h.left,
+            '--entrance-delay': `${(LEGAL_QUOTES.length + i) * 10}ms`,
           } as React.CSSProperties}
         >
-          {h.text}
-        </p>
+          <p
+            className={styles.parallaxHeadline}
+            style={{
+              fontSize:  h.fontSize,
+              opacity:   h.opacity,
+              '--depth': String(h.depth),
+            } as React.CSSProperties}
+          >
+            {h.text}
+          </p>
+        </div>
       ))}
 
-      {/* ── Centre tagline — gold, more prominent than background text ─────── */}
+      {/* ── Centre: AR&CO above tagline ────────────────────────────────────── */}
       {mounted && (
-        <p className={styles.centerLabel} aria-hidden="true">
-          Top Law Associates
-        </p>
+        <div className={styles.centerWrapper}>
+          <p className={styles.centerBrand} aria-hidden="true">AR&amp;CO</p>
+          <p className={styles.centerLabel}  aria-hidden="true">Top Law Associates</p>
+        </div>
       )}
-
-
 
       {/* ── Full-width brand name — flush with viewport bottom ─────────────── */}
       <div className={styles.brandBottom}>
 
         {/* Desktop: single line */}
-        <div className={styles.brandDesktop}>
-          <div className={styles.brandLineClip}>
-            <h1 className={`${styles.brandTitle} ${mounted ? styles.brandTitleVisible : ''}`}>
-              AR&amp;CO
-            </h1>
-          </div>
-        </div>
+
 
         {/* Mobile: two stacked lines */}
-        <div className={styles.brandMobile}>
-          <div className={styles.brandLineClip}>
-            <h1 className={`${styles.brandTitle} ${mounted ? styles.brandTitleVisible : ''}`}>
-              AR &amp;
-            </h1>
-          </div>
-          <div className={styles.brandLineClip}>
-            <h1 className={`${styles.brandTitle} ${styles.brandLine2} ${mounted ? styles.brandTitleVisible : ''}`}>
-              CO
-            </h1>
-          </div>
-        </div>
+
 
       </div>
     </section>
