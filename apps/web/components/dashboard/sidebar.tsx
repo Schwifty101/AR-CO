@@ -47,7 +47,7 @@ interface NavItem {
 }
 
 /** Admin navigation items */
-const ADMIN_NAV: NavItem[] = [
+export const ADMIN_NAV: NavItem[] = [
   { label: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
   { label: 'Profile', href: '/admin/profile', icon: User },
   { label: 'Users', href: '/admin/users', icon: Users },
@@ -59,7 +59,7 @@ const ADMIN_NAV: NavItem[] = [
 ];
 
 /** Client navigation items */
-const CLIENT_NAV: NavItem[] = [
+export const CLIENT_NAV: NavItem[] = [
   { label: 'Dashboard', href: '/client/dashboard', icon: LayoutDashboard },
   { label: 'Profile', href: '/client/profile', icon: User },
   { label: 'Subscription', href: '/client/subscription', icon: CreditCard },

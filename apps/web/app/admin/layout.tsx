@@ -13,7 +13,7 @@ export default function AdminLayout({
   return (
     <div className="dark bg-background text-foreground min-h-screen">
       <div className="flex min-h-screen flex-col">
-        <DashboardHeader />
+        <DashboardHeader userType="admin" />
         <div className="flex flex-1">
           <DashboardSidebar userType="admin" />
           <main className="flex-1 p-6">{children}</main>

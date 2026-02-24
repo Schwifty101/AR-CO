@@ -69,7 +69,7 @@ export default function TeamHero({
             quality={85}
             sizes="100vw"
             className="object-cover heroBackgroundImage"
-            style={{ objectPosition: '50% 20%' }}
+            style={{ objectPosition: '44% 15%' }}
           />
           {/* Overlay for text readability — neutral dark, no brown tint */}
           <div
