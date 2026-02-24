@@ -6,7 +6,7 @@
 /* ─── Page Container ─── */
 .page {
   min-height: 100vh;
-  background: var(--wood-espresso);
+  background: #0d0906;
   color: var(--heritage-cream);
   padding: 6rem 0 4rem;
   position: relative;
@@ -43,7 +43,7 @@
 }
 
 .card {
-  background: rgba(26, 17, 10, 0.6);
+  background: #0d0906;
   border: 1px solid rgba(249, 248, 246, 0.08);
   border-radius: 1.25rem;
   padding: 3rem 2.5rem;
@@ -71,6 +71,7 @@
   font-family: 'Lora', Georgia, serif;
   font-size: clamp(1.8rem, 4vw, 2.2rem);
   font-weight: 400;
+  font-style: italic;
   line-height: 1.2;
   letter-spacing: -0.01em;
   color: var(--heritage-cream);

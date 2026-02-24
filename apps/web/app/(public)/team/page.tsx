@@ -33,16 +33,13 @@ export default function TeamPage() {
     return (
         <div
             className="min-h-screen text-heritage-cream transition-colors duration-700 ease-in-out relative overflow-hidden"
-            style={{ background: 'var(--wood-espresso)' }}
+            style={{ background: '#0d0906' }}
         >
-            {/* Atmospheric Glow */}
+            {/* Atmospheric Glow — matches home page */}
             <div
                 className="fixed inset-0 pointer-events-none z-0"
                 style={{
-                    background: `
-                        radial-gradient(ellipse 55% 60% at 20% 40%, rgba(212, 175, 55, 0.04) 0%, transparent 100%),
-                        radial-gradient(ellipse 40% 50% at 80% 70%, rgba(249, 248, 246, 0.015) 0%, transparent 100%)
-                    `
+                   
                 }}
             />
 
@@ -66,7 +63,7 @@ export default function TeamPage() {
 
             {/* 1. Hero Section - Massive Typography & Background */}
             <TeamHero
-                brandStatement="OUR TEAM"
+                brandStatement=""
                 subtitle=""
                 backgroundImage="/our_team/Group_photo.webp"
                 className="text-heritage-cream relative z-10"
@@ -115,7 +112,7 @@ export default function TeamPage() {
             </div>
 
             {/* 4. Recognition Section */}
-            <section className="px-4 md:px-8 lg:px-16 mb-0 max-w-[1600px] mx-auto pb-24 relative z-10" style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}>
+            <section className="px-4 md:px-8 lg:px-16 mb-0 max-w-[1600px] mx-auto pb-24 relative z-10" style={{ fontFamily: "'Lora', Georgia, serif" }}>
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
                     {/* Left: Section Label & Intro */}
                     <div className="lg:col-span-3">

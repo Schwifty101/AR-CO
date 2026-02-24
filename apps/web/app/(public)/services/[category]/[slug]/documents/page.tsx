@@ -1,8 +1,7 @@
 'use client'
 
 import { use, useState, useRef, useCallback } from 'react'
-import { notFound } from 'next/navigation'
-import Link from 'next/link'
+import { notFound, useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   isValidCategory,
@@ -44,11 +43,14 @@ function formatFileSize(bytes: number): string {
 export default function ServiceDocuments({ params }: PageProps) {
   const { category, slug } = use(params)
 
+  const router = useRouter()
+
   // All hooks must be called before any conditional returns
   const [currentIndex, setCurrentIndex] = useState(0)
   const [direction, setDirection] = useState(1)
   const [uploadedFiles, setUploadedFiles] = useState<Record<string, UploadedFile[]>>({})
   const [isDragging, setIsDragging] = useState(false)
+  const [uploadError, setUploadError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Validate category
@@ -65,15 +67,32 @@ export default function ServiceDocuments({ params }: PageProps) {
 
   const goNext = useCallback(() => {
     if (isLast) return
+    if (currentDoc?.required && currentFiles.length === 0) {
+      setUploadError('This document is required — please upload at least one file before proceeding.')
+      return
+    }
+    setUploadError(null)
     setDirection(1)
     setCurrentIndex((i) => i + 1)
-  }, [isLast])
+  }, [isLast, currentDoc, currentFiles])
 
   const goBack = useCallback(() => {
     if (isFirst) return
+    setUploadError(null)
     setDirection(-1)
     setCurrentIndex((i) => i - 1)
   }, [isFirst])
+
+  /** Validates all required docs are uploaded, sets sessionStorage flag, navigates to form. */
+  const handleContinueToForm = useCallback(() => {
+    if (currentDoc?.required && currentFiles.length === 0) {
+      setUploadError('This document is required — please upload at least one file to continue.')
+      return
+    }
+    setUploadError(null)
+    sessionStorage.setItem(`docs_completed_${category}_${slug}`, 'true')
+    router.push(`/services/${category}/${slug}/form`)
+  }, [currentDoc, currentFiles, category, slug, router])
 
   const addFiles = useCallback(
     (files: FileList | File[]) => {
@@ -85,6 +104,7 @@ export default function ServiceDocuments({ params }: PageProps) {
         ...prev,
         [currentDocId]: [...(prev[currentDocId] ?? []), ...newFiles],
       }))
+      setUploadError(null)
     },
     [currentDocId]
   )
@@ -268,10 +288,11 @@ export default function ServiceDocuments({ params }: PageProps) {
               <div className="relative px-6 md:px-12 pb-8 pt-6 md:pt-2 flex flex-col md:overflow-hidden doc-scrollbar md:h-full" style={{}}>
                 {/* Document name */}
                 <motion.h2
-                  className="uppercase mb-4"
+                  className="mb-4"
                   style={{
                     fontFamily: "'Lora', Georgia, serif",
                     fontSize: 'clamp(1.5rem, 4vw, 2.5rem)',
+                    fontStyle: 'italic',
                     fontWeight: 300,
                     lineHeight: 1.1,
                     letterSpacing: '-0.03em',
@@ -329,6 +350,7 @@ export default function ServiceDocuments({ params }: PageProps) {
                     <p style={{
                       fontFamily: "'Georgia', 'Times New Roman', serif",
                       fontSize: '0.75rem',
+                      fontStyle: 'italic',
                       lineHeight: 1.6,
                       color: 'rgba(249, 248, 246, 0.55)',
                       letterSpacing: '0.01em'
@@ -345,6 +367,7 @@ export default function ServiceDocuments({ params }: PageProps) {
                     <p style={{
                       fontFamily: "'Georgia', 'Times New Roman', serif",
                       fontSize: '0.75rem',
+                      fontStyle: 'italic',
                       lineHeight: 1.6,
                       color: 'rgba(249, 248, 246, 0.55)',
                       letterSpacing: '0.01em'
@@ -359,6 +382,7 @@ export default function ServiceDocuments({ params }: PageProps) {
                     <p style={{
                       fontFamily: "'Georgia', 'Times New Roman', serif",
                       fontSize: '0.75rem',
+                      fontStyle: 'italic',
                       lineHeight: 1.6,
                       color: 'rgba(249, 248, 246, 0.55)',
                       letterSpacing: '0.01em'
@@ -373,6 +397,7 @@ export default function ServiceDocuments({ params }: PageProps) {
                     <p style={{
                       fontFamily: "'Georgia', 'Times New Roman', serif",
                       fontSize: '0.75rem',
+                      fontStyle: 'italic',
                       lineHeight: 1.6,
                       color: 'rgba(249, 248, 246, 0.55)',
                       letterSpacing: '0.01em'
@@ -395,9 +420,9 @@ export default function ServiceDocuments({ params }: PageProps) {
                         borderRadius: '100px',
                         color: 'rgba(249, 248, 246, 0.5)',
                         fontFamily: "'Georgia', 'Times New Roman', serif",
-                        fontSize: '0.72rem',
-                        letterSpacing: '0.12em',
-                        textTransform: 'uppercase',
+                        fontSize: '0.85rem',
+                        fontStyle: 'italic',
+                        letterSpacing: '0.04em',
                         cursor: 'pointer',
                       }}
                       onMouseEnter={(e) => {
@@ -508,9 +533,9 @@ export default function ServiceDocuments({ params }: PageProps) {
                     color: 'var(--heritage-gold)',
                     fontFamily: "'Georgia', 'Times New Roman', serif",
                     fontSize: '0.85rem',
+                    fontStyle: 'italic',
                     fontWeight: 500,
-                    letterSpacing: '0.05em',
-                    textTransform: 'uppercase',
+                    letterSpacing: '0.04em',
                     cursor: 'pointer',
                   }}
                 >
@@ -519,6 +544,24 @@ export default function ServiceDocuments({ params }: PageProps) {
                   </svg>
                   <span>Upload Document</span>
                 </button>
+
+                {/* Required doc error message */}
+                {uploadError && (
+                  <p
+                    role="alert"
+                    style={{
+                      fontFamily: "'Georgia', 'Times New Roman', serif",
+                      fontSize: '0.75rem',
+                      fontStyle: 'italic',
+                      color: 'rgba(201, 116, 83, 1)',
+                      marginTop: '0.75rem',
+                      textAlign: 'center',
+                      letterSpacing: '0.01em',
+                    }}
+                  >
+                    {uploadError}
+                  </p>
+                )}
 
                 {/* Uploaded files list */}
                 {currentFiles.length > 0 && (
@@ -604,9 +647,9 @@ export default function ServiceDocuments({ params }: PageProps) {
                         borderRadius: '100px',
                         color: 'rgba(249, 248, 246, 0.5)',
                         fontFamily: "'Georgia', 'Times New Roman', serif",
-                        fontSize: '0.72rem',
-                        letterSpacing: '0.12em',
-                        textTransform: 'uppercase',
+                        fontSize: '0.85rem',
+                        fontStyle: 'italic',
+                        letterSpacing: '0.04em',
                         cursor: 'pointer',
                       }}
                     >
@@ -631,9 +674,9 @@ export default function ServiceDocuments({ params }: PageProps) {
                           borderRadius: '100px',
                           color: 'rgba(249, 248, 246, 0.5)',
                           fontFamily: "'Georgia', 'Times New Roman', serif",
-                          fontSize: '0.72rem',
-                          letterSpacing: '0.12em',
-                          textTransform: 'uppercase',
+                          fontSize: '0.85rem',
+                          fontStyle: 'italic',
+                          letterSpacing: '0.04em',
                           cursor: 'pointer',
                         }}
                         onMouseEnter={(e) => {
@@ -651,8 +694,8 @@ export default function ServiceDocuments({ params }: PageProps) {
 
                     {/* Next / Finish */}
                     {isLast ? (
-                      <Link
-                        href={`/services/${category}/${slug}/form`}
+                      <button
+                        onClick={handleContinueToForm}
                         className="inline-flex items-center gap-2 transition-all duration-300"
                         style={{
                           padding: '0.7rem 1.5rem',
@@ -661,11 +704,11 @@ export default function ServiceDocuments({ params }: PageProps) {
                           borderRadius: '100px',
                           color: 'var(--wood-espresso)',
                           fontFamily: "'Georgia', 'Times New Roman', serif",
-                          fontSize: '0.72rem',
+                          fontSize: '0.85rem',
+                          fontStyle: 'italic',
                           fontWeight: 600,
-                          letterSpacing: '0.12em',
-                          textTransform: 'uppercase',
-                          textDecoration: 'none',
+                          letterSpacing: '0.04em',
+                          cursor: 'pointer',
                         }}
                         onMouseEnter={(e) => {
                           e.currentTarget.style.background = '#c9a430'
@@ -680,7 +723,7 @@ export default function ServiceDocuments({ params }: PageProps) {
                         <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
                         </svg>
-                      </Link>
+                      </button>
                     ) : (
                       <button
                         onClick={goNext}
@@ -692,10 +735,10 @@ export default function ServiceDocuments({ params }: PageProps) {
                           borderRadius: '100px',
                           color: 'var(--wood-espresso)',
                           fontFamily: "'Georgia', 'Times New Roman', serif",
-                          fontSize: '0.72rem',
+                          fontSize: '0.85rem',
+                          fontStyle: 'italic',
                           fontWeight: 600,
-                          letterSpacing: '0.12em',
-                          textTransform: 'uppercase',
+                          letterSpacing: '0.04em',
                           cursor: 'pointer',
                         }}
                         onMouseEnter={(e) => {

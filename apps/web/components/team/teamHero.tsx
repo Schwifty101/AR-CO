@@ -57,7 +57,6 @@ export default function TeamHero({
         overflow-hidden
         ${className}
       `}
-      style={{ background: 'var(--heritage-cream)' }}
     >
       {/* Background Image (if provided) */}
       {backgroundImage && (
@@ -72,12 +71,12 @@ export default function TeamHero({
             className="object-cover heroBackgroundImage"
             style={{ objectPosition: '50% 20%' }}
           />
-          {/* Overlay for text readability */}
+          {/* Overlay for text readability — neutral dark, no brown tint */}
           <div
             className="absolute inset-0 z-10"
             style={{
               background:
-                'linear-gradient(to bottom, rgba(26, 17, 10, 0.75) 0%, rgba(26, 17, 10, 0.65) 100%)'
+                'linear-gradient(to bottom, rgba(13, 9, 6, 0.55) 0%, rgba(13, 9, 6, 0.70) 60%, rgba(13, 9, 6, 0.85) 100%)'
             }}
           />
         </>

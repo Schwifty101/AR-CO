@@ -1,6 +1,6 @@
 /* ─── HeroV2 ─────────────────────────────────────────────────────────────────
-   Dark espresso hero with floating legal words, a parchment square,
-   and a full-viewport-width "AR&CO" in Lora gold at the bottom.
+   Dark espresso hero with floating legal words + newspaper headlines,
+   scroll-driven vertical parallax, and "AR&CO" flush at the viewport bottom.
    ─────────────────────────────────────────────────────────────────────────── */
 
 /* ── Core ───────────────────────────────────────────────────────────────── */
@@ -10,8 +10,6 @@
   height: 100vh;
   min-height: 640px;
   overflow: hidden;
-
-  /* Background provided by the page-level fixed layer */
   background: transparent;
 }
 
@@ -21,8 +19,6 @@
   inset: 0;
   z-index: 1;
   pointer-events: none;
-
-  /* Inline SVG fractal-noise — no external image request */
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
   background-size: 200px 200px;
   opacity: 0.04;
@@ -42,16 +38,13 @@
   );
 }
 
-/* ── Parallax law maxims ────────────────────────────────────────────────── */
-/*
-  Each quote reads --px / --py (set on the section by JS) and its own
-  --depth / --rotate (set as inline style) to produce independent
-  parallax drift on mouse movement.
-
-  calc() arithmetic:
-    var(--px) × var(--depth) × 1px  →  a pixel translate
-  Both --px and --depth are unitless numbers, so the result is valid CSS.
+/* ── Scroll-parallax background items ──────────────────────────────────────
+   --global-sy is set on :root by the home page's scroll listener.
+   --depth     is set as inline style per element (unitless 0.2–0.7).
+   Result: each element moves upward at  scrollY × 0.18 × depth  pixels.
+   Faster depth = appears "closer" (more drift), slower = further away.
 */
+
 .parallaxQuote {
   position: absolute;
   font-family: 'Lora', serif;
@@ -63,148 +56,76 @@
   pointer-events: none;
   user-select: none;
   z-index: 2;
-
-  transform: translate(
-    calc(var(--px, 0) * var(--depth, 0.3) * 1px),
-    calc(var(--py, 0) * var(--depth, 0.3) * 1px)
-  );
+  transform: translateY(calc(var(--global-sy, 0) * var(--depth, 0.3) * -1px));
   will-change: transform;
 }
 
-/* Hide on mobile — too cluttered on small viewports */
+/* Newspaper-style headline — bold, uppercase, thin rule underneath */
+.parallaxHeadline {
+  position: absolute;
+  font-family: 'Lora', Georgia, serif;
+  font-style: normal;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  pointer-events: none;
+  user-select: none;
+  z-index: 2;
+  /* Thin rule mimics a newspaper column separator */
+  padding-bottom: 0.22em;
+  border-bottom: 0.5px solid rgba(255, 255, 255, 0.5);
+  transform: translateY(calc(var(--global-sy, 0) * var(--depth, 0.3) * -1px));
+  will-change: transform;
+}
+
+/* ── Centre tagline — gold, more prominent than background text ───── */
+.centerLabel {
+  position: absolute;
+  top: 46%;
+  left: 50%;
+  transform: translateX(-50%) translateY(calc(var(--global-sy, 0) * 0.15 * -1px));
+  z-index: 3;
+  pointer-events: none;
+  user-select: none;
+  white-space: nowrap;
+
+  font-family: 'Lora', Georgia, serif;
+  font-size: 0.95rem;
+  font-weight: 500;
+  letter-spacing: 0.45em;
+  text-transform: uppercase;
+  color: var(--heritage-gold, #D4AF37);
+  opacity: 0.55;
+
+  padding-bottom: 0.3em;
+  border-bottom: 0.5px solid rgba(212, 175, 55, 0.45);
+}
+
+/* Hide background text on mobile — too cluttered */
 @media (max-width: 768px) {
-  .parallaxQuote { display: none; }
+  .parallaxQuote,
+  .parallaxHeadline { display: none; }
+
+  .centerLabel {
+    font-size: 0.72rem;
+    letter-spacing: 0.28em;
+    top: 42%;
+  }
 }
 
 /* ── Centre stage ───────────────────────────────────────────────────────── */
-/*
-  Explicitly centred with position:absolute so the layout is
-  independent of flex/padding on the hero. top:40% balances the content
-  between the viewport top and the large AR&CO text at the bottom.
-*/
 .centerStage {
   position: absolute;
   top: 42%;
   left: 50%;
   transform: translate(-50%, -50%);
-  z-index: 5;   /* above brandBottom (4) so the square covers the heading top */
+  z-index: 5;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 2.75rem;
-}
-
-/* ── Infinite horizontal marquee strip ──────────────────────────────────── */
-/*
-  Full-viewport-width strip that scrolls all legal words in a single line
-  from right to left, infinitely.  Two copies of the word list are rendered
-  side-by-side; the animation translates by -50% (= one copy width) so the
-  loop is perfectly seamless.
-*/
-.marqueeStrip {
-  position: absolute;
-  top: 44%;
-  left: 0;
-  width: 100%;
-  transform: translateY(-50%);
-  z-index: 6;   /* above centerStage (5) — scrolls over the square */
-  overflow: hidden;
-  pointer-events: none;
-
-  padding: 1.1rem 0;
-}
-
-.marqueeTrack {
-  display: flex;
-  align-items: center;
-  gap: 0;   /* gaps are handled by padding on each word */
-  width: max-content;
-  animation: marqueeScroll 55s linear infinite;
-  will-change: transform;
-}
-
-.marqueeWord {
-  font-family: 'Lora', serif;
-  font-style: italic;
-  font-weight: 300;
-  font-size: clamp(5rem, 3.2vw, 3.2rem);
-  /* Prominent by default — the window dims inside the square */
-  color: rgba(255, 255, 255, 0.72);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  white-space: nowrap;
-  user-select: none;
-  padding: 0 0.6rem;
-}
-
-
-/* ── Lit highlight window ────────────────────────────────────────────────── */
-/*
-  Positioned over the square (same top as .marqueeStrip, width = square width).
-  overflow:hidden clips the bright track to the square's horizontal bounds.
-
-  The inner .marqueeTrack is shifted left by calc(-50vw + half-square-width)
-  so its x-coordinates match those of the base strip's track exactly — both
-  animate with the same keyframe, staying perfectly in sync. The result:
-  each letter "lights up" as it crosses into the window, then dims on exit.
-*/
-.marqueeHighlight {
-  position: absolute;
-  top: 44%;                        /* same as .marqueeStrip */
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 500px;                    /* = desktop square width */
-  z-index: 7;
-  overflow: hidden;
-  pointer-events: none;
-  padding: 1.1rem 0;               /* same as .marqueeStrip */
-  /* Cover the bright base strip inside the square zone */
-  background-color: #32241c;
-}
-
-.marqueeHighlight .marqueeTrack {
-  position: relative;
-  /* Shift so track x=0 aligns with viewport x=0 */
-  left: calc(-50vw + 250px);
-}
-
-.marqueeHighlight .marqueeWord {
-  color: rgba(255, 255, 255, 0.08);
-}
-
-/*
-  Translate by -50% = exactly one copy of the word list.
-  When the first copy exits left the second copy is in place → seamless.
-*/
-@keyframes marqueeScroll {
-  from { transform: translateX(0); }
-  to   { transform: translateX(-50%); }
-}
-
-@media (max-width: 768px) {
-  .marqueeWord {
-    font-size: clamp(1.3rem, 4vw, 2rem);
-    padding: 0 0.5rem;
-  }
-  .marqueeHighlight {
-    width: 200px;
-  }
-  .marqueeHighlight .marqueeTrack {
-    left: calc(-50vw + 100px);
-  }
-}
-
-@media (max-width: 480px) {
-  .marqueeWord {
-    font-size: clamp(1.1rem, 4.5vw, 1.6rem);
-    padding: 0 0.4rem;
-  }
-  .marqueeHighlight {
-    width: 160px;
-  }
-  .marqueeHighlight .marqueeTrack {
-    left: calc(-50vw + 80px);
-  }
 }
 
 /* ── Decorative square ──────────────────────────────────────────────────── */
@@ -212,14 +133,8 @@
   position: relative;
   width: 500px;
   height: 265px;
-
-  /* Muted cedar-brown — less bright than before, warm but not glowing */
   background-color: #32241c;
-
-  /* Clip the word ticker to the square's bounds */
   overflow: hidden;
-
-  /* Reveal animation: fade + subtle scale-in */
   opacity: 0;
   transform: scale(0.94) translateY(6px);
   transition:
@@ -232,7 +147,6 @@
   transform: scale(1) translateY(0px);
 }
 
-/* Inner diagonal highlight — creates a subtle lit-from-top-left feeling */
 .squareHighlight {
   position: absolute;
   inset: 0;
@@ -245,7 +159,6 @@
   pointer-events: none;
 }
 
-/* Corner accent lines — thin gold inset marks at two opposing corners */
 .cornerTL,
 .cornerBR {
   position: absolute;
@@ -268,37 +181,49 @@
   border-right: 1px solid rgba(212, 175, 55, 0.55);
 }
 
-/* ── Brand name bottom ──────────────────────────────────────────────────── */
+/* ── Brand name — flush with the viewport bottom ────────────────────────────
+   Strategy:
+   • .brandLineClip  has overflow:hidden — acts as the reveal clip boundary
+   • .brandTitle     starts at translateY(110%) so it's hidden below the clip
+   • .brandTitleVisible animates to translateY(14%) — the 14% shift pushes
+     the glyphs down inside the 0.85 line-height box so their visual bottom
+     meets the clip edge, which is pinned to the viewport floor → zero gap.
+   • The extra descender area that would extend past the clip is cropped by
+     .brandLineClip's overflow:hidden, so nothing is cut visually.
+*/
 .brandBottom {
   position: absolute;
-  bottom: 0%;
+  bottom: 0;
   left: 0;
   width: 100%;
-  z-index: 10;   /* above quotes (2), below centerStage (5) */
+  z-index: 10;
+}
 
-  /* Prevent descenders from adding unwanted space */
-  line-height: 0;
+/* Overflow clip — replaces TextReveal's revealWrapper */
+.brandLineClip {
+  overflow: hidden;
 }
 
 .brandTitle {
   font-family: 'Lora', serif;
   font-weight: 300;
-  color: rgba(212, 175, 55, 0.55);
-  
-
-  /* Tighter line-height so the text sits flush with the viewport edge */
-  
+  color: rgb(255, 255, 255, 0.2);
   letter-spacing: -0.01em;
   white-space: nowrap;
-
-  /*
-    At ~20 vw, "AR&CO" (5 chars, ≈3.8 em wide at Lora Bold metrics)
-    spans approximately 100 vw.
-    Fine-tune with letter-spacing if the exact font render shifts slightly.
-  */
+  font-style: italic;
+  margin: 0;
+  padding: 0;
+  display: block;
+  
+  /* Pre-reveal: hidden
+  text below clip; revealed: flush at bottom */
+ 
+ 
 }
 
-/* Desktop: single line, centred */
+
+
+/* Desktop: single line, full viewport width */
 .brandDesktop {
   display: block;
 }
@@ -307,26 +232,29 @@
   font-size: clamp(5rem, 20.5vw, 21rem);
   text-align: center;
   width: 100%;
+  line-height: 0.85;
 }
 
-/* Mobile: hidden on desktop */
+/* Mobile: two lines stacked */
 .brandMobile {
   display: none;
 }
 
 .brandMobile .brandTitle {
-  /* Each word alone is wider relative to the viewport */
   font-size: clamp(4rem, 30vw, 11rem);
   text-align: center;
   width: 100%;
   line-height: 0.83;
 }
 
+/* Second mobile line animates slightly later */
+.brandLine2 {
+  transition-delay: 630ms;
+}
+
 /* ── Responsive ─────────────────────────────────────────────────────────── */
 @media (max-width: 768px) {
-  .centerStage {
-    top: 42%;
-  }
+  .centerStage { top: 42%; }
 
   .square {
     width: 200px;
@@ -338,17 +266,14 @@
 }
 
 @media (max-width: 480px) {
-  .centerStage {
-    top: 38%;
-  }
+  .centerStage { top: 38%; }
 
   .square {
     width: 160px;
     height: 160px;
   }
 
-  .cornerTL,
-  .cornerBR {
+  .cornerTL, .cornerBR {
     width: 14px;
     height: 14px;
   }
