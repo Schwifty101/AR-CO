@@ -2,30 +2,32 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { motion } from 'framer-motion'
-import Image from 'next/image'
 import styles from './HomeLoadingScreen.module.css'
 
 interface HomeLoadingScreenProps {
   /** 0–100 loading progress */
   progress: number
-  /** When true the screen slides left and unmounts */
+  /** When true the screen fades out and unmounts */
   isComplete: boolean
 }
 
-const SLIDE_DURATION = 0.75 // seconds — matches PageTransition feel
+const FADE_DURATION = 0.85 // seconds
 
 /**
  * HomeLoadingScreen
  *
  * Full-screen loading overlay for the home page.
- * Visually identical to PageTransition: espresso background + pulsing logo.
- * Adds a thin gold progress bar pinned to the top edge.
- * Dismisses by sliding left (x: 0 → -100%) once `isComplete` is true.
+ * Shows AR&CO + "Top Law Associates" at the exact position they occupy in HeroV2,
+ * so when the screen fades the texts appear to remain in place while the hero
+ * background (quotes, headlines) falls in underneath.
+ * Dismisses by fading to opacity 0 once `isComplete` is true.
+ * Adds `app-loaded` to <body> at the START of the fade so the hero quotes
+ * begin their entrance animation simultaneously.
  */
 export default function HomeLoadingScreen({ progress, isComplete }: HomeLoadingScreenProps) {
-  const [visible, setVisible]             = useState(true)
-  const [displayProgress, setDisplayProgress] = useState(0)
-  const maxRef = useRef(0)
+  const [visible, setVisible]                   = useState(true)
+  const [displayProgress, setDisplayProgress]   = useState(0)
+  const maxRef                                   = useRef(0)
 
   // Progress only ever moves forward
   useEffect(() => {
@@ -34,11 +36,13 @@ export default function HomeLoadingScreen({ progress, isComplete }: HomeLoadingS
     setDisplayProgress(clamped)
   }, [progress])
 
-  // Snap to 100 when declared complete
+  // Snap to 100 and signal app-loaded at the START of the exit animation
+  // so the hero quotes begin falling in simultaneously with our fade-out.
   useEffect(() => {
     if (isComplete) {
       maxRef.current = 100
       setDisplayProgress(100)
+      document.body.classList.add('app-loaded')
     }
   }, [isComplete])
 
@@ -73,19 +77,15 @@ export default function HomeLoadingScreen({ progress, isComplete }: HomeLoadingS
   return (
     <motion.div
       className={styles.screen}
-      // Already on screen — no entrance animation
-      initial={{ x: 0 }}
-      animate={isComplete ? { x: '-100%' } : { x: 0 }}
+      initial={{ opacity: 1 }}
+      animate={isComplete ? { opacity: 0 } : { opacity: 1 }}
       transition={
         isComplete
-          ? { duration: SLIDE_DURATION, ease: [0.32, 0.72, 0, 1] }
+          ? { duration: FADE_DURATION, ease: [0.32, 0.72, 0, 1] }
           : { duration: 0 }
       }
       onAnimationComplete={() => {
-        if (isComplete) {
-          document.body.classList.add('app-loaded')
-          setVisible(false)
-        }
+        if (isComplete) setVisible(false)
       }}
     >
       {/* ── Top-edge progress bar ─────────────────────────────────────────── */}
@@ -98,22 +98,10 @@ export default function HomeLoadingScreen({ progress, isComplete }: HomeLoadingS
         />
       </div>
 
-      {/* ── Centred pulsing logo ──────────────────────────────────────────── */}
-      <div className={styles.center}>
-        <motion.div
-          animate={{ opacity: [0.4, 1, 0.4] }}
-          transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
-          className={styles.logoWrapper}
-        >
-          <Image
-            src="/assets/logos/main-logo.png"
-            alt="AR&CO"
-            width={50}
-            height={80}
-            priority
-            className={styles.logo}
-          />
-        </motion.div>
+      {/* ── Centred texts — same position as HeroV2's centerWrapper ─────── */}
+      <div className={styles.textCenter}>
+        <p className={styles.brandName}>AR&amp;CO</p>
+        <p className={styles.tagline}>Top Law Associates</p>
       </div>
     </motion.div>
   )
