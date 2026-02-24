@@ -24,6 +24,7 @@ export default function TeamClosingStatement({
 }: ITeamClosingStatementProps) {
   const containerRef = useRef<HTMLElement>(null)
   const textRef = useRef<HTMLDivElement>(null)
+  const wordsRef = useRef<HTMLDivElement>(null)
   const isInView = useInView(containerRef, { once: true, margin: '-10%' })
 
   // Split statement into words for staggered animation
