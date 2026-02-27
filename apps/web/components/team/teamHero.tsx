@@ -45,6 +45,12 @@ export default function TeamHero({
     return cleanup
   }, [backgroundImage])
 
+  // Tell PageTransition to hold the overlay until the hero image has loaded
+  useEffect(() => {
+    if (!backgroundImage) return
+    window.dispatchEvent(new CustomEvent('page-transition-hold'))
+  }, [backgroundImage])
+
   return (
     <section
       data-hero-section="true"
@@ -70,6 +76,7 @@ export default function TeamHero({
             sizes="100vw"
             className="object-cover heroBackgroundImage"
             style={{ objectPosition: '44% 15%' }}
+            onLoad={() => window.dispatchEvent(new CustomEvent('page-content-ready'))}
           />
           {/* Overlay for text readability — neutral dark, no brown tint */}
           <div

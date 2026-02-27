@@ -26,7 +26,7 @@ export default function AboutSection() {
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
-          viewport={{ once: true, amount: 0.65 }}
+          viewport={{ once: true, amount: 0.2 }}
           transition={{ duration: 1.3, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
         >
           <TextReveal duration={1.2} delay={150}>

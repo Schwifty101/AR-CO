@@ -101,15 +101,19 @@ function LogoRow({
   translateX: MotionValue<number>
   isMobile: boolean
 }) {
-  const doubled = [...logos, ...logos]
+  // 4 repetitions ensure the track extends well beyond both viewport edges
+  // even at the maximum ±ROW_TRAVEL_PX/2 translation.
+  const repeated = [...logos, ...logos, ...logos, ...logos]
 
   return (
     <motion.div
       className={`${styles.rowTrack} ${reverse ? styles.reverseRow : ''}`}
-      style={isMobile ? {} : { x: translateX }}
+      // On desktop: pre-shift the track left by half the travel range so a
+      // positive x translation never reveals empty space on the left.
+      style={isMobile ? { x: translateX } : { x: translateX, marginLeft: -(ROW_TRAVEL_PX / 2) }}
       aria-hidden='true'
     >
-      {doubled.map((logo, idx) => (
+      {repeated.map((logo, idx) => (
         <LogoCard key={`${logo.id}-${idx}`} logo={logo} />
       ))}
     </motion.div>

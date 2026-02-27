@@ -276,23 +276,7 @@ export default function BannerSection({ onProgress, onComplete }: BannerSectionP
         <canvas ref={canvasRef} className={styles.canvas} aria-hidden="true" />
         <div className={styles.vignette} aria-hidden="true" />
 
-        <div className={styles.textLayer}>
-          <div className={styles.row}>
-            <h2 className={`${styles.rowInner} ${row1 ? styles.rowVisible : ""}`}>
-              JUSTICE
-            </h2>
-          </div>
-          <div className={styles.row}>
-            <h2 className={`${styles.rowInner} ${row2 ? styles.rowVisible : ""}`}>
-              WILL BE
-            </h2>
-          </div>
-          <div className={styles.row}>
-            <h2 className={`${styles.rowInner} ${row3 ? styles.rowVisible : ""}`}>
-              SERVED
-            </h2>
-          </div>
-        </div>
+        
 
       </div>
     </section>

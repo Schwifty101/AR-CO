@@ -175,7 +175,7 @@
       #0d0906 100%);
 }
 
-/* ─── Mobile: auto-scroll marquee, no scroll-driven motion ─── */
+/* ─── Mobile: scroll-driven motion, no sticky pinning ─── */
 @media (max-width: 767px) {
   .section {
     height: auto;
@@ -196,28 +196,9 @@
     height: 50px;
   }
 
-  .rowTrack {
-    animation: marqueeLeft 28s linear infinite;
-  }
-
-  .rowTrack.reverseRow {
-    animation: marqueeRight 28s linear infinite;
-  }
-
   .progressBar {
     display: none;
   }
-}
-
-/* Marquee animations for mobile */
-@keyframes marqueeLeft {
-  from { transform: translateX(0); }
-  to   { transform: translateX(-50%); }
-}
-
-@keyframes marqueeRight {
-  from { transform: translateX(-50%); }
-  to   { transform: translateX(0); }
 }
 
 /* ─── Tablet: narrower section ─── */
