@@ -52,7 +52,7 @@ export default function AboutOverlay({ isOpen, onClose }: AboutOverlayProps) {
           exit={{ y: '-100%' }}
           transition={{ duration: 0.6, ease: [0.32, 0.72, 0, 1] }}
           style={{
-            background: 'var(--wood-espresso)',
+            background: 'radial-gradient(ellipse 75% 55% at 50% 0%, rgba(212,175,55,0.07) 0%, transparent 65%), radial-gradient(ellipse 65% 45% at 20% 30%, rgba(212,175,55,0.05) 0%, transparent 70%), radial-gradient(ellipse 50% 55% at 80% 70%, rgba(212,175,55,0.03) 0%, transparent 70%), #0d0906',
             overflowY: 'auto',
             overflowX: 'hidden',
             WebkitOverflowScrolling: 'touch',
@@ -89,7 +89,6 @@ export default function AboutOverlay({ isOpen, onClose }: AboutOverlayProps) {
                 Who We Are
               </span>
               <h1
-                className="uppercase"
                 style={{
                   fontFamily: "'Lora', Georgia, serif",
                   fontSize: 'clamp(2rem, 6vw, 3.5rem)',
@@ -97,6 +96,7 @@ export default function AboutOverlay({ isOpen, onClose }: AboutOverlayProps) {
                   lineHeight: 0.9,
                   letterSpacing: '-0.04em',
                   color: 'var(--heritage-cream)',
+                  fontStyle: 'italic',
                 }}
               >
                 About <span style={{ color: 'var(--heritage-gold)' }}>AR & Co.</span>

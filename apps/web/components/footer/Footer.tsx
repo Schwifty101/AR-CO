@@ -156,15 +156,8 @@ export default function Footer() {
             </div>
             <div className={styles.logoContainer}>
               <h2 className={`${styles.logo} cursor-pointer`}>
-                {/* <SlotMachineText className={styles.logo1}>
-                AR
-                </SlotMachineText>
-                  <br />
-                <SlotMachineText className={styles.logo2}>
-                &CO
-                </SlotMachineText> */}
-                {/* <SlotMachineText>AR&CO</SlotMachineText> */}
-                AR <br /> &CO
+                <span className={styles.logoAR}>AR</span>
+                <span className={styles.logoCO}>&CO</span>
               </h2>
             </div>
           </div>

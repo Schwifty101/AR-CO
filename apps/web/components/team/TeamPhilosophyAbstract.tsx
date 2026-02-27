@@ -122,26 +122,26 @@ export default function TeamPhilosophyAbstract({
                     transition={{ duration: 0.8, ease: "easeOut" }}
                 >
                     <div className="h-[1px] w-12 md:w-24 bg-heritage-gold/40" />
-                    <span className="text-[10px] md:text-xs font-semibold uppercase tracking-[0.5em] text-heritage-gold/80" style={{ fontFamily: "'Cabinet Grotesk', sans-serif" }}>
+                    <span className="text-[10px] md:text-xs font-semibold uppercase tracking-[0.5em] text-heritage-gold/80" style={{ fontFamily: "'Lora', Georgia, serif" }}>
                         {title}
                     </span>
                     <div className="h-[1px] w-12 md:w-24 bg-heritage-gold/40" />
                 </motion.div>
 
-                {/* Massive Statement (Animated as a single block for performance) */}
+                {/* Statement — refined, italic, tastefully sized */}
                 <motion.h2
                     initial={{ opacity: 0, y: 40 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true, margin: "-100px" }}
                     transition={{ duration: 1, ease: "easeOut" }}
-                    className="text-4xl md:text-5xl lg:text-[6rem] xl:text-[7.5rem] font-light leading-[1.05] text-heritage-cream mb-16 z-30 max-w-6xl drop-shadow-lg"
+                    className="text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-light leading-[1.4] text-heritage-cream/90 mb-16 z-30 max-w-3xl drop-shadow-lg italic"
                     style={{
-                        fontFamily: "'Boska', 'Lora', Georgia, serif",
-                        letterSpacing: '-0.02em',
+                        fontFamily: "'Lora', Georgia, serif",
+                        letterSpacing: '-0.01em',
                         willChange: 'opacity, transform'
                     }}
                 >
-                    {statement}
+                    &ldquo;{statement}&rdquo;
                 </motion.h2>
 
                 {/* Refined Detail Text */}
@@ -264,7 +264,7 @@ export default function TeamPhilosophyAbstract({
 
             {/* Background Typography Watermark Overlay (Optimized) */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[150%] text-center pointer-events-none -z-10 opacity-[0.02] overflow-hidden select-none">
-                <span className="text-[30vw] whitespace-nowrap font-black uppercase text-heritage-cream" style={{ fontFamily: "'Cabinet Grotesk', sans-serif" }}>
+                <span className="text-[30vw] whitespace-nowrap font-black uppercase text-heritage-cream" style={{ fontFamily: "'Lora', Georgia, serif" }}>
                     PHILOSOPHY
                 </span>
             </div>

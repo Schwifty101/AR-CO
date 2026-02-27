@@ -1,0 +1,156 @@
+/* ─── BannerSection ───────────────────────────────────────────────────────────
+   Scroll-scrubbed frame sequence with sequential text reveal.
+   Mirrors the Hero frame-scrub pattern; text reveals mirror TextReveal.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+/* ── Scroll container — total scrollable height ─────────────────────────── */
+.banner {
+  position: relative;
+  height: 350vh;
+  background: #080402;
+}
+
+/* ── Sticky viewport — pinned by GSAP ScrollTrigger ─────────────────────── */
+.sticky {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Gradient edges that blend the canvas into the page background colour
+   at the top and bottom of the viewport, softening the hard cut-in/out. */
+.sticky::before,
+.sticky::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 18vh;
+  z-index: 6;
+  pointer-events: none;
+}
+
+.sticky::before {
+  top: 0;
+  background: linear-gradient(to bottom, #080402, transparent);
+}
+
+.sticky::after {
+  bottom: 0;
+  background: linear-gradient(to top, #080402, transparent);
+}
+
+/* ── Frame canvas ────────────────────────────────────────────────────────── */
+.canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  display: block;
+}
+
+/* ── Cinematic vignette ──────────────────────────────────────────────────── */
+/* Deep edges keep focus on text; centre stays clear to show frame detail.   */
+.vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      ellipse 85% 85% at 50% 50%,
+      transparent 28%,
+      rgba(8, 4, 2, 0.72) 100%
+    ),
+    linear-gradient(
+      to bottom,
+      rgba(8, 4, 2, 0.35) 0%,
+      transparent 18%,
+      transparent 80%,
+      rgba(8, 4, 2, 0.45) 100%
+    );
+}
+
+/* ── Text layer ──────────────────────────────────────────────────────────── */
+.textLayer {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  pointer-events: none;
+}
+
+/* ── Row — overflow:hidden clip boundary (same mechanism as TextReveal) ─── */
+.row {
+  overflow: hidden;
+  /* Remove any line-height gap so rows stack tight */
+  display: block;
+  line-height: 1;
+}
+
+/* ── Row inner — the element that slides up into view ───────────────────── */
+.rowInner {
+  /* ── Brand typography ── */
+  font-family: 'Lora', serif;
+  font-weight: 200;
+  font-style: italic;
+  font-size: clamp(5rem, 17vw, 14rem);
+  line-height: 0.90;
+  color: rgba(212, 175, 55, 0.6);
+  letter-spacing: -0.025em;
+  margin: 0;
+  padding: 0;
+  
+  text-transform: uppercase;
+  white-space: nowrap;
+  text-align: center;
+  display: block;
+
+  /* Legibility over frames — soft atmospheric shadow, no hard outline */
+  text-shadow:
+    0 2px 80px rgba(0, 0, 0, 0.95),
+    0 0  160px rgba(0, 0, 0, 0.70);
+
+  /* ── Pre-reveal state: hidden below clip boundary ── */
+  transform: translateY(110%);
+  transition: transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+}
+
+/* ── Revealed state ──────────────────────────────────────────────────────── */
+.rowVisible {
+  transform: translateY(0);
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .rowInner {
+    font-size: clamp(4rem, 15vw, 12rem);
+  }
+}
+
+@media (max-width: 768px) {
+  .banner {
+    height: 200vh;
+  }
+
+  .rowInner {
+    font-size: clamp(3.5rem, 19vw, 7rem);
+    letter-spacing: -0.015em;
+  }
+}
+
+@media (max-width: 480px) {
+  .banner {
+    height: 160vh;
+  }
+
+  .rowInner {
+    font-size: clamp(2.8rem, 17vw, 5rem);
+    letter-spacing: -0.01em;
+  }
+}
