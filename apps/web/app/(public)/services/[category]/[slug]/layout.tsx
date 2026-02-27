@@ -58,9 +58,8 @@ export default function ServiceLayout({ children, params }: LayoutProps) {
 
   return (
     <div className={styles.page}>
-      {/* Atmospheric overlays */}
-      <div className={styles.pageGrain} />
-      <div className={styles.pageGlow} />
+      {/* Fixed background — same as home page */}
+      <div className={styles.pageBackground} aria-hidden="true" />
 
       <div className={styles.pageContent}>
         {/* Breadcrumb Navigation — Editorial Style */}

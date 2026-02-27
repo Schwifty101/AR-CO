@@ -1,12 +1,13 @@
 .footer {
   width: 100%;
   min-height: 100vh;
-  background: var(--wood-espresso);
+  background: #0d0906;
   padding: 4rem 0 1rem;
   position: relative;
   z-index: 50;
   display: flex;
   align-items: flex-start;
+  border-top: 0.5px solid rgb(97, 97, 97, 0.4);
   box-sizing: border-box;
 }
 
@@ -84,6 +85,12 @@
   max-width: 100%;
 }
 
+/* Each logo word sits on its own line */
+.logoAR,
+.logoCO {
+  display: block;
+}
+
 /* ============================================
    MIDDLE COLUMN - Navigation
    ============================================ */
@@ -131,13 +138,13 @@
   font-family: 'Lora', Georgia, serif;
   font-size: clamp(2.25rem, 4vw, 4rem);
   font-weight: 400;
+  font-style: italic;
   line-height: 1.05;
   letter-spacing: -0.02em;
   color: var(--heritage-cream);
   text-decoration: none;
   transition: color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: inline-block;
-  text-transform: uppercase;
   max-width: 100%;
   word-wrap: break-word;
   overflow-wrap: break-word;
@@ -255,6 +262,7 @@ button.navLink:focus-visible {
   font-family: 'Georgia', 'Times New Roman', serif;
   font-size: 0.85rem;
   font-weight: 400;
+  font-style: italic;
   line-height: 1.6;
   color: rgba(250, 248, 244, 0.85);
   margin: 0;
@@ -277,6 +285,7 @@ button.navLink:focus-visible {
   font-family: 'Georgia', 'Times New Roman', serif;
   font-size: 0.85rem;
   font-weight: 400;
+  font-style: italic;
   line-height: 1.5;
   color: rgba(250, 248, 244, 0.8);
   margin: 0;
@@ -566,21 +575,52 @@ button.navLink:focus-visible {
     gap: 3rem;
   }
 
-  .leftColumn {
-    max-width: 100%;
+  /* Order: navigation → info/contact → image + logo */
+  .middleColumn {
+    grid-column: 1 / -1;
+    order: 1;
   }
 
-  .imageContainer {
-    display: none;
-  }
-
-  .logo {
-    font-size: clamp(5rem, 15vw, 7rem);
-  }
-
-  .middleColumn,
   .rightColumn {
     grid-column: 1 / -1;
+    order: 2;
+  }
+
+  .leftColumn {
+    max-width: 100%;
+    order: 3;
+    gap: 0; /* image and logo sit flush together */
+  }
+
+  /* Show image on mobile — full bleed (breaks out of container padding) */
+  .imageContainer {
+    display: block;
+    aspect-ratio: 4 / 5;
+    border-radius: 0;
+   
+   
+  }
+
+  /* Logo text: no inherited font-size; spans handle their own sizes */
+  .logo {
+    font-size: unset;
+    line-height: 0.85;
+    margin-top: 0.75rem;
+    letter-spacing: -0.03em;
+  }
+
+  /* "AR" — 2 chars sized to roughly fill the content width */
+  .logoAR {
+    font-size: 70vw;
+    font-weight: 200;
+    
+  }
+
+  /* "&CO" — 3 chars sized to match the visual width of "AR" */
+  .logoCO {
+    font-size: 40vw;
+    font-weight: 200;
+   
   }
 
   .navLink {
@@ -620,6 +660,9 @@ button.navLink:focus-visible {
 
   .bottomRight {
     justify-content: flex-start;
+  }
+  .scrollTopContainer{
+    display: none;
   }
 }
 

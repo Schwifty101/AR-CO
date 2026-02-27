@@ -45,6 +45,12 @@ export default function TeamHero({
     return cleanup
   }, [backgroundImage])
 
+  // Tell PageTransition to hold the overlay until the hero image has loaded
+  useEffect(() => {
+    if (!backgroundImage) return
+    window.dispatchEvent(new CustomEvent('page-transition-hold'))
+  }, [backgroundImage])
+
   return (
     <section
       data-hero-section="true"
@@ -57,7 +63,6 @@ export default function TeamHero({
         overflow-hidden
         ${className}
       `}
-      style={{ background: 'var(--heritage-cream)' }}
     >
       {/* Background Image (if provided) */}
       {backgroundImage && (
@@ -71,13 +76,14 @@ export default function TeamHero({
             sizes="100vw"
             className="object-cover heroBackgroundImage"
             style={{ objectPosition: '44% 15%' }}
+            onLoad={() => window.dispatchEvent(new CustomEvent('page-content-ready'))}
           />
-          {/* Overlay for text readability */}
+          {/* Overlay for text readability — neutral dark, no brown tint */}
           <div
             className="absolute inset-0 z-10"
             style={{
               background:
-                'linear-gradient(to bottom, rgba(26, 17, 10, 0.75) 0%, rgba(26, 17, 10, 0.65) 100%)'
+                'linear-gradient(to bottom, rgba(13, 9, 6, 0.55) 0%, rgba(13, 9, 6, 0.70) 60%, rgba(13, 9, 6, 0.85) 100%)'
             }}
           />
         </>

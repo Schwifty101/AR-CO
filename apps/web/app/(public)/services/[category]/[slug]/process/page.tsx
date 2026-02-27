@@ -46,7 +46,7 @@ export default function ServiceProcess({ params }: PageProps) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
       >
-        Our Process
+        <em>Our Process</em>
       </motion.h1>
 
       {/* Timeline */}

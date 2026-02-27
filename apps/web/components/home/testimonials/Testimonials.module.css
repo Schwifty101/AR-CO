@@ -3,7 +3,7 @@
   position: relative;
   background: transparent;
   overflow: hidden;
-  margin-bottom: -20rem;
+  margin-bottom: -30rem;
 }
 
 .stickyWrapper {
@@ -23,12 +23,13 @@
 
 .title {
   font-family: 'Lora', Georgia, serif;
-  font-size: clamp(4rem, 8vw, 8rem);
+  font-size: clamp(4rem, 3.5vw, 3rem);
   font-weight: 300;
-  letter-spacing: -0.02em;
-  color: var(--heritage-cream);
+  font-style: italic;
+  line-height: 1.2;
+  letter-spacing: -0.03em;
+  color: var(--heritage-cream, #F9F8F6);
   margin: 0;
-  text-transform: uppercase;
   opacity: 0;
   /* Initial hidden state for reveal animation */
 }
@@ -62,11 +63,11 @@
 /* Testimonial Card */
 .card {
   position: relative;
-  background: rgba(92, 61, 46, 0.55);
-  border: 1px solid rgba(249, 248, 246, 0.1);
+ 
+  border: 1px solid rgba(212, 175, 55, 0.4);
   border-radius: 12px;
   padding: 2rem;
-  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.4s ease;
   overflow: hidden;
   opacity: 0;
   /* Initial hidden state for reveal animation */
@@ -78,17 +79,17 @@
   top: 0;
   left: 0;
   right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, var(--heritage-gold), transparent);
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.6), transparent);
   opacity: 0;
   transition: opacity 0.4s ease;
 }
 
 .card:hover {
-  background: rgba(92, 61, 46, 0.5);
-  border-color: rgba(212, 175, 55, 0.3);
+  background: rgba(26, 18, 12, 0.92);
+  border-color: rgba(212, 175, 55, 0.28);
   transform: translateY(-4px);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(212, 175, 55, 0.08);
 }
 
 .card:hover::before {
@@ -99,7 +100,7 @@
 .cardHeader {
   margin-bottom: 1.5rem;
   padding-bottom: 1rem;
-  border-bottom: 1px solid rgba(249, 248, 246, 0.1);
+  border-bottom: 1px solid rgba(212, 175, 55, 0.1);
 }
 
 .company {
@@ -109,6 +110,7 @@
   color: var(--heritage-cream);
   margin: 0 0 0.5rem 0;
   line-height: 1.3;
+  opacity: 0.8;
 }
 
 .person {
@@ -157,7 +159,7 @@
   font-size: 0.95rem;
   font-weight: 400;
   line-height: 1.7;
-  color: rgba(249, 248, 246, 0.85);
+  color: rgba(249, 248, 246, 0.5);
   margin: 0;
   padding-left: 1.5rem;
   font-style: italic;
@@ -300,6 +302,9 @@
   .gradientOrb {
     width: 400px;
     height: 400px;
+  }
+  .testimonials {
+    margin-bottom: 0;
   }
 }
 

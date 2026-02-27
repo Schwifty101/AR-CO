@@ -1,0 +1,104 @@
+/* ─── HomeLoadingScreen ───────────────────────────────────────────────────────
+   Full-screen loading overlay — identical background to HeroV2/home page.
+   Fades to opacity 0 on exit, revealing the hero underneath.
+   The two centre texts (AR&CO + tagline) are positioned identically to
+   HeroV2's .centerWrapper so they appear stationary during the morph.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+.screen {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  background:
+    radial-gradient(ellipse 75% 55% at 50% 0%,  rgba(212, 175, 55, 0.07) 0%, transparent 65%),
+    radial-gradient(ellipse 65% 45% at 20% 30%, rgba(212, 175, 55, 0.05) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 55% at 80% 70%, rgba(212, 175, 55, 0.03) 0%, transparent 70%),
+    #0d0906;
+  overflow: hidden;
+  pointer-events: all;
+  user-select: none;
+  -webkit-user-select: none;
+  will-change: opacity;
+}
+
+/* ── Top progress bar ──────────────────────────────────────────────────────── */
+
+.progressTrack {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: rgba(212, 175, 55, 0.15);
+  z-index: 1;
+}
+
+.progressFill {
+  height: 100%;
+  background: var(--heritage-gold, #D4AF37);
+  border-radius: 0 1px 1px 0;
+  will-change: width;
+}
+
+/* ── Centre texts ──────────────────────────────────────────────────────────── */
+/* top: 46% matches HeroV2's .centerWrapper — zero scroll offset on load */
+
+.textCenter {
+  position: absolute;
+  top: 38%;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.18rem;
+  pointer-events: none;
+  user-select: none;
+  white-space: nowrap;
+}
+
+/* "AR&CO" — larger than the tagline below it */
+.brandName {
+  font-family: 'Lora', Georgia, serif;
+  font-size: 1.6rem;
+  font-weight: 300;
+  font-style: italic;
+  letter-spacing: 0.15em;
+  color: var(--heritage-cream, #F9F8F6);
+  opacity: 0.38;
+  margin: 0;
+}
+
+/* "Top Law Associates" — matches .centerLabel in HeroV2 exactly */
+.tagline {
+  font-family: 'Lora', Georgia, serif;
+  font-size: 0.95rem;
+  font-weight: 500;
+  letter-spacing: 0.45em;
+  text-transform: uppercase;
+  color: var(--heritage-gold, #D4AF37);
+  opacity: 0.55;
+  padding-bottom: 0.3em;
+  border-bottom: 0.5px solid rgba(212, 175, 55, 0.45);
+  margin: 0;
+}
+
+/* ── Responsive — mirror HeroV2 breakpoints exactly ───────────────────────── */
+
+@media (max-width: 768px) {
+  .textCenter {
+    top: 35%;
+  }
+
+  .tagline {
+    font-size: 0.72rem;
+    letter-spacing: 0.28em;
+  }
+
+  .brandName {
+    font-size: 1.15rem;
+  }
+}

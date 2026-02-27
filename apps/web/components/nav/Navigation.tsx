@@ -91,7 +91,7 @@ interface ICtaButtonProps {
 }
 
 const CtaButton: React.FC<ICtaButtonProps> = ({
-    text = "BOOK CONSULTATION",
+    text = "Book Consultation",
     onClick,
     variant = "filled",
     href = "/consultation",
@@ -214,7 +214,7 @@ const HeroNavbar: React.FC<IHeroNavbarProps> = ({ isHidden, hasEntered, navItems
                         onClick={onMenuClick}
                         aria-label="Open navigation menu"
                     >
-                        MENU
+                        Menu
                     </button>
                 </div>
             </div>
