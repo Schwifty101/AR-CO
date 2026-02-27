@@ -93,7 +93,8 @@
   font-family: 'Lora', Georgia, serif;
   font-style: italic;
   font-weight: 300;
-  font-size: clamp(2.3rem, 2.6vw, 2rem);
+  /* clamp: 1.05rem on small mobile → scales with vw → caps at 2.3rem desktop */
+  font-size: clamp(1.05rem, 3.5vw, 2.3rem);
   line-height: 1.65;
   letter-spacing: -0.01em;
   color: rgba(249, 248, 246, 0.88);

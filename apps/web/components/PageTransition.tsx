@@ -38,8 +38,11 @@ function shouldTransition(from: string, to: string): boolean {
 }
 
 const SLIDE_IN = 600   // ms – slide-in duration
-const HOLD = 1000  // ms – logo display time
+const HOLD = 1000  // ms – minimum logo display time
 const SLIDE_OUT = 600   // ms – slide-out duration
+// If a page dispatches 'page-transition-hold' on mount, we wait up to this
+// long beyond HOLD for a matching 'page-content-ready' event before forcing exit.
+const MAX_HOLD = 3000  // ms – absolute ceiling for the hold phase
 
 /**
  * PageTransition Component
@@ -121,14 +124,50 @@ export default function PageTransition() {
         // Phase 2 – hold
         setPhase('holding')
 
-        timerRef.current = setTimeout(() => {
-          // Phase 3 – slide out
-          setPhase('exiting')
+        // Closure state for the content-ready handshake.
+        // If the incoming page dispatches 'page-transition-hold' on mount we
+        // delay exit until it dispatches 'page-content-ready' (or MAX_HOLD).
+        let holdRequested = false
+        let minHoldDone   = false
+        let contentDone   = false
 
+        const startExit = () => {
+          setPhase('exiting')
           timerRef.current = setTimeout(() => {
             setPhase('idle')
             pendingHref.current = null
           }, SLIDE_OUT)
+        }
+
+        const tryExit = () => {
+          if (!minHoldDone) return
+          if (holdRequested && !contentDone) return
+          startExit()
+        }
+
+        const onContentReady = () => {
+          contentDone = true
+          window.removeEventListener('page-content-ready', onContentReady)
+          tryExit()
+        }
+
+        // Listen for the incoming page signalling it needs more time
+        window.addEventListener('page-transition-hold', () => {
+          holdRequested = true
+        }, { once: true })
+
+        window.addEventListener('page-content-ready', onContentReady)
+
+        // Minimum hold – exit immediately if no wait was requested
+        timerRef.current = setTimeout(() => {
+          minHoldDone = true
+          tryExit()
+
+          // Absolute safety valve: never block longer than MAX_HOLD
+          timerRef.current = setTimeout(() => {
+            window.removeEventListener('page-content-ready', onContentReady)
+            if (phaseRef.current === 'holding') startExit()
+          }, MAX_HOLD)
         }, HOLD)
       }, SLIDE_IN)
     }

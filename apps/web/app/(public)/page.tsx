@@ -110,16 +110,26 @@ export default function Home() {
   // Sets --global-sy on :root. CSS formula used everywhere:
   // transform: translateY(calc(var(--global-sy, 0) * var(--depth, 0.3) * -1px))
   // Multiplier 0.35 gives strong, visible vertical drift between depth layers.
+  // On mobile, native scroll fires very rapidly so we rAF-throttle the DOM
+  // write to once per rendered frame instead of once per scroll event.
   useEffect(() => {
+    let rafId: number | null = null
     const handleScroll = () => {
-      document.documentElement.style.setProperty(
-        '--global-sy',
-        (window.scrollY * 0.35).toFixed(2),
-      )
+      if (rafId !== null) return
+      rafId = requestAnimationFrame(() => {
+        document.documentElement.style.setProperty(
+          '--global-sy',
+          (window.scrollY * 0.35).toFixed(2),
+        )
+        rafId = null
+      })
     }
     window.addEventListener('scroll', handleScroll, { passive: true })
     handleScroll()
-    return () => window.removeEventListener('scroll', handleScroll)
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+      if (rafId !== null) cancelAnimationFrame(rafId)
+    }
   }, [])
 
   return (

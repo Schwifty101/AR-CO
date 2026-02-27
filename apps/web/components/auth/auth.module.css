@@ -181,6 +181,7 @@
 
 .input::placeholder {
   color: rgba(249, 248, 246, 0.25);
+  font-style: italic;
 }
 
 .input:focus {
@@ -211,6 +212,7 @@
 
 .textarea::placeholder {
   color: rgba(249, 248, 246, 0.25);
+  font-style: italic;
 }
 
 .textarea:focus {

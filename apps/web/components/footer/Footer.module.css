@@ -85,6 +85,12 @@
   max-width: 100%;
 }
 
+/* Each logo word sits on its own line */
+.logoAR,
+.logoCO {
+  display: block;
+}
+
 /* ============================================
    MIDDLE COLUMN - Navigation
    ============================================ */
@@ -569,21 +575,52 @@ button.navLink:focus-visible {
     gap: 3rem;
   }
 
-  .leftColumn {
-    max-width: 100%;
+  /* Order: navigation → info/contact → image + logo */
+  .middleColumn {
+    grid-column: 1 / -1;
+    order: 1;
   }
 
-  .imageContainer {
-    display: none;
-  }
-
-  .logo {
-    font-size: clamp(5rem, 15vw, 7rem);
-  }
-
-  .middleColumn,
   .rightColumn {
     grid-column: 1 / -1;
+    order: 2;
+  }
+
+  .leftColumn {
+    max-width: 100%;
+    order: 3;
+    gap: 0; /* image and logo sit flush together */
+  }
+
+  /* Show image on mobile — full bleed (breaks out of container padding) */
+  .imageContainer {
+    display: block;
+    aspect-ratio: 4 / 5;
+    border-radius: 0;
+   
+   
+  }
+
+  /* Logo text: no inherited font-size; spans handle their own sizes */
+  .logo {
+    font-size: unset;
+    line-height: 0.85;
+    margin-top: 0.75rem;
+    letter-spacing: -0.03em;
+  }
+
+  /* "AR" — 2 chars sized to roughly fill the content width */
+  .logoAR {
+    font-size: 70vw;
+    font-weight: 200;
+    
+  }
+
+  /* "&CO" — 3 chars sized to match the visual width of "AR" */
+  .logoCO {
+    font-size: 40vw;
+    font-weight: 200;
+   
   }
 
   .navLink {
@@ -623,6 +660,9 @@ button.navLink:focus-visible {
 
   .bottomRight {
     justify-content: flex-start;
+  }
+  .scrollTopContainer{
+    display: none;
   }
 }
 

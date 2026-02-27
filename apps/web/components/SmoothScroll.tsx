@@ -25,8 +25,12 @@ export default function SmoothScroll({ children }: SmoothScrollProps) {
     const lenis = new Lenis({
       lerp: 0.08,
       smoothWheel: true,
-      syncTouch: true,
-      syncTouchLerp: 0.04,
+      // syncTouch disabled: let the browser handle touch scroll natively.
+      // Native touch uses the GPU compositor thread (hardware-accelerated) and
+      // does not block the main thread. Enabling syncTouch routes every touchmove
+      // through JS at 60 fps which, combined with canvas frame drawing on home,
+      // saturates the main thread and causes severe lag on mobile.
+      syncTouch: false,
     })
 
     lenisInstance = lenis

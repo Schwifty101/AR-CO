@@ -303,6 +303,9 @@
     width: 400px;
     height: 400px;
   }
+  .testimonials {
+    margin-bottom: 0;
+  }
 }
 
 /* Reduced motion */
