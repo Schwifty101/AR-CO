@@ -13,7 +13,9 @@
  */
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
+import { Scale } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/lib/auth/use-auth';
 import { Button } from '@/components/ui/button';
@@ -266,6 +268,35 @@ export default function ServiceRegistrationDetailPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Linked Case */}
+      {registration.caseId ? (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Linked Case</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Link
+              href={`/client/cases/${registration.caseId}`}
+              className="flex items-center gap-2 text-primary hover:underline"
+            >
+              <Scale className="h-4 w-4" />
+              {registration.caseNumber}
+            </Link>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Linked Case</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">
+              No case created yet — our team will review your registration and create a case shortly.
+            </p>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
