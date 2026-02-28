@@ -44,8 +44,11 @@ interface ServiceRegistrationRow {
   staff_notes: string | null;
   created_at: string;
   updated_at: string;
+  case_id: string | null;
   /** Joined assigned user profile from user_profiles via assigned_to_id */
   assigned_to: { full_name: string } | null;
+  /** Joined case data */
+  case: { case_number: string } | null;
 }
 
 /** Database row shape for the services table (for validation) */
@@ -61,7 +64,7 @@ interface ServiceRow {
  * Uses a foreign-key relationship: service_registrations.assigned_to_id -> user_profiles.id
  */
 const REGISTRATION_SELECT_WITH_JOINS =
-  '*, assigned_to:user_profiles!service_registrations_assigned_to_id_fkey(full_name)' as const;
+  '*, assigned_to:user_profiles!service_registrations_assigned_to_id_fkey(full_name), case:cases!service_registrations_case_id_fkey(case_number)' as const;
 
 /** Allowed sort columns for service registrations */
 const ALLOWED_REGISTRATION_SORT_COLUMNS = [
@@ -409,6 +412,8 @@ export class ServiceRegistrationsService {
       clientProfileId: row.client_profile_id ?? null,
       assignedToId: row.assigned_to_id ?? null,
       assignedToName: row.assigned_to?.full_name ?? null,
+      caseId: row.case_id ?? null,
+      caseNumber: row.case?.case_number ?? null,
       staffNotes: row.staff_notes ?? null,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
