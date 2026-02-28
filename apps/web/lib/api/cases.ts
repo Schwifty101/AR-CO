@@ -33,6 +33,7 @@ import type {
   CaseResponse,
   CaseActivityResponse,
   CreateCaseData,
+  CreateCaseFromRegistrationData,
   UpdateCaseData,
   UpdateCaseStatusData,
   AssignToData,
@@ -423,4 +424,45 @@ export async function addCaseActivity(
   }
 
   return (await response.json()) as CaseActivityResponse;
+}
+
+/**
+ * Creates a case from a service registration with optional overrides.
+ *
+ * @param registrationId - UUID of the service registration
+ * @param data - Optional overrides for title, priority, etc.
+ * @returns Created case record
+ * @throws Error if request fails or registration not found
+ *
+ * @example
+ * ```typescript
+ * const newCase = await createCaseFromRegistration('reg-uuid', {
+ *   title: 'Custom Title',
+ *   priority: 'high',
+ * });
+ * ```
+ */
+export async function createCaseFromRegistration(
+  registrationId: string,
+  data?: CreateCaseFromRegistrationData,
+): Promise<CaseResponse> {
+  const token = await getSessionToken();
+  const response = await fetch(
+    `/api/cases/from-registration/${registrationId}`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(data ?? {}),
+    },
+  );
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.message || 'Failed to create case from registration');
+  }
+
+  return response.json();
 }
