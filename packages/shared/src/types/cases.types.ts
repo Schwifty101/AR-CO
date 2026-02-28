@@ -5,6 +5,7 @@ import type {
   UpdateCaseStatusSchema,
   CaseFiltersSchema,
   CreateCaseActivitySchema,
+  CreateCaseFromRegistrationSchema,
   CaseResponseSchema,
   CaseActivityResponseSchema,
   PaginatedCasesResponseSchema,
@@ -25,6 +26,9 @@ export type CaseFilters = z.infer<typeof CaseFiltersSchema>;
 
 /** Data for creating a case activity entry */
 export type CreateCaseActivityData = z.infer<typeof CreateCaseActivitySchema>;
+
+/** Data for creating a case from a service registration */
+export type CreateCaseFromRegistrationData = z.infer<typeof CreateCaseFromRegistrationSchema>;
 
 /** Full case response from the API */
 export type CaseResponse = z.infer<typeof CaseResponseSchema>;

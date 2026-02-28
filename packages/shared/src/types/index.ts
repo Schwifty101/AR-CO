@@ -66,6 +66,7 @@ export type {
   UpdateCaseStatusData,
   CaseFilters,
   CreateCaseActivityData,
+  CreateCaseFromRegistrationData,
   CaseResponse,
   CaseActivityResponse,
   PaginatedCasesResponse,
