@@ -41,6 +41,8 @@ export const ServiceRegistrationResponseSchema = z.object({
   assignedToId: z.string().uuid().nullable(),
   assignedToName: z.string().nullable(),
   staffNotes: z.string().nullable(),
+  caseId: z.string().uuid().nullable(),
+  caseNumber: z.string().nullable(),
   createdAt: z.string(),
   updatedAt: z.string(),
 });

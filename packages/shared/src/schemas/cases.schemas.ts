@@ -57,6 +57,8 @@ export const CaseResponseSchema = z.object({
   practiceAreaName: z.string(),
   serviceId: z.string().uuid().nullable(),
   serviceName: z.string().nullable(),
+  serviceRegistrationId: z.string().uuid().nullable(),
+  serviceRegistrationNumber: z.string().nullable(),
   title: z.string(),
   description: z.string().nullable(),
   status: z.nativeEnum(CaseStatus),
@@ -79,6 +81,15 @@ export const CaseActivityResponseSchema = z.object({
   createdByName: z.string(),
   attachments: z.unknown().nullable(),
   createdAt: z.string(),
+});
+
+/** Schema for creating a case from a service registration with optional overrides */
+export const CreateCaseFromRegistrationSchema = z.object({
+  title: z.string().min(3, 'Title must be at least 3 characters').max(255).optional(),
+  description: z.string().max(5000).optional(),
+  priority: z.nativeEnum(CasePriority).optional(),
+  caseType: z.string().max(100).optional(),
+  filingDate: z.string().optional(),
 });
 
 /** Paginated cases response */

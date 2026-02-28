@@ -67,6 +67,7 @@ export {
   UpdateCaseStatusSchema,
   CaseFiltersSchema,
   CreateCaseActivitySchema,
+  CreateCaseFromRegistrationSchema,
   CaseResponseSchema,
   CaseActivityResponseSchema,
   PaginatedCasesResponseSchema,
