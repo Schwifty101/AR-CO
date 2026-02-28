@@ -13,6 +13,7 @@
  */
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
 import { toast } from 'sonner';
 import { useAuth } from '@/lib/auth/use-auth';
@@ -202,6 +203,17 @@ export default function ClientCaseDetailPage() {
                 </Badge>
               </div>
               <p className="text-xl text-muted-foreground">{caseData?.title}</p>
+              {caseData?.serviceRegistrationId && (
+                <p className="text-sm text-muted-foreground">
+                  From Service Registration:{' '}
+                  <Link
+                    href={`/client/services/${caseData.serviceRegistrationId}`}
+                    className="text-primary hover:underline"
+                  >
+                    {caseData.serviceRegistrationNumber}
+                  </Link>
+                </p>
+              )}
             </>
           )}
         </div>
