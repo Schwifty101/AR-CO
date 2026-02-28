@@ -51,7 +51,9 @@
       "Bash(pnpm --filter api list:*)",
       "Bash(pnpm --filter api exec tsc:*)",
       "mcp__claude_ai_Notion__notion-fetch",
-      "Bash(tail:*)"
+      "Bash(tail:*)",
+      "WebFetch(domain:docs.lemonsqueezy.com)",
+      "WebFetch(domain:cal.com)"
     ],
     "env": {
       "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"

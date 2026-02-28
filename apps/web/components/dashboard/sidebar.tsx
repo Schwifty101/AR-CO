@@ -29,6 +29,7 @@ import {
   Briefcase,
   Scale,
   LogOut,
+  Calendar,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -56,6 +57,7 @@ export const ADMIN_NAV: NavItem[] = [
   { label: 'Complaints', href: '/admin/complaints', icon: MessageSquareWarning },
   { label: 'Subscriptions', href: '/admin/subscriptions', icon: CreditCard },
   { label: 'Service Registrations', href: '/admin/service-registrations', icon: ClipboardList },
+  { label: 'Consultations', href: '/admin/consultations', icon: Calendar },
 ];
 
 /** Client navigation items */
@@ -66,6 +68,7 @@ export const CLIENT_NAV: NavItem[] = [
   { label: 'Complaints', href: '/client/complaints', icon: MessageSquareWarning },
   { label: 'My Cases', href: '/client/cases', icon: Scale },
   { label: 'My Services', href: '/client/services', icon: Briefcase },
+  { label: 'Consultations', href: '/client/consultations', icon: Calendar },
 ];
 
 /** Props for DashboardSidebar */

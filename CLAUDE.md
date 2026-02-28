@@ -98,7 +98,7 @@ All modules follow **Controller-Service-Module** pattern in feature folders:
 | `dashboard/` | Admin and client dashboard statistics |
 | `cases/` | Case management, case activities timeline, assignment |
 | `practice-areas/` | Practice areas catalog (read-only listing) |
-| `payments/` | SafepayService for payment gateway integration |
+| `payments/` | LemonSqueezyService for payment integration (Merchant of Record) |
 
 **Module structure:**
 ```
@@ -141,7 +141,7 @@ Request → JwtAuthGuard → RolesGuard → Route Handler
 ### Backend Configuration System
 
 Typed configuration via factory pattern in `apps/api/src/config/`:
-- `AppConfig`, `SupabaseConfig`, `JwtConfig`, `SafepayConfig`, `EmailConfig`, `FileUploadConfig`, `AdminConfig`
+- `AppConfig`, `SupabaseConfig`, `JwtConfig`, `LemonSqueezyConfig`, `EmailConfig`, `FileUploadConfig`, `AdminConfig`
 - Access via NestJS `ConfigService` with typed interfaces
 
 ### Frontend API Client Pattern (apps/web/lib/api/)
@@ -287,7 +287,7 @@ See `.env.example` files in each app for full list.
 
 ## Planned Integrations
 
-- **Payments:** [Safepay](https://safepay-docs.netlify.app/) ([API docs](https://apidocs.getsafepay.com/))
+- **Payments:** [Lemon Squeezy](https://lemonsqueezy.com) ([API docs](https://docs.lemonsqueezy.com/api), [JS SDK](https://github.com/lmsqueezy/lemonsqueezy.js)) — see `docs/lemonsqueezy/`
 - **Appointments:** [Cal.com API v2](https://cal.com/docs/api-reference/v2/introduction) with Google Calendar sync
 - **Communication:** WhatsApp Business API, SendGrid email
 
