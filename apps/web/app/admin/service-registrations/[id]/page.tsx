@@ -3,8 +3,9 @@
 /**
  * Admin Service Registration Detail Page
  *
- * Displays full service registration details with ability to update status and assign staff.
- * Staff can add notes, track processing progress, and manage assignments.
+ * Displays full service registration details with ability to update status,
+ * assign staff, manage notes, link cases, and create cases from registrations.
+ * Includes a "Create Case" dialog for converting paid registrations into cases.
  *
  * @module AdminServiceRegistrationDetailPage
  *
@@ -15,70 +16,41 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
-  CardTitle,
 } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Separator } from '@/components/ui/separator';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import {
   getRegistrationById,
   updateRegistrationStatus,
   assignRegistration,
   type ServiceRegistrationResponse,
 } from '@/lib/api/service-registrations';
-import { getUsers, type PaginatedUsers } from '@/lib/api/users';
-import { ServiceRegistrationStatus, ServiceRegistrationPaymentStatus } from '@repo/shared';
-
-/** Registration status badge color mapping */
-const STATUS_COLORS: Record<ServiceRegistrationStatus, string> = {
-  [ServiceRegistrationStatus.PENDING_PAYMENT]: 'bg-gray-500 text-white',
-  [ServiceRegistrationStatus.PAID]: 'bg-green-500 text-white',
-  [ServiceRegistrationStatus.IN_PROGRESS]: 'bg-blue-500 text-white',
-  [ServiceRegistrationStatus.COMPLETED]: 'bg-green-500 text-white',
-  [ServiceRegistrationStatus.CANCELLED]: 'bg-red-500 text-white',
-};
-
-/** Payment status badge color mapping */
-const PAYMENT_STATUS_COLORS: Record<ServiceRegistrationPaymentStatus, string> = {
-  [ServiceRegistrationPaymentStatus.PENDING]: 'bg-yellow-500 text-white',
-  [ServiceRegistrationPaymentStatus.PAID]: 'bg-green-500 text-white',
-  [ServiceRegistrationPaymentStatus.FAILED]: 'bg-red-500 text-white',
-  [ServiceRegistrationPaymentStatus.REFUNDED]: 'bg-orange-500 text-white',
-};
-
-/** Update status form schema */
-const updateStatusSchema = z.object({
-  status: z.nativeEnum(ServiceRegistrationStatus),
-  staffNotes: z.string().optional(),
-});
-
-type UpdateStatusForm = z.infer<typeof updateStatusSchema>;
-
-/** Assign form schema */
-const assignSchema = z.object({
-  assignedToId: z.string().uuid('Invalid assignee ID format'),
-});
-
-type AssignForm = z.infer<typeof assignSchema>;
+import { createCaseFromRegistration } from '@/lib/api/cases';
+import { getUsers } from '@/lib/api/users';
+import {
+  ServiceRegistrationStatus,
+  CasePriority,
+} from '@repo/shared';
+import { ArrowLeft } from 'lucide-react';
+import {
+  STATUS_COLORS,
+  PAYMENT_STATUS_COLORS,
+  formatEnumLabel,
+  getTodayDateString,
+} from '../service-registrations.utils';
+import {
+  RegistrantInfoCard,
+  ServiceDetailsCard,
+  StaffActionsCard,
+  LinkedCaseCard,
+} from './detail-cards';
+import { CreateCaseDialog } from './create-case-dialog';
 
 /**
  * Admin service registration detail page component
@@ -88,96 +60,183 @@ export default function AdminServiceRegistrationDetailPage() {
   const router = useRouter();
   const registrationId = params.id as string;
 
+  // Registration data state
   const [registration, setRegistration] = useState<ServiceRegistrationResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [staffList, setStaffList] = useState<PaginatedUsers['users']>([]);
+  const [isUpdating, setIsUpdating] = useState(false);
 
-  // Update status form
-  const {
-    register: registerStatus,
-    handleSubmit: handleSubmitStatus,
-    formState: { errors: statusErrors, isSubmitting: isUpdatingStatus },
-    reset: resetStatus,
-  } = useForm<UpdateStatusForm>({
-    resolver: zodResolver(updateStatusSchema),
-  });
+  // Status update state
+  const [statusValue, setStatusValue] = useState<ServiceRegistrationStatus>(
+    ServiceRegistrationStatus.PENDING_PAYMENT,
+  );
 
-  // Assign form
-  const {
-    handleSubmit: handleSubmitAssign,
-    setValue: setAssignValue,
-    formState: { errors: assignErrors, isSubmitting: isAssigning },
-    reset: resetAssign,
-  } = useForm<AssignForm>({
-    resolver: zodResolver(assignSchema),
-  });
+  // Staff notes state
+  const [staffNotes, setStaffNotes] = useState('');
 
-  // Fetch registration and staff list on mount
-  useEffect(() => {
-    async function loadRegistration() {
-      try {
-        setError(null);
-        setIsLoading(true);
-        const data = await getRegistrationById(registrationId);
-        setRegistration(data);
-        resetStatus({
-          status: data.status,
-          staffNotes: data.staffNotes || '',
-        });
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load registration');
-        toast.error('Failed to load registration');
-      } finally {
-        setIsLoading(false);
-      }
-    }
+  // Assignee state
+  const [assignedToId, setAssignedToId] = useState('');
+  const [assignees, setAssignees] = useState<{ id: string; name: string }[]>([]);
+  const [isLoadingAssignees, setIsLoadingAssignees] = useState(true);
 
-    async function loadStaffList() {
-      try {
-        const result = await getUsers({ userTypes: ['staff', 'attorney'], limit: 100 });
-        setStaffList(result.users);
-      } catch {
-        // Non-blocking — assignee dropdown will be empty but form still works
-      }
-    }
+  // Create Case dialog state
+  const [isCreateCaseOpen, setIsCreateCaseOpen] = useState(false);
+  const [isCreatingCase, setIsCreatingCase] = useState(false);
+  const [caseTitle, setCaseTitle] = useState('');
+  const [caseDescription, setCaseDescription] = useState('');
+  const [casePriority, setCasePriority] = useState<CasePriority>(CasePriority.MEDIUM);
+  const [caseType, setCaseType] = useState('');
+  const [caseFilingDate, setCaseFilingDate] = useState(getTodayDateString());
 
-    loadRegistration();
-    loadStaffList();
-  }, [registrationId, resetStatus]);
-
-  const onUpdateStatus = async (data: UpdateStatusForm) => {
+  /**
+   * Load registration data from API
+   */
+  const loadRegistration = async () => {
     try {
-      const updated = await updateRegistrationStatus(registrationId, {
-        status: data.status,
-        staffNotes: data.staffNotes,
-      });
-      setRegistration(updated);
+      setError(null);
+      setIsLoading(true);
+      const data = await getRegistrationById(registrationId);
+      setRegistration(data);
+      setStatusValue(data.status);
+      setStaffNotes(data.staffNotes || '');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load registration');
+      toast.error('Failed to load registration');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Load on mount
+  useEffect(() => {
+    loadRegistration();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [registrationId]);
+
+  // Load assignees (staff + attorneys) for assignment dropdown
+  useEffect(() => {
+    async function loadAssignees() {
+      try {
+        setIsLoadingAssignees(true);
+        const data = await getUsers({ userTypes: ['staff', 'attorney'], limit: 100 });
+        const mapped = data.users.map((u) => ({
+          id: u.id,
+          name: u.fullName,
+        }));
+        setAssignees(mapped);
+      } catch {
+        toast.error('Failed to load assignees');
+      } finally {
+        setIsLoadingAssignees(false);
+      }
+    }
+
+    loadAssignees();
+  }, []);
+
+  /** Handle status update */
+  const handleUpdateStatus = async () => {
+    if (!statusValue) {
+      toast.error('Please select a status');
+      return;
+    }
+
+    try {
+      setIsUpdating(true);
+      await updateRegistrationStatus(registrationId, { status: statusValue });
+      await loadRegistration();
       toast.success('Registration status updated successfully');
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Failed to update status');
+    } finally {
+      setIsUpdating(false);
     }
   };
 
-  const onAssign = async (data: AssignForm) => {
+  /** Handle save staff notes (preserves current status) */
+  const handleSaveNotes = async () => {
+    if (!registration) return;
+
     try {
-      const updated = await assignRegistration(registrationId, { assignedToId: data.assignedToId });
-      setRegistration(updated);
-      resetAssign();
+      setIsUpdating(true);
+      await updateRegistrationStatus(registrationId, {
+        status: registration.status,
+        staffNotes: staffNotes || undefined,
+      });
+      await loadRegistration();
+      toast.success('Staff notes saved successfully');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to save notes');
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  /** Handle registration assignment */
+  const handleAssign = async () => {
+    if (!assignedToId.trim()) {
+      toast.error('Please select a person to assign');
+      return;
+    }
+
+    try {
+      setIsUpdating(true);
+      await assignRegistration(registrationId, { assignedToId });
+      await loadRegistration();
+      setAssignedToId('');
       toast.success('Registration assigned successfully');
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Failed to assign registration');
+    } finally {
+      setIsUpdating(false);
     }
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
+  /** Open Create Case dialog with pre-populated defaults */
+  const openCreateCaseDialog = () => {
+    if (!registration) return;
+    setCaseTitle(`Service - ${registration.fullName}`);
+    setCaseDescription(registration.descriptionOfNeed || '');
+    setCasePriority(CasePriority.MEDIUM);
+    setCaseType('');
+    setCaseFilingDate(getTodayDateString());
+    setIsCreateCaseOpen(true);
   };
 
+  /** Handle create case from registration */
+  const handleCreateCase = async () => {
+    try {
+      setIsCreatingCase(true);
+      await createCaseFromRegistration(registrationId, {
+        title: caseTitle || undefined,
+        description: caseDescription || undefined,
+        priority: casePriority,
+        caseType: caseType || undefined,
+        filingDate: caseFilingDate || undefined,
+      });
+      setIsCreateCaseOpen(false);
+      await loadRegistration();
+      toast.success('Case created successfully from registration');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to create case');
+    } finally {
+      setIsCreatingCase(false);
+    }
+  };
+
+  /** Whether case creation is allowed (paid or in_progress, no existing case) */
+  const canCreateCase = registration
+    && !registration.caseId
+    && (registration.status === ServiceRegistrationStatus.PAID
+      || registration.status === ServiceRegistrationStatus.IN_PROGRESS);
+
+  /** Whether Create Case button should show but be disabled */
+  const showDisabledCreateCase = registration
+    && !registration.caseId
+    && (registration.status === ServiceRegistrationStatus.PENDING_PAYMENT
+      || registration.status === ServiceRegistrationStatus.CANCELLED);
+
+  // Loading state
   if (isLoading) {
     return (
       <div className="space-y-6">
@@ -196,10 +255,15 @@ export default function AdminServiceRegistrationDetailPage() {
     );
   }
 
+  // Error state
   if (error || !registration) {
     return (
       <div className="space-y-6">
-        <Button variant="outline" onClick={() => router.push('/admin/service-registrations')}>
+        <Button
+          variant="outline"
+          onClick={() => router.push('/admin/service-registrations')}
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Registrations
         </Button>
         <div className="rounded-md bg-destructive/15 p-4 text-destructive">
@@ -211,193 +275,81 @@ export default function AdminServiceRegistrationDetailPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Button variant="outline" onClick={() => router.push('/admin/service-registrations')}>
-          Back to Registrations
-        </Button>
-        <div>
+      {/* Header */}
+      <div className="flex items-start justify-between gap-4">
+        <div className="space-y-1">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => router.push('/admin/service-registrations')}
+            className="mb-2"
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Registrations
+          </Button>
           <h1 className="text-3xl font-bold tracking-tight">
             {registration.referenceNumber}
           </h1>
-          <p className="text-muted-foreground">{registration.fullName}</p>
+          <p className="text-xl text-muted-foreground">{registration.fullName}</p>
+        </div>
+        <div className="flex gap-2">
+          <Badge className={STATUS_COLORS[registration.status]}>
+            {formatEnumLabel(registration.status)}
+          </Badge>
+          <Badge className={PAYMENT_STATUS_COLORS[registration.paymentStatus]}>
+            {formatEnumLabel(registration.paymentStatus)}
+          </Badge>
         </div>
       </div>
 
-      {/* Registration Details */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Registration Details</CardTitle>
-          <CardDescription>View full service registration information</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label className="text-muted-foreground">Reference Number</Label>
-              <p className="font-medium">{registration.referenceNumber}</p>
-            </div>
-            <div>
-              <Label className="text-muted-foreground">Status</Label>
-              <div className="mt-1 flex gap-2">
-                <Badge className={STATUS_COLORS[registration.status]}>
-                  {registration.status.replace(/_/g, ' ')}
-                </Badge>
-                <Badge className={PAYMENT_STATUS_COLORS[registration.paymentStatus]}>
-                  {registration.paymentStatus.replace(/_/g, ' ')}
-                </Badge>
-              </div>
-            </div>
-            <div>
-              <Label className="text-muted-foreground">Full Name</Label>
-              <p className="font-medium">{registration.fullName}</p>
-            </div>
-            <div>
-              <Label className="text-muted-foreground">Email</Label>
-              <p className="font-medium">{registration.email}</p>
-            </div>
-            <div>
-              <Label className="text-muted-foreground">Phone Number</Label>
-              <p className="font-medium">{registration.phoneNumber}</p>
-            </div>
-            <div>
-              <Label className="text-muted-foreground">CNIC</Label>
-              <p className="font-medium">{registration.cnic || 'N/A'}</p>
-            </div>
-            <div className="md:col-span-2">
-              <Label className="text-muted-foreground">Address</Label>
-              <p className="font-medium">{registration.address || 'N/A'}</p>
-            </div>
-            <div>
-              <Label className="text-muted-foreground">Service ID</Label>
-              <p className="font-mono text-xs">{registration.serviceId}</p>
-            </div>
-            <div>
-              <Label className="text-muted-foreground">Assigned To</Label>
-              <p className="font-medium">
-                {registration.assignedToName ? (
-                  registration.assignedToName
-                ) : registration.assignedToId ? (
-                  <span className="text-muted-foreground italic">Unknown</span>
-                ) : (
-                  <span className="text-muted-foreground">Unassigned</span>
-                )}
-              </p>
-            </div>
-          </div>
+      {/* Registrant Info Card */}
+      <RegistrantInfoCard registration={registration} />
 
-          <Separator />
+      {/* Service Details Card */}
+      <ServiceDetailsCard registration={registration} />
 
-          {registration.descriptionOfNeed && (
-            <div>
-              <Label className="text-muted-foreground">Description of Need</Label>
-              <p className="whitespace-pre-wrap">{registration.descriptionOfNeed}</p>
-            </div>
-          )}
+      {/* Staff Actions Card */}
+      <StaffActionsCard
+        statusValue={statusValue}
+        onStatusChange={setStatusValue}
+        onUpdateStatus={handleUpdateStatus}
+        assignedToId={assignedToId}
+        onAssignedToChange={setAssignedToId}
+        onAssign={handleAssign}
+        assignees={assignees}
+        isLoadingAssignees={isLoadingAssignees}
+        staffNotes={staffNotes}
+        onStaffNotesChange={setStaffNotes}
+        onSaveNotes={handleSaveNotes}
+        isUpdating={isUpdating}
+      />
 
-          {registration.staffNotes && (
-            <div>
-              <Label className="text-muted-foreground">Staff Notes</Label>
-              <p className="whitespace-pre-wrap">{registration.staffNotes}</p>
-            </div>
-          )}
+      {/* Linked Case Card */}
+      <LinkedCaseCard
+        registration={registration}
+        canCreateCase={!!canCreateCase}
+        showDisabledCreateCase={!!showDisabledCreateCase}
+        onCreateCase={openCreateCaseDialog}
+      />
 
-          <Separator />
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-            <div>
-              <Label className="text-muted-foreground">Created</Label>
-              <p>{formatDate(registration.createdAt)}</p>
-            </div>
-            <div>
-              <Label className="text-muted-foreground">Updated</Label>
-              <p>{formatDate(registration.updatedAt)}</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Actions */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Actions</CardTitle>
-          <CardDescription>Update status or assign this registration</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Update Status Form */}
-          <form onSubmit={handleSubmitStatus(onUpdateStatus)} className="space-y-4">
-            <h3 className="font-semibold">Update Status</h3>
-            <div className="space-y-2">
-              <Label htmlFor="status">Status</Label>
-              <Select
-                defaultValue={registration.status}
-                onValueChange={(value) => {
-                  resetStatus({
-                    status: value as ServiceRegistrationStatus,
-                    staffNotes: registration.staffNotes || '',
-                  });
-                }}
-              >
-                <SelectTrigger id="status">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.values(ServiceRegistrationStatus).map((status) => (
-                    <SelectItem key={status} value={status}>
-                      {status.replace(/_/g, ' ')}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {statusErrors.status && (
-                <p className="text-sm text-destructive">{statusErrors.status.message}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="staffNotes">Staff Notes</Label>
-              <Textarea
-                id="staffNotes"
-                placeholder="Add internal notes about this registration"
-                {...registerStatus('staffNotes')}
-              />
-            </div>
-
-            <Button type="submit" disabled={isUpdatingStatus}>
-              {isUpdatingStatus ? 'Updating...' : 'Update Status'}
-            </Button>
-          </form>
-
-          <Separator />
-
-          {/* Assign Form */}
-          <form onSubmit={handleSubmitAssign(onAssign)} className="space-y-4">
-            <h3 className="font-semibold">Assign To</h3>
-            <div className="space-y-2">
-              <Label htmlFor="assignedToId">Assignee</Label>
-              <Select
-                onValueChange={(value) => setAssignValue('assignedToId', value)}
-              >
-                <SelectTrigger id="assignedToId">
-                  <SelectValue placeholder="Select a person" />
-                </SelectTrigger>
-                <SelectContent>
-                  {staffList.map((staff) => (
-                    <SelectItem key={staff.id} value={staff.id}>
-                      {staff.fullName} ({staff.email})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {assignErrors.assignedToId && (
-                <p className="text-sm text-destructive">{assignErrors.assignedToId.message}</p>
-              )}
-            </div>
-
-            <Button type="submit" disabled={isAssigning}>
-              {isAssigning ? 'Assigning...' : 'Assign'}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+      {/* Create Case Dialog */}
+      <CreateCaseDialog
+        isOpen={isCreateCaseOpen}
+        onOpenChange={setIsCreateCaseOpen}
+        registration={registration}
+        caseTitle={caseTitle}
+        onCaseTitleChange={setCaseTitle}
+        caseDescription={caseDescription}
+        onCaseDescriptionChange={setCaseDescription}
+        casePriority={casePriority}
+        onCasePriorityChange={setCasePriority}
+        caseType={caseType}
+        onCaseTypeChange={setCaseType}
+        caseFilingDate={caseFilingDate}
+        onCaseFilingDateChange={setCaseFilingDate}
+        onSubmit={handleCreateCase}
+        isCreating={isCreatingCase}
+      />
     </div>
   );
 }
