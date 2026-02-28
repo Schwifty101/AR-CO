@@ -54,45 +54,12 @@ import {
   ServiceRegistrationStatus,
   ServiceRegistrationPaymentStatus,
 } from '@repo/shared';
-
-/** Registration status badge color mapping */
-const STATUS_COLORS: Record<ServiceRegistrationStatus, string> = {
-  [ServiceRegistrationStatus.PENDING_PAYMENT]: 'bg-yellow-500 text-white',
-  [ServiceRegistrationStatus.PAID]: 'bg-blue-500 text-white',
-  [ServiceRegistrationStatus.IN_PROGRESS]: 'bg-purple-500 text-white',
-  [ServiceRegistrationStatus.COMPLETED]: 'bg-green-500 text-white',
-  [ServiceRegistrationStatus.CANCELLED]: 'bg-gray-500 text-white',
-};
-
-/** Payment status badge color mapping */
-const PAYMENT_STATUS_COLORS: Record<ServiceRegistrationPaymentStatus, string> = {
-  [ServiceRegistrationPaymentStatus.PENDING]: 'bg-yellow-500 text-white',
-  [ServiceRegistrationPaymentStatus.PAID]: 'bg-green-500 text-white',
-  [ServiceRegistrationPaymentStatus.FAILED]: 'bg-red-500 text-white',
-  [ServiceRegistrationPaymentStatus.REFUNDED]: 'bg-gray-500 text-white',
-};
-
-/** Items per page */
-const PAGE_SIZE = 20;
-
-/**
- * Format a date string for display (short format)
- *
- * @param dateString - ISO date string
- * @returns Formatted date string
- *
- * @example
- * ```typescript
- * formatDate('2024-01-15') // 'Jan 15, 2024'
- * ```
- */
-const formatDate = (dateString: string): string => {
-  return new Date(dateString).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
-};
+import {
+  STATUS_COLORS,
+  PAYMENT_STATUS_COLORS,
+  PAGE_SIZE,
+  formatDate,
+} from './service-registrations.utils';
 
 /**
  * Admin service registrations list page component
