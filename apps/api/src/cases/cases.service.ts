@@ -26,6 +26,8 @@ import {
   ForbiddenException,
   BadRequestException,
   InternalServerErrorException,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 import { SupabaseService } from '../database/supabase.service';
 import { CaseActivitiesService } from './case-activities.service';
@@ -39,6 +41,7 @@ import {
   CaseStatus,
   CasePriority,
   CaseActivityType,
+  ServiceRegistrationStatus,
   type PaginationParams,
   type CreateCaseData,
   type UpdateCaseData,
@@ -47,6 +50,7 @@ import {
   type CaseFilters,
   type CaseResponse,
   type PaginatedCasesResponse,
+  type CreateCaseFromRegistrationData,
 } from '@repo/shared';
 import type { DbResult, DbListResult } from '../database/db-result.types';
 
@@ -75,6 +79,9 @@ interface CaseRow {
   practice_area: { name: string } | null;
   /** Joined service name */
   service: { name: string } | null;
+  service_registration_id: string | null;
+  /** Joined service registration data */
+  service_registration: { reference_number: string } | null;
 }
 
 /**
@@ -87,6 +94,7 @@ const CASE_SELECT_WITH_JOINS = [
   'assigned_to:user_profiles!cases_assigned_to_id_fkey(full_name)',
   'practice_area:practice_areas!cases_practice_area_id_fkey(name)',
   'service:services!cases_service_id_fkey(name)',
+  'service_registration:service_registrations!cases_service_registration_id_fkey(reference_number)',
 ].join(',');
 
 /** Allowed sort columns for cases list */
@@ -512,6 +520,135 @@ export class CasesService {
   }
 
   /**
+   * Creates a case from a service registration with optional field overrides.
+   *
+   * @example
+   * ```typescript
+   * const caseResponse = await casesService.createCaseFromRegistration(
+   *   'registration-uuid',
+   *   { title: 'Custom title', priority: CasePriority.HIGH },
+   *   currentUser,
+   * );
+   * ```
+   */
+  async createCaseFromRegistration(
+    registrationId: string,
+    overrides: CreateCaseFromRegistrationData,
+    user: AuthUser,
+  ): Promise<CaseResponse> {
+    const client = this.supabaseService.getAdminClient();
+
+    // 1. Fetch the registration with service details
+    const { data: registration, error: regError } = await client
+      .from('service_registrations')
+      .select('*, service:services!service_registrations_service_id_fkey(name, practice_area_id)')
+      .eq('id', registrationId)
+      .single();
+
+    if (regError || !registration) {
+      throw new NotFoundException(`Service registration ${registrationId} not found`);
+    }
+
+    // 2. Validate state
+    if (registration.case_id) {
+      throw new HttpException(
+        'A case has already been created from this registration',
+        HttpStatus.CONFLICT,
+      );
+    }
+
+    const validStatuses = [
+      ServiceRegistrationStatus.PAID,
+      ServiceRegistrationStatus.IN_PROGRESS,
+    ];
+    if (!validStatuses.includes(registration.status)) {
+      throw new HttpException(
+        `Cannot create case from registration with status "${registration.status}". Must be "paid" or "in_progress".`,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    if (!registration.client_profile_id) {
+      throw new HttpException(
+        'Registration has no linked client profile. A user account must be created first.',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    if (!registration.service?.practice_area_id) {
+      throw new HttpException(
+        'Service has no linked practice area',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    // 3. Build case data
+    const serviceName = registration.service?.name ?? 'Service';
+    const defaultTitle = `${serviceName} - ${registration.full_name}`;
+
+    const casePayload = {
+      client_profile_id: registration.client_profile_id,
+      practice_area_id: registration.service.practice_area_id,
+      service_id: registration.service_id,
+      service_registration_id: registrationId,
+      title: overrides.title ?? defaultTitle,
+      description: overrides.description ?? registration.description_of_need,
+      priority: overrides.priority ?? CasePriority.MEDIUM,
+      case_type: overrides.caseType ?? null,
+      filing_date: overrides.filingDate ?? new Date().toISOString().split('T')[0],
+      assigned_to_id: registration.assigned_to_id,
+    };
+
+    // 4. Insert case
+    const { data: newCase, error: caseError } = (await client
+      .from('cases')
+      .insert(casePayload)
+      .select(CASE_SELECT_WITH_JOINS)
+      .single()) as DbResult<CaseRow>;
+
+    if (caseError || !newCase) {
+      this.logger.error('Failed to create case from registration', caseError);
+      throw new HttpException(
+        caseError?.message ?? 'Failed to create case',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    // 5. Link registration to case
+    const { error: linkError } = await client
+      .from('service_registrations')
+      .update({ case_id: newCase.id })
+      .eq('id', registrationId);
+
+    if (linkError) {
+      this.logger.warn('Failed to link registration to case', linkError);
+    }
+
+    // 6. Auto-transition registration status to in_progress if currently paid
+    if (registration.status === ServiceRegistrationStatus.PAID) {
+      const { error: statusError } = await client
+        .from('service_registrations')
+        .update({ status: ServiceRegistrationStatus.IN_PROGRESS })
+        .eq('id', registrationId);
+
+      if (statusError) {
+        this.logger.warn('Failed to update registration status', statusError);
+      }
+    }
+
+    // 7. Create auto-activity
+    await this.caseActivitiesService.createAutoActivity(
+      newCase.id,
+      CaseActivityType.CASE_CREATED,
+      'Case created from service registration',
+      `Created from service registration ${registration.reference_number}`,
+      user.id,
+    );
+
+    return this.mapCaseRow(newCase);
+  }
+
+  /**
    * Asserts that the user has access to the case.
    * Staff/Admin/Attorney: full access. Clients: own cases only.
    *
@@ -553,6 +690,8 @@ export class CasesService {
       caseType: row.case_type,
       filingDate: row.filing_date,
       closingDate: row.closing_date,
+      serviceRegistrationId: row.service_registration_id ?? null,
+      serviceRegistrationNumber: row.service_registration?.reference_number ?? null,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
     };
