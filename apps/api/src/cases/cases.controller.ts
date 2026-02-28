@@ -58,6 +58,7 @@ import { UserType } from '../common/enums/user-type.enum';
 import type { AuthUser } from '../common/interfaces/auth-user.interface';
 import {
   CreateCaseSchema,
+  CreateCaseFromRegistrationSchema,
   UpdateCaseSchema,
   UpdateCaseStatusSchema,
   AssignToSchema,
@@ -65,6 +66,7 @@ import {
   PaginationSchema,
   CreateCaseActivitySchema,
   type CreateCaseData,
+  type CreateCaseFromRegistrationData,
   type UpdateCaseData,
   type UpdateCaseStatusData,
   type AssignToData,
@@ -104,6 +106,34 @@ export class CasesController {
     @Body(new ZodValidationPipe(CreateCaseSchema)) dto: CreateCaseData,
   ): Promise<CaseResponse> {
     return this.casesService.createCase(dto, user);
+  }
+
+  /**
+   * Creates a case from a service registration.
+   *
+   * Pre-fills case with registration data. Staff can override title, description,
+   * priority, case type, and filing date.
+   *
+   * @example
+   * ```
+   * POST /api/cases/from-registration/uuid-here
+   * { "title": "Custom Title", "priority": "high" }
+   * ```
+   */
+  @Post('from-registration/:registrationId')
+  @Roles(UserType.ADMIN, UserType.STAFF)
+  @HttpCode(HttpStatus.CREATED)
+  async createCaseFromRegistration(
+    @Param('registrationId') registrationId: string,
+    @Body(new ZodValidationPipe(CreateCaseFromRegistrationSchema))
+    dto: CreateCaseFromRegistrationData,
+    @CurrentUser() user: AuthUser,
+  ): Promise<CaseResponse> {
+    return this.casesService.createCaseFromRegistration(
+      registrationId,
+      dto,
+      user,
+    );
   }
 
   /**
