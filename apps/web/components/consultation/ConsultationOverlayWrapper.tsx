@@ -1,7 +1,7 @@
 'use client'
 
-import ConsultationOverlay from './ConsultationOverlay'
 import { useConsultationOverlay } from './ConsultationContext'
+import ConsultationOverlay from './ConsultationOverlay'
 
 /**
  * ConsultationOverlayWrapper
@@ -10,6 +10,13 @@ import { useConsultationOverlay } from './ConsultationContext'
  * Placed at root layout level to enable the overlay from any component.
  */
 export default function ConsultationOverlayWrapper() {
-  const { isOverlayOpen, closeOverlay } = useConsultationOverlay()
-  return <ConsultationOverlay isOpen={isOverlayOpen} onClose={closeOverlay} />
+  const { isOverlayOpen, prefillData, closeOverlay } = useConsultationOverlay()
+
+  return (
+    <ConsultationOverlay
+      isOpen={isOverlayOpen}
+      onClose={closeOverlay}
+      prefillData={prefillData}
+    />
+  )
 }

@@ -15,10 +15,13 @@ import styles from './ConsultationOverlay.module.css'
 
 /* ─── Types ─── */
 
+import type { ConsultationPrefillData } from './ConsultationContext'
+
 /** Props for the ConsultationOverlay component */
 interface ConsultationOverlayProps {
   isOpen: boolean
   onClose: () => void
+  prefillData?: ConsultationPrefillData | null
 }
 
 const TOTAL_STEPS = 4
@@ -81,7 +84,7 @@ const sectionVariants = {
  * <ConsultationOverlay isOpen={isOpen} onClose={() => setOpen(false)} />
  * ```
  */
-export default function ConsultationOverlay({ isOpen, onClose }: ConsultationOverlayProps) {
+export default function ConsultationOverlay({ isOpen, onClose, prefillData }: ConsultationOverlayProps) {
   /* ─── Form State ─── */
   const [step, setStep] = useState(1)
   const [submitted, setSubmitted] = useState(false)
@@ -136,6 +139,18 @@ export default function ConsultationOverlay({ isOpen, onClose }: ConsultationOve
       window.removeEventListener('keydown', handleKeyDown)
     }
   }, [isOpen, handleKeyDown, lock, unlock])
+
+  /* ─── Pre-fill form data when overlay opens with prefill ─── */
+  useEffect(() => {
+    if (isOpen && prefillData) {
+      setFormData((prev) => ({
+        ...prev,
+        name: prefillData.name || prev.name,
+        email: prefillData.email || prev.email,
+        phone: prefillData.phone || prev.phone,
+      }))
+    }
+  }, [isOpen, prefillData])
 
   /* ─── Field change handler ─── */
   const updateField = (field: keyof ConsultationFormData, value: string) => {

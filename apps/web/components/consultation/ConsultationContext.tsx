@@ -2,9 +2,17 @@
 
 import { createContext, useContext, useState, useCallback, ReactNode } from 'react'
 
+/** Data to pre-fill in the consultation form for logged-in clients */
+export interface ConsultationPrefillData {
+  name?: string
+  email?: string
+  phone?: string
+}
+
 interface ConsultationContextType {
   isOverlayOpen: boolean
-  openOverlay: () => void
+  prefillData: ConsultationPrefillData | null
+  openOverlay: (prefill?: ConsultationPrefillData) => void
   closeOverlay: () => void
   toggleOverlay: () => void
 }
@@ -20,13 +28,16 @@ const ConsultationContext = createContext<ConsultationContextType | undefined>(u
  */
 export function ConsultationProvider({ children }: { children: ReactNode }) {
   const [isOverlayOpen, setIsOverlayOpen] = useState(false)
+  const [prefillData, setPrefillData] = useState<ConsultationPrefillData | null>(null)
 
-  const openOverlay = useCallback(() => {
+  const openOverlay = useCallback((prefill?: ConsultationPrefillData) => {
+    setPrefillData(prefill ?? null)
     setIsOverlayOpen(true)
   }, [])
 
   const closeOverlay = useCallback(() => {
     setIsOverlayOpen(false)
+    setPrefillData(null)
   }, [])
 
   const toggleOverlay = useCallback(() => {
@@ -35,7 +46,7 @@ export function ConsultationProvider({ children }: { children: ReactNode }) {
 
   return (
     <ConsultationContext.Provider
-      value={{ isOverlayOpen, openOverlay, closeOverlay, toggleOverlay }}
+      value={{ isOverlayOpen, prefillData, openOverlay, closeOverlay, toggleOverlay }}
     >
       {children}
     </ConsultationContext.Provider>
@@ -50,7 +61,10 @@ export function ConsultationProvider({ children }: { children: ReactNode }) {
  * @example
  * ```tsx
  * const { openOverlay } = useConsultationOverlay()
- * <button onClick={openOverlay}>Book Consultation</button>
+ * // Without pre-fill (guest)
+ * <button onClick={() => openOverlay()}>Book Consultation</button>
+ * // With pre-fill (logged-in client)
+ * <button onClick={() => openOverlay({ name: 'John', email: 'john@example.com' })}>Book</button>
  * ```
  */
 export function useConsultationOverlay() {

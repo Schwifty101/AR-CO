@@ -233,6 +233,55 @@ export async function checkBookingStatus(
 }
 
 /**
+ * Fetch the authenticated client's own consultations
+ *
+ * Returns consultations matching the logged-in user's email.
+ * Requires authentication.
+ *
+ * @param params - Pagination parameters (page, limit)
+ * @returns Paginated consultations for the current user
+ * @throws Error if request fails or user is not authenticated
+ *
+ * @example
+ * ```typescript
+ * const myConsultations = await getMyConsultations({ page: 1, limit: 10 });
+ * console.log('Total:', myConsultations.total);
+ * ```
+ */
+export async function getMyConsultations(
+  params?: PaginationParams,
+): Promise<PaginatedConsultations> {
+  const token = await getSessionToken();
+  const queryParams = new URLSearchParams();
+
+  if (params?.page) queryParams.set('page', params.page.toString());
+  if (params?.limit) queryParams.set('limit', params.limit.toString());
+
+  const url = `/api/consultations/my${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+
+  const response = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    const error = (await response.json()) as { message?: string };
+    throw new Error(error.message || 'Failed to fetch your consultations');
+  }
+
+  const backendResponse = (await response.json()) as PaginatedConsultationsResponse;
+
+  return {
+    consultations: backendResponse.data,
+    total: backendResponse.meta.total,
+    page: backendResponse.meta.page,
+    limit: backendResponse.meta.limit,
+    totalPages: backendResponse.meta.totalPages,
+  };
+}
+
+/**
  * Fetch paginated list of consultations with optional filters (staff endpoint)
  *
  * Fetches all consultation bookings. Requires authentication (staff only).

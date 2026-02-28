@@ -47,6 +47,8 @@ import { ThrottlerGuard, Throttle } from '@nestjs/throttler';
 import { ConsultationsService } from './consultations.service';
 import { Public } from '../common/decorators/public.decorator';
 import { Roles } from '../common/decorators/roles.decorator';
+import { CurrentUser } from '../common/decorators/current-user.decorator';
+import type { AuthUser } from '../common/interfaces/auth-user.interface';
 import { UserType } from '../common/enums/user-type.enum';
 import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
 import {
@@ -202,6 +204,34 @@ export class ConsultationsController {
       paginationQuery,
       filtersQuery,
       search,
+    );
+  }
+
+  /**
+   * Get my consultations (Client endpoint)
+   *
+   * Returns consultations matching the authenticated user's email.
+   * Allows logged-in clients to see their booking history.
+   *
+   * @param user - Authenticated user from JWT
+   * @param paginationQuery - Pagination parameters
+   * @returns Paginated consultations for the user
+   *
+   * @example
+   * ```bash
+   * curl -H "Authorization: Bearer <token>" \
+   *   "http://localhost:4000/api/consultations/my?page=1&limit=10"
+   * ```
+   */
+  @Get('my')
+  async getMyConsultations(
+    @CurrentUser() user: AuthUser,
+    @Query(new ZodValidationPipe(PaginationSchema))
+    paginationQuery: PaginationParams,
+  ): Promise<PaginatedConsultationsResponse> {
+    return this.consultationsService.getMyConsultations(
+      user.email,
+      paginationQuery,
     );
   }
 

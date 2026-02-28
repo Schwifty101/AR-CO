@@ -32,7 +32,7 @@ Complete database architecture with 20+ tables, Row-Level Security, comprehensiv
 
 - [x] **1.2.1**: Create `.env` file with Supabase credentials (URL, anon key, service role key)
 - [x] **1.2.2**: Add JWT configuration (secret, access token expiration, refresh token expiration)
-- [x] **1.2.3**: Add Safepay configuration (API key, environment, webhook secret)
+- [x] **1.2.3**: Add Lemon Squeezy configuration (API key, store ID, webhook secret, variant IDs)
 - [x] **1.2.4**: Add email service configuration (SendGrid API key, from email)
 - [x] **1.2.5**: Add application configuration (PORT, NODE_ENV, CORS origins)
 - [x] **1.2.6**: Create `.env.example` template file
@@ -82,8 +82,8 @@ Complete database architecture with 20+ tables, Row-Level Security, comprehensiv
   - Columns: id (uuid), invoice_number (auto-generated), client_profile_id (FK), case_id (FK, optional), issue_date, due_date, subtotal, tax_amount, discount_amount, total_amount, status (enum), payment_terms, notes, created_at, updated_at
 - [x] **2.4.2**: Create `invoice_items` table
   - Columns: id (uuid), invoice_id (FK), description, quantity, unit_price, amount, created_at
-- [x] **2.4.3**: Create `payments` table with Safepay integration
-  - Columns: id (uuid), invoice_id (FK), client_profile_id (FK), amount, payment_method (enum), safepay_transaction_id, safepay_tracker_id, status (enum), payment_date, metadata (jsonb), created_at, updated_at
+- [x] **2.4.3**: Create `payments` table with Lemon Squeezy integration
+  - Columns: id (uuid), invoice_id (FK), client_profile_id (FK), amount, payment_method (enum), lemonsqueezy_order_id, lemonsqueezy_checkout_id, status (enum), payment_date, metadata (jsonb), created_at, updated_at
 
 ### Sub-task 2.5: Create Document Tables
 
@@ -401,30 +401,30 @@ Complete database architecture with 20+ tables, Row-Level Security, comprehensiv
 **Context:** Civic advocacy subscription. Clients pay PKR 700/month to submit complaints against government organizations. AR&CO holds government bodies accountable.
 
 - [x] **6.5.1**: Create `subscriptions` table via Supabase migration
-  - Columns: id (uuid, PK), client_profile_id (uuid, FK to client_profiles, UNIQUE), plan_name (text, default 'civic_retainer'), monthly_amount (decimal, default 700), currency (varchar(3), default 'PKR'), status (enum: pending, active, past_due, cancelled, expired), safepay_subscription_id (text), safepay_customer_id (text), current_period_start (timestamptz), current_period_end (timestamptz), cancelled_at (timestamptz), cancellation_reason (text), created_at (timestamptz), updated_at (timestamptz)
+  - Columns: id (uuid, PK), client_profile_id (uuid, FK to client_profiles, UNIQUE), plan_name (text, default 'civic_retainer'), monthly_amount (decimal, default 700), currency (varchar(3), default 'PKR'), status (enum: pending, on_trial, active, paused, past_due, unpaid, cancelled, expired), lemonsqueezy_subscription_id (text), lemonsqueezy_customer_id (text), lemonsqueezy_order_id (text), current_period_start (timestamptz), current_period_end (timestamptz), cancelled_at (timestamptz), ends_at (timestamptz), cancellation_reason (text), card_brand (text), card_last_four (varchar(4)), created_at (timestamptz), updated_at (timestamptz)
 - [x] **6.5.2**: Enable RLS on subscriptions (clients read own, staff read all, staff update status)
 - [x] **6.5.3**: Apply updated_at trigger
 - [x] **6.5.4**: Create `apps/api/src/subscriptions/subscriptions.service.ts`
 - [x] **6.5.5**: Implement `createSubscription(userId)` method
-  - Calls SafepayService.createSubscription() for PKR 700/month recurring
+  - Calls LemonSqueezyService.createSubscriptionCheckout() for PKR 700/month recurring
   - Creates subscriptions record with status = 'pending'
-  - Returns Safepay checkout URL
+  - Returns Lemon Squeezy checkout URL
 - [x] **6.5.6**: Implement `getMySubscription(userId)` method
-- [ ] **6.5.7**: Implement `handleSubscriptionActivated(safepayData)` method (webhook) — _deferred to HEAD TASK 10_
-  - Sets status = 'active', sets billing cycle dates
-- [ ] **6.5.8**: Implement `handleSubscriptionRenewal(safepayData)` method (webhook) — _deferred to HEAD TASK 10_
-  - Extends current_period_end by 1 month
-- [ ] **6.5.9**: Implement `handleSubscriptionCancelled(safepayData)` method — _deferred to HEAD TASK 10_
+- [ ] **6.5.7**: Implement `handleSubscriptionCreated(webhookPayload)` method (webhook) — _deferred to HEAD TASK 10_
+  - Sets status = 'active', stores lemonsqueezy_subscription_id, sets billing cycle dates
+- [ ] **6.5.8**: Implement `handleSubscriptionPaymentSuccess(webhookPayload)` method (webhook) — _deferred to HEAD TASK 10_
+  - Extends current_period_end to next renews_at
+- [ ] **6.5.9**: Implement `handleSubscriptionCancelled(webhookPayload)` / `handleSubscriptionExpired(webhookPayload)` methods — _deferred to HEAD TASK 10_
 - [x] **6.5.10**: Implement `cancelSubscription(userId)` method
 - [x] **6.5.11**: Implement `isSubscriptionActive(userId)` method (used by complaints guard)
 - [x] **6.5.12**: Create `apps/api/src/subscriptions/subscriptions.controller.ts`
-  - `POST /api/subscriptions` - Create subscription + get Safepay URL
+  - `POST /api/subscriptions` - Create subscription + get Lemon Squeezy checkout URL
   - `GET /api/subscriptions/me` - Get my subscription
   - `POST /api/subscriptions/cancel` - Cancel subscription
   - `GET /api/subscriptions` (staff only) - List all subscriptions
 - [x] **6.5.13**: Create subscription DTOs and enums (subscription_status)
 - [x] **6.5.14**: Create `apps/api/src/subscriptions/subscriptions.module.ts`
-  - Import PaymentsModule for SafepayService, export SubscriptionsService
+  - Import PaymentsModule for LemonSqueezyService, export SubscriptionsService
 
 ### Sub-task 6.6: Complaints Database & Backend (Civic Complaints)
 
@@ -459,7 +459,7 @@ Complete database architecture with 20+ tables, Row-Level Security, comprehensiv
 **Context:** Each facilitation service has 1 generic form (name, contact, CNIC, docs upload). Payment + registration auto-creates a user account. No account needed to start the form. Account required only after payment completes.
 
 - [x] **6.7.1**: Create `service_registrations` table via Supabase migration
-  - Columns: id (uuid, PK), reference_number (text, unique, auto-gen: SRV-YYYY-NNNN), service_id (uuid, FK to services), full_name (text), email (text), phone_number (text), cnic (text), address (text), description_of_need (text), payment_status (enum: pending, paid, failed, refunded), safepay_tracker_id (text), safepay_transaction_id (text), status (enum: pending_payment, paid, in_progress, completed, cancelled), client_profile_id (uuid, FK to client_profiles, nullable - set after auto account creation), assigned_staff_id (uuid, FK, nullable), staff_notes (text), created_at (timestamptz), updated_at (timestamptz)
+  - Columns: id (uuid, PK), reference_number (text, unique, auto-gen: SRV-YYYY-NNNN), service_id (uuid, FK to services), full_name (text), email (text), phone_number (text), cnic (text), address (text), description_of_need (text), payment_status (enum: pending, paid, failed, refunded), lemonsqueezy_checkout_id (text), lemonsqueezy_order_id (text), status (enum: pending_payment, paid, in_progress, completed, cancelled), client_profile_id (uuid, FK to client_profiles, nullable - set after auto account creation), assigned_staff_id (uuid, FK, nullable), staff_notes (text), created_at (timestamptz), updated_at (timestamptz)
 - [x] **6.7.2**: Add `registration_fee` column to existing `services` table (DECIMAL(10,2))
 - [x] **6.7.3**: Create `generate_service_registration_reference()` trigger (SRV-YYYY-NNNN)
 - [x] **6.7.4**: Apply trigger + RLS + updated_at trigger
@@ -470,7 +470,7 @@ Complete database architecture with 20+ tables, Row-Level Security, comprehensiv
 - [x] **6.7.7**: Implement `createRegistration(createDto)` method (@Public)
   - Validates service exists and is active, creates record with status = 'pending_payment'
 - [x] **6.7.8**: Implement `initiatePayment(registrationId)` method
-  - Fetches service.registration_fee, calls SafepayService.createCheckoutSession()
+  - Fetches service.registration_fee, calls LemonSqueezyService.createOneTimeCheckout()
 - [ ] **6.7.9**: Implement `handlePaymentConfirmed(registrationId)` method (webhook) — _deferred to HEAD TASK 10_
   - Updates payment_status = 'paid', status = 'paid'
   - Calls createUserAccount() to auto-create user
@@ -496,14 +496,14 @@ Complete database architecture with 20+ tables, Row-Level Security, comprehensiv
   - `GET /api/services` (@Public) - List available services with fees
 - [x] **6.7.17**: Create service registration DTOs (create, response, update-status) and enums
 - [x] **6.7.18**: Create `apps/api/src/service-registrations/service-registrations.module.ts`
-  - Import PaymentsModule for SafepayService, AuthModule for account creation
+  - Import PaymentsModule for LemonSqueezyService, AuthModule for account creation
 
 ### Sub-task 6.8: Frontend - Subscribe Page & Complaints Dashboard
 
 - [x] **6.8.1**: Create `/subscribe` landing page
   - Explains civic retainer program (PKR 700/month), "Subscribe Now" button
   - If not logged in → redirect to signup, then back to /subscribe
-  - If logged in → initiate Safepay subscription checkout
+  - If logged in → initiate Lemon Squeezy subscription checkout
 - [x] **6.8.2**: Create subscription success/cancel return pages
 - [x] **6.8.3**: Create `/client/complaints` page - List complaints with status badges
 - [x] **6.8.4**: Create `/client/complaints/new` page - Complaint form (title, description, target org, location, category, evidence upload)
@@ -519,7 +519,7 @@ Complete database architecture with 20+ tables, Row-Level Security, comprehensiv
   - Step 1: Client details (full name, email, phone, CNIC, address)
   - Step 2: Service auto-selected from URL, description of need textarea
   - Step 3: Document upload (drag & drop, multiple files)
-  - Step 4: Review + Pay (shows fee from services table, "Pay" → Safepay)
+  - Step 4: Review + Pay (shows fee from services table, "Pay" → Lemon Squeezy checkout)
 - [ ] **6.9.3**: Create registration success page ("Account created - check email for credentials") — _deferred_
 - [x] **6.9.4**: Create `/client/services` page - List my service registrations + status
 - [x] **6.9.5**: Create `/client/services/:id` page - Registration detail + status timeline + docs
@@ -616,111 +616,103 @@ Complete database architecture with 20+ tables, Row-Level Security, comprehensiv
 
 ---
 
-## HEAD TASK 8: Appointments & Consultation Booking Module
+## HEAD TASK 8: Consultation Booking Module (Cal.com Integration) ✅
 
-### Sub-task 8.1: Create Appointments Service (Internal)
+> **Architecture Decision:** "Consultation" and "Appointment" are the same concept. Cal.com is the sole scheduling backend — no internal appointments module. The `appointments` and `availability_slots` tables should be dropped. See `docs/plans/2026-02-28-calcom-consultation-unification-design.md`.
 
-- [ ] **8.1.1**: Create `apps/api/src/appointments/appointments.service.ts`
-- [ ] **8.1.2**: Implement `createAppointment(createDto)` method
-- [ ] **8.1.3**: Implement `getAppointments(paginationDto, filters, currentUser)` method
-- [ ] **8.1.4**: Implement `getAppointmentById(appointmentId, currentUser)` method
-- [ ] **8.1.5**: Implement `updateAppointment(appointmentId, updateDto)` method
-- [ ] **8.1.6**: Implement `cancelAppointment(appointmentId)` method
-- [ ] **8.1.7**: Implement `confirmAppointment(appointmentId)` method
+### ~~Sub-task 8.1-8.5: Internal Appointments System~~ — REMOVED
 
-### Sub-task 8.2: Create Availability Service
+> Replaced by Cal.com. Cal.com handles scheduling, availability, double-booking prevention, and email notifications. No internal appointments service, controller, or DTOs needed.
 
-- [ ] **8.2.1**: Implement `getAttorneyAvailability(attorneyId)` method
-- [ ] **8.2.2**: Implement `getAvailableSlots(attorneyId, dateRange)` method
-- [ ] **8.2.3**: Implement `setAvailability(attorneyId, availabilityDto)` method
+### Sub-task 8.6: Consultation Bookings Database ✅
 
-### Sub-task 8.3: Create Appointments Controller
+**Context:** Guest consultation booking flow. No user account created. Client fills intake form → pays PKR 50,000 via Safepay → Cal.com embedded booking with Mr. Shoaib Razzaq (single event type). Cal.com only accessible after payment confirmed. Logged-in clients can also book from their dashboard with pre-filled info.
 
-- [ ] **8.3.1**: Create `apps/api/src/appointments/appointments.controller.ts`
-- [ ] **8.3.2**: Create endpoint: `GET /api/appointments`
-- [ ] **8.3.3**: Create endpoint: `POST /api/appointments`
-- [ ] **8.3.4**: Create endpoint: `GET /api/appointments/:id`
-- [ ] **8.3.5**: Create endpoint: `PATCH /api/appointments/:id`
-- [ ] **8.3.6**: Create endpoint: `DELETE /api/appointments/:id`
-- [ ] **8.3.7**: Create endpoint: `POST /api/appointments/:id/confirm`
-- [ ] **8.3.8**: Create endpoint: `GET /api/appointments/availability/:attorneyId`
-- [ ] **8.3.9**: Create endpoint: `POST /api/appointments/availability/:attorneyId`
-
-### Sub-task 8.4: Create Appointment DTOs
-
-- [ ] **8.4.1**: Create `apps/api/src/appointments/dto/create-appointment.dto.ts`
-- [ ] **8.4.2**: Create `apps/api/src/appointments/dto/update-appointment.dto.ts`
-- [ ] **8.4.3**: Create `apps/api/src/appointments/dto/set-availability.dto.ts`
-- [ ] **8.4.4**: Create enums for appointment_type, appointment_status
-
-### Sub-task 8.5: Create Appointments Module
-
-- [ ] **8.5.1**: Create `apps/api/src/appointments/appointments.module.ts`
-
-### Sub-task 8.6: Consultation Bookings Database (Guest, No Account)
-
-**Context:** Guest consultation booking flow. No user account created. Client fills intake form → pays PKR 50,000 → Cal.com embedded booking with Mr. Shoaib Razzaq (single event type). Cal.com only accessible after payment confirmed.
-
-- [ ] **8.6.1**: Create `consultation_bookings` table via Supabase migration
-  - Columns: id (uuid, PK), reference_number (text, unique, auto-gen: CON-YYYY-NNNN), full_name (text), email (text), phone_number (text), practice_area (text), urgency (enum: low, medium, high, urgent), issue_summary (text), relevant_dates (text), opposing_party (text), additional_notes (text), consultation_fee (decimal, default 50000), payment_status (enum: pending, paid, failed, refunded), safepay_tracker_id (text), safepay_transaction_id (text), calcom_booking_uid (text), calcom_booking_id (text), booking_date (date), booking_time (time), booking_status (enum: pending_payment, payment_confirmed, booked, completed, cancelled, no_show), created_at (timestamptz), updated_at (timestamptz)
-- [ ] **8.6.2**: Create `generate_consultation_reference()` trigger (CON-YYYY-NNNN)
-- [ ] **8.6.3**: Apply trigger + RLS + updated_at trigger
+- [x] **8.6.1**: Create `consultation_bookings` table via Supabase migration
+  - Columns: id (uuid, PK), reference_number (text, unique, auto-gen: CON-YYYY-NNNN), full_name (text), email (text), phone_number (text), practice_area (text), urgency (enum: low, medium, high, urgent), issue_summary (text), relevant_dates (text), opposing_party (text), additional_notes (text), consultation_fee (decimal, default 50000), payment_status (enum: pending, paid, failed, refunded), safepay_tracker_token (text), safepay_transaction_ref (text), calcom_booking_uid (text), calcom_booking_id (text), booking_date (date), booking_time (time), meeting_link (text), booking_status (enum: pending_payment, payment_confirmed, booked, completed, cancelled, no_show), created_at (timestamptz), updated_at (timestamptz)
+- [x] **8.6.2**: Create `generate_consultation_reference()` trigger (CON-YYYY-NNNN)
+- [x] **8.6.3**: Apply trigger + RLS + updated_at trigger
   - Public can insert (guest submissions), public can read own by reference_number + email
   - Staff can read all bookings
 
-### Sub-task 8.7: Consultation Bookings Backend
+### Sub-task 8.7: Consultation Bookings Backend ✅
 
-- [ ] **8.7.1**: Create `apps/api/src/consultations/consultations.service.ts`
-- [ ] **8.7.2**: Implement `createBooking(createDto)` method
+- [x] **8.7.1**: Create `apps/api/src/consultations/consultations.service.ts`
+- [x] **8.7.2**: Implement `createBooking(createDto)` method
   - Validates intake data, creates consultation_bookings record, returns reference_number
-- [ ] **8.7.3**: Implement `initiatePayment(bookingId)` method
-  - Calls SafepayService.createCheckoutSession() with metadata: `{ type: 'consultation', referenceId: bookingId }`
-  - Stores safepay_tracker_id on booking record
-- [ ] **8.7.4**: Implement `getBookingStatus(referenceNumber, email)` method (@Public)
+- [x] **8.7.3**: Implement `initiatePayment(bookingId)` method
+  - Calls SafepayService.createPaymentSession() + generateCheckoutUrl() for PKR 50,000
+  - Stores safepay_tracker_token on booking record
+- [x] **8.7.4**: Implement `getBookingStatus(referenceNumber, email)` method (@Public)
   - Guest status polling, verified by email match
-- [ ] **8.7.5**: Implement `handlePaymentConfirmed(bookingId)` method (called by Safepay webhook)
-  - Updates payment_status = 'paid', booking_status = 'payment_confirmed'
-- [ ] **8.7.6**: Implement `handleCalcomWebhook(payload)` method
-  - Syncs Cal.com booking details (date, time, meeting link) back to consultation_bookings
+- [x] **8.7.5**: Implement `confirmPayment(bookingId, trackerToken)` method
+  - Verifies payment via Safepay Reporter API, updates payment_status = 'paid', booking_status = 'payment_confirmed'
+- [x] **8.7.6**: Implement `handleCalcomWebhook(payload)` method
+  - Receives BOOKING_CREATED events from Cal.com
+  - Matches by metadata.referenceNumber or fallback by email + payment_confirmed status
+  - Stores calcom_booking_uid, calcom_booking_id, booking_date, booking_time, meeting_link
   - Updates booking_status = 'booked'
-- [ ] **8.7.7**: Implement `getAllBookings(paginationDto, filters)` method (staff only)
-- [ ] **8.7.8**: Implement `cancelBooking(bookingId)` method (staff only)
+  - Idempotent: skips if already linked
+- [x] **8.7.7**: Implement `getBookings(paginationDto, filters)` method (staff only)
+- [x] **8.7.8**: Implement `cancelBooking(bookingId)` method (staff only)
 
-### Sub-task 8.8: Consultation Bookings Controller
+### Sub-task 8.8: Consultation Bookings Controller ✅
 
-- [ ] **8.8.1**: Create `apps/api/src/consultations/consultations.controller.ts`
-- [ ] **8.8.2**: Create endpoint: `POST /api/consultations` (@Public) - Create booking with intake data
-- [ ] **8.8.3**: Create endpoint: `POST /api/consultations/:id/pay` (@Public) - Initiate Safepay checkout
-- [ ] **8.8.4**: Create endpoint: `GET /api/consultations/status?ref=CON-2026-0001&email=x` (@Public) - Guest status
-- [ ] **8.8.5**: Create endpoint: `POST /api/consultations/webhook/calcom` (@Public) - Cal.com webhook
-- [ ] **8.8.6**: Create endpoint: `GET /api/consultations` (staff only) - List all bookings
-- [ ] **8.8.7**: Create endpoint: `GET /api/consultations/:id` (staff only) - Booking detail
-- [ ] **8.8.8**: Create endpoint: `PATCH /api/consultations/:id/cancel` (staff only) - Cancel booking
+- [x] **8.8.1**: Create `apps/api/src/consultations/consultations.controller.ts`
+- [x] **8.8.2**: Create endpoint: `POST /api/consultations` (@Public) - Create booking with intake data
+- [x] **8.8.3**: Create endpoint: `POST /api/consultations/:id/pay` (@Public) - Initiate Safepay checkout
+- [x] **8.8.4**: Create endpoint: `GET /api/consultations/status?refNum=X&email=Y` (@Public) - Guest status
+- [x] **8.8.5**: Create endpoint: `POST /api/consultations/webhook/calcom` (@Public) - Cal.com webhook
+- [x] **8.8.6**: Create endpoint: `GET /api/consultations` (staff only) - List all bookings
+- [x] **8.8.7**: Create endpoint: `GET /api/consultations/:id` (staff only) - Booking detail
+- [x] **8.8.8**: Create endpoint: `PATCH /api/consultations/:id/cancel` (staff only) - Cancel booking
+- [x] **8.8.9**: Create endpoint: `POST /api/consultations/:id/confirm-payment` (@Public) - Verify Safepay payment
 
-### Sub-task 8.9: Consultation DTOs & Module
+### Sub-task 8.9: Consultation Schemas, Types & Module ✅
 
-- [ ] **8.9.1**: Create `apps/api/src/consultations/dto/create-consultation.dto.ts`
-  - Fields: fullName, email, phoneNumber, practiceArea, urgency, issueSummary, relevantDates (opt), opposingParty (opt), additionalNotes (opt)
-- [ ] **8.9.2**: Create `apps/api/src/consultations/dto/consultation-response.dto.ts`
-- [ ] **8.9.3**: Create enums: consultation_booking_status, consultation_urgency
-- [ ] **8.9.4**: Create `apps/api/src/consultations/dto/index.ts` barrel export
-- [ ] **8.9.5**: Create `apps/api/src/consultations/consultations.module.ts`
+- [x] **8.9.1**: Create `packages/shared/src/schemas/consultations.schemas.ts` (Zod schemas)
+  - CreateConsultationSchema, ConfirmConsultationPaymentSchema, ConsultationStatusCheckSchema
+  - ConsultationResponseSchema, ConsultationStatusResponseSchema, PaginatedConsultationsResponseSchema
+  - ConsultationFiltersSchema, ConsultationPaymentInitResponseSchema
+- [x] **8.9.2**: Create `packages/shared/src/types/consultations.types.ts` (inferred types)
+- [x] **8.9.3**: Add enums: ConsultationBookingStatus, ConsultationUrgency, ConsultationPaymentStatus
+- [x] **8.9.4**: Create `apps/api/src/consultations/consultations.types.ts` (CalcomWebhookPayload, ConsultationRow interfaces)
+- [x] **8.9.5**: Create `apps/api/src/consultations/consultations.module.ts`
   - Import PaymentsModule for SafepayService
 
-### Sub-task 8.10: Frontend - Consultation Booking Page
+### Sub-task 8.10: Frontend - Consultation Booking Overlay ✅
 
-- [ ] **8.10.1**: Install Cal.com embed SDK: `pnpm add @calcom/embed-react --filter web`
-- [ ] **8.10.2**: Create `/consultation` page with multi-step form layout
-- [ ] **8.10.3**: Implement Step 1: Client Details (full name, email, phone) - React Hook Form + Zod
-- [ ] **8.10.4**: Implement Step 2: Qualification (practice area dropdown, urgency selector)
-- [ ] **8.10.5**: Implement Step 3: Intake Questions (issue summary textarea, relevant dates, opposing party)
-- [ ] **8.10.6**: Implement Step 4: Review + Pay ("Pay PKR 50,000" button → Safepay redirect)
-- [ ] **8.10.7**: Implement Step 5: Cal.com Embedded Booking (only renders after payment confirmed)
-  - Polls `/api/consultations/status`, then shows Cal.com widget
+- [x] **8.10.1**: Install Cal.com embed SDK (`@calcom/embed-react`)
+- [x] **8.10.2**: Create consultation overlay component (modal with 4-step flow)
+- [x] **8.10.3**: Implement Step 1: Personal Info (full name, email, phone) with validation
+- [x] **8.10.4**: Implement Step 2: Case Details (practice area, urgency, issue summary, optional fields)
+- [x] **8.10.5**: Implement Step 3: Safepay Payment (popup checkout, postMessage callback, payment verification)
+- [x] **8.10.6**: Implement Step 4: Cal.com Embedded Booking (only renders after payment confirmed)
   - Single event type: "Consultation with Mr. Shoaib Razzaq" (no attorney routing)
-- [ ] **8.10.8**: Implement Confirmation Page (reference number, booked date/time, email sent)
-- [ ] **8.10.9**: Create `apps/web/lib/api/consultations.ts` API client helpers
-- [ ] **8.10.10**: Update "BOOK CONSULTATION" button in Navigation.tsx to link to `/consultation`
+  - Pre-fills guest name, email, reference number
+  - Subscribes to `bookingSuccessful` event
+- [x] **8.10.7**: Implement success confirmation screen
+- [x] **8.10.8**: Create `apps/web/lib/api/consultations.ts` API client helpers
+- [x] **8.10.9**: Create ConsultationContext + useConsultationOverlay hook for global access
+- [x] **8.10.10**: Create payment callback page at `/consultation/payment-callback`
+
+### Sub-task 8.11: Frontend - Dashboard Integration (remaining work)
+
+- [x] **8.11.1**: Create `ConsultationGuestsTable` admin component (filters, expandable details, pagination)
+- [x] **8.11.2**: Create `/admin/consultations/page.tsx` rendering ConsultationGuestsTable
+- [x] **8.11.3**: Add "Consultations" link to ADMIN_NAV in sidebar
+- [x] **8.11.4**: Create `/client/consultations/page.tsx` with:
+  - "Book a Consultation" button that opens overlay (pre-filled with client profile data)
+  - "My Consultations" list showing bookings matched by client email
+- [x] **8.11.5**: Add "Consultations" link to CLIENT_NAV in sidebar
+- [x] **8.11.6**: Update consultation overlay to accept optional `prefillData` prop for logged-in clients
+- [x] **8.11.7**: Add backend endpoint `GET /api/consultations/my` (authenticated, returns consultations by user email)
+
+### Sub-task 8.12: Database Cleanup
+
+- [x] **8.12.1**: Drop `appointments` table (replaced by Cal.com)
+- [x] **8.12.2**: Drop `availability_slots` table (replaced by Cal.com)
+- [x] **8.12.3**: Drop related RLS policies, triggers, and enum types
 
 ---
 
@@ -766,7 +758,11 @@ Complete database architecture with 20+ tables, Row-Level Security, comprehensiv
 
 ---
 
-## HEAD TASK 10: Payments & Safepay Integration Module
+## HEAD TASK 10: Payments & Lemon Squeezy Integration Module
+
+**Payment Provider:** [Lemon Squeezy](https://lemonsqueezy.com) (Merchant of Record)
+**SDK:** `@lemonsqueezy/lemonsqueezy.js`
+**Docs:** `docs/lemonsqueezy/` (API reference, SDK guide, webhooks, checkout, subscriptions, integration plan)
 
 ### Sub-task 10.1: Create Invoices Service
 
@@ -779,35 +775,58 @@ Complete database architecture with 20+ tables, Row-Level Security, comprehensiv
 - [ ] **10.1.7**: Implement `addInvoiceItem(invoiceId, itemDto)` method
 - [ ] **10.1.8**: Implement `calculateInvoiceTotals(invoiceId)` method
 
-### Sub-task 10.2: Create Safepay Integration Service (Shared Layer)
+### Sub-task 10.2: Create Lemon Squeezy Integration Service (Shared Layer)
 
-**Context:** Safepay handles 3 payment types: consultation fee (PKR 50,000 one-time), monthly retainer (PKR 700/month recurring), service registration fee (variable one-time). Single webhook endpoint routes by metadata.type.
+**Context:** Lemon Squeezy handles 3 payment types: consultation fee (PKR 50,000 one-time), monthly retainer (PKR 700/month recurring), service registration fee (variable one-time). Single webhook endpoint routes by event_name + custom_data.payment_type.
 
-- [ ] **10.2.1**: Create `apps/api/src/payments/safepay.service.ts`
-- [ ] **10.2.2**: Implement `createCheckoutSession(amount, currency, metadata, returnUrl, cancelUrl)` method
-  - metadata: `{ type: 'consultation' | 'subscription' | 'service' | 'invoice', referenceId: string }`
-  - Returns Safepay checkout URL for redirect
-- [ ] **10.2.3**: Implement `createSubscription(planId, customerEmail, metadata)` method
-  - For PKR 700/month recurring retainer payments
-  - Returns Safepay subscription checkout URL
-- [ ] **10.2.4**: Implement `verifyWebhookSignature(payload, signature)` method
-  - Validate HMAC signature using SAFEPAY_WEBHOOK_SECRET
-- [ ] **10.2.5**: Implement `getPaymentStatus(trackerId)` method
-  - Poll Safepay API for current payment status
-- [ ] **10.2.6**: Implement `cancelSubscription(safepaySubscriptionId)` method
+**Key difference from Safepay:** Lemon Squeezy is a Merchant of Record — handles tax, compliance, and payment processing. Uses a single `createCheckout()` call (no two-step tracker flow). Custom data is flexible (any key-value pairs). Prices are in cents (PKR 700 = 70000).
+
+- [ ] **10.2.1**: Install SDK: `pnpm add @lemonsqueezy/lemonsqueezy.js --filter api`
+- [ ] **10.2.2**: Create `apps/api/src/payments/lemonsqueezy.service.ts`
+  - `onModuleInit()` - Call `lemonSqueezySetup({ apiKey })` on startup
+  - Properties: `storeId`, `subscriptionVariantId`, `consultationVariantId`, `serviceVariantId` from config
+- [ ] **10.2.3**: Implement `createOneTimeCheckout(params)` method
+  - params: `{ variantId, customPrice?, email, name, customData, redirectUrl, productName?, productDescription? }`
+  - customData: `{ payment_type: 'consultation' | 'service', reference_id: string, ... }`
+  - Calls `createCheckout(storeId, variantId, options)` from SDK
+  - Returns Lemon Squeezy checkout URL
+- [ ] **10.2.4**: Implement `createSubscriptionCheckout(params)` method
+  - params: `{ email, name, customData, redirectUrl }`
+  - Uses `LEMONSQUEEZY_SUBSCRIPTION_VARIANT_ID` (subscription product)
+  - Returns Lemon Squeezy checkout URL
+- [ ] **10.2.5**: Implement `verifyWebhookSignature(rawBody, signature)` method
+  - Validate HMAC-SHA256 of raw body against `X-Signature` header using `LEMONSQUEEZY_WEBHOOK_SECRET`
+- [ ] **10.2.6**: Implement `getSubscription(subscriptionId)` method
+  - Calls `getSubscription()` from SDK, returns subscription status and details
+- [ ] **10.2.7**: Implement `cancelSubscription(subscriptionId)` method
+  - Calls `cancelSubscription()` from SDK (enters grace period until next renewal)
+- [ ] **10.2.8**: Implement `resumeSubscription(subscriptionId)` method
+  - Calls `updateSubscription(id, { cancelled: false })` from SDK
+- [ ] **10.2.9**: Implement `getOrder(orderId)` method
+  - Calls `getOrder()` from SDK, returns order status and payment details
 
 ### Sub-task 10.3: Create Webhook Controller (Central Payment Router)
 
-- [ ] **10.3.1**: Create `apps/api/src/payments/webhook.controller.ts`
-- [ ] **10.3.2**: Create endpoint: `POST /api/payments/webhook` (@Public)
-  - Verify signature → extract metadata.type → route to correct handler:
-    - `consultation` → ConsultationsService.handlePaymentConfirmed()
-    - `subscription` → SubscriptionsService.handleSubscriptionActivated/Renewal()
-    - `service` → ServiceRegistrationsService.handlePaymentConfirmed()
-    - `invoice` → InvoicesService.handlePaymentReceived()
-- [ ] **10.3.3**: Implement payment failure routing (same metadata.type dispatch)
-- [ ] **10.3.4**: Implement subscription lifecycle handlers (cancelled, expired, renewal_failed)
-- [ ] **10.3.5**: Add idempotency check (prevent duplicate webhook processing)
+- [ ] **10.3.1**: Enable raw body in NestJS: `NestFactory.create(AppModule, { rawBody: true })` in main.ts
+- [ ] **10.3.2**: Create `apps/api/src/payments/webhook.controller.ts`
+- [ ] **10.3.3**: Create endpoint: `POST /api/webhooks/lemonsqueezy` (@Public)
+  - Verify `X-Signature` header → parse payload → route by `meta.event_name`:
+    - **One-time payments (order events):**
+      - `order_created` → route by `meta.custom_data.payment_type`:
+        - `consultation` → ConsultationsService.handlePaymentConfirmed()
+        - `service` → ServiceRegistrationsService.handlePaymentConfirmed()
+      - `order_refunded` → route by `meta.custom_data.payment_type` to respective refund handler
+    - **Subscription events:**
+      - `subscription_created` → SubscriptionsService.handleSubscriptionCreated()
+      - `subscription_updated` → SubscriptionsService.handleSubscriptionUpdated()
+      - `subscription_cancelled` → SubscriptionsService.handleSubscriptionCancelled()
+      - `subscription_expired` → SubscriptionsService.handleSubscriptionExpired()
+    - **Subscription payment events:**
+      - `subscription_payment_success` → SubscriptionsService.handlePaymentSuccess()
+      - `subscription_payment_failed` → SubscriptionsService.handlePaymentFailed()
+      - `subscription_payment_recovered` → SubscriptionsService.handlePaymentRecovered()
+- [ ] **10.3.4**: Add idempotency check (store processed webhook IDs, prevent duplicate processing)
+- [ ] **10.3.5**: Return `{ received: true }` with 200 status immediately, process asynchronously
 
 ### Sub-task 10.4: Create Payments Controller
 
@@ -827,27 +846,55 @@ Complete database architecture with 20+ tables, Row-Level Security, comprehensiv
 - [ ] **10.5.2**: Create `apps/api/src/payments/dto/update-invoice.dto.ts`
 - [ ] **10.5.3**: Create `apps/api/src/payments/dto/create-invoice-item.dto.ts`
 - [ ] **10.5.4**: Create `apps/api/src/payments/dto/create-checkout.dto.ts`
-  - Fields: amount, currency (default 'PKR'), metadata (type + referenceId), returnUrl, cancelUrl
+  - Fields: paymentType ('consultation' | 'service' | 'subscription'), referenceId, amount? (for custom_price), email, name, redirectUrl
 - [ ] **10.5.5**: Create `apps/api/src/payments/dto/webhook-payload.dto.ts`
-  - Safepay webhook payload structure
+  - Lemon Squeezy webhook payload structure: `{ meta: { event_name, custom_data }, data: { type, id, attributes } }`
 - [ ] **10.5.6**: Create enums for invoice_status, payment_status, payment_method
 
 ### Sub-task 10.6: Create Payments Module
 
 - [ ] **10.6.1**: Create `apps/api/src/payments/payments.module.ts`
-  - Register SafepayService, WebhookController, PaymentsController, InvoicesService
-  - Export SafepayService for use by ConsultationsModule, SubscriptionsModule, ServiceRegistrationsModule
+  - Register LemonSqueezyService, WebhookController, PaymentsController, InvoicesService
+  - Export LemonSqueezyService for use by ConsultationsModule, SubscriptionsModule, ServiceRegistrationsModule
 
-### Sub-task 10.7: Frontend Payment Components
+### Sub-task 10.7: Lemon Squeezy Dashboard Setup
 
-- [ ] **10.7.1**: Create `apps/web/lib/api/payments.ts` API client helpers
-  - `createCheckoutSession(data)` → returns Safepay redirect URL
-  - `pollPaymentStatus(trackerId)` → polls until completed/failed
+- [ ] **10.7.1**: Create "Civic Retainer" subscription product (PKR 700/month) in Lemon Squeezy dashboard
+- [ ] **10.7.2**: Create "Legal Consultation" one-time product (PKR 50,000) in dashboard
+- [ ] **10.7.3**: Create "Facilitation Service" one-time product (PKR 0 base, use custom_price) in dashboard
+- [ ] **10.7.4**: Configure webhook in dashboard pointing to `POST /api/webhooks/lemonsqueezy`
+- [ ] **10.7.5**: Store variant IDs and webhook secret in `.env`
+
+### Sub-task 10.8: Environment Configuration
+
+- [ ] **10.8.1**: Add Lemon Squeezy env vars to `apps/api/.env` and `.env.example`:
+  - `LEMONSQUEEZY_API_KEY`, `LEMONSQUEEZY_STORE_ID`, `LEMONSQUEEZY_WEBHOOK_SECRET`
+  - `LEMONSQUEEZY_SUBSCRIPTION_VARIANT_ID`, `LEMONSQUEEZY_CONSULTATION_VARIANT_ID`, `LEMONSQUEEZY_SERVICE_VARIANT_ID`
+  - `FRONTEND_URL` (for redirect URLs)
+- [ ] **10.8.2**: Add LemonSqueezyConfig to `apps/api/src/config/configuration.ts`
+- [ ] **10.8.3**: Add Lemon Squeezy validation to `apps/api/src/config/validation.schema.ts`
+
+### Sub-task 10.9: Database Migration (Safepay → Lemon Squeezy columns)
+
+- [ ] **10.9.1**: Rename `safepay_subscription_id` → `lemonsqueezy_subscription_id` in user_subscriptions
+- [ ] **10.9.2**: Rename `safepay_customer_id` → `lemonsqueezy_customer_id` in user_subscriptions
+- [ ] **10.9.3**: Add `lemonsqueezy_order_id`, `card_brand`, `card_last_four`, `ends_at` columns to user_subscriptions
+- [ ] **10.9.4**: Rename `safepay_tracker_id` → `lemonsqueezy_checkout_id` in consultation_bookings
+- [ ] **10.9.5**: Rename `safepay_transaction_id` → `lemonsqueezy_order_id` in consultation_bookings
+- [ ] **10.9.6**: Rename `safepay_tracker_id` → `lemonsqueezy_checkout_id` in service_registrations
+- [ ] **10.9.7**: Rename `safepay_transaction_id` → `lemonsqueezy_order_id` in service_registrations
+- [ ] **10.9.8**: Rename `safepay_transaction_id` → `lemonsqueezy_order_id` in payments table
+- [ ] **10.9.9**: Rename `safepay_tracker_id` → `lemonsqueezy_checkout_id` in payments table
+
+### Sub-task 10.10: Frontend Payment Components
+
+- [ ] **10.10.1**: Create `apps/web/lib/api/payments.ts` API client helpers
+  - `createCheckoutSession(data)` → returns Lemon Squeezy checkout URL
   - `getPaymentHistory()` → aggregated payment list
-- [ ] **10.7.2**: Create `apps/web/components/payment/payment-status.tsx`
-  - Loading/polling state while awaiting payment confirmation
+- [ ] **10.10.2**: Create `apps/web/components/payment/payment-status.tsx`
+  - Loading state while awaiting webhook confirmation
   - Success/failure display with next-step navigation
-- [ ] **10.7.3**: Create `/payment/success` and `/payment/cancel` return pages
+- [ ] **10.10.3**: Create `/payment/success` and `/payment/cancel` return pages
   - Parse URL params to determine which flow (consultation/subscription/service) and show appropriate next step
 
 ---
@@ -982,13 +1029,13 @@ Complete database architecture with 20+ tables, Row-Level Security, comprehensiv
 - [ ] **13.1.2**: Write tests for CasesService
 - [ ] **13.1.3**: Write tests for PaymentsService
 - [ ] **13.1.4**: Write tests for DocumentsService
-- [ ] **13.1.5**: Write tests for AppointmentsService
+- [ ] **13.1.5**: Write tests for ConsultationsService
 
 ### Sub-task 13.2: Write Integration Tests
 
 - [ ] **13.2.1**: Test complete auth flow
 - [ ] **13.2.2**: Test case management flow
-- [ ] **13.2.3**: Test appointment booking flow
+- [ ] **13.2.3**: Test consultation booking flow (guest intake → Safepay → Cal.com webhook)
 - [ ] **13.2.4**: Test document upload flow
 - [ ] **13.2.5**: Test invoice payment flow
 
@@ -1039,14 +1086,15 @@ Complete database architecture with 20+ tables, Row-Level Security, comprehensiv
 
 - [ ] Create client works
 - [ ] Create case works (case_number generated)
-- [ ] Create appointment works
+- [ ] Consultation booking works (guest intake → Safepay → Cal.com scheduling)
 - [ ] Upload document works
 - [ ] Create invoice works (invoice_number generated)
 
 ### Phase 4: Client-Facing Features
 
-- [ ] Consultation booking flow works end-to-end (guest → intake → pay → Cal.com → confirmation)
+- [ ] Consultation booking flow works end-to-end (guest → intake → Safepay → Cal.com → confirmation)
 - [ ] Cal.com embed only shows after payment confirmed
+- [ ] Logged-in clients can book consultations from dashboard (pre-filled overlay)
 - [ ] Subscription creation + Safepay recurring checkout works
 - [ ] Complaint submission gated behind active subscription
 - [ ] Complaint status tracking works (submitted → under_review → escalated → resolved)
@@ -1056,13 +1104,22 @@ Complete database architecture with 20+ tables, Row-Level Security, comprehensiv
 
 ### Phase 5: Safepay Integration
 
-- [ ] One-time checkout works (consultation, service fees)
-- [ ] Recurring subscription works (monthly retainer)
-- [ ] Webhook signature verification works
-- [ ] Webhook routes correctly by metadata.type
+- [ ] One-time checkout works (consultation fee PKR 50,000, service registration fees)
+- [ ] Subscription checkout works (Civic Retainer PKR 700/month via Safepay native subscriptions)
+- [ ] Webhook signature verification works (HMAC-SHA512)
+- [ ] Webhook routes correctly by metadata source key
+- [ ] Payment confirmed webhook updates consultation and service registration statuses
+- [ ] Subscription lifecycle webhooks (activated, renewed, cancelled) work
 - [ ] Payment failure handling works
-- [ ] Subscription lifecycle (activate, renew, cancel) works
 - [ ] Idempotency prevents duplicate webhook processing
+
+### Phase 5b: Cal.com Integration
+
+- [ ] Cal.com webhook receives BOOKING_CREATED events
+- [ ] Webhook matches booking by metadata.referenceNumber (or fallback by email)
+- [ ] Meeting link, date, time stored in consultation_bookings
+- [ ] Booking status updated to 'booked' after Cal.com scheduling
+- [ ] Cal.com handles email notifications to both parties (no custom emails needed)
 
 ### Phase 6: RLS & Security
 
@@ -1077,7 +1134,7 @@ Complete database architecture with 20+ tables, Row-Level Security, comprehensiv
 
 - [ ] All unit tests pass
 - [ ] All E2E tests pass
-- [ ] Safepay webhook works for all payment types
+- [ ] Lemon Squeezy webhooks work for all payment types (orders + subscriptions)
 - [ ] Cal.com webhook syncs booking data
 - [ ] Email notifications work (credentials, confirmations)
 
@@ -1102,12 +1159,13 @@ Complete database architecture with 20+ tables, Row-Level Security, comprehensiv
 
 - Phase 1-2 (Environment + Auth): 3-4 days ✅ DONE
 - Phase 3-4 (Users, Clients, Cases): 4-5 days ✅ DONE (HEAD TASKs 5-7)
-- Phase 5-6 (Appointments + Consultation Booking): 4-5 days
-- Phase 7-8 (Documents + Payments/Safepay): 5-6 days
-- Phase 9 (Subscriptions + Complaints): 3-4 days
-- Phase 10 (Service Registrations): 3-4 days
-- Phase 11-12 (Content + Admin): 4-5 days
-- Phase 13 (Testing): 3-4 days
-- Frontend pages for all features: 5-7 days (parallel with backend)
+- Phase 5 (Consultation Booking + Cal.com): 2-3 days ✅ MOSTLY DONE (backend + overlay complete, dashboard pages remaining)
+- Phase 6 (Subscriptions + Complaints): 3-4 days ✅ DONE (HEAD TASK 6)
+- Phase 7 (Documents + Storage): 3-4 days
+- Phase 8 (Payments/Safepay + Invoices): 4-5 days
+- Phase 9 (Service Registrations frontend): 2-3 days
+- Phase 10-11 (Content + Admin): 4-5 days
+- Phase 12 (Testing): 3-4 days
+- Remaining frontend pages: 3-5 days (parallel with backend)
 
 **Total**: 30-40 days

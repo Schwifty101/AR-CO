@@ -380,6 +380,70 @@ export class ConsultationsService {
   }
 
   /**
+   * Get consultations for the authenticated user by email
+   *
+   * @param email - Authenticated user's email
+   * @param pagination - Pagination parameters
+   * @returns Paginated consultations matching the user's email
+   *
+   * @example
+   * ```typescript
+   * const myConsultations = await consultationsService.getMyConsultations(
+   *   'jane@example.com',
+   *   { page: 1, limit: 10 },
+   * );
+   * ```
+   */
+  async getMyConsultations(
+    email: string,
+    pagination: PaginationParams,
+  ): Promise<PaginatedConsultationsResponse> {
+    const adminClient = this.supabaseService.getAdminClient();
+
+    const page = pagination.page ?? 1;
+    const limit = pagination.limit ?? 20;
+    const offset = (page - 1) * limit;
+
+    // Count query
+    const { count, error: countError } = await adminClient
+      .from('consultation_bookings')
+      .select('*', { count: 'exact', head: true })
+      .ilike('email', email);
+
+    if (countError) {
+      this.logger.error(
+        `Failed to count my consultations: ${countError.message}`,
+      );
+      throw new BadRequestException('Failed to fetch consultations');
+    }
+
+    const total = count ?? 0;
+
+    // Data query
+    const { data, error } = await adminClient
+      .from('consultation_bookings')
+      .select('*')
+      .ilike('email', email)
+      .order('created_at', { ascending: false })
+      .range(offset, offset + limit - 1);
+
+    if (error) {
+      this.logger.error(`Failed to fetch my consultations: ${error.message}`);
+      throw new BadRequestException('Failed to fetch consultations');
+    }
+
+    return {
+      data: (data as ConsultationRow[]).map(mapConsultationRow),
+      meta: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
+
+  /**
    * Lists all consultation bookings (staff view)
    *
    * Supports pagination, filtering by booking status, payment status, and practice area.
