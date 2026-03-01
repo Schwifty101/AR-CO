@@ -146,3 +146,16 @@ export enum DocumentType {
   CLIENT_ID = 'client_id',
   OTHER = 'other',
 }
+
+/** Content type discriminator for blog_posts table */
+export enum ContentType {
+  BLOG = 'blog',
+  CASE_STUDY = 'case_study',
+}
+
+/** Blog post publication status — matches DB post_status enum */
+export enum PostStatus {
+  DRAFT = 'draft',
+  PUBLISHED = 'published',
+  ARCHIVED = 'archived',
+}

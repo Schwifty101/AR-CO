@@ -60,6 +60,7 @@ export const ADMIN_NAV: NavItem[] = [
   { label: 'Service Registrations', href: '/admin/service-registrations', icon: ClipboardList },
   { label: 'Documents', href: '/admin/documents', icon: FileText },
   { label: 'Consultations', href: '/admin/consultations', icon: Calendar },
+  { label: 'Content', href: '/admin/content', icon: FileText },
 ];
 
 /** Client navigation items */

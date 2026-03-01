@@ -53,7 +53,8 @@
       "mcp__claude_ai_Notion__notion-fetch",
       "Bash(tail:*)",
       "WebFetch(domain:docs.lemonsqueezy.com)",
-      "WebFetch(domain:cal.com)"
+      "WebFetch(domain:cal.com)",
+      "Bash(echo EXIT_CODE=$?:*)"
     ],
     "env": {
       "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"

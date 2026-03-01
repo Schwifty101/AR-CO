@@ -89,6 +89,13 @@ export interface SafepayConfig {
 }
 
 /**
+ * Google APIs configuration interface
+ */
+export interface GoogleConfig {
+  serviceAccountKey: string;
+}
+
+/**
  * Complete application configuration interface
  */
 export interface Configuration {
@@ -99,6 +106,7 @@ export interface Configuration {
   fileUpload: FileUploadConfig;
   admin: AdminConfig;
   safepay: SafepayConfig;
+  google: GoogleConfig;
 }
 
 /**
@@ -171,5 +179,8 @@ export default (): Configuration => ({
     frontendUrl: process.env.FRONTEND_URL || 'http://localhost:3000',
     v1Secret:
       process.env.SAFEPAY_V1_SECRET || process.env.SAFEPAY_PUBLIC_KEY || '',
+  },
+  google: {
+    serviceAccountKey: process.env.GOOGLE_SERVICE_ACCOUNT_KEY || '',
   },
 });
