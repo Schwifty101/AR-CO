@@ -12,7 +12,7 @@
 
 1. Open a new Claude Code window in the worktree: `/Users/sobanahmad/Work/AR&CO/AR-CO/.worktrees/content-module`
 2. Tell Claude: "Continue executing the content module plan. Read `docs/plans/2026-03-01-content-module-progress.md` for current status, `docs/plans/2026-03-01-content-module-plan.md` for the full plan."
-3. Next batch to execute: **Tasks 4–6**
+3. Next batch to execute: **Tasks 7–9**
 
 ---
 
@@ -42,29 +42,28 @@
 - Verified: `pnpm tsc --noEmit` passes
 - Commit: `585555b`
 
+### Task 4: Shared Package — Content Types ✅
+- Created `packages/shared/src/types/content.types.ts` with all type inferences from Zod schemas
+- Exported 14 types from `packages/shared/src/types/index.ts`
+- Verified: `pnpm tsc --noEmit` passes (shared + api)
+- Commit: `0946435`
+
+### Task 5: Backend — Install googleapis & Google Config ✅
+- Installed `googleapis@^171.4.0` via `pnpm add googleapis --filter api`
+- Added `GoogleConfig` interface to `apps/api/src/config/configuration.ts`
+- Added `GOOGLE_SERVICE_ACCOUNT_KEY` Joi validation to `validation.schema.ts`
+- Verified: `pnpm tsc --noEmit` passes
+- Commit: `ac5cd3b`
+
+### Task 6: Backend — SEO Service ✅
+- Created `apps/api/src/content/seo.service.ts` (155 lines)
+- Methods: `generateSeoFields()`, `generateUniqueSlug()`, `generateMetaTitle()`, `generateMetaDescription()`, `generateReadTime()`
+- Verified: `pnpm tsc --noEmit` passes
+- Commit: `50f7cb0`
+
 ---
 
 ## Remaining Tasks
-
-### Task 4: Shared Package — Content Types ⬜
-- Create `packages/shared/src/types/content.types.ts` with TypeScript type inferences from Zod schemas
-- Export from `packages/shared/src/types/index.ts`
-- Verify: `cd packages/shared && pnpm tsc --noEmit`
-- **Depends on:** Task 3 ✅
-
-### Task 5: Backend — Install googleapis & Google Config ⬜
-- `pnpm add googleapis --filter api`
-- Add `GoogleConfig` interface + factory field to `apps/api/src/config/configuration.ts`
-- Add `GOOGLE_SERVICE_ACCOUNT_KEY` validation to `apps/api/src/config/validation.schema.ts`
-- Add to `.env` / `.env.example`
-- Verify: `cd apps/api && pnpm tsc --noEmit`
-- **Depends on:** None (independent)
-
-### Task 6: Backend — SEO Service ⬜
-- Create `apps/api/src/content/seo.service.ts`
-- Methods: `generateSeoFields()`, `generateUniqueSlug()`, `generateMetaTitle()`, `generateMetaDescription()`, `generateReadTime()`
-- Verify: `cd apps/api && pnpm tsc --noEmit`
-- **Depends on:** None (uses only SupabaseService)
 
 ### Task 7: Backend — Google Docs Service ⬜
 - Create `apps/api/src/content/google-docs.service.ts`
