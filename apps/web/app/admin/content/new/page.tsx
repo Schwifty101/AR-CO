@@ -159,54 +159,129 @@ export default function NewContentPage() {
             </CardHeader>
           </CollapsibleTrigger>
           <CollapsibleContent>
-            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-0">
-              {/* Blog Post Format */}
-              <div className="space-y-3">
-                <h4 className="font-semibold text-sm">Blog Post</h4>
-                <p className="text-xs text-muted-foreground">
-                  Any standard Google Doc. The document title becomes the post title.
-                  All content is converted to HTML automatically.
+            <CardContent className="space-y-6 pt-0">
+              {/* Share Requirement */}
+              <div className="rounded-lg border-2 border-destructive bg-destructive/10 p-6 space-y-3">
+                <h4 className="font-extrabold text-lg text-destructive">Required: Share Your Google Doc</h4>
+                <p className="text-base text-foreground">
+                  Before importing, you <strong>must</strong> share your Google Doc as <strong>Viewer</strong> with the following service account:
                 </p>
-                <div className="rounded-md bg-muted p-3 text-xs font-mono whitespace-pre-wrap">
-{`Document Title (becomes post title)
+                <code className="block rounded-md bg-background border-2 border-destructive/30 px-4 py-3 text-base font-bold select-all tracking-wide">
+                  ar-co-201@ar-co-485513.iam.gserviceaccount.com
+                </code>
+                <p className="text-sm text-muted-foreground">
+                  Open your Google Doc → Click <strong className="text-foreground">Share</strong> → Paste the email above → Set role to <strong className="text-foreground">Viewer</strong> → Click <strong className="text-foreground">Send</strong>
+                </p>
+              </div>
 
-Heading 2 style → <h2>
-Heading 3 style → <h3>
+              {/* SEO Mapping Explanation */}
+              <div className="rounded-lg border border-primary/20 bg-primary/5 p-5 space-y-3">
+                <h4 className="font-bold text-base">How Your Doc Becomes SEO</h4>
+                <ul className="text-sm text-muted-foreground space-y-2 list-disc list-inside">
+                  <li><strong className="text-foreground">Document Title</strong> → Page title, URL slug, meta title (appends &quot;| AR&CO Law&quot;)</li>
+                  <li><strong className="text-foreground">First paragraph</strong> → Meta description (first 155 chars) &amp; excerpt (first 300 chars)</li>
+                  <li><strong className="text-foreground">Word count</strong> → Read time estimate (words ÷ 200)</li>
+                  <li><strong className="text-foreground">All formatting</strong> → Bold, italic, links, lists, tables, and headings preserved as HTML</li>
+                </ul>
+              </div>
 
-Normal paragraph text.
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Blog Post Format */}
+                <div className="space-y-3">
+                  <h4 className="font-bold text-base">Blog Post Template</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Structure your Google Doc following this layout for optimal SEO results.
+                  </p>
+                  <div className="rounded-lg bg-muted p-4 text-sm font-mono whitespace-pre-wrap leading-relaxed">
+{`Your Blog Post Title
+→ Keep under 55 characters
+→ Include your main keyword naturally
 
-Bold, Italic, Underline preserved.
-Links preserved.
-Bullet lists preserved.
-Tables preserved.
---- becomes a horizontal rule.`}
+[Opening paragraph — CRITICAL]
+Summarize the entire post in 2-3
+sentences. The first 155 characters
+become your meta description shown
+in Google search results.
+
+Heading 2: First Section Title
+Use 4-6 Heading 2s per post.
+Include relevant keywords in headings.
+Write 2-4 paragraphs per section.
+
+• Use bullet lists for key points
+• Bold important terms
+• Add links to relevant resources
+
+Heading 2: Second Section Title
+Continue with your content...
+
+Heading 3: Subsection (if needed)
+Use Heading 3 for subsections under
+a Heading 2.
+
+Heading 2: Conclusion / Key Takeaways
+Summarize main points and include
+a call to action for the reader.`}
+                  </div>
+                </div>
+
+                {/* Case Study Format */}
+                <div className="space-y-3">
+                  <h4 className="font-bold text-base">Case Study Template</h4>
+                  <p className="text-sm text-muted-foreground">
+                    The &quot;Key Facts&quot; section with bold labels is auto-extracted as structured metadata.
+                  </p>
+                  <div className="rounded-lg bg-muted p-4 text-sm font-mono whitespace-pre-wrap leading-relaxed">
+{`Case Study Title
+→ Format: "[Outcome] for [Industry]"
+   e.g. "Successful Merger for
+   Textile Manufacturer"
+
+[Opening paragraph — case summary]
+2-3 sentences: who, what problem,
+what result. First 155 chars become
+the meta description.
+
+Heading 2: Key Facts
+Client: Company or Individual Name
+Industry: e.g. Textiles, Banking
+Duration: e.g. 6 months
+Year: 2026
+Practice Area: e.g. Corporate Law
+Tags: Corporate Law, Mergers, SECP
+
+→ Use Bold for each label above
+→ All fields are auto-extracted
+
+Heading 2: Challenge
+What legal problem did the client
+face? Context and stakes.
+
+Heading 2: Our Approach
+What strategy did AR&CO employ?
+Key legal actions taken.
+
+Heading 2: Outcome
+Concrete results and achievements.
+→ This section is auto-extracted
+   as the case result.
+
+Heading 2: Client Testimonial
+(Optional) Direct quote from client.`}
+                  </div>
                 </div>
               </div>
 
-              {/* Case Study Format */}
-              <div className="space-y-3">
-                <h4 className="font-semibold text-sm">Case Study</h4>
-                <p className="text-xs text-muted-foreground">
-                  Include a &quot;Key Facts&quot; section with bold labels. Metadata is
-                  auto-extracted from these fields.
-                </p>
-                <div className="rounded-md bg-muted p-3 text-xs font-mono whitespace-pre-wrap">
-{`Case Study Title
-
-Heading 2: Key Facts
-Bold Client: Company Name
-Bold Duration: 6 months
-Bold Year: 2026
-Bold Tags: Corporate Law, Mergers
-
-Heading 2: Background
-Description of the case...
-
-Heading 2: Approach
-How the firm handled it...
-
-Heading 2: Outcome
-Results achieved for the client.`}
+              {/* SEO Best Practices */}
+              <div className="rounded-lg border bg-muted/50 p-5 space-y-3">
+                <h4 className="font-bold text-base">SEO Best Practices</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-sm text-muted-foreground">
+                  <p>• <strong className="text-foreground">Title:</strong> Under 55 characters with primary keyword</p>
+                  <p>• <strong className="text-foreground">Opening paragraph:</strong> Under 155 chars for meta description</p>
+                  <p>• <strong className="text-foreground">Headings:</strong> Use 4-6 Heading 2s with keywords</p>
+                  <p>• <strong className="text-foreground">Word count:</strong> 800-2000 words (4-10 min read)</p>
+                  <p>• <strong className="text-foreground">Links:</strong> 2-3 internal links, 1-2 external sources</p>
+                  <p>• <strong className="text-foreground">Lists:</strong> Use bullets/numbers for scannability</p>
                 </div>
               </div>
             </CardContent>
