@@ -54,6 +54,20 @@ import {
 } from '@repo/shared';
 import type { DbResult, DbListResult } from '../database/db-result.types';
 
+/** Database row shape for service registration with service join */
+interface ServiceRegistrationWithService {
+  id: string;
+  case_id: string | null;
+  client_profile_id: string | null;
+  service_id: string;
+  assigned_to_id: string | null;
+  status: ServiceRegistrationStatus;
+  full_name: string;
+  description_of_need: string | null;
+  reference_number: string;
+  service: { name: string; practice_area_id: string | null } | null;
+}
+
 /** Database row shape for cases with joined relationships */
 interface CaseRow {
   id: string;
@@ -539,13 +553,13 @@ export class CasesService {
     const client = this.supabaseService.getAdminClient();
 
     // 1. Fetch the registration with service details
-    const { data: registration, error: regError } = await client
+    const { data: registration, error: regError } = (await client
       .from('service_registrations')
       .select(
         '*, service:services!service_registrations_service_id_fkey(name, practice_area_id)',
       )
       .eq('id', registrationId)
-      .single();
+      .single()) as DbResult<ServiceRegistrationWithService>;
 
     if (regError || !registration) {
       throw new NotFoundException(
