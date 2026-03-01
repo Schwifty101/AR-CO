@@ -79,7 +79,15 @@ export const CaseActivityResponseSchema = z.object({
   description: z.string().nullable(),
   createdBy: z.string().uuid(),
   createdByName: z.string(),
-  attachments: z.unknown().nullable(),
+  attachments: z
+    .array(
+      z.object({
+        documentId: z.string().uuid(),
+        name: z.string(),
+        fileType: z.string().nullable(),
+      }),
+    )
+    .nullable(),
   createdAt: z.string(),
 });
 

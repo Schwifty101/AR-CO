@@ -126,3 +126,23 @@ export enum BillingInterval {
   WEEK = 'WEEK',
   MONTH = 'MONTH',
 }
+
+/**
+ * Document type classification
+ *
+ * @example
+ * ```typescript
+ * import { DocumentType } from '@repo/shared';
+ * const type = DocumentType.CONTRACT;
+ * ```
+ */
+export enum DocumentType {
+  CONTRACT = 'contract',
+  AGREEMENT = 'agreement',
+  COURT_FILING = 'court_filing',
+  EVIDENCE = 'evidence',
+  CORRESPONDENCE = 'correspondence',
+  INVOICE_DOCUMENT = 'invoice_document',
+  CLIENT_ID = 'client_id',
+  OTHER = 'other',
+}

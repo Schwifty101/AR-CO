@@ -97,3 +97,11 @@ export {
   PaginatedSubscriptionsResponseSchema,
   SubscriptionDetailSchema,
 } from './subscriptions.schemas';
+
+export {
+  UploadDocumentSchema,
+  UpdateDocumentSchema,
+  DocumentFiltersSchema,
+  DocumentResponseSchema,
+  PaginatedDocumentsResponseSchema,
+} from './documents.schemas';

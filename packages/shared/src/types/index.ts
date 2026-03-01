@@ -96,3 +96,11 @@ export type {
   PaginatedSubscriptionsResponse,
   SubscriptionDetail,
 } from './subscriptions.types';
+
+export type {
+  UploadDocumentData,
+  UpdateDocumentData,
+  DocumentFilters,
+  DocumentResponse,
+  PaginatedDocumentsResponse,
+} from './documents.types';
