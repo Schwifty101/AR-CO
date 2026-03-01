@@ -11,8 +11,9 @@
 ## Resume Instructions
 
 1. Open a new Claude Code window in the worktree: `/Users/sobanahmad/Work/AR&CO/AR-CO/.worktrees/content-module`
-2. Tell Claude: "Continue executing the content module plan. Read `docs/plans/2026-03-01-content-module-progress.md` for current status, `docs/plans/2026-03-01-content-module-plan.md` for the full plan."
-3. Next batch to execute: **Tasks 10–12**
+2. Paste the prompt below
+3. Next batch: **Batch 6 — Task 16 (Final Verification & Cleanup)**
+4. After Task 16: use `superpowers:finishing-a-development-branch` skill to complete the branch
 
 ---
 
