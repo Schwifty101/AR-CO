@@ -157,3 +157,6 @@ business-cards
 
 # Git worktrees
 .worktrees/
+
+# Google Service Account details
+ar-co.json

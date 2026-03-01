@@ -209,6 +209,18 @@ export class DocumentsService {
         filters.serviceRegistrationId,
       );
     }
+    if (filters.search) {
+      countQuery = countQuery.ilike('name', `%${filters.search}%`);
+      dataQuery = dataQuery.ilike('name', `%${filters.search}%`);
+    }
+    if (filters.dateFrom) {
+      countQuery = countQuery.gte('created_at', filters.dateFrom);
+      dataQuery = dataQuery.gte('created_at', filters.dateFrom);
+    }
+    if (filters.dateTo) {
+      countQuery = countQuery.lte('created_at', `${filters.dateTo}T23:59:59.999Z`);
+      dataQuery = dataQuery.lte('created_at', `${filters.dateTo}T23:59:59.999Z`);
+    }
 
     // Count
     const { count, error: countError } = await countQuery;

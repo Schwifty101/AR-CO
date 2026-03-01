@@ -51,7 +51,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
-import { FileText, Upload, Download, X } from 'lucide-react';
+import { FileText, Upload, Download, X, Search } from 'lucide-react';
 import {
   getDocuments,
   uploadDocument,
@@ -124,6 +124,10 @@ export default function ClientDocumentsPage() {
 
   // Filter state
   const [typeFilter, setTypeFilter] = useState<DocumentType | ''>('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [caseFilter, setCaseFilter] = useState('');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
 
   // Upload dialog state
   const [showUpload, setShowUpload] = useState(false);
@@ -144,6 +148,10 @@ export default function ClientDocumentsPage() {
         page: currentPage,
         limit: PAGE_SIZE,
         ...(typeFilter ? { documentType: typeFilter } : {}),
+        ...(searchQuery ? { search: searchQuery } : {}),
+        ...(caseFilter ? { caseId: caseFilter } : {}),
+        ...(dateFrom ? { dateFrom } : {}),
+        ...(dateTo ? { dateTo } : {}),
       });
 
       setDocuments(data.documents);
@@ -155,7 +163,7 @@ export default function ClientDocumentsPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [currentPage, typeFilter]);
+  }, [currentPage, typeFilter, searchQuery, caseFilter, dateFrom, dateTo]);
 
   useEffect(() => {
     if (!authLoading) loadDocuments();
@@ -274,7 +282,21 @@ export default function ClientDocumentsPage() {
           <CardTitle>Filters</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="search-filter">Search</Label>
+              <div className="relative">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="search-filter"
+                  placeholder="Search by name..."
+                  value={searchQuery}
+                  onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
+                  className="pl-8"
+                />
+              </div>
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="type-filter">Document Type</Label>
               <Select
@@ -297,15 +319,65 @@ export default function ClientDocumentsPage() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex items-end">
-              <Button
-                variant="outline"
-                onClick={() => { setTypeFilter(''); setCurrentPage(1); }}
-                className="w-full"
+
+            <div className="space-y-2">
+              <Label htmlFor="case-filter">Case</Label>
+              <Select
+                value={caseFilter || 'all'}
+                onValueChange={(value) => {
+                  setCaseFilter(value === 'all' ? '' : value);
+                  setCurrentPage(1);
+                }}
               >
-                Clear Filters
-              </Button>
+                <SelectTrigger id="case-filter">
+                  <SelectValue placeholder="All cases" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All cases</SelectItem>
+                  {clientCases.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>
+                      {c.caseNumber} — {c.title}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="date-from">From Date</Label>
+              <Input
+                id="date-from"
+                type="date"
+                value={dateFrom}
+                onChange={(e) => { setDateFrom(e.target.value); setCurrentPage(1); }}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="date-to">To Date</Label>
+              <Input
+                id="date-to"
+                type="date"
+                value={dateTo}
+                onChange={(e) => { setDateTo(e.target.value); setCurrentPage(1); }}
+              />
+            </div>
+          </div>
+
+          <div className="mt-4">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setTypeFilter('');
+                setSearchQuery('');
+                setCaseFilter('');
+                setDateFrom('');
+                setDateTo('');
+                setCurrentPage(1);
+              }}
+            >
+              Clear Filters
+            </Button>
           </div>
         </CardContent>
       </Card>

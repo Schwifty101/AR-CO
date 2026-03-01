@@ -49,6 +49,9 @@ export const DocumentFiltersSchema = z.object({
   caseId: z.string().uuid().optional(),
   clientProfileId: z.string().uuid().optional(),
   serviceRegistrationId: z.string().uuid().optional(),
+  search: z.string().max(255).optional(),
+  dateFrom: z.string().optional(),
+  dateTo: z.string().optional(),
 });
 
 /**

@@ -51,7 +51,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { FileText, Download, Trash2 } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { FileText, Download, Trash2, Search } from 'lucide-react';
+import { getCases, type CaseResponse } from '@/lib/api/cases';
 import {
   getDocuments,
   downloadDocument,
@@ -111,6 +113,11 @@ export default function AdminDocumentsPage() {
 
   // Filter state
   const [typeFilter, setTypeFilter] = useState<DocumentType | ''>('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [caseFilter, setCaseFilter] = useState('');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
+  const [cases, setCases] = useState<CaseResponse[]>([]);
 
   // Delete confirmation state
   const [deleteTarget, setDeleteTarget] = useState<DocumentResponse | null>(null);
@@ -125,6 +132,10 @@ export default function AdminDocumentsPage() {
         page: currentPage,
         limit: PAGE_SIZE,
         ...(typeFilter ? { documentType: typeFilter } : {}),
+        ...(searchQuery ? { search: searchQuery } : {}),
+        ...(caseFilter ? { caseId: caseFilter } : {}),
+        ...(dateFrom ? { dateFrom } : {}),
+        ...(dateTo ? { dateTo } : {}),
       });
 
       setDocuments(data.documents);
@@ -136,14 +147,30 @@ export default function AdminDocumentsPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [currentPage, typeFilter]);
+  }, [currentPage, typeFilter, searchQuery, caseFilter, dateFrom, dateTo]);
 
   useEffect(() => {
     loadDocuments();
   }, [loadDocuments]);
 
+  useEffect(() => {
+    async function loadCases() {
+      try {
+        const data = await getCases({ page: 1, limit: 200 });
+        setCases(data.cases);
+      } catch {
+        // Non-critical — case dropdown will be empty
+      }
+    }
+    loadCases();
+  }, []);
+
   const handleClearFilters = () => {
     setTypeFilter('');
+    setSearchQuery('');
+    setCaseFilter('');
+    setDateFrom('');
+    setDateTo('');
     setCurrentPage(1);
   };
 
@@ -185,10 +212,24 @@ export default function AdminDocumentsPage() {
       <Card>
         <CardHeader>
           <CardTitle>Filters</CardTitle>
-          <CardDescription>Filter documents by type</CardDescription>
+          <CardDescription>Filter documents by name, type, case, and date range</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="search-filter">Search</Label>
+              <div className="relative">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="search-filter"
+                  placeholder="Search by name..."
+                  value={searchQuery}
+                  onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
+                  className="pl-8"
+                />
+              </div>
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="type-filter">Document Type</Label>
               <Select
@@ -212,11 +253,54 @@ export default function AdminDocumentsPage() {
               </Select>
             </div>
 
-            <div className="flex items-end">
-              <Button variant="outline" onClick={handleClearFilters} className="w-full">
-                Clear Filters
-              </Button>
+            <div className="space-y-2">
+              <Label htmlFor="case-filter">Case</Label>
+              <Select
+                value={caseFilter || 'all'}
+                onValueChange={(value) => {
+                  setCaseFilter(value === 'all' ? '' : value);
+                  setCurrentPage(1);
+                }}
+              >
+                <SelectTrigger id="case-filter">
+                  <SelectValue placeholder="All cases" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All cases</SelectItem>
+                  {cases.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>
+                      {c.caseNumber} — {c.title}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="date-from">From Date</Label>
+              <Input
+                id="date-from"
+                type="date"
+                value={dateFrom}
+                onChange={(e) => { setDateFrom(e.target.value); setCurrentPage(1); }}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="date-to">To Date</Label>
+              <Input
+                id="date-to"
+                type="date"
+                value={dateTo}
+                onChange={(e) => { setDateTo(e.target.value); setCurrentPage(1); }}
+              />
+            </div>
+          </div>
+
+          <div className="mt-4">
+            <Button variant="outline" onClick={handleClearFilters}>
+              Clear Filters
+            </Button>
           </div>
         </CardContent>
       </Card>
