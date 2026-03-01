@@ -61,10 +61,6 @@
 - Verified: `pnpm tsc --noEmit` passes
 - Commit: `50f7cb0`
 
----
-
-## Remaining Tasks
-
 ### Task 7: Backend — Google Docs Service ✅
 - Created `apps/api/src/content/google-docs.service.ts` (299 lines)
 - Methods: `extractDocId()`, `fetchAndParse()`, `convertToHtml()`, `extractCaseStudyMetadata()`
@@ -86,6 +82,10 @@
 - Required `pnpm build` in shared package to expose new type exports
 - Verified: `pnpm tsc --noEmit` passes
 - Commit: `4996f49`
+
+---
+
+## Remaining Tasks (7 of 16)
 
 ### Task 10: Backend — Content Controllers ⬜
 - Create `apps/api/src/content/blog.controller.ts`
@@ -165,10 +165,11 @@ Task 4 ──► Task 12 (API Client) ──┬── Task 13 (List Page)  │
 
 ## Suggested Batches for Remaining Work
 
-- **Batch 2:** Tasks 4, 5, 6 (Types + googleapis install + SEO service — all independent)
-- **Batch 3:** Tasks 7, 8, 9 (Google Docs + Blog + Testimonials services)
-- **Batch 4:** Tasks 10, 11, 12 (Controllers + Module + API Client)
-- **Batch 5:** Tasks 13, 14, 15 (Frontend pages)
+- ~~**Batch 1:** Tasks 1, 2, 3~~ ✅
+- ~~**Batch 2:** Tasks 4, 5, 6~~ ✅
+- ~~**Batch 3:** Tasks 7, 8, 9~~ ✅
+- **Batch 4 (NEXT):** Tasks 10, 11, 12 (Controllers + Module + API Client — 10 & 12 are independent, 11 depends on 10)
+- **Batch 5:** Tasks 13, 14, 15 (Frontend pages — all depend on 12, but 13/14/15 are independent of each other)
 - **Batch 6:** Task 16 (Final verification)
 
 ## Key Patterns Reference
@@ -187,4 +188,7 @@ Task 4 ──► Task 12 (API Client) ──┬── Task 13 (List Page)  │
 - **Worktree setup:** After `pnpm install`, must run `cd packages/shared && pnpm build` before API type-check works
 - **Configuration:** `SafepayConfig` still exists in `configuration.ts` — plan adds `GoogleConfig` alongside it
 - **No `.env.example`** file exists — add Google env var to `.env` directly with a comment
-- **incrementViewCount fix:** Plan's Task 8 has a broken RPC fallback — use simple read-then-increment approach instead
+- **incrementViewCount fix:** ~~Plan's Task 8 has a broken RPC fallback~~ — DONE, uses simple read-then-increment
+- **Shared package rebuild:** After modifying shared types/schemas, run `cd packages/shared && pnpm build` before API type-check
+- **blog.service.ts is 622 lines** — exceeds 500-line rule; category methods could be extracted later
+- **Agents can't write files:** Bash-type subagents lack Write tool — use general-purpose agents or do file writes directly
