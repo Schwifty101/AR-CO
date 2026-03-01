@@ -13,6 +13,8 @@ export {
   ConsultationPaymentStatus,
   SubscriptionStatus,
   BillingInterval,
+  ContentType,
+  PostStatus,
 } from './enums';
 export * from './schemas';
 export * from './types';

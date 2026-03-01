@@ -126,3 +126,16 @@ export enum BillingInterval {
   WEEK = 'WEEK',
   MONTH = 'MONTH',
 }
+
+/** Content type discriminator for blog_posts table */
+export enum ContentType {
+  BLOG = 'blog',
+  CASE_STUDY = 'case_study',
+}
+
+/** Blog post publication status — matches DB post_status enum */
+export enum PostStatus {
+  DRAFT = 'draft',
+  PUBLISHED = 'published',
+  ARCHIVED = 'archived',
+}
