@@ -5,16 +5,18 @@ import { InertiaPlugin } from 'gsap/InertiaPlugin';
 
 gsap.registerPlugin(InertiaPlugin);
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const throttle = <T extends (...args: any[]) => void>(func: T, limit: number): T => {
+const throttle = <Args extends unknown[]>(
+  func: (...args: Args) => void,
+  limit: number,
+): ((...args: Args) => void) => {
   let lastCall = 0;
-  return function (this: unknown, ...args: Parameters<T>) {
+  return function (this: unknown, ...args: Args) {
     const now = performance.now();
     if (now - lastCall >= limit) {
       lastCall = now;
       func.apply(this, args);
     }
-  } as T;
+  };
 };
 
 interface Dot {

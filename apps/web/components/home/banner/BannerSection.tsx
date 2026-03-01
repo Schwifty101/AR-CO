@@ -26,12 +26,6 @@ const getFramePath = (index: number): string => {
   return `/banner/frames/Sequence_${padded}.webp`
 }
 
-// ─── Row reveal thresholds (scroll progress 0–1) ──────────────────────────────
-
-const ROW1_THRESHOLD = 0.14
-const ROW2_THRESHOLD = 0.42
-const ROW3_THRESHOLD = 0.70
-
 // ─── Props ────────────────────────────────────────────────────────────────────
 
 interface BannerSectionProps {
@@ -118,9 +112,6 @@ export default function BannerSection({ onProgress, onComplete }: BannerSectionP
   useEffect(() => { onCompleteRef.current = onComplete }, [onComplete])
 
   const [loaded, setLoaded] = useState(false)
-  const [row1, setRow1]     = useState(false)
-  const [row2, setRow2]     = useState(false)
-  const [row3, setRow3]     = useState(false)
 
   // ── Preload + pre-decode all frames ────────────────────────────────────────
   // Loading strategy:
@@ -244,9 +235,7 @@ export default function BannerSection({ onProgress, onComplete }: BannerSectionP
           drawImageCover(ctx, img, canvas.width, canvas.height)
         }
 
-        if (p >= ROW1_THRESHOLD) setRow1(true)
-        if (p >= ROW2_THRESHOLD) setRow2(true)
-        if (p >= ROW3_THRESHOLD) setRow3(true)
+        // Row reveal thresholds reserved for future text overlay animations
       },
     })
 

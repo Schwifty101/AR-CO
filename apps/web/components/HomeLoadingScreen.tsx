@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import styles from './HomeLoadingScreen.module.css'
 
@@ -27,21 +27,17 @@ const FADE_DURATION = 0.85 // seconds
 export default function HomeLoadingScreen({ progress, isComplete }: HomeLoadingScreenProps) {
   const [visible, setVisible]                   = useState(true)
   const [displayProgress, setDisplayProgress]   = useState(0)
-  const maxRef                                   = useRef(0)
 
-  // Progress only ever moves forward
-  useEffect(() => {
-    const clamped = Math.max(maxRef.current, progress)
-    maxRef.current = clamped
-    setDisplayProgress(clamped)
-  }, [progress])
+  // Progress only ever moves forward — set state during render (React-approved pattern)
+  const nextProgress = isComplete ? 100 : Math.max(displayProgress, progress)
+  if (nextProgress !== displayProgress) {
+    setDisplayProgress(nextProgress)
+  }
 
-  // Snap to 100 and signal app-loaded at the START of the exit animation
+  // Signal app-loaded at the START of the exit animation
   // so the hero quotes begin falling in simultaneously with our fade-out.
   useEffect(() => {
     if (isComplete) {
-      maxRef.current = 100
-      setDisplayProgress(100)
       document.body.classList.add('app-loaded')
     }
   }, [isComplete])

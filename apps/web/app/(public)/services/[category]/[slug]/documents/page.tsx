@@ -1,6 +1,6 @@
 'use client'
 
-import { use, useState, useRef, useCallback } from 'react'
+import { use, useState, useRef, useCallback, useMemo } from 'react'
 import { notFound, useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -61,7 +61,7 @@ export default function ServiceDocuments({ params }: PageProps) {
 
   const currentDoc = total > 0 ? documents[currentIndex] : null
   const currentDocId = currentDoc?.id ?? ''
-  const currentFiles = uploadedFiles[currentDocId] ?? []
+  const currentFiles = useMemo(() => uploadedFiles[currentDocId] ?? [], [uploadedFiles, currentDocId])
   const isFirst = currentIndex === 0
   const isLast = total > 0 ? currentIndex === total - 1 : true
 
@@ -580,6 +580,7 @@ export default function ServiceDocuments({ params }: PageProps) {
                       >
                         {/* Preview thumbnail or file icon */}
                         {uploaded.previewUrl ? (
+                          /* eslint-disable-next-line @next/next/no-img-element -- blob URL preview, cannot use next/image optimization */
                           <img
                             src={uploaded.previewUrl}
                             alt={uploaded.file.name}
