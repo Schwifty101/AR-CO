@@ -30,6 +30,7 @@ import {
   Scale,
   LogOut,
   Calendar,
+  FileText,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -58,6 +59,7 @@ export const ADMIN_NAV: NavItem[] = [
   { label: 'Subscriptions', href: '/admin/subscriptions', icon: CreditCard },
   { label: 'Service Registrations', href: '/admin/service-registrations', icon: ClipboardList },
   { label: 'Consultations', href: '/admin/consultations', icon: Calendar },
+  { label: 'Content', href: '/admin/content', icon: FileText },
 ];
 
 /** Client navigation items */
