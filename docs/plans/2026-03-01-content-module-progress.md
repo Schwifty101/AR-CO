@@ -12,7 +12,7 @@
 
 1. Open a new Claude Code window in the worktree: `/Users/sobanahmad/Work/AR&CO/AR-CO/.worktrees/content-module`
 2. Tell Claude: "Continue executing the content module plan. Read `docs/plans/2026-03-01-content-module-progress.md` for current status, `docs/plans/2026-03-01-content-module-plan.md` for the full plan."
-3. Next batch to execute: **Tasks 7–9**
+3. Next batch to execute: **Tasks 10–12**
 
 ---
 
@@ -65,25 +65,27 @@
 
 ## Remaining Tasks
 
-### Task 7: Backend — Google Docs Service ⬜
-- Create `apps/api/src/content/google-docs.service.ts`
+### Task 7: Backend — Google Docs Service ✅
+- Created `apps/api/src/content/google-docs.service.ts` (299 lines)
 - Methods: `extractDocId()`, `fetchAndParse()`, `convertToHtml()`, `extractCaseStudyMetadata()`
-- Verify: `cd apps/api && pnpm tsc --noEmit`
-- **Depends on:** Task 5 (googleapis + GoogleConfig)
+- Verified: `pnpm tsc --noEmit` passes
+- Commit: `1f9169b`
 
-### Task 8: Backend — Blog Service ⬜
-- Create `apps/api/src/content/blog.service.ts`
+### Task 8: Backend — Blog Service ✅
+- Created `apps/api/src/content/blog.service.ts` (622 lines)
 - Methods: `createPost()`, `updatePost()`, `syncFromGoogleDoc()`, `deletePost()`, `getPublishedPosts()`, `getPostBySlug()`, `getAllPosts()`, `incrementViewCount()`, category CRUD
-- **NOTE:** Fix broken `incrementViewCount` fallback from plan — use simple read-then-write approach
-- Verify: `cd apps/api && pnpm tsc --noEmit`
-- **Depends on:** Tasks 4, 6, 7
+- Fixed `incrementViewCount` — uses simple read-then-increment (no broken RPC fallback)
+- **Note:** File exceeds 500-line limit; category methods could be extracted in future refactor
+- Verified: `pnpm tsc --noEmit` passes
+- Commit: `f68c21a`
 
-### Task 9: Backend — Testimonials & Legal News Services ⬜
-- Create `apps/api/src/content/testimonials.service.ts`
-- Create `apps/api/src/content/legal-news.service.ts`
-- Follow `complaints.service.ts` patterns
-- Verify: `cd apps/api && pnpm tsc --noEmit`
-- **Depends on:** Task 4 (shared types)
+### Task 9: Backend — Testimonials & Legal News Services ✅
+- Created `apps/api/src/content/testimonials.service.ts` (228 lines)
+- Created `apps/api/src/content/legal-news.service.ts` (118 lines)
+- Followed `complaints.service.ts` patterns (Injectable, Logger, DbResult, mapRow)
+- Required `pnpm build` in shared package to expose new type exports
+- Verified: `pnpm tsc --noEmit` passes
+- Commit: `4996f49`
 
 ### Task 10: Backend — Content Controllers ⬜
 - Create `apps/api/src/content/blog.controller.ts`
