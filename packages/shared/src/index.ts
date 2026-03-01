@@ -14,6 +14,8 @@ export {
   SubscriptionStatus,
   BillingInterval,
   DocumentType,
+  ContentType,
+  PostStatus,
 } from './enums';
 export * from './schemas';
 export * from './types';

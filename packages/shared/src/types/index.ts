@@ -104,3 +104,20 @@ export type {
   DocumentResponse,
   PaginatedDocumentsResponse,
 } from './documents.types';
+
+// Content
+export type {
+  CreateContentPostData,
+  UpdateContentPostData,
+  ContentFilters,
+  ContentPostResponse,
+  PaginatedContentPostsResponse,
+  CreateCategoryData,
+  UpdateCategoryData,
+  CategoryResponse,
+  CreateTestimonialData,
+  TestimonialResponse,
+  PaginatedTestimonialsResponse,
+  CreateLegalNewsData,
+  LegalNewsResponse,
+} from './content.types';

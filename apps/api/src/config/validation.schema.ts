@@ -104,6 +104,15 @@ export const validationSchema = Joi.object({
     'string.base':
       'ADMIN_EMAILS must be a comma-separated string of email addresses',
   }),
+
+  // Google APIs Configuration (Optional for development)
+  GOOGLE_SERVICE_ACCOUNT_KEY: Joi.string().when('NODE_ENV', {
+    is: 'production',
+    then: Joi.required(),
+    otherwise: Joi.optional(),
+  }).messages({
+    'any.required': 'GOOGLE_SERVICE_ACCOUNT_KEY is required in production. Base64-encode the service account JSON key.',
+  }),
 });
 
 /**

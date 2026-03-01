@@ -1,11 +1,12 @@
 'use client'
 
 import { notFound } from 'next/navigation'
-import { use } from 'react'
+import { use, useState, useEffect } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { ArrowLeft, Calendar, Clock, User } from 'lucide-react'
-import { blogPosts } from '@/components/data/blogData'
+import { ArrowLeft, Calendar, Clock, User, Loader2 } from 'lucide-react'
+import { getPostBySlug, incrementView } from '@/lib/api/content'
+import type { ContentPostResponse } from '@repo/shared'
 import styles from './page.module.css'
 
 interface BlogPostPageProps {
@@ -39,11 +40,44 @@ const fadeUp = {
 
 /**
  * Individual blog post page.
- * Finds the post by slug and renders full article content.
+ * Fetches the post by slug from the API and renders full article content.
  */
 export default function BlogPostPage({ params }: BlogPostPageProps) {
   const { slug } = use(params)
-  const post = blogPosts.find((p) => p.slug === slug)
+  const [post, setPost] = useState<ContentPostResponse | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    async function loadPost() {
+      try {
+        const data = await getPostBySlug(slug)
+        setPost(data)
+        // Fire-and-forget view increment
+        incrementView(data.id).catch(() => {})
+      } catch {
+        // Post not found will be handled by the null check below
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    loadPost()
+  }, [slug])
+
+  if (isLoading) {
+    return (
+      <div className={styles.page}>
+        <div className={styles.backRow}>
+          <Link href="/blogs" className={styles.backLink}>
+            <ArrowLeft className={styles.backIcon} />
+            <span>All Articles</span>
+          </Link>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '6rem 0' }}>
+          <Loader2 style={{ width: 32, height: 32, animation: 'spin 1s linear infinite' }} />
+        </div>
+      </div>
+    )
+  }
 
   if (!post) {
     notFound()
@@ -67,7 +101,7 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
         variants={stagger}
       >
         <motion.span className={styles.category} variants={fadeUp}>
-          {post.category}
+          {post.categoryName || 'General'}
         </motion.span>
 
         <motion.h1 className={styles.title} variants={fadeUp}>
@@ -77,18 +111,22 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
         <motion.div className={styles.meta} variants={fadeUp}>
           <span className={styles.metaItem}>
             <User className={styles.metaIcon} />
-            {post.author}
+            {post.authorName || 'AR&CO'}
           </span>
           <span className={styles.metaDivider} />
           <span className={styles.metaItem}>
             <Calendar className={styles.metaIcon} />
-            {formatDate(post.date)}
+            {formatDate(post.publishedAt || post.createdAt)}
           </span>
-          <span className={styles.metaDivider} />
-          <span className={styles.metaItem}>
-            <Clock className={styles.metaIcon} />
-            {post.readTime}
-          </span>
+          {post.readTime && (
+            <>
+              <span className={styles.metaDivider} />
+              <span className={styles.metaItem}>
+                <Clock className={styles.metaIcon} />
+                {post.readTime}
+              </span>
+            </>
+          )}
         </motion.div>
 
         {/* Gold horizontal rule */}
@@ -103,15 +141,15 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
         viewport={{ once: true, amount: 0.05 }}
         variants={stagger}
       >
-        {post.content && post.content.length > 0 ? (
-          post.content.map((paragraph, idx) => (
-            <motion.p key={idx} className={styles.paragraph} variants={fadeUp}>
-              {paragraph}
-            </motion.p>
-          ))
+        {post.content ? (
+          <motion.div
+            className={styles.paragraph}
+            variants={fadeUp}
+            dangerouslySetInnerHTML={{ __html: post.content }}
+          />
         ) : (
           <motion.p className={styles.paragraph} variants={fadeUp}>
-            {post.excerpt}
+            {post.excerpt || ''}
           </motion.p>
         )}
       </motion.article>
@@ -122,8 +160,8 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
         <div className={styles.footerContent}>
           <div className={styles.authorCard}>
             <span className={styles.authorCardLabel}>Written by</span>
-            <span className={styles.authorCardName}>{post.author}</span>
-            <span className={styles.authorCardRole}>{post.authorRole}</span>
+            <span className={styles.authorCardName}>{post.authorName || 'AR&CO'}</span>
+            <span className={styles.authorCardRole}>Attorney at AR&amp;CO</span>
           </div>
           <Link href="/blogs" className={styles.footerLink}>
             <ArrowLeft className={styles.footerLinkIcon} />

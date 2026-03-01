@@ -1,13 +1,12 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
-import { ArrowUpRight, Clock, Calendar, ChevronRight, Scale, Filter } from 'lucide-react'
-import { blogPosts, blogCategories } from '@/components/data/blogData'
-import type { BlogPost } from '@/components/data/blogData'
-import { caseStudies, caseStudyAreas } from '@/components/data/caseStudyData'
-import type { CaseStudy } from '@/components/data/caseStudyData'
+import { ArrowUpRight, Clock, Calendar, ChevronRight, Scale, Filter, Loader2 } from 'lucide-react'
+import { getPublishedPosts, getCategories } from '@/lib/api/content'
+import { ContentType } from '@repo/shared'
+import type { ContentPostResponse, CategoryResponse } from '@repo/shared'
 import styles from './page.module.css'
 
 /**
@@ -43,24 +42,64 @@ export default function BlogsPage() {
   const [blogFilter, setBlogFilter] = useState<string>('All')
   const [caseFilter, setCaseFilter] = useState<string>('All')
 
+  // API-driven state
+  const [blogPosts, setBlogPosts] = useState<ContentPostResponse[]>([])
+  const [caseStudies, setCaseStudies] = useState<ContentPostResponse[]>([])
+  const [categories, setCategories] = useState<CategoryResponse[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const [blogsRes, casesRes, catsRes] = await Promise.all([
+          getPublishedPosts({ contentType: ContentType.BLOG, limit: 50 }),
+          getPublishedPosts({ contentType: ContentType.CASE_STUDY, limit: 50 }),
+          getCategories(),
+        ])
+        setBlogPosts(blogsRes.posts)
+        setCaseStudies(casesRes.posts)
+        setCategories(catsRes)
+      } catch (err) {
+        console.error('Failed to load content:', err)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    loadData()
+  }, [])
+
+  // Derive category name lists for filter pills
+  const blogCategoryNames = useMemo(
+    () => categories.map((c) => c.name),
+    [categories],
+  )
+
+  const caseStudyAreas = useMemo(
+    () => Array.from(new Set(caseStudies.map((c) => c.categoryName || 'General'))),
+    [caseStudies],
+  )
+
   // Filtered data
   const filteredBlogs = useMemo(
     () =>
       blogFilter === 'All'
         ? blogPosts
-        : blogPosts.filter((p) => p.category === blogFilter),
-    [blogFilter]
+        : blogPosts.filter((p) => p.categoryName === blogFilter),
+    [blogFilter, blogPosts],
   )
 
   const filteredCases = useMemo(
     () =>
       caseFilter === 'All'
         ? caseStudies
-        : caseStudies.filter((c) => c.practiceArea === caseFilter),
-    [caseFilter]
+        : caseStudies.filter((c) => c.categoryName === caseFilter),
+    [caseFilter, caseStudies],
   )
 
-  const featuredPosts = blogPosts.filter((p) => p.featured)
+  const featuredPosts = useMemo(
+    () => blogPosts.filter((p) => p.isFeatured),
+    [blogPosts],
+  )
 
   return (
     <div className={styles.page}>
@@ -124,26 +163,32 @@ export default function BlogsPage() {
           Content Area
           ═══════════════════════════════════════════ */}
       <section className={styles.content}>
-        <AnimatePresence mode="wait">
-          {activeTab === 'insights' ? (
-            <InsightsSection
-              key="insights"
-              featured={featuredPosts}
-              posts={filteredBlogs}
-              categories={blogCategories}
-              activeFilter={blogFilter}
-              onFilter={setBlogFilter}
-            />
-          ) : (
-            <CaseStudiesSection
-              key="case-studies"
-              studies={filteredCases}
-              areas={caseStudyAreas}
-              activeFilter={caseFilter}
-              onFilter={setCaseFilter}
-            />
-          )}
-        </AnimatePresence>
+        {isLoading ? (
+          <div style={{ display: 'flex', justifyContent: 'center', padding: '4rem 0' }}>
+            <Loader2 style={{ width: 32, height: 32, animation: 'spin 1s linear infinite' }} />
+          </div>
+        ) : (
+          <AnimatePresence mode="wait">
+            {activeTab === 'insights' ? (
+              <InsightsSection
+                key="insights"
+                featured={featuredPosts}
+                posts={filteredBlogs}
+                categories={blogCategoryNames}
+                activeFilter={blogFilter}
+                onFilter={setBlogFilter}
+              />
+            ) : (
+              <CaseStudiesSection
+                key="case-studies"
+                studies={filteredCases}
+                areas={caseStudyAreas}
+                activeFilter={caseFilter}
+                onFilter={setCaseFilter}
+              />
+            )}
+          </AnimatePresence>
+        )}
       </section>
     </div>
   )
@@ -154,8 +199,8 @@ export default function BlogsPage() {
    ═══════════════════════════════════════════════════ */
 
 interface InsightsProps {
-  featured: BlogPost[]
-  posts: BlogPost[]
+  featured: ContentPostResponse[]
+  posts: ContentPostResponse[]
   categories: string[]
   activeFilter: string
   onFilter: (cat: string) => void
@@ -202,24 +247,25 @@ function InsightsSection({
                   <div className={styles.featuredBand} />
 
                   <div className={styles.featuredBody}>
-                    <span className={styles.postCategory}>{post.category}</span>
+                    <span className={styles.postCategory}>{post.categoryName || 'Uncategorized'}</span>
                     <h3 className={styles.featuredTitle}>{post.title}</h3>
-                    <p className={styles.featuredExcerpt}>{post.excerpt}</p>
+                    <p className={styles.featuredExcerpt}>{post.excerpt || ''}</p>
 
                     <div className={styles.postMeta}>
                       <span className={styles.metaItem}>
                         <Calendar className={styles.metaIcon} />
-                        {formatDate(post.date)}
+                        {formatDate(post.publishedAt || post.createdAt)}
                       </span>
-                      <span className={styles.metaItem}>
-                        <Clock className={styles.metaIcon} />
-                        {post.readTime}
-                      </span>
+                      {post.readTime && (
+                        <span className={styles.metaItem}>
+                          <Clock className={styles.metaIcon} />
+                          {post.readTime}
+                        </span>
+                      )}
                     </div>
 
                     <div className={styles.postAuthorRow}>
-                      <span className={styles.authorName}>{post.author}</span>
-                      <span className={styles.authorRole}>{post.authorRole}</span>
+                      <span className={styles.authorName}>{post.authorName || 'AR&CO'}</span>
                     </div>
                   </div>
 
@@ -272,20 +318,22 @@ function InsightsSection({
               variants={fadeUp}
             >
               <span className={styles.blogRowDate}>
-                {formatDate(post.date)}
+                {formatDate(post.publishedAt || post.createdAt)}
               </span>
 
               <div className={styles.blogRowBody}>
-                <span className={styles.postCategory}>{post.category}</span>
+                <span className={styles.postCategory}>{post.categoryName || 'Uncategorized'}</span>
                 <h3 className={styles.blogRowTitle}>{post.title}</h3>
-                <p className={styles.blogRowExcerpt}>{post.excerpt}</p>
+                <p className={styles.blogRowExcerpt}>{post.excerpt || ''}</p>
                 <div className={styles.postMeta}>
-                  <span className={styles.metaItem}>
-                    <Clock className={styles.metaIcon} />
-                    {post.readTime}
-                  </span>
+                  {post.readTime && (
+                    <span className={styles.metaItem}>
+                      <Clock className={styles.metaIcon} />
+                      {post.readTime}
+                    </span>
+                  )}
                   <span className={styles.authorNameSmall}>
-                    {post.author}
+                    {post.authorName || 'AR&CO'}
                   </span>
                 </div>
               </div>
@@ -305,7 +353,7 @@ function InsightsSection({
    Case Studies Section
    ═══════════════════════════════════════════════════ */
 interface CaseStudiesProps {
-  studies: CaseStudy[]
+  studies: ContentPostResponse[]
   areas: string[]
   activeFilter: string
   onFilter: (area: string) => void
@@ -377,11 +425,13 @@ function CaseStudiesSection({
                   }
                 }}
               >
-                <span className={styles.caseYear}>{study.year}</span>
+                <span className={styles.caseYear}>
+                  {(study.metadata?.year as string) || new Date(study.publishedAt || study.createdAt).getFullYear().toString()}
+                </span>
 
                 <div className={styles.caseTitleGroup}>
                   <h3 className={styles.caseTitle}>{study.title}</h3>
-                  <span className={styles.caseArea}>{study.practiceArea}</span>
+                  <span className={styles.caseArea}>{study.categoryName || 'General'}</span>
                 </div>
 
                 <span className={`${styles.caseToggle} ${isOpen ? styles.caseToggleOpen : ''}`}>
@@ -407,15 +457,21 @@ function CaseStudiesSection({
                       <div className={styles.caseMetaRow}>
                         <div className={styles.caseMeta}>
                           <span className={styles.caseMetaLabel}>Client</span>
-                          <span className={styles.caseMetaValue}>{study.client}</span>
+                          <span className={styles.caseMetaValue}>
+                            {(study.metadata?.clientName as string) || 'Confidential'}
+                          </span>
                         </div>
                         <div className={styles.caseMeta}>
                           <span className={styles.caseMetaLabel}>Duration</span>
-                          <span className={styles.caseMetaValue}>{study.duration}</span>
+                          <span className={styles.caseMetaValue}>
+                            {(study.metadata?.duration as string) || 'N/A'}
+                          </span>
                         </div>
                         <div className={styles.caseMeta}>
                           <span className={styles.caseMetaLabel}>Practice Area</span>
-                          <span className={styles.caseMetaValue}>{study.practiceArea}</span>
+                          <span className={styles.caseMetaValue}>
+                            {study.categoryName || 'General'}
+                          </span>
                         </div>
                       </div>
 
@@ -423,20 +479,24 @@ function CaseStudiesSection({
                       <div className={styles.caseCols}>
                         <div>
                           <h4 className={styles.caseSubhead}>Background</h4>
-                          <p className={styles.caseParagraph}>{study.summary}</p>
+                          <p className={styles.caseParagraph}>{study.excerpt || ''}</p>
                         </div>
                         <div>
                           <h4 className={styles.caseSubhead}>Outcome</h4>
-                          <p className={styles.caseParagraph}>{study.outcome}</p>
+                          <p className={styles.caseParagraph}>
+                            {(study.metadata?.outcome as string) || ''}
+                          </p>
                         </div>
                       </div>
 
                       {/* Tags */}
-                      <div className={styles.caseTags}>
-                        {study.tags.map((tag) => (
-                          <span key={tag} className={styles.caseTag}>{tag}</span>
-                        ))}
-                      </div>
+                      {Array.isArray(study.metadata?.tags) && (study.metadata.tags as string[]).length > 0 && (
+                        <div className={styles.caseTags}>
+                          {(study.metadata.tags as string[]).map((tag) => (
+                            <span key={tag} className={styles.caseTag}>{tag}</span>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </motion.div>
                 )}

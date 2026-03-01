@@ -17,6 +17,7 @@ import { ConsultationsModule } from './consultations/consultations.module';
 import { SubscriptionsModule } from './subscriptions/subscriptions.module';
 import { StorageModule } from './storage/storage.module';
 import { DocumentsModule } from './documents/documents.module';
+import { ContentModule } from './content/content.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { DocumentsModule } from './documents/documents.module';
     ConsultationsModule,
     SubscriptionsModule,
     DocumentsModule,
+    ContentModule,
   ],
   controllers: [AppController],
   providers: [AppService],
