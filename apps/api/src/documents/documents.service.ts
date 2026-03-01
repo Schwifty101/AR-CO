@@ -218,8 +218,14 @@ export class DocumentsService {
       dataQuery = dataQuery.gte('created_at', filters.dateFrom);
     }
     if (filters.dateTo) {
-      countQuery = countQuery.lte('created_at', `${filters.dateTo}T23:59:59.999Z`);
-      dataQuery = dataQuery.lte('created_at', `${filters.dateTo}T23:59:59.999Z`);
+      countQuery = countQuery.lte(
+        'created_at',
+        `${filters.dateTo}T23:59:59.999Z`,
+      );
+      dataQuery = dataQuery.lte(
+        'created_at',
+        `${filters.dateTo}T23:59:59.999Z`,
+      );
     }
 
     // Count

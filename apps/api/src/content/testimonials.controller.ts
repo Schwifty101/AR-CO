@@ -58,9 +58,7 @@ import {
  */
 @Controller('testimonials')
 export class TestimonialsController {
-  constructor(
-    private readonly testimonialsService: TestimonialsService,
-  ) {}
+  constructor(private readonly testimonialsService: TestimonialsService) {}
 
   /**
    * Get approved testimonials with pagination

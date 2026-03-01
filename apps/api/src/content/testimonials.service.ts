@@ -189,7 +189,10 @@ export class TestimonialsService {
       .single()) as DbResult<TestimonialRow>;
 
     if (error || !data) {
-      this.logger.error(`Failed to approve testimonial ${testimonialId}`, error);
+      this.logger.error(
+        `Failed to approve testimonial ${testimonialId}`,
+        error,
+      );
       throw new NotFoundException('Testimonial not found');
     }
 

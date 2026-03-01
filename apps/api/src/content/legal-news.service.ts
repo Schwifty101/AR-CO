@@ -4,10 +4,7 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import { SupabaseService } from '../database/supabase.service';
-import {
-  type CreateLegalNewsData,
-  type LegalNewsResponse,
-} from '@repo/shared';
+import { type CreateLegalNewsData, type LegalNewsResponse } from '@repo/shared';
 import type { DbResult, DbListResult } from '../database/db-result.types';
 
 /** Database row shape for the legal_news table */
