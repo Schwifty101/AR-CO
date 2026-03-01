@@ -49,10 +49,20 @@ import {
   TabsList,
   TabsTrigger,
 } from '@/components/ui/tabs';
-import { FileText, Plus, Trash2 } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { FileText, Plus, Trash2, Settings2, Loader2 } from 'lucide-react';
 import {
   getAdminPosts,
   getCategories,
+  createCategory,
+  deleteCategory,
   deletePost,
 } from '@/lib/api/content';
 import type {
@@ -106,18 +116,60 @@ export default function AdminContentPage() {
   const [categoryFilter, setCategoryFilter] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
 
+  // Category management states
+  const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [isCreatingCategory, setIsCreatingCategory] = useState(false);
+  const [deletingCategoryId, setDeletingCategoryId] = useState<string | null>(null);
+
+  /** Load categories from the API */
+  const loadCategories = useCallback(async () => {
+    try {
+      const data = await getCategories();
+      setCategories(data);
+    } catch {
+      // Categories are non-critical; swallow quietly
+    }
+  }, []);
+
   // Load categories once on mount
   useEffect(() => {
-    async function loadCategories() {
-      try {
-        const data = await getCategories();
-        setCategories(data);
-      } catch {
-        // Categories are non-critical; swallow quietly
-      }
-    }
     loadCategories();
-  }, []);
+  }, [loadCategories]);
+
+  /** Create a new category */
+  const handleCreateCategory = async () => {
+    if (!newCategoryName.trim()) return;
+    try {
+      setIsCreatingCategory(true);
+      await createCategory({ name: newCategoryName.trim() });
+      setNewCategoryName('');
+      toast.success('Category created');
+      await loadCategories();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to create category');
+    } finally {
+      setIsCreatingCategory(false);
+    }
+  };
+
+  /** Delete a category after confirmation */
+  const handleDeleteCategory = async (categoryId: string, categoryName: string) => {
+    const confirmed = window.confirm(
+      `Delete category "${categoryName}"? Posts in this category will become uncategorized.`,
+    );
+    if (!confirmed) return;
+    try {
+      setDeletingCategoryId(categoryId);
+      await deleteCategory(categoryId);
+      toast.success('Category deleted');
+      await loadCategories();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to delete category');
+    } finally {
+      setDeletingCategoryId(null);
+    }
+  };
 
   /** Fetch admin posts with current filters and pagination */
   const loadPosts = useCallback(async () => {
@@ -212,12 +264,100 @@ export default function AdminContentPage() {
             Manage blog posts and case studies
           </p>
         </div>
-        <Link href="/admin/content/new">
-          <Button>
-            <Plus className="h-4 w-4 mr-2" />
-            New Post
-          </Button>
-        </Link>
+        <div className="flex items-center gap-2">
+          <Dialog open={isCategoryDialogOpen} onOpenChange={setIsCategoryDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline">
+                <Settings2 className="h-4 w-4 mr-2" />
+                Categories
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Manage Categories</DialogTitle>
+                <DialogDescription>
+                  Create and manage content categories for blog posts and case studies.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 pt-2">
+                {/* Create new category */}
+                <div className="flex items-end gap-2">
+                  <div className="flex-1 space-y-2">
+                    <Label htmlFor="newCategoryName">New Category</Label>
+                    <Input
+                      id="newCategoryName"
+                      placeholder="e.g. Corporate Law"
+                      value={newCategoryName}
+                      onChange={(e) => setNewCategoryName(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleCreateCategory();
+                        }
+                      }}
+                    />
+                  </div>
+                  <Button
+                    onClick={handleCreateCategory}
+                    disabled={isCreatingCategory || !newCategoryName.trim()}
+                    size="sm"
+                  >
+                    {isCreatingCategory ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Plus className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+
+                {/* Existing categories */}
+                <div className="space-y-1">
+                  <Label className="text-muted-foreground text-xs">
+                    Existing Categories ({categories.length})
+                  </Label>
+                  {categories.length === 0 ? (
+                    <p className="text-sm text-muted-foreground py-4 text-center">
+                      No categories yet. Create one above.
+                    </p>
+                  ) : (
+                    <div className="rounded-md border divide-y max-h-[300px] overflow-y-auto">
+                      {categories.map((cat) => (
+                        <div
+                          key={cat.id}
+                          className="flex items-center justify-between px-3 py-2"
+                        >
+                          <div>
+                            <p className="text-sm font-medium">{cat.name}</p>
+                            <p className="text-xs text-muted-foreground">/{cat.slug}</p>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 text-destructive hover:text-destructive"
+                            disabled={deletingCategoryId === cat.id}
+                            onClick={() => handleDeleteCategory(cat.id, cat.name)}
+                          >
+                            {deletingCategoryId === cat.id ? (
+                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            ) : (
+                              <Trash2 className="h-3.5 w-3.5" />
+                            )}
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+          <Link href="/admin/content/new">
+            <Button>
+              <Plus className="h-4 w-4 mr-2" />
+              New Post
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {/* Content type tabs */}
