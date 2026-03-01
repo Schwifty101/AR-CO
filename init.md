@@ -4,11 +4,17 @@
 
 This document provides a granular 3-level task breakdown for transforming the AR-CO NestJS backend from minimal setup to a full-featured law firm management platform.
 
-**Current State:**
+**Current State (as of 2026-03-01):**
 
-- NestJS 11.0.1 at `apps/api` with only `GET /api/hello` endpoint
-- Supabase project configured in `.mcp.json` (project_ref: pxqwdshlpuwxufudqude)
-- NO database client, NO environment variables, NO authentication, NO business logic
+- HEAD TASKs 1-8 complete (Environment, Schema, DB Service, Auth, Users, Clients/Subscriptions/Complaints/Service Registrations, Cases, Consultation Booking)
+- Sub-task 12.9 complete (Service Registrations → Cases conversion flow)
+- Sub-tasks 12.8.4-12.8.5 complete (Admin service registrations list + detail pages)
+- **Safepay payment code is LIVE but being replaced by Lemon Squeezy** — migration in progress
+- HEAD TASKs 9-13 remain (Documents, Payments/Lemon Squeezy, Content, Admin, Testing)
+
+**Payment Provider:** [Lemon Squeezy](https://lemonsqueezy.com) (Merchant of Record) — replacing Safepay
+**SDK:** `@lemonsqueezy/lemonsqueezy.js`
+**Docs:** `docs/lemonsqueezy/` (API reference, SDK guide, webhooks, checkout, subscriptions, integration plan)
 
 **Goal:**
 Complete database architecture with 20+ tables, Row-Level Security, comprehensive API endpoints for all features.
@@ -410,11 +416,11 @@ Complete database architecture with 20+ tables, Row-Level Security, comprehensiv
   - Creates subscriptions record with status = 'pending'
   - Returns Lemon Squeezy checkout URL
 - [x] **6.5.6**: Implement `getMySubscription(userId)` method
-- [ ] **6.5.7**: Implement `handleSubscriptionCreated(webhookPayload)` method (webhook) — _deferred to HEAD TASK 10_
+- [ ] **6.5.7**: Implement `handleSubscriptionCreated(webhookPayload)` method (webhook) — _deferred to HEAD TASK 10D_
   - Sets status = 'active', stores lemonsqueezy_subscription_id, sets billing cycle dates
-- [ ] **6.5.8**: Implement `handleSubscriptionPaymentSuccess(webhookPayload)` method (webhook) — _deferred to HEAD TASK 10_
+- [ ] **6.5.8**: Implement `handleSubscriptionPaymentSuccess(webhookPayload)` method (webhook) — _deferred to HEAD TASK 10D_
   - Extends current_period_end to next renews_at
-- [ ] **6.5.9**: Implement `handleSubscriptionCancelled(webhookPayload)` / `handleSubscriptionExpired(webhookPayload)` methods — _deferred to HEAD TASK 10_
+- [ ] **6.5.9**: Implement `handleSubscriptionCancelled(webhookPayload)` / `handleSubscriptionExpired(webhookPayload)` methods — _deferred to HEAD TASK 10D_
 - [x] **6.5.10**: Implement `cancelSubscription(userId)` method
 - [x] **6.5.11**: Implement `isSubscriptionActive(userId)` method (used by complaints guard)
 - [x] **6.5.12**: Create `apps/api/src/subscriptions/subscriptions.controller.ts`
@@ -471,10 +477,10 @@ Complete database architecture with 20+ tables, Row-Level Security, comprehensiv
   - Validates service exists and is active, creates record with status = 'pending_payment'
 - [x] **6.7.8**: Implement `initiatePayment(registrationId)` method
   - Fetches service.registration_fee, calls LemonSqueezyService.createOneTimeCheckout()
-- [ ] **6.7.9**: Implement `handlePaymentConfirmed(registrationId)` method (webhook) — _deferred to HEAD TASK 10_
+- [ ] **6.7.9**: Implement `handlePaymentConfirmed(registrationId)` method (webhook) — _deferred to HEAD TASK 10F_
   - Updates payment_status = 'paid', status = 'paid'
   - Calls createUserAccount() to auto-create user
-- [ ] **6.7.10**: Implement `createUserAccount(registration)` method — _deferred to HEAD TASK 10_
+- [ ] **6.7.10**: Implement `createUserAccount(registration)` method — _deferred to HEAD TASK 10F_
   - Check if user exists by email → link to existing account if yes
   - If no: create Supabase auth user (auto-generated password) + user_profile (client) + client_profile
   - Link service_registration.client_profile_id
@@ -514,12 +520,13 @@ Complete database architecture with 20+ tables, Row-Level Security, comprehensiv
 
 ### Sub-task 6.9: Frontend - Service Registration Pages
 
-- [ ] **6.9.1**: Create `/services` page - List all services with fees and "Register" buttons — _deferred_
-- [ ] **6.9.2**: Create `/services/:slug/register` multi-step form — _deferred_
-  - Step 1: Client details (full name, email, phone, CNIC, address)
-  - Step 2: Service auto-selected from URL, description of need textarea
-  - Step 3: Document upload (drag & drop, multiple files)
-  - Step 4: Review + Pay (shows fee from services table, "Pay" → Lemon Squeezy checkout)
+- [x] **6.9.1**: Create `/services/[category]/[slug]` page - Service detail with overview, process, documents, FAQ tabs and "Register" CTA
+  - Implemented at `app/(public)/services/[category]/[slug]/page.tsx` with layout + sub-pages
+- [x] **6.9.2**: Create `/services/[category]/[slug]/form` multi-step form
+  - Implemented at `app/(public)/services/[category]/[slug]/form/page.tsx`
+  - Dynamic form fields per service category via `categoryDataMapper`
+  - Country selector (countries-list), phone validation (react-phone-number-input), animated steps (framer-motion)
+  - Dependencies added: `countries-list`, `react-phone-number-input`
 - [ ] **6.9.3**: Create registration success page ("Account created - check email for credentials") — _deferred_
 - [x] **6.9.4**: Create `/client/services` page - List my service registrations + status
 - [x] **6.9.5**: Create `/client/services/:id` page - Registration detail + status timeline + docs
@@ -758,199 +765,574 @@ Complete database architecture with 20+ tables, Row-Level Security, comprehensiv
 
 ---
 
-## HEAD TASK 10: Payments & Lemon Squeezy Integration Module
+## HEAD TASK 10A: Safepay Removal & Lemon Squeezy Preparation
 
-**Payment Provider:** [Lemon Squeezy](https://lemonsqueezy.com) (Merchant of Record)
-**SDK:** `@lemonsqueezy/lemonsqueezy.js`
-**Docs:** `docs/lemonsqueezy/` (API reference, SDK guide, webhooks, checkout, subscriptions, integration plan)
+> **Design Doc:** `docs/plans/2026-03-01-safepay-removal-lemonsqueezy-prep-design.md`
+> **Prerequisite for:** HEAD TASKs 10B-10H
 
-### Sub-task 10.1: Create Invoices Service
+**Goal:** Remove all Safepay code, migrate DB columns to `lemonsqueezy_*`, create stub LemonSqueezyService, and add "Available Soon" badges on frontend payment CTAs.
 
-- [ ] **10.1.1**: Create `apps/api/src/payments/invoices.service.ts`
-- [ ] **10.1.2**: Implement `createInvoice(createDto)` method
-- [ ] **10.1.3**: Implement `getInvoices(paginationDto, filters, currentUser)` method
-- [ ] **10.1.4**: Implement `getInvoiceById(invoiceId, currentUser)` method
-- [ ] **10.1.5**: Implement `updateInvoice(invoiceId, updateDto)` method
-- [ ] **10.1.6**: Implement `sendInvoice(invoiceId)` method
-- [ ] **10.1.7**: Implement `addInvoiceItem(invoiceId, itemDto)` method
-- [ ] **10.1.8**: Implement `calculateInvoiceTotals(invoiceId)` method
+### Sub-task 10A.1: Database Migration (Safepay → Lemon Squeezy columns)
 
-### Sub-task 10.2: Create Lemon Squeezy Integration Service (Shared Layer)
+Single atomic Supabase migration:
 
-**Context:** Lemon Squeezy handles 3 payment types: consultation fee (PKR 50,000 one-time), monthly retainer (PKR 700/month recurring), service registration fee (variable one-time). Single webhook endpoint routes by event_name + custom_data.payment_type.
+- [ ] **10A.1.1**: Rename `consultation_bookings` columns:
+  - `safepay_tracker_token` → `lemonsqueezy_checkout_id`
+  - `safepay_transaction_ref` → `lemonsqueezy_order_id`
+- [ ] **10A.1.2**: Rename `service_registrations` columns:
+  - `safepay_tracker_id` → `lemonsqueezy_checkout_id`
+  - `safepay_transaction_id` → `lemonsqueezy_order_id`
+- [ ] **10A.1.3**: Rename `payments` columns:
+  - `safepay_transaction_id` → `lemonsqueezy_order_id`
+  - `safepay_tracker_id` → `lemonsqueezy_checkout_id`
+- [ ] **10A.1.4**: Rename `user_subscriptions` columns:
+  - `safepay_subscription_id` → `lemonsqueezy_subscription_id`
+  - `safepay_customer_id` → `lemonsqueezy_customer_id`
+  - Add: `lemonsqueezy_order_id` (text), `card_brand` (text), `card_last_four` (varchar(4)), `ends_at` (timestamptz)
+- [ ] **10A.1.5**: Update `subscription_plans`:
+  - Drop `safepay_plan_token` column (Lemon Squeezy uses env-based variant IDs)
+- [ ] **10A.1.6**: Rename `subscription_events`:
+  - `safepay_event_data` → `webhook_event_data`
 
-**Key difference from Safepay:** Lemon Squeezy is a Merchant of Record — handles tax, compliance, and payment processing. Uses a single `createCheckout()` call (no two-step tracker flow). Custom data is flexible (any key-value pairs). Prices are in cents (PKR 700 = 70000).
+### Sub-task 10A.2: Backend — Remove Safepay Services
 
-- [ ] **10.2.1**: Install SDK: `pnpm add @lemonsqueezy/lemonsqueezy.js --filter api`
-- [ ] **10.2.2**: Create `apps/api/src/payments/lemonsqueezy.service.ts`
-  - `onModuleInit()` - Call `lemonSqueezySetup({ apiKey })` on startup
-  - Properties: `storeId`, `subscriptionVariantId`, `consultationVariantId`, `serviceVariantId` from config
-- [ ] **10.2.3**: Implement `createOneTimeCheckout(params)` method
-  - params: `{ variantId, customPrice?, email, name, customData, redirectUrl, productName?, productDescription? }`
-  - customData: `{ payment_type: 'consultation' | 'service', reference_id: string, ... }`
-  - Calls `createCheckout(storeId, variantId, options)` from SDK
-  - Returns Lemon Squeezy checkout URL
-- [ ] **10.2.4**: Implement `createSubscriptionCheckout(params)` method
-  - params: `{ email, name, customData, redirectUrl }`
-  - Uses `LEMONSQUEEZY_SUBSCRIPTION_VARIANT_ID` (subscription product)
-  - Returns Lemon Squeezy checkout URL
-- [ ] **10.2.5**: Implement `verifyWebhookSignature(rawBody, signature)` method
-  - Validate HMAC-SHA256 of raw body against `X-Signature` header using `LEMONSQUEEZY_WEBHOOK_SECRET`
-- [ ] **10.2.6**: Implement `getSubscription(subscriptionId)` method
-  - Calls `getSubscription()` from SDK, returns subscription status and details
-- [ ] **10.2.7**: Implement `cancelSubscription(subscriptionId)` method
-  - Calls `cancelSubscription()` from SDK (enters grace period until next renewal)
-- [ ] **10.2.8**: Implement `resumeSubscription(subscriptionId)` method
-  - Calls `updateSubscription(id, { cancelled: false })` from SDK
-- [ ] **10.2.9**: Implement `getOrder(orderId)` method
-  - Calls `getOrder()` from SDK, returns order status and payment details
+- [ ] **10A.2.1**: Delete `apps/api/src/payments/safepay.service.ts`
+- [ ] **10A.2.2**: Delete `apps/api/src/payments/safepay-subscription.service.ts`
+- [ ] **10A.2.3**: Create stub `apps/api/src/payments/lemonsqueezy.service.ts`
+  - Method signatures: `createOneTimeCheckout()`, `createSubscriptionCheckout()`, `verifyWebhookSignature()`, `getSubscription()`, `cancelSubscription()`, `resumeSubscription()`, `getOrder()`
+  - All throw `NotImplementedException('Lemon Squeezy integration not yet configured')`
+- [ ] **10A.2.4**: Update `apps/api/src/payments/payments.module.ts`
+  - Export `LemonSqueezyService` instead of `SafepayService`/`SafepaySubscriptionService`
 
-### Sub-task 10.3: Create Webhook Controller (Central Payment Router)
+### Sub-task 10A.3: Backend — Update Configuration
 
-- [ ] **10.3.1**: Enable raw body in NestJS: `NestFactory.create(AppModule, { rawBody: true })` in main.ts
-- [ ] **10.3.2**: Create `apps/api/src/payments/webhook.controller.ts`
-- [ ] **10.3.3**: Create endpoint: `POST /api/webhooks/lemonsqueezy` (@Public)
-  - Verify `X-Signature` header → parse payload → route by `meta.event_name`:
-    - **One-time payments (order events):**
-      - `order_created` → route by `meta.custom_data.payment_type`:
-        - `consultation` → ConsultationsService.handlePaymentConfirmed()
-        - `service` → ServiceRegistrationsService.handlePaymentConfirmed()
-      - `order_refunded` → route by `meta.custom_data.payment_type` to respective refund handler
-    - **Subscription events:**
-      - `subscription_created` → SubscriptionsService.handleSubscriptionCreated()
-      - `subscription_updated` → SubscriptionsService.handleSubscriptionUpdated()
-      - `subscription_cancelled` → SubscriptionsService.handleSubscriptionCancelled()
-      - `subscription_expired` → SubscriptionsService.handleSubscriptionExpired()
-    - **Subscription payment events:**
-      - `subscription_payment_success` → SubscriptionsService.handlePaymentSuccess()
-      - `subscription_payment_failed` → SubscriptionsService.handlePaymentFailed()
-      - `subscription_payment_recovered` → SubscriptionsService.handlePaymentRecovered()
-- [ ] **10.3.4**: Add idempotency check (store processed webhook IDs, prevent duplicate processing)
-- [ ] **10.3.5**: Return `{ received: true }` with 200 status immediately, process asynchronously
+- [ ] **10A.3.1**: Replace `SafepayConfig` with `LemonSqueezyConfig` in `apps/api/src/config/configuration.ts`
+  - Fields: `apiKey`, `storeId`, `webhookSecret`, `subscriptionVariantId`, `consultationVariantId`, `serviceVariantId`, `frontendUrl`
+- [ ] **10A.3.2**: Update `apps/api/src/config/validation.schema.ts`
+  - Add optional validation for `LEMONSQUEEZY_*` env vars (optional at this stage since stubs)
+- [ ] **10A.3.3**: Update `apps/api/.env` and `.env.example`
+  - Remove `SAFEPAY_*` vars, add `LEMONSQUEEZY_*` placeholder vars
 
-### Sub-task 10.4: Create Payments Controller
+### Sub-task 10A.4: Backend — Update Consuming Services
 
-- [ ] **10.4.1**: Create `apps/api/src/payments/payments.controller.ts`
-- [ ] **10.4.2**: Create endpoint: `GET /api/invoices`
-- [ ] **10.4.3**: Create endpoint: `POST /api/invoices`
-- [ ] **10.4.4**: Create endpoint: `GET /api/invoices/:id`
-- [ ] **10.4.5**: Create endpoint: `PATCH /api/invoices/:id`
-- [ ] **10.4.6**: Create endpoint: `POST /api/invoices/:id/send`
-- [ ] **10.4.7**: Create endpoint: `POST /api/payments/checkout` - Generic checkout initiation
-- [ ] **10.4.8**: Create endpoint: `GET /api/payments/:id` - Payment detail
-- [ ] **10.4.9**: Create endpoint: `GET /api/payments/history` - Aggregated payment history across all sources (consultations, subscriptions, services, invoices)
+- [ ] **10A.4.1**: Update `consultations/consultations.service.ts`
+  - Replace `SafepayService` injection with `LemonSqueezyService`
+  - Update `initiatePayment()` to call `lemonsqueezyService.createOneTimeCheckout()` (stub)
+  - Remove `confirmPayment()` method (Lemon Squeezy uses webhook-based confirmation)
+  - Update column mappings: `safepay_tracker_token` → `lemonsqueezy_checkout_id`, `safepay_transaction_ref` → `lemonsqueezy_order_id`
+- [ ] **10A.4.2**: Update `consultations/consultations.types.ts`
+  - Rename row interface fields to match new column names
+  - Update `mapConsultationRow()` mapper function
+- [ ] **10A.4.3**: Update `consultations/consultations.controller.ts`
+  - Remove `POST /api/consultations/:id/confirm-payment` endpoint (replaced by webhook)
+- [ ] **10A.4.4**: Update `subscriptions/subscriptions.service.ts`
+  - Replace `SafepaySubscriptionService` injection with `LemonSqueezyService`
+  - Update `createSubscription()` to call `lemonsqueezyService.createSubscriptionCheckout()` (stub)
+  - Update column mappings for renamed columns
+  - Keep webhook handler method signatures (implementations deferred to 10D)
+- [ ] **10A.4.5**: Update `subscriptions/subscriptions.types.ts`
+  - Rename row interface fields, update mapper
+- [ ] **10A.4.6**: Update `service-registrations/service-registrations.service.ts`
+  - Update `initiatePayment()` to call `lemonsqueezyService.createOneTimeCheckout()` (stub)
+  - Update column mappings for renamed columns
 
-### Sub-task 10.5: Create Payment DTOs
+### Sub-task 10A.5: Shared Package — Update Schemas & Types
 
-- [ ] **10.5.1**: Create `apps/api/src/payments/dto/create-invoice.dto.ts`
-- [ ] **10.5.2**: Create `apps/api/src/payments/dto/update-invoice.dto.ts`
-- [ ] **10.5.3**: Create `apps/api/src/payments/dto/create-invoice-item.dto.ts`
-- [ ] **10.5.4**: Create `apps/api/src/payments/dto/create-checkout.dto.ts`
-  - Fields: paymentType ('consultation' | 'service' | 'subscription'), referenceId, amount? (for custom_price), email, name, redirectUrl
-- [ ] **10.5.5**: Create `apps/api/src/payments/dto/webhook-payload.dto.ts`
-  - Lemon Squeezy webhook payload structure: `{ meta: { event_name, custom_data }, data: { type, id, attributes } }`
-- [ ] **10.5.6**: Create enums for invoice_status, payment_status, payment_method
+- [ ] **10A.5.1**: Update `packages/shared/src/schemas/consultations.schemas.ts`
+  - `safepayTrackerToken` → `lemonsqueezyCheckoutId`
+  - `safepayTransactionRef` → `lemonsqueezyOrderId`
+  - Update `ConsultationPaymentInitResponseSchema` for Lemon Squeezy format (returns `checkoutUrl` only)
+- [ ] **10A.5.2**: Update `packages/shared/src/schemas/subscriptions.schemas.ts`
+  - Add: `lemonsqueezySubscriptionId`, `lemonsqueezyCustomerId`, `lemonsqueezyOrderId`, `cardBrand`, `cardLastFour`, `endsAt`
+  - Remove any Safepay-specific field names
+- [ ] **10A.5.3**: Update `packages/shared/src/schemas/service-registrations.schemas.ts`
+  - Add: `lemonsqueezyCheckoutId`, `lemonsqueezyOrderId`
+- [ ] **10A.5.4**: Rebuild shared package types (auto-inferred from Zod)
+  - Update JSDoc comments referencing "Safepay" → "Lemon Squeezy"
+  - Verify barrel exports in `index.ts`
 
-### Sub-task 10.6: Create Payments Module
+### Sub-task 10A.6: Frontend — "Available Soon" Badges
 
-- [ ] **10.6.1**: Create `apps/api/src/payments/payments.module.ts`
-  - Register LemonSqueezyService, WebhookController, PaymentsController, InvoicesService
-  - Export LemonSqueezyService for use by ConsultationsModule, SubscriptionsModule, ServiceRegistrationsModule
+- [ ] **10A.6.1**: Update `/subscribe` page (`app/(public)/subscribe/page.tsx`)
+  - Replace "Subscribe Now" button with disabled button + "Available Soon" badge
+  - Keep plan information visible (pricing, features)
+  - Remove Safepay popup logic
+- [ ] **10A.6.2**: Update consultation overlay payment step (`components/consultation/ConsultationPaymentStep.tsx`)
+  - Replace Safepay popup with "Payment integration coming soon" message
+  - Add "Skip to scheduling" button to proceed to Cal.com step directly
+  - Keep fee summary card visible
+- [ ] **10A.6.3**: Update service registration payment flow
+  - Disable "Pay Now" / "Initiate Payment" buttons with "Available Soon" badge
+  - Keep form submission functional (registration created, payment deferred)
+- [ ] **10A.6.4**: Update client subscription page (`app/client/subscription/page.tsx`)
+  - Hide payment-related actions, show "Payment integration coming soon" notice
+  - Keep subscription status display functional
+- [ ] **10A.6.5**: Update `usePaymentPopup.ts` hook
+  - Replace `safepay-*` postMessage types with `lemonsqueezy-*` types
+  - Or mark as deprecated with TODO comment
+- [ ] **10A.6.6**: Update payment callback pages
+  - `app/payment-callback/page.tsx` — update postMessage types
+  - `app/consultation/payment-callback/page.tsx` — update postMessage types
+- [ ] **10A.6.7**: Update API client helpers
+  - `lib/api/subscriptions.ts` — remove `syncPlanToSafepay`, update response types
+  - `lib/api/consultations.ts` — remove `confirmPayment`, update payment init response type
+  - `lib/api/service-registrations.ts` — update payment response type
 
-### Sub-task 10.7: Lemon Squeezy Dashboard Setup
+### Sub-task 10A.7: Verification
 
-- [ ] **10.7.1**: Create "Civic Retainer" subscription product (PKR 700/month) in Lemon Squeezy dashboard
-- [ ] **10.7.2**: Create "Legal Consultation" one-time product (PKR 50,000) in dashboard
-- [ ] **10.7.3**: Create "Facilitation Service" one-time product (PKR 0 base, use custom_price) in dashboard
-- [ ] **10.7.4**: Configure webhook in dashboard pointing to `POST /api/webhooks/lemonsqueezy`
-- [ ] **10.7.5**: Store variant IDs and webhook secret in `.env`
-
-### Sub-task 10.8: Environment Configuration
-
-- [ ] **10.8.1**: Add Lemon Squeezy env vars to `apps/api/.env` and `.env.example`:
-  - `LEMONSQUEEZY_API_KEY`, `LEMONSQUEEZY_STORE_ID`, `LEMONSQUEEZY_WEBHOOK_SECRET`
-  - `LEMONSQUEEZY_SUBSCRIPTION_VARIANT_ID`, `LEMONSQUEEZY_CONSULTATION_VARIANT_ID`, `LEMONSQUEEZY_SERVICE_VARIANT_ID`
-  - `FRONTEND_URL` (for redirect URLs)
-- [ ] **10.8.2**: Add LemonSqueezyConfig to `apps/api/src/config/configuration.ts`
-- [ ] **10.8.3**: Add Lemon Squeezy validation to `apps/api/src/config/validation.schema.ts`
-
-### Sub-task 10.9: Database Migration (Safepay → Lemon Squeezy columns)
-
-- [ ] **10.9.1**: Rename `safepay_subscription_id` → `lemonsqueezy_subscription_id` in user_subscriptions
-- [ ] **10.9.2**: Rename `safepay_customer_id` → `lemonsqueezy_customer_id` in user_subscriptions
-- [ ] **10.9.3**: Add `lemonsqueezy_order_id`, `card_brand`, `card_last_four`, `ends_at` columns to user_subscriptions
-- [ ] **10.9.4**: Rename `safepay_tracker_id` → `lemonsqueezy_checkout_id` in consultation_bookings
-- [ ] **10.9.5**: Rename `safepay_transaction_id` → `lemonsqueezy_order_id` in consultation_bookings
-- [ ] **10.9.6**: Rename `safepay_tracker_id` → `lemonsqueezy_checkout_id` in service_registrations
-- [ ] **10.9.7**: Rename `safepay_transaction_id` → `lemonsqueezy_order_id` in service_registrations
-- [ ] **10.9.8**: Rename `safepay_transaction_id` → `lemonsqueezy_order_id` in payments table
-- [ ] **10.9.9**: Rename `safepay_tracker_id` → `lemonsqueezy_checkout_id` in payments table
-
-### Sub-task 10.10: Frontend Payment Components
-
-- [ ] **10.10.1**: Create `apps/web/lib/api/payments.ts` API client helpers
-  - `createCheckoutSession(data)` → returns Lemon Squeezy checkout URL
-  - `getPaymentHistory()` → aggregated payment list
-- [ ] **10.10.2**: Create `apps/web/components/payment/payment-status.tsx`
-  - Loading state while awaiting webhook confirmation
-  - Success/failure display with next-step navigation
-- [ ] **10.10.3**: Create `/payment/success` and `/payment/cancel` return pages
-  - Parse URL params to determine which flow (consultation/subscription/service) and show appropriate next step
+- [ ] **10A.7.1**: Run `pnpm tsc --noEmit` in all packages — zero errors
+- [ ] **10A.7.2**: Run `pnpm --filter api build` — successful build
+- [ ] **10A.7.3**: Run `pnpm --filter web build` — successful build
+- [ ] **10A.7.4**: Grep entire codebase for "safepay" (case-insensitive) — zero results except docs/
+- [ ] **10A.7.5**: Verify backend starts without errors (`pnpm --filter api start:dev`)
+- [ ] **10A.7.6**: Run Supabase security advisors — no new warnings
 
 ---
 
-## HEAD TASK 11: Content Module
+## HEAD TASK 10B: Lemon Squeezy Core Service
 
-### Sub-task 11.1: Create Blog Service
+> **Prerequisite:** HEAD TASK 10A complete
+> **Docs:** `docs/lemonsqueezy/sdk-guide.md`, `docs/lemonsqueezy/arco-integration-plan.md`
 
-- [ ] **11.1.1**: Create `apps/api/src/content/blog.service.ts`
-- [ ] **11.1.2**: Implement `createBlogPost(createDto)` method
-- [ ] **11.1.3**: Implement `updateBlogPost(postId, updateDto)` method
-- [ ] **11.1.4**: Implement `deleteBlogPost(postId)` method
-- [ ] **11.1.5**: Implement `getPublishedPosts(paginationDto, filters)` method
-- [ ] **11.1.6**: Implement `getPostBySlug(slug)` method
-- [ ] **11.1.7**: Implement `getAllPosts(paginationDto)` method
+**Goal:** Implement the real `LemonSqueezyService` with SDK setup, checkout creation, webhook verification, and subscription management methods.
 
-### Sub-task 11.2: Create Testimonials Service
+### Sub-task 10B.1: SDK Installation & Setup
 
-- [ ] **11.2.1**: Create `apps/api/src/content/testimonials.service.ts`
-- [ ] **11.2.2**: Implement `submitTestimonial(createDto, currentUser)` method
-- [ ] **11.2.3**: Implement `getApprovedTestimonials(paginationDto)` method
-- [ ] **11.2.4**: Implement `getAllTestimonials(paginationDto)` method
-- [ ] **11.2.5**: Implement `approveTestimonial(testimonialId)` method
-- [ ] **11.2.6**: Implement `rejectTestimonial(testimonialId)` method
+- [ ] **10B.1.1**: Install SDK: `pnpm add @lemonsqueezy/lemonsqueezy.js --filter api`
+- [ ] **10B.1.2**: Update `LemonSqueezyService.onModuleInit()`
+  - Call `lemonSqueezySetup({ apiKey })` from SDK
+  - Load config: `storeId`, `subscriptionVariantId`, `consultationVariantId`, `serviceVariantId`
+  - Log successful initialization
 
-### Sub-task 11.3: Create Legal News Service
+### Sub-task 10B.2: Checkout Methods
 
-- [ ] **11.3.1**: Create `apps/api/src/content/legal-news.service.ts`
-- [ ] **11.3.2**: Implement `createNewsItem(createDto)` method
-- [ ] **11.3.3**: Implement `getLatestNews(limit)` method
-- [ ] **11.3.4**: Implement news ticker integration
+- [ ] **10B.2.1**: Implement `createOneTimeCheckout(params)` method
+  - params: `{ variantId, customPrice?, email, name, customData, redirectUrl }`
+  - customData includes `payment_type` and `reference_id`
+  - Calls `createCheckout(storeId, variantId, { ... })` from SDK
+  - Returns `{ checkoutUrl: string }`
+- [ ] **10B.2.2**: Implement `createSubscriptionCheckout(params)` method
+  - params: `{ email, name, customData, redirectUrl }`
+  - Uses `subscriptionVariantId` from config
+  - Returns `{ checkoutUrl: string }`
 
-### Sub-task 11.4: Create Content Controllers
+### Sub-task 10B.3: Webhook Signature Verification
 
-- [ ] **11.4.1**: Create `apps/api/src/content/blog.controller.ts`
-- [ ] **11.4.2**: Create endpoint: `GET /api/blog/posts`
-- [ ] **11.4.3**: Create endpoint: `GET /api/blog/posts/:slug`
-- [ ] **11.4.4**: Create endpoint: `POST /api/blog/posts`
-- [ ] **11.4.5**: Create endpoint: `PATCH /api/blog/posts/:id`
-- [ ] **11.4.6**: Create endpoint: `DELETE /api/blog/posts/:id`
-- [ ] **11.4.7**: Create `apps/api/src/content/testimonials.controller.ts`
-- [ ] **11.4.8**: Create endpoint: `GET /api/testimonials`
-- [ ] **11.4.9**: Create endpoint: `POST /api/testimonials`
-- [ ] **11.4.10**: Create endpoint: `POST /api/testimonials/:id/approve`
-- [ ] **11.4.11**: Create endpoint: `POST /api/testimonials/:id/reject`
+- [ ] **10B.3.1**: Implement `verifyWebhookSignature(rawBody, signature)` method
+  - HMAC-SHA256 of raw body string
+  - Compare against `X-Signature` header
+  - Throws `UnauthorizedException` on mismatch
 
-### Sub-task 11.5: Create DTOs
+### Sub-task 10B.4: Subscription & Order Management
 
-- [ ] **11.5.1**: Create `apps/api/src/content/dto/create-blog-post.dto.ts`
-- [ ] **11.5.2**: Create `apps/api/src/content/dto/update-blog-post.dto.ts`
-- [ ] **11.5.3**: Create `apps/api/src/content/dto/create-testimonial.dto.ts`
-- [ ] **11.5.4**: Create enums for post_status
+- [ ] **10B.4.1**: Implement `getSubscription(subscriptionId)` method
+- [ ] **10B.4.2**: Implement `cancelSubscription(subscriptionId)` method
+- [ ] **10B.4.3**: Implement `resumeSubscription(subscriptionId)` method
+- [ ] **10B.4.4**: Implement `getOrder(orderId)` method
 
-### Sub-task 11.6: Create Content Module
+### Sub-task 10B.5: Environment & Module Updates
 
-- [ ] **11.6.1**: Create `apps/api/src/content/content.module.ts`
+- [ ] **10B.5.1**: Update `configuration.ts` — make Lemon Squeezy env vars required (not optional)
+- [ ] **10B.5.2**: Update `validation.schema.ts` — require `LEMONSQUEEZY_API_KEY`, `LEMONSQUEEZY_STORE_ID`, `LEMONSQUEEZY_WEBHOOK_SECRET`
+- [ ] **10B.5.3**: Update `payments.module.ts` — ensure `LemonSqueezyService` is properly exported
+
+---
+
+## HEAD TASK 10C: Central Webhook Controller
+
+> **Prerequisite:** HEAD TASK 10B complete
+> **Docs:** `docs/lemonsqueezy/webhooks.md`
+
+**Goal:** Single webhook endpoint that routes Lemon Squeezy events to the correct service handler.
+
+### Sub-task 10C.1: Webhook Controller
+
+- [ ] **10C.1.1**: Verify `rawBody: true` is set in `main.ts` (already done)
+- [ ] **10C.1.2**: Create `apps/api/src/payments/webhook.controller.ts`
+  - `POST /api/webhooks/lemonsqueezy` (@Public)
+  - Extract raw body and `X-Signature` header
+  - Call `LemonSqueezyService.verifyWebhookSignature()`
+  - Parse payload JSON
+- [ ] **10C.1.3**: Implement event routing by `meta.event_name`:
+  - `order_created` → route by `meta.custom_data.payment_type`:
+    - `consultation` → `ConsultationsService.handlePaymentConfirmed(payload)`
+    - `service` → `ServiceRegistrationsService.handlePaymentConfirmed(payload)`
+  - `order_refunded` → route by `payment_type` to respective refund handler
+  - `subscription_created` → `SubscriptionsService.handleSubscriptionCreated(payload)`
+  - `subscription_updated` → `SubscriptionsService.handleSubscriptionUpdated(payload)`
+  - `subscription_cancelled` → `SubscriptionsService.handleSubscriptionCancelled(payload)`
+  - `subscription_expired` → `SubscriptionsService.handleSubscriptionExpired(payload)`
+  - `subscription_payment_success` → `SubscriptionsService.handlePaymentSuccess(payload)`
+  - `subscription_payment_failed` → `SubscriptionsService.handlePaymentFailed(payload)`
+  - `subscription_payment_recovered` → `SubscriptionsService.handlePaymentRecovered(payload)`
+- [ ] **10C.1.4**: Return `{ received: true }` with 200 immediately
+
+### Sub-task 10C.2: Idempotency & Logging
+
+- [ ] **10C.2.1**: Create `webhook_events` table (or reuse `subscription_events`) for processed event tracking
+  - Columns: `id`, `event_id` (from Lemon Squeezy), `event_name`, `processed_at`, `payload` (jsonb)
+- [ ] **10C.2.2**: Add idempotency check — skip if `event_id` already processed
+- [ ] **10C.2.3**: Log all incoming webhooks (event name, payment type, reference ID)
+
+### Sub-task 10C.3: Webhook Payload Types
+
+- [ ] **10C.3.1**: Create `apps/api/src/payments/types/webhook.types.ts`
+  - `LemonSqueezyWebhookPayload` interface: `{ meta: { event_name, custom_data }, data: { type, id, attributes } }`
+  - `LemonSqueezyOrderAttributes` interface
+  - `LemonSqueezySubscriptionAttributes` interface
+- [ ] **10C.3.2**: Create shared enums: `LemonSqueezyEventName`, `PaymentType`
+
+---
+
+## HEAD TASK 10D: Subscription Payment Integration
+
+> **Prerequisite:** HEAD TASK 10C complete
+> **Implements deferred:** 6.5.7, 6.5.8, 6.5.9
+
+**Goal:** Wire up subscription checkout and webhook handlers so subscriptions activate, renew, and cancel via Lemon Squeezy.
+
+### Sub-task 10D.1: Subscription Checkout Flow
+
+- [ ] **10D.1.1**: Update `SubscriptionsService.createSubscription()` to call real `LemonSqueezyService.createSubscriptionCheckout()`
+  - customData: `{ payment_type: 'subscription', user_id, client_profile_id }`
+  - redirectUrl: `${frontendUrl}/subscribe/success`
+  - Return checkout URL to frontend
+
+### Sub-task 10D.2: Subscription Webhook Handlers
+
+- [ ] **10D.2.1**: Implement `handleSubscriptionCreated(payload)`
+  - Extract `subscription_id`, `customer_id`, `order_id` from payload
+  - Match subscription by `custom_data.user_id` or `custom_data.client_profile_id`
+  - Update: `status = 'active'`, store `lemonsqueezy_subscription_id`, `lemonsqueezy_customer_id`, `lemonsqueezy_order_id`
+  - Set `current_period_start`, `current_period_end` from attributes
+- [ ] **10D.2.2**: Implement `handleSubscriptionUpdated(payload)`
+  - Sync status, billing dates, card info (`card_brand`, `card_last_four`)
+- [ ] **10D.2.3**: Implement `handlePaymentSuccess(payload)`
+  - Extend `current_period_end` to next `renews_at`
+  - Log subscription event
+- [ ] **10D.2.4**: Implement `handlePaymentFailed(payload)`
+  - Update status to `past_due`
+  - Log event with failure reason
+- [ ] **10D.2.5**: Implement `handlePaymentRecovered(payload)`
+  - Reset status to `active`
+  - Update billing period
+- [ ] **10D.2.6**: Implement `handleSubscriptionCancelled(payload)`
+  - Set `cancelled_at`, `ends_at` (grace period until next renewal)
+  - Status remains `active` until `ends_at`
+- [ ] **10D.2.7**: Implement `handleSubscriptionExpired(payload)`
+  - Set status to `expired`
+  - Clear `ends_at`
+
+### Sub-task 10D.3: Subscription Cancel/Resume via SDK
+
+- [ ] **10D.3.1**: Update `cancelSubscription()` to call `LemonSqueezyService.cancelSubscription()`
+- [ ] **10D.3.2**: Add `resumeSubscription()` method calling `LemonSqueezyService.resumeSubscription()`
+- [ ] **10D.3.3**: Add `GET /api/subscriptions/me/status` endpoint for real-time status check via SDK
+
+---
+
+## HEAD TASK 10E: Consultation Payment Integration
+
+> **Prerequisite:** HEAD TASK 10C complete
+
+**Goal:** Wire up consultation payment checkout and webhook handler so consultations confirm payment via Lemon Squeezy order webhook.
+
+### Sub-task 10E.1: Consultation Checkout Flow
+
+- [ ] **10E.1.1**: Update `ConsultationsService.initiatePayment()` to call real `LemonSqueezyService.createOneTimeCheckout()`
+  - variantId: `consultationVariantId` from config
+  - customPrice: `5000000` (PKR 50,000 in cents)
+  - customData: `{ payment_type: 'consultation', reference_id: booking.reference_number, booking_id: booking.id }`
+  - redirectUrl: `${frontendUrl}/consultation/payment-callback`
+  - Return checkout URL
+
+### Sub-task 10E.2: Consultation Webhook Handler
+
+- [ ] **10E.2.1**: Implement `handlePaymentConfirmed(payload)` on `ConsultationsService`
+  - Extract `custom_data.booking_id` and `custom_data.reference_id` from webhook
+  - Update `payment_status = 'paid'`, `booking_status = 'payment_confirmed'`
+  - Store `lemonsqueezy_checkout_id` (from checkout), `lemonsqueezy_order_id` (from order)
+- [ ] **10E.2.2**: Implement `handlePaymentRefunded(payload)` on `ConsultationsService`
+  - Update `payment_status = 'refunded'`, `booking_status = 'cancelled'`
+
+---
+
+## HEAD TASK 10F: Service Registration Payment Integration
+
+> **Prerequisite:** HEAD TASK 10C complete
+
+**Goal:** Wire up service registration payment checkout, webhook handler, and auto-account creation on payment confirmation.
+
+### Sub-task 10F.1: Service Registration Checkout Flow
+
+- [ ] **10F.1.1**: Update `ServiceRegistrationsService.initiatePayment()` to call real `LemonSqueezyService.createOneTimeCheckout()`
+  - variantId: `serviceVariantId` from config
+  - customPrice: service `registration_fee` in cents (e.g., PKR 5,000 = 500000)
+  - customData: `{ payment_type: 'service', reference_id: registration.reference_number, registration_id: registration.id }`
+  - redirectUrl: `${frontendUrl}/payment/success?source=service`
+
+### Sub-task 10F.2: Payment Webhook Handler
+
+- [ ] **10F.2.1**: Implement `handlePaymentConfirmed(payload)` on `ServiceRegistrationsService`
+  - Extract `custom_data.registration_id` from webhook
+  - Update `payment_status = 'paid'`, `status = 'paid'`
+  - Store `lemonsqueezy_checkout_id`, `lemonsqueezy_order_id`
+  - Trigger `createUserAccount(registration)`
+
+### Sub-task 10F.3: Auto-Account Creation
+
+- [ ] **10F.3.1**: Implement `createUserAccount(registration)` method
+  - Check if user exists by email → link to existing account if yes
+  - If no: create Supabase auth user (auto-generated password) + `user_profile` (client) + `client_profile`
+  - Link `service_registration.client_profile_id`
+- [ ] **10F.3.2**: Send credentials email via SendGrid
+  - Include: login URL, email, temporary password, service reference number
+
+---
+
+## HEAD TASK 10G: Invoices Module
+
+> **Prerequisite:** HEAD TASK 10B complete (LemonSqueezyService available)
+
+**Goal:** Create invoices service with CRUD, line items, and totals calculation.
+
+### Sub-task 10G.1: Invoices Service
+
+- [ ] **10G.1.1**: Create `apps/api/src/payments/invoices.service.ts`
+- [ ] **10G.1.2**: Implement `createInvoice(createDto)` — auto-generates INV-YYYY-NNNN
+- [ ] **10G.1.3**: Implement `getInvoices(paginationDto, filters, currentUser)` — RLS-aware
+- [ ] **10G.1.4**: Implement `getInvoiceById(invoiceId, currentUser)`
+- [ ] **10G.1.5**: Implement `updateInvoice(invoiceId, updateDto)`
+- [ ] **10G.1.6**: Implement `addInvoiceItem(invoiceId, itemDto)`
+- [ ] **10G.1.7**: Implement `calculateInvoiceTotals(invoiceId)` — sum items, apply tax/discount
+- [ ] **10G.1.8**: Implement `sendInvoice(invoiceId)` — email via SendGrid
+
+### Sub-task 10G.2: Invoices Controller
+
+- [ ] **10G.2.1**: Create `apps/api/src/payments/invoices.controller.ts`
+- [ ] **10G.2.2**: `GET /api/invoices` — list (client: own, staff: all)
+- [ ] **10G.2.3**: `POST /api/invoices` — create (staff only)
+- [ ] **10G.2.4**: `GET /api/invoices/:id` — detail
+- [ ] **10G.2.5**: `PATCH /api/invoices/:id` — update (staff only)
+- [ ] **10G.2.6**: `POST /api/invoices/:id/send` — send email (staff only)
+
+### Sub-task 10G.3: Payments Controller (Aggregated History)
+
+- [ ] **10G.3.1**: Create `apps/api/src/payments/payments.controller.ts`
+- [ ] **10G.3.2**: `POST /api/payments/checkout` — generic checkout initiation (routes to LS by payment type)
+- [ ] **10G.3.3**: `GET /api/payments/history` — aggregated payment history across consultations, subscriptions, services, invoices
+- [ ] **10G.3.4**: `GET /api/payments/:id` — payment detail
+
+### Sub-task 10G.4: Payment DTOs & Schemas
+
+- [ ] **10G.4.1**: Create Zod schemas in `packages/shared/src/schemas/payments.schemas.ts`
+  - `CreateInvoiceSchema`, `UpdateInvoiceSchema`, `InvoiceResponseSchema`, `InvoiceItemSchema`
+  - `CreateCheckoutSchema`, `PaymentHistoryResponseSchema`
+  - `LemonSqueezyWebhookPayloadSchema`
+- [ ] **10G.4.2**: Create types in `packages/shared/src/types/payments.types.ts`
+- [ ] **10G.4.3**: Add enums: `InvoiceStatus`, `PaymentMethod` to `packages/shared/src/enums.ts`
+
+---
+
+## HEAD TASK 10H: Frontend Payment Components
+
+> **Prerequisite:** HEAD TASKs 10D, 10E, 10F complete (webhook handlers working)
+
+**Goal:** Replace "Available Soon" badges with real Lemon Squeezy checkout flows. Create payment success/cancel pages and payment history.
+
+### Sub-task 10H.1: Core Payment Infrastructure
+
+- [ ] **10H.1.1**: Create `apps/web/lib/api/payments.ts` API client helpers
+  - `createCheckoutSession(data)` → returns Lemon Squeezy checkout URL
+  - `getPaymentHistory(params)` → aggregated payment list
+  - `getInvoices(params)`, `getInvoiceById(id)`
+- [ ] **10H.1.2**: Update `usePaymentPopup.ts` hook for Lemon Squeezy redirect flow
+  - Lemon Squeezy uses hosted checkout (full redirect, not popup)
+  - Consider: popup with Lemon Squeezy URL vs full-page redirect
+- [ ] **10H.1.3**: Create `apps/web/components/payment/payment-status.tsx`
+  - Loading/polling state while awaiting webhook confirmation
+  - Success/failure display with next-step navigation
+
+### Sub-task 10H.2: Payment Return Pages
+
+- [ ] **10H.2.1**: Create `/payment/success` page
+  - Parse URL params (`source=subscription|consultation|service`, `reference_id`)
+  - Show success message with next-step navigation per source
+  - Poll for webhook confirmation if payment status not yet confirmed
+- [ ] **10H.2.2**: Create `/payment/cancel` page
+  - Show cancellation message with "Try Again" link per source
+- [ ] **10H.2.3**: Update `/consultation/payment-callback/page.tsx` for Lemon Squeezy redirect pattern
+
+### Sub-task 10H.3: Subscription Payment UI
+
+- [ ] **10H.3.1**: Update `/subscribe` page — replace "Available Soon" with real checkout
+  - Call `createCheckoutSession({ paymentType: 'subscription' })`
+  - Redirect to Lemon Squeezy hosted checkout
+  - Return to `/payment/success?source=subscription`
+- [ ] **10H.3.2**: Update client subscription page — restore cancel/resume actions
+- [ ] **10H.3.3**: Update subscribe success/cancel return pages
+
+### Sub-task 10H.4: Consultation Payment UI
+
+- [ ] **10H.4.1**: Update `ConsultationPaymentStep.tsx` — replace "Available Soon" with real checkout
+  - Call `initiatePayment(bookingId)` → get checkout URL
+  - Redirect to Lemon Squeezy (or open in popup)
+  - On return/callback → check payment status → advance to Cal.com step
+- [ ] **10H.4.2**: Update `ConsultationOverlay.tsx` — restore payment step flow
+
+### Sub-task 10H.5: Service Registration Payment UI
+
+- [ ] **10H.5.1**: Restore `initiatePayment` button on service registration pages
+  - Call `initiatePayment(registrationId)` → get checkout URL → redirect
+- [ ] **10H.5.2**: Create registration success page (account created, check email for credentials)
+
+### Sub-task 10H.6: Payment History Page
+
+- [ ] **10H.6.1**: Create `/client/payments` page — unified payment history across all sources
+  - Table with: date, description, amount, source (consultation/subscription/service/invoice), status
+  - Filters by date range and source type
+
+---
+
+## HEAD TASK 10I: Lemon Squeezy Dashboard Setup (Manual)
+
+> **Non-code task — done in Lemon Squeezy admin dashboard**
+
+- [ ] **10I.1**: Create store in Lemon Squeezy dashboard
+- [ ] **10I.2**: Create "Civic Retainer" subscription product (PKR 700/month)
+- [ ] **10I.3**: Create "Legal Consultation" one-time product (PKR 50,000)
+- [ ] **10I.4**: Create "Facilitation Service" one-time product (PKR 0 base, enable custom_price)
+- [ ] **10I.5**: Configure webhook endpoint: `POST /api/webhooks/lemonsqueezy`
+  - Select events: `order_created`, `order_refunded`, `subscription_created`, `subscription_updated`, `subscription_cancelled`, `subscription_expired`, `subscription_payment_success`, `subscription_payment_failed`, `subscription_payment_recovered`
+- [ ] **10I.6**: Store variant IDs and webhook secret in `.env`
+
+---
+
+## HEAD TASK 11: Content Module (Google Docs CMS + Auto SEO)
+
+> **Design doc:** `docs/plans/2026-03-01-content-module-design.md`
+> **Content types:** Blog posts and Case Studies via `content_type` enum on single `blog_posts` table
+> **Google Docs:** Service account integration — admin pastes Doc URL, backend fetches/converts/generates SEO
+> **Templates:** Google Doc skeleton templates for consistent blog and case study structure
+
+### Sub-task 11.1: Database Migration — Add Content Columns
+
+- [ ] **11.1.1**: Add `content_type` (text NOT NULL DEFAULT 'blog'), `metadata` (jsonb DEFAULT '{}') columns to `blog_posts`
+- [ ] **11.1.2**: Add `meta_title` (text), `meta_description` (text), `read_time` (text) columns to `blog_posts`
+- [ ] **11.1.3**: Add `is_featured` (boolean DEFAULT false), `google_doc_id` (text), `google_doc_url` (text) columns to `blog_posts`
+
+### Sub-task 11.2: Shared Package — Enums, Schemas & Types
+
+- [ ] **11.2.1**: Add enums to `packages/shared/src/enums.ts`: `ContentType` (BLOG, CASE_STUDY), `PostStatus` (DRAFT, PUBLISHED, ARCHIVED)
+- [ ] **11.2.2**: Create `packages/shared/src/schemas/content.schemas.ts`
+  - `CreateContentPostSchema` — googleDocUrl, contentType, categoryId, isFeatured, metadata
+  - `UpdateContentPostSchema` — partial: title, slug, excerpt, metaTitle, metaDescription, status, featuredImage, metadata
+  - `ContentPostResponseSchema`, `ContentFiltersSchema` (contentType, categoryId, status, search)
+  - `CreateCategorySchema`, `UpdateCategorySchema`, `CategoryResponseSchema`
+  - `CreateTestimonialSchema`, `TestimonialResponseSchema`
+  - `CreateLegalNewsSchema`, `LegalNewsResponseSchema`
+- [ ] **11.2.3**: Create `packages/shared/src/types/content.types.ts`
+
+### Sub-task 11.3: Backend — Google Docs Service
+
+- [ ] **11.3.1**: Install `googleapis` package in `apps/api`
+- [ ] **11.3.2**: Add `GOOGLE_SERVICE_ACCOUNT_KEY` to config module + `.env.example`
+- [ ] **11.3.3**: Create `apps/api/src/content/google-docs.service.ts`
+  - `extractDocId(url: string)` — parse Google Doc URL to document ID
+  - `fetchDocument(docId: string)` — fetch via Docs API v1
+  - `convertToHtml(document)` — convert Google Docs JSON to HTML (headings, paragraphs, lists, bold/italic, links, images)
+  - `extractCaseStudyMetadata(html)` — parse "Key Facts" and "Outcome" sections from case study template
+
+### Sub-task 11.4: Backend — SEO Service
+
+- [ ] **11.4.1**: Create `apps/api/src/content/seo.service.ts`
+  - `generateSlug(title: string)` — kebab-case, deduplicate with `-2`, `-3` suffix
+  - `generateMetaTitle(title: string)` — append " | AR&CO Law", truncate to 60 chars
+  - `generateMetaDescription(excerpt: string)` — first 155 chars
+  - `generateReadTime(content: string)` — `Math.ceil(wordCount / 200) + " min read"`
+  - `generateSeoFields(title, content, excerpt?)` — returns all fields at once
+
+### Sub-task 11.5: Backend — Blog Service (Posts + Case Studies)
+
+- [ ] **11.5.1**: Create `apps/api/src/content/blog.service.ts`
+- [ ] **11.5.2**: Implement `createPost(createDto, currentUser)` — fetch Google Doc, generate SEO, save to DB
+- [ ] **11.5.3**: Implement `updatePost(postId, updateDto)` — update fields, re-generate SEO if title/content changed
+- [ ] **11.5.4**: Implement `syncFromGoogleDoc(postId)` — re-fetch doc, update content + SEO
+- [ ] **11.5.5**: Implement `deletePost(postId)` method
+- [ ] **11.5.6**: Implement `getPublishedPosts(paginationDto, filters)` — filter by contentType, categoryId, search
+- [ ] **11.5.7**: Implement `getPostBySlug(slug)` — single post with author + category joined
+- [ ] **11.5.8**: Implement `getAllPosts(paginationDto)` — all statuses for admin
+- [ ] **11.5.9**: Implement `incrementViewCount(postId)` method
+- [ ] **11.5.10**: Implement category CRUD: `createCategory`, `updateCategory`, `deleteCategory`, `getCategories`
+
+### Sub-task 11.6: Backend — Testimonials Service
+
+- [ ] **11.6.1**: Create `apps/api/src/content/testimonials.service.ts`
+- [ ] **11.6.2**: Implement `submitTestimonial(createDto, currentUser)` method
+- [ ] **11.6.3**: Implement `getApprovedTestimonials(paginationDto)` method
+- [ ] **11.6.4**: Implement `getAllTestimonials(paginationDto)` method (staff only)
+- [ ] **11.6.5**: Implement `approveTestimonial(testimonialId, approverId)` method (admin only)
+- [ ] **11.6.6**: Implement `rejectTestimonial(testimonialId)` method (admin only)
+
+### Sub-task 11.7: Backend — Legal News Service
+
+- [ ] **11.7.1**: Create `apps/api/src/content/legal-news.service.ts`
+- [ ] **11.7.2**: Implement `createNewsItem(createDto)` method
+- [ ] **11.7.3**: Implement `getLatestNews(limit)` method
+
+### Sub-task 11.8: Backend — Content Controllers
+
+- [ ] **11.8.1**: Create `apps/api/src/content/blog.controller.ts`
+  - `GET /api/content/posts` (@Public) — published posts, filter by contentType/category
+  - `GET /api/content/posts/:slug` (@Public) — single post by slug
+  - `POST /api/content/posts/:id/view` (@Public) — increment view count
+  - `GET /api/content/posts/admin` (staff) — all posts including drafts
+  - `POST /api/content/posts` (staff) — create from Google Doc URL
+  - `PATCH /api/content/posts/:id` (staff) — update post + SEO fields
+  - `POST /api/content/posts/:id/sync` (staff) — re-sync from Google Doc
+  - `DELETE /api/content/posts/:id` (admin) — delete post
+  - `GET /api/content/categories` (@Public), `POST /api/content/categories` (staff)
+  - `PATCH /api/content/categories/:id` (staff), `DELETE /api/content/categories/:id` (admin)
+- [ ] **11.8.2**: Create `apps/api/src/content/testimonials.controller.ts`
+  - `GET /api/testimonials` (@Public — approved only), `POST /api/testimonials` (client)
+  - `GET /api/testimonials/all` (staff), `POST /api/testimonials/:id/approve` (admin), `POST /api/testimonials/:id/reject` (admin)
+- [ ] **11.8.3**: Create `apps/api/src/content/legal-news.controller.ts`
+  - `GET /api/legal-news` (@Public), `POST /api/legal-news` (staff)
+
+### Sub-task 11.9: Backend — Content Module
+
+- [ ] **11.9.1**: Create `apps/api/src/content/content.module.ts`
+  - Register GoogleDocsService, SeoService, BlogService, TestimonialsService, LegalNewsService, all controllers
+- [ ] **11.9.2**: Register ContentModule in `app.module.ts`
+
+### Sub-task 11.10: Frontend — API Client & Types
+
+- [ ] **11.10.1**: Create `apps/web/lib/api/content.ts`
+  - `getPublishedPosts(params)`, `getPostBySlug(slug)`, `getAdminPosts(params)`, `createPost(data)`, `updatePost(id, data)`, `syncPost(id)`, `deletePost(id)`, `incrementView(id)`
+  - `getCategories()`, `createCategory(data)`, `updateCategory(id, data)`, `deleteCategory(id)`
+- [ ] **11.10.2**: Create `apps/web/lib/api/testimonials.ts`
+- [ ] **11.10.3**: Create `apps/web/lib/api/legal-news.ts`
+
+### Sub-task 11.11: Frontend — Admin Content Pages
+
+- [ ] **11.11.1**: Create `/admin/content` page — DataTable with tabs (Blogs / Case Studies), status badges, search, filters
+- [ ] **11.11.2**: Create `/admin/content/new` page — Google Doc URL input, content type selector, category dropdown, SEO preview panel, case study metadata fields, template skeleton links
+- [ ] **11.11.3**: Create `/admin/content/[id]` page — Edit form, re-sync button, SEO editor, publish/archive controls
+- [ ] **11.11.4**: Update admin sidebar to add "Content" link
+
+### Sub-task 11.12: Frontend — Update Public Blog Pages
+
+- [ ] **11.12.1**: Convert `/blogs/page.tsx` to fetch from API (`GET /api/content/posts`) instead of static data
+- [ ] **11.12.2**: Convert `/blogs/[slug]/page.tsx` to server component with `generateMetadata()` for SSR SEO
+- [ ] **11.12.3**: Add JSON-LD structured data (Article schema) to `/blogs/[slug]/page.tsx`
+- [ ] **11.12.4**: Add Open Graph + Twitter Card meta tags via `generateMetadata()`
+- [ ] **11.12.5**: Remove static data files (`blogData.ts`, `caseStudyData.ts`) after API integration complete
+
+### Sub-task 11.13: Google Doc Templates
+
+- [ ] **11.13.1**: Create Blog Post template Google Doc skeleton in shared Drive folder
+- [ ] **11.13.2**: Create Case Study template Google Doc skeleton in shared Drive folder
+- [ ] **11.13.3**: Add template links to admin "New Post" page for reference
 
 ---
 
@@ -958,13 +1340,16 @@ Complete database architecture with 20+ tables, Row-Level Security, comprehensiv
 
 ### Sub-task 12.1: Create Dashboard Service
 
-- [ ] **12.1.1**: Create `apps/api/src/admin/dashboard.service.ts`
-- [ ] **12.1.2**: Implement `getDashboardStats()` method
-- [ ] **12.1.3**: Implement `getRecentActivities(limit)` method
-- [ ] **12.1.4**: Implement `getRevenueAnalytics(dateRange)` method
-- [ ] **12.1.5**: Implement `getCaseAnalytics()` method
+- [ ] **12.1.1**: Create `apps/api/src/dashboard/dashboard.service.ts`
+- [ ] **12.1.2**: Implement `getAdminDashboardStats()` method
+  - Total clients, active cases, pending complaints, active subscriptions, pending registrations, pending consultations, revenue this month
+- [ ] **12.1.3**: Implement `getClientDashboardStats(clientProfileId)` method
+  - Open cases, active subscription status, pending complaints, service registrations in progress
+- [ ] **12.1.4**: Implement `getRecentActivities(limit)` method
+- [ ] **12.1.5**: Implement `getRevenueAnalytics(dateRange)` method
+- [ ] **12.1.6**: Implement `getCaseAnalytics()` method
 
-### Sub-task 12.2: Create Client Interactions Service
+### Sub-task 12.2: Create Client Interactions Service (CRM)
 
 - [ ] **12.2.1**: Create `apps/api/src/admin/client-interactions.service.ts`
 - [ ] **12.2.2**: Implement `logInteraction(createDto, currentUser)` method
@@ -978,66 +1363,66 @@ Complete database architecture with 20+ tables, Row-Level Security, comprehensiv
 - [ ] **12.3.1**: Create `apps/api/src/admin/activity-logs.service.ts`
 - [ ] **12.3.2**: Implement `createActivityLog()` method
 - [ ] **12.3.3**: Implement `getActivityLogs(paginationDto, filters)` method
-- [ ] **12.3.4**: Create middleware to auto-log API requests
 
 ### Sub-task 12.4: Create Admin Controllers
 
-- [ ] **12.4.1**: Create `apps/api/src/admin/admin.controller.ts`
-- [ ] **12.4.2**: Create endpoint: `GET /api/admin/dashboard`
-- [ ] **12.4.3**: Create endpoint: `GET /api/admin/dashboard/revenue-analytics`
-- [ ] **12.4.4**: Create endpoint: `GET /api/admin/dashboard/case-analytics`
-- [ ] **12.4.5**: Create endpoint: `GET /api/admin/activity-logs`
-- [ ] **12.4.6**: Create endpoint: `GET /api/admin/clients/:id/interactions`
-- [ ] **12.4.7**: Create endpoint: `POST /api/admin/clients/:id/interactions`
-- [ ] **12.4.8**: Create endpoint: `GET /api/admin/interactions/upcoming`
-- [ ] **12.4.9**: Apply @Roles('admin', 'staff') to all endpoints
+- [ ] **12.4.1**: Create `apps/api/src/dashboard/dashboard.controller.ts`
+  - `GET /api/dashboard/admin` (staff) — admin stats
+  - `GET /api/dashboard/client` (client) — client stats
+  - `GET /api/dashboard/revenue-analytics` (staff)
+  - `GET /api/dashboard/case-analytics` (staff)
+- [ ] **12.4.2**: Create `apps/api/src/admin/admin.controller.ts`
+  - `GET /api/admin/activity-logs` (staff)
+  - `GET /api/admin/clients/:id/interactions` (staff)
+  - `POST /api/admin/clients/:id/interactions` (staff)
+  - `GET /api/admin/interactions/upcoming` (staff)
 
-### Sub-task 12.5: Create DTOs
+### Sub-task 12.5: Admin Schemas & Types
 
-- [ ] **12.5.1**: Create `apps/api/src/admin/dto/create-interaction.dto.ts`
-- [ ] **12.5.2**: Create `apps/api/src/admin/dto/update-interaction.dto.ts`
-- [ ] **12.5.3**: Create enums for interaction_type
+- [ ] **12.5.1**: Create `packages/shared/src/schemas/admin.schemas.ts`
+  - `DashboardStatsResponseSchema`, `CreateInteractionSchema`, `UpdateInteractionSchema`, `InteractionResponseSchema`
+  - `ActivityLogResponseSchema`, `RevenueAnalyticsResponseSchema`
+- [ ] **12.5.2**: Create `packages/shared/src/types/admin.types.ts`
+- [ ] **12.5.3**: Add enums: `InteractionType` (CALL, EMAIL, MEETING, NOTE) to enums.ts
 
-### Sub-task 12.6: Create Admin Module
+### Sub-task 12.6: Admin Module
 
 - [ ] **12.6.1**: Create `apps/api/src/admin/admin.module.ts`
+- [ ] **12.6.2**: Create `apps/api/src/dashboard/dashboard.module.ts`
 
-### Sub-task 12.7: Admin Dashboard Stats Enhancement
+### Sub-task 12.7: Frontend — Admin Management Views (remaining)
 
-- [ ] **12.7.1**: Update DashboardService with new stat queries:
-  - Total Subscribers count, Open Complaints count, Pending Service Registrations count, Pending Consultations count
-- [ ] **12.7.2**: Update `GET /api/admin/dashboard` response to include new stats
+- [ ] **12.7.1**: Create `/admin/complaints` page — list with filters (status, org, date range)
+- [ ] **12.7.2**: Create `/admin/complaints/:id` page — detail + status update + assign to staff
+- [ ] **12.7.3**: Create `/admin/subscriptions` page — list with status filters
+- [ ] **12.7.4**: Update admin sidebar: add Complaints, Subscriptions links (Service Registrations + Consultations already done)
 
-### Sub-task 12.8: Frontend - Admin Management Views
+### Sub-task 12.8: Frontend — Dashboard Stats
 
-- [ ] **12.8.1**: Create `/admin/complaints` page - All complaints list with filters (status, org, date range)
-- [ ] **12.8.2**: Create `/admin/complaints/:id` page - Complaint detail + status update form + assign to staff
-- [ ] **12.8.3**: Create `/admin/subscriptions` page - All subscriptions list with status
-- [ ] **12.8.4**: Create `/admin/service-registrations` page - All registrations with filters
-- [ ] **12.8.5**: Create `/admin/service-registrations/:id` page - Detail + status update + assign staff
-- [ ] **12.8.6**: Create `/admin/consultations` page - All consultation bookings with filters
-- [ ] **12.8.7**: Create `/admin/consultations/:id` page - Booking detail + status
-- [ ] **12.8.8**: Update admin sidebar: add Complaints, Subscriptions, Service Registrations, Consultations links
+- [ ] **12.8.1**: Create `apps/web/lib/api/dashboard.ts` API client helpers
+- [ ] **12.8.2**: Update admin dashboard page to fetch real stats from `GET /api/dashboard/admin`
+- [ ] **12.8.3**: Update client dashboard page to fetch real stats from `GET /api/dashboard/client`
 
 ---
 
 ## HEAD TASK 13: Testing & Validation
 
-### Sub-task 13.1: Write Unit Tests
+### Sub-task 13.1: Unit Tests
 
-- [ ] **13.1.1**: Write tests for AuthService
-- [ ] **13.1.2**: Write tests for CasesService
-- [ ] **13.1.3**: Write tests for PaymentsService
-- [ ] **13.1.4**: Write tests for DocumentsService
-- [ ] **13.1.5**: Write tests for ConsultationsService
+- [ ] **13.1.1**: Write tests for `LemonSqueezyService` (checkout, webhook verification, subscription management)
+- [ ] **13.1.2**: Write tests for `ConsultationsService` (booking, payment webhook handler)
+- [ ] **13.1.3**: Write tests for `SubscriptionsService` (checkout, all webhook handlers)
+- [ ] **13.1.4**: Write tests for `ServiceRegistrationsService` (registration, payment, auto-account)
+- [ ] **13.1.5**: Write tests for `CasesService` (CRUD, assignment, from-registration)
+- [ ] **13.1.6**: Write tests for `InvoicesService` (CRUD, totals, send)
 
-### Sub-task 13.2: Write Integration Tests
+### Sub-task 13.2: Integration Tests
 
-- [ ] **13.2.1**: Test complete auth flow
-- [ ] **13.2.2**: Test case management flow
-- [ ] **13.2.3**: Test consultation booking flow (guest intake → Safepay → Cal.com webhook)
-- [ ] **13.2.4**: Test document upload flow
-- [ ] **13.2.5**: Test invoice payment flow
+- [ ] **13.2.1**: Test complete auth flow (signup → signin → refresh → signout)
+- [ ] **13.2.2**: Test consultation booking flow (guest intake → Lemon Squeezy checkout → webhook → Cal.com)
+- [ ] **13.2.3**: Test subscription flow (checkout → webhook → renewal → cancellation)
+- [ ] **13.2.4**: Test service registration flow (register → pay → webhook → auto-account)
+- [ ] **13.2.5**: Test case management flow (create → assign → activities → close)
 
 ### Sub-task 13.3: Test RLS Policies
 
@@ -1045,98 +1430,121 @@ Complete database architecture with 20+ tables, Row-Level Security, comprehensiv
 - [ ] **13.3.2**: Verify staff can access all client data
 - [ ] **13.3.3**: Verify admin has full access
 - [ ] **13.3.4**: Verify unauthorized users get 403 errors
-- [ ] **13.3.5**: Test RLS on all tables
+- [ ] **13.3.5**: Verify @Public endpoints don't leak data
 
 ### Sub-task 13.4: Test API Endpoints
 
 - [ ] **13.4.1**: Test all auth endpoints
-- [ ] **13.4.2**: Test all CRUD endpoints
-- [ ] **13.4.3**: Test pagination and filtering
-- [ ] **13.4.4**: Test error handling
-- [ ] **13.4.5**: Test validation errors
+- [ ] **13.4.2**: Test all CRUD endpoints with pagination and filtering
+- [ ] **13.4.3**: Test validation errors (bad input, missing required fields)
+- [ ] **13.4.4**: Test error handling (not found, unauthorized, forbidden)
 
-### Sub-task 13.5: Load Testing & Performance
+---
 
-- [ ] **13.5.1**: Test database query performance
-- [ ] **13.5.2**: Test API response times
-- [ ] **13.5.3**: Test file upload performance
-- [ ] **13.5.4**: Test concurrent operations
+## HEAD TASK 14: Database RLS Optimization
+
+> **Reference:** `docs/database/problem.md`, `docs/database/brainstorm.md`, `docs/database/plan.md`
+
+**Goal:** Fix 130+ Supabase linter warnings: 62 auth_rls_initplan, 63+ multiple_permissive_policies, 5 duplicate indexes.
+
+### Sub-task 14.1: Drop Duplicate Indexes
+
+- [ ] **14.1.1**: Identify 5 duplicate indexes (where `idx_*` duplicates `*_key` constraint)
+- [ ] **14.1.2**: Apply migration to drop redundant `idx_*` indexes
+
+### Sub-task 14.2: Fix auth_rls_initplan Warnings
+
+- [ ] **14.2.1**: Audit all RLS policies using `auth.uid()` directly
+- [ ] **14.2.2**: Rewrite to use `(select auth.uid())` pattern (evaluated once per query, not per row)
+- [ ] **14.2.3**: Apply migration (drop old policies, create optimized ones)
+
+### Sub-task 14.3: Consolidate Multiple Permissive Policies
+
+- [ ] **14.3.1**: Audit all tables with multiple permissive policies for same role+action
+- [ ] **14.3.2**: Consolidate into single policy with OR conditions
+  - Naming convention: `{action}_{table_name}` (e.g., `select_user_profiles`)
+- [ ] **14.3.3**: Apply migration (drop 88 old policies, create 79 consolidated)
+
+### Sub-task 14.4: Verification
+
+- [ ] **14.4.1**: Run Supabase security advisors — zero auth_rls_initplan warnings
+- [ ] **14.4.2**: Run Supabase performance advisors — zero duplicate_index warnings
+- [ ] **14.4.3**: Verify all API endpoints still work (no RLS regressions)
 
 ---
 
 ## Verification Checklist
 
-### Phase 1: Environment & Database
+### Phase 1: Environment & Database ✅
 
-- [ ] All dependencies installed
-- [ ] Backend starts without errors
-- [ ] Supabase connection working
-- [ ] All tables exist (including new: consultation_bookings, subscriptions, complaints, service_registrations)
-- [ ] RLS enabled on all tables
-- [ ] Triggers and functions created (including CON-YYYY-NNNN, CMP-YYYY-NNNN, SRV-YYYY-NNNN)
+- [x] All dependencies installed
+- [x] Backend starts without errors
+- [x] Supabase connection working
+- [x] All tables exist (consultation_bookings, subscriptions, complaints, service_registrations)
+- [x] RLS enabled on all tables
+- [x] Triggers and functions created (CON-YYYY-NNNN, CMP-YYYY-NNNN, SRV-YYYY-NNNN)
 
-### Phase 2: Authentication
+### Phase 2: Authentication ✅
 
-- [ ] Signup creates user and returns JWT
-- [ ] Signin returns valid JWT
-- [ ] Get current user works
-- [ ] Invalid token returns 401
+- [x] Signup creates user and returns JWT
+- [x] Signin returns valid JWT
+- [x] Get current user works
+- [x] Invalid token returns 401
 
-### Phase 3: Core Features
+### Phase 3: Core Features (Partial)
 
-- [ ] Create client works
-- [ ] Create case works (case_number generated)
-- [ ] Consultation booking works (guest intake → Safepay → Cal.com scheduling)
-- [ ] Upload document works
-- [ ] Create invoice works (invoice_number generated)
+- [x] Create client works
+- [x] Create case works (case_number generated)
+- [ ] Upload document works (HEAD TASK 9)
+- [ ] Create invoice works (HEAD TASK 10G)
 
-### Phase 4: Client-Facing Features
+### Phase 4: Client-Facing Features (Partial)
 
-- [ ] Consultation booking flow works end-to-end (guest → intake → Safepay → Cal.com → confirmation)
-- [ ] Cal.com embed only shows after payment confirmed
-- [ ] Logged-in clients can book consultations from dashboard (pre-filled overlay)
-- [ ] Subscription creation + Safepay recurring checkout works
-- [ ] Complaint submission gated behind active subscription
-- [ ] Complaint status tracking works (submitted → under_review → escalated → resolved)
-- [ ] Service registration form works (guest → details → docs → pay)
-- [ ] Auto account creation on service registration payment
-- [ ] Credentials email sent after auto account creation
+- [x] Consultation booking form + Cal.com scheduling works
+- [ ] Consultation payment flow end-to-end (HEAD TASK 10E + 10H)
+- [x] Logged-in clients can book consultations from dashboard (pre-filled overlay)
+- [ ] Subscription checkout works end-to-end (HEAD TASK 10D + 10H)
+- [x] Complaint submission gated behind active subscription
+- [x] Complaint status tracking works
+- [x] Service registration form works (guest → details)
+- [ ] Service registration payment end-to-end (HEAD TASK 10F + 10H)
+- [ ] Auto account creation on service registration payment (HEAD TASK 10F)
 
-### Phase 5: Safepay Integration
+### Phase 5: Lemon Squeezy Integration
 
-- [ ] One-time checkout works (consultation fee PKR 50,000, service registration fees)
-- [ ] Subscription checkout works (Civic Retainer PKR 700/month via Safepay native subscriptions)
-- [ ] Webhook signature verification works (HMAC-SHA512)
-- [ ] Webhook routes correctly by metadata source key
-- [ ] Payment confirmed webhook updates consultation and service registration statuses
-- [ ] Subscription lifecycle webhooks (activated, renewed, cancelled) work
-- [ ] Payment failure handling works
+- [ ] Lemon Squeezy SDK initialized and configured (HEAD TASK 10B)
+- [ ] One-time checkout works: consultation (PKR 50,000), service registration (variable)
+- [ ] Subscription checkout works: Civic Retainer (PKR 700/month)
+- [ ] Webhook signature verification (HMAC-SHA256) works
+- [ ] Central webhook router correctly dispatches events
+- [ ] Order webhooks update consultation and service registration statuses
+- [ ] Subscription lifecycle webhooks (created, updated, cancelled, expired) work
+- [ ] Subscription payment webhooks (success, failed, recovered) work
 - [ ] Idempotency prevents duplicate webhook processing
 
-### Phase 5b: Cal.com Integration
+### Phase 5b: Cal.com Integration ✅
 
-- [ ] Cal.com webhook receives BOOKING_CREATED events
-- [ ] Webhook matches booking by metadata.referenceNumber (or fallback by email)
-- [ ] Meeting link, date, time stored in consultation_bookings
-- [ ] Booking status updated to 'booked' after Cal.com scheduling
-- [ ] Cal.com handles email notifications to both parties (no custom emails needed)
+- [x] Cal.com webhook receives BOOKING_CREATED events
+- [x] Webhook matches booking by metadata.referenceNumber (or fallback by email)
+- [x] Meeting link, date, time stored in consultation_bookings
+- [x] Booking status updated to 'booked' after Cal.com scheduling
 
 ### Phase 6: RLS & Security
 
-- [ ] Clients see only own data
-- [ ] Attorneys see assigned data
-- [ ] Admin sees all data
-- [ ] Access control enforced
-- [ ] Guest endpoints (@Public) don't leak data (consultation status requires email match)
-- [ ] Subscription check prevents unauthorized complaint submission
+- [x] Clients see only own data
+- [x] Attorneys see assigned data
+- [x] Admin sees all data
+- [x] Access control enforced
+- [x] Guest endpoints (@Public) don't leak data
+- [x] Subscription check prevents unauthorized complaint submission
+- [ ] Database RLS optimized (HEAD TASK 14)
 
 ### Phase 7: Testing
 
 - [ ] All unit tests pass
-- [ ] All E2E tests pass
-- [ ] Lemon Squeezy webhooks work for all payment types (orders + subscriptions)
+- [ ] All integration tests pass
+- [ ] Lemon Squeezy webhooks work for all payment types
 - [ ] Cal.com webhook syncs booking data
-- [ ] Email notifications work (credentials, confirmations)
 
 ---
 
@@ -1149,23 +1557,29 @@ Complete database architecture with 20+ tables, Row-Level Security, comprehensiv
 5. **JSDoc Required**: Document exports
 6. **Test Alongside**: Don't test after
 7. **No .env Commits**: Use .env.example
-8. **Guest Endpoints**: Consultation + Service Registration endpoints are @Public - verify no data leaks
+8. **Guest Endpoints**: Consultation + Service Registration endpoints are @Public — verify no data leaks
 9. **Payment Before Access**: Cal.com embed must NEVER render before payment confirmation
-10. **Subscription Guard**: Complaint submission must verify active subscription status on every request
+10. **Subscription Guard**: Complaint submission must verify active subscription on every request
+11. **Lemon Squeezy Prices in Cents**: PKR 700 = 70000, PKR 50,000 = 5000000
+12. **Webhook-Based Confirmation**: Lemon Squeezy uses webhooks (not two-step tracker flow like Safepay)
 
 ---
 
-## Estimated Timeline
+## Task Dependency Graph
 
-- Phase 1-2 (Environment + Auth): 3-4 days ✅ DONE
-- Phase 3-4 (Users, Clients, Cases): 4-5 days ✅ DONE (HEAD TASKs 5-7)
-- Phase 5 (Consultation Booking + Cal.com): 2-3 days ✅ MOSTLY DONE (backend + overlay complete, dashboard pages remaining)
-- Phase 6 (Subscriptions + Complaints): 3-4 days ✅ DONE (HEAD TASK 6)
-- Phase 7 (Documents + Storage): 3-4 days
-- Phase 8 (Payments/Safepay + Invoices): 4-5 days
-- Phase 9 (Service Registrations frontend): 2-3 days
-- Phase 10-11 (Content + Admin): 4-5 days
-- Phase 12 (Testing): 3-4 days
-- Remaining frontend pages: 3-5 days (parallel with backend)
+```
+10A (Safepay Removal) ─┬─→ 10B (LS Core Service) ─┬─→ 10C (Webhook Controller) ─┬─→ 10D (Subscriptions)
+                       │                           │                              ├─→ 10E (Consultations)
+                       │                           │                              └─→ 10F (Service Regs)
+                       │                           └─→ 10G (Invoices)
+                       │
+                       └─→ 10I (Dashboard Setup — manual, can be parallel)
 
-**Total**: 30-40 days
+10D + 10E + 10F ──→ 10H (Frontend Payment Components)
+
+9 (Documents) ── independent, can run in parallel with 10A-10H
+11 (Content) ── independent, can run in parallel with 10
+12 (Admin) ── depends on 10G for revenue analytics, otherwise independent
+13 (Testing) ── runs after all feature tasks
+14 (DB Optimization) ── independent, can run anytime
+```
