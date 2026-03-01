@@ -154,3 +154,6 @@ business-cards
 /docs
 
 /supabase
+
+# Git worktrees
+.worktrees/
