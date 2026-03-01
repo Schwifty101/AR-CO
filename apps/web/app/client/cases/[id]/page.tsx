@@ -29,6 +29,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
 import { ArrowLeft, Briefcase, Clock } from 'lucide-react';
+import { CaseDocumentsSection } from '@/components/documents/case-documents-section';
 import {
   getCaseById,
   getCaseActivities,
@@ -274,6 +275,9 @@ export default function ClientCaseDetailPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Case Documents */}
+      {caseId && <CaseDocumentsSection caseId={caseId} />}
 
       {/* Activities Timeline */}
       <Card>
