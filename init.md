@@ -727,41 +727,41 @@ Complete database architecture with 20+ tables, Row-Level Security, comprehensiv
 
 ### Sub-task 9.1: Create Storage Service
 
-- [ ] **9.1.1**: Create `apps/api/src/storage/storage.service.ts`
-- [ ] **9.1.2**: Implement `uploadToStorage(file, bucket, path)` method
-- [ ] **9.1.3**: Implement `downloadFromStorage(bucket, path)` method
-- [ ] **9.1.4**: Implement `deleteFromStorage(bucket, path)` method
-- [ ] **9.1.5**: Implement `getPublicUrl(bucket, path)` method
+- [x] **9.1.1**: Create `apps/api/src/storage/storage.service.ts`
+- [x] **9.1.2**: Implement `uploadToStorage(file, bucket, path)` method
+- [x] **9.1.3**: Implement `downloadFromStorage(bucket, path)` method
+- [x] **9.1.4**: Implement `deleteFromStorage(bucket, path)` method
+- [x] **9.1.5**: Implement `getPublicUrl(bucket, path)` method
 
 ### Sub-task 9.2: Create Documents Service
 
-- [ ] **9.2.1**: Create `apps/api/src/documents/documents.service.ts`
-- [ ] **9.2.2**: Implement `uploadDocument(file, metadata, currentUser)` method
-- [ ] **9.2.3**: Implement `getDocuments(paginationDto, filters, currentUser)` method
-- [ ] **9.2.4**: Implement `getDocumentById(documentId, currentUser)` method
-- [ ] **9.2.5**: Implement `updateDocument(documentId, updateDto)` method
-- [ ] **9.2.6**: Implement `deleteDocument(documentId, currentUser)` method
-- [ ] **9.2.7**: Implement `downloadDocument(documentId, currentUser)` method
+- [x] **9.2.1**: Create `apps/api/src/documents/documents.service.ts`
+- [x] **9.2.2**: Implement `uploadDocument(file, metadata, currentUser)` method
+- [x] **9.2.3**: Implement `getDocuments(paginationDto, filters, currentUser)` method
+- [x] **9.2.4**: Implement `getDocumentById(documentId, currentUser)` method
+- [x] **9.2.5**: Implement `updateDocument(documentId, updateDto)` method
+- [x] **9.2.6**: Implement `deleteDocument(documentId, currentUser)` method
+- [x] **9.2.7**: Implement `downloadDocument(documentId, currentUser)` method
 
 ### Sub-task 9.3: Create Documents Controller
 
-- [ ] **9.3.1**: Create `apps/api/src/documents/documents.controller.ts`
-- [ ] **9.3.2**: Create endpoint: `POST /api/documents/upload`
-- [ ] **9.3.3**: Create endpoint: `GET /api/documents`
-- [ ] **9.3.4**: Create endpoint: `GET /api/documents/:id`
-- [ ] **9.3.5**: Create endpoint: `PATCH /api/documents/:id`
-- [ ] **9.3.6**: Create endpoint: `GET /api/documents/:id/download`
-- [ ] **9.3.7**: Create endpoint: `DELETE /api/documents/:id`
+- [x] **9.3.1**: Create `apps/api/src/documents/documents.controller.ts`
+- [x] **9.3.2**: Create endpoint: `POST /api/documents/upload`
+- [x] **9.3.3**: Create endpoint: `GET /api/documents`
+- [x] **9.3.4**: Create endpoint: `GET /api/documents/:id`
+- [x] **9.3.5**: Create endpoint: `PATCH /api/documents/:id`
+- [x] **9.3.6**: Create endpoint: `GET /api/documents/:id/download`
+- [x] **9.3.7**: Create endpoint: `DELETE /api/documents/:id`
 
 ### Sub-task 9.4: Create DTOs
 
-- [ ] **9.4.1**: Create `apps/api/src/documents/dto/upload-document.dto.ts`
-- [ ] **9.4.2**: Create `apps/api/src/documents/dto/update-document.dto.ts`
-- [ ] **9.4.3**: Create enum for document_type
+- [x] **9.4.1**: Create `apps/api/src/documents/dto/upload-document.dto.ts`
+- [x] **9.4.2**: Create `apps/api/src/documents/dto/update-document.dto.ts`
+- [x] **9.4.3**: Create enum for document_type
 
 ### Sub-task 9.5: Create Documents Module
 
-- [ ] **9.5.1**: Create `apps/api/src/documents/documents.module.ts`
+- [x] **9.5.1**: Create `apps/api/src/documents/documents.module.ts`
 
 ---
 
