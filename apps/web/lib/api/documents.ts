@@ -110,6 +110,9 @@ export async function getDocuments(
   if (params?.caseId) queryParams.set('caseId', params.caseId);
   if (params?.clientProfileId) queryParams.set('clientProfileId', params.clientProfileId);
   if (params?.serviceRegistrationId) queryParams.set('serviceRegistrationId', params.serviceRegistrationId);
+  if (params?.search) queryParams.set('search', params.search);
+  if (params?.dateFrom) queryParams.set('dateFrom', params.dateFrom);
+  if (params?.dateTo) queryParams.set('dateTo', params.dateTo);
 
   const url = `/api/documents${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
 

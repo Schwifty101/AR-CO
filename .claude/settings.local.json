@@ -54,7 +54,18 @@
       "Bash(tail:*)",
       "WebFetch(domain:docs.lemonsqueezy.com)",
       "WebFetch(domain:cal.com)",
-      "Bash(echo EXIT_CODE=$?:*)"
+      "mcp__supabase__list_extensions",
+      "mcp__supabase__list_migrations",
+      "Bash(cd:*)",
+      "Bash(cd \"/Users/sobanahmad/Work/AR&CO/AR-CO/.worktrees/documents\" && pnpm --filter @repo/shared build 2>&1)",
+      "Bash(echo EXIT_CODE=$?:*)",
+      "Bash(cd \"/Users/sobanahmad/Work/AR&CO/AR-CO\" && git checkout main && git pull 2>&1)",
+      "Bash(cd \"/Users/sobanahmad/Work/AR&CO/AR-CO\" && git merge feature/documents-module 2>&1)",
+      "Bash(cd \"/Users/sobanahmad/Work/AR&CO/AR-CO\" && git branch -d feature/documents-module 2>&1)",
+      "Bash(cd \"/Users/sobanahmad/Work/AR&CO/AR-CO\" && git worktree remove .worktrees/documents 2>&1)",
+      "Bash(cd \"/Users/sobanahmad/Work/AR&CO/AR-CO\" && git worktree remove \"/Users/sobanahmad/Work/AR&CO/AR-CO/.worktrees/content-module\" 2>&1)",
+      "Bash(cd \"/Users/sobanahmad/Work/AR&CO/AR-CO\" && git branch -d feat/content-module 2>&1)",
+      "Bash(pnpm:*)"
     ],
     "env": {
       "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
