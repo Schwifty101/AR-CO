@@ -85,29 +85,31 @@
 
 ---
 
-## Remaining Tasks (7 of 16)
+## Remaining Tasks (4 of 16)
 
-### Task 10: Backend — Content Controllers ⬜
-- Create `apps/api/src/content/blog.controller.ts`
-- Create `apps/api/src/content/testimonials.controller.ts`
-- Create `apps/api/src/content/legal-news.controller.ts`
-- **IMPORTANT:** Place `@Get('posts/admin')` BEFORE `@Get('posts/:slug')` in blog controller
-- Follow `complaints.controller.ts` patterns
-- Verify: `cd apps/api && pnpm tsc --noEmit`
-- **Depends on:** Tasks 8, 9
+### Task 10: Backend — Content Controllers ✅
+- Created `apps/api/src/content/blog.controller.ts` (12 endpoints: posts CRUD, categories CRUD, view tracking)
+- Created `apps/api/src/content/testimonials.controller.ts` (5 endpoints: submit, approve/reject, list)
+- Created `apps/api/src/content/legal-news.controller.ts` (2 endpoints: list, create)
+- Route ordering verified: `@Get('posts/admin')` BEFORE `@Get('posts/:slug')`
+- Fixed method name mismatches: `incrementView` → `incrementViewCount`, `syncPost` → `syncFromGoogleDoc`
+- Verified: `pnpm tsc --noEmit` passes
+- Commit: `ce4bfe7`
 
-### Task 11: Backend — Content Module & Registration ⬜
-- Create `apps/api/src/content/content.module.ts`
-- Register `ContentModule` in `apps/api/src/app.module.ts`
-- Verify: `cd apps/api && pnpm tsc --noEmit`
-- **Depends on:** Task 10
+### Task 11: Backend — Content Module & Registration ✅
+- Created `apps/api/src/content/content.module.ts` (3 controllers, 5 providers, 3 exports)
+- Registered `ContentModule` in `apps/api/src/app.module.ts`
+- Verified: `pnpm tsc --noEmit` passes
+- Commit: `ce4bfe7`
 
-### Task 12: Frontend — Content API Client ⬜
-- Create `apps/web/lib/api/content.ts`
-- Functions: `getPublishedPosts()`, `getPostBySlug()`, `getAdminPosts()`, `createPost()`, `updatePost()`, `syncPost()`, `deletePost()`, `incrementView()`, `getCategories()`, `createCategory()`, `updateCategory()`, `deleteCategory()`
-- Follow `apps/web/lib/api/complaints.ts` patterns
-- Verify: `cd apps/web && pnpm tsc --noEmit`
-- **Depends on:** Task 4 (shared types)
+### Task 12: Frontend — Content API Client ✅
+- Created `apps/web/lib/api/content.ts` with 19 typed API functions
+- Blog: getPublishedPosts, getPostBySlug, getAdminPosts, createPost, updatePost, syncPost, deletePost, incrementView
+- Categories: getCategories, createCategory, updateCategory, deleteCategory
+- Testimonials: getApprovedTestimonials, submitTestimonial, getAllTestimonials, approveTestimonial, rejectTestimonial
+- Legal News: getLatestNews, createNewsItem
+- Verified: `pnpm tsc --noEmit` passes
+- Commit: `ce4bfe7`
 
 ### Task 13: Frontend — Admin Content List Page ⬜
 - Create `apps/web/app/admin/content/page.tsx`
@@ -168,8 +170,8 @@ Task 4 ──► Task 12 (API Client) ──┬── Task 13 (List Page)  │
 - ~~**Batch 1:** Tasks 1, 2, 3~~ ✅
 - ~~**Batch 2:** Tasks 4, 5, 6~~ ✅
 - ~~**Batch 3:** Tasks 7, 8, 9~~ ✅
-- **Batch 4 (NEXT):** Tasks 10, 11, 12 (Controllers + Module + API Client — 10 & 12 are independent, 11 depends on 10)
-- **Batch 5:** Tasks 13, 14, 15 (Frontend pages — all depend on 12, but 13/14/15 are independent of each other)
+- ~~**Batch 4:** Tasks 10, 11, 12~~ ✅
+- **Batch 5 (NEXT):** Tasks 13, 14, 15 (Frontend pages — all depend on 12, but 13/14/15 are independent of each other)
 - **Batch 6:** Task 16 (Final verification)
 
 ## Key Patterns Reference
