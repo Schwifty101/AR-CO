@@ -34,9 +34,7 @@ export class GoogleDocsService {
   private readonly logger = new Logger(GoogleDocsService.name);
   private docsClient: docs_v1.Docs | null = null;
 
-  constructor(
-    private readonly configService: ConfigService<Configuration>,
-  ) {}
+  constructor(private readonly configService: ConfigService<Configuration>) {}
 
   /**
    * Extract Google Doc ID from various URL formats
@@ -198,16 +196,14 @@ export class GoogleDocsService {
     if (text === '\n') return '';
 
     // Remove trailing newline and vertical tabs
+    // eslint-disable-next-line no-control-regex
     text = text.replace(/\n$/, '').replace(/\x0b/g, '');
 
     const style = textRun.textStyle;
 
     // Auto-link plain URLs that aren't already linked
     if (!style?.link?.url) {
-      text = text.replace(
-        /(https?:\/\/[^\s<]+)/g,
-        '<a href="$1">$1</a>',
-      );
+      text = text.replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1">$1</a>');
     }
 
     if (!style) return text;
@@ -252,34 +248,55 @@ export class GoogleDocsService {
   }
 
   /**
-   * Extract case study metadata from "Key Facts" section in HTML
+   * Extract case study metadata from "Key Facts" / "Quick Facts" section in HTML
+   *
+   * Supports two document formats:
+   * 1. Inline bold labels: `<p><strong>Client:</strong> Company Name</p>`
+   * 2. Table layout: `<tr><td><strong>Client</strong></td><td>Company Name</td></tr>`
+   *
+   * Also handles H1 or H2 headings for section names.
    */
   private extractCaseStudyMetadata(
     html: string,
   ): ParsedGoogleDoc['caseStudyMetadata'] | undefined {
-    // Check if "Key Facts" section exists
-    if (!html.includes('Key Facts')) return undefined;
+    // Check if any "Facts" section exists (Key Facts, Quick Facts, etc.)
+    if (!/(?:Key|Quick)\s*Facts/i.test(html)) return undefined;
 
     const metadata: NonNullable<ParsedGoogleDoc['caseStudyMetadata']> = {};
 
-    // Extract outcome from "Outcome" section
+    // Extract outcome — matches "Outcome" or "The Outcome" in h1-h3
     const outcomeMatch = html.match(
-      /<h2>Outcome<\/h2>\s*([\s\S]*?)(?=<h[12]|$)/i,
+      /<h[1-3]>(?:The\s+)?Outcome<\/h[1-3]>\s*([\s\S]*?)(?=<h[1-3]|$)/i,
     );
     if (outcomeMatch) {
-      metadata.outcome = outcomeMatch[1]
-        .replace(/<[^>]*>/g, '')
-        .trim();
+      metadata.outcome = outcomeMatch[1].replace(/<[^>]*>/g, '').trim();
     }
 
-    // Extract key facts (Client, Practice Area, Duration, Year, Tags)
+    // Extract a field value by label from either table or inline format
     const extractField = (label: string): string | undefined => {
-      const regex = new RegExp(
+      // Format 1 (table): <td><p><strong>Label</strong></p></td><td><p>Value</p></td>
+      const tableRegex = new RegExp(
+        `<td>[^<]*<p>\\s*<strong>${label}</strong>\\s*</p>[^<]*</td>\\s*<td>[^<]*<p>\\s*([\\s\\S]*?)\\s*</p>`,
+        'i',
+      );
+      const tableMatch = html.match(tableRegex);
+      if (tableMatch) {
+        const val = tableMatch[1].replace(/<[^>]*>/g, '').trim();
+        if (val) return val;
+      }
+
+      // Format 2 (inline): <strong>Label:</strong> value text
+      const inlineRegex = new RegExp(
         `<strong>${label}:?</strong>\\s*(.+?)(?=<|$)`,
         'i',
       );
-      const match = html.match(regex);
-      return match ? match[1].trim() : undefined;
+      const inlineMatch = html.match(inlineRegex);
+      if (inlineMatch) {
+        const val = inlineMatch[1].replace(/<[^>]*>/g, '').trim();
+        if (val) return val;
+      }
+
+      return undefined;
     };
 
     metadata.clientName = extractField('Client');
@@ -315,7 +332,7 @@ export class GoogleDocsService {
     try {
       const credentials = JSON.parse(
         Buffer.from(keyBase64, 'base64').toString('utf-8'),
-      );
+      ) as Record<string, unknown>;
 
       const auth = new google.auth.GoogleAuth({
         credentials,
