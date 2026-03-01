@@ -38,6 +38,9 @@ interface DocumentRow {
   client?: { user: { full_name: string } | null } | null;
 }
 
+/** Supabase query result type */
+type DbResult<T> = { data: T | null; error: { message: string } | null };
+
 /** Select clause for document queries with joined names */
 const DOCUMENT_SELECT = `
   *,
@@ -49,7 +52,13 @@ const DOCUMENT_SELECT = `
 `;
 
 /** Allowed sort columns */
-const ALLOWED_SORT_COLUMNS = ['created_at', 'updated_at', 'name', 'file_size', 'document_type'];
+const ALLOWED_SORT_COLUMNS = [
+  'created_at',
+  'updated_at',
+  'name',
+  'file_size',
+  'document_type',
+];
 
 /**
  * Service for managing documents — upload, retrieve, update, delete.
@@ -88,7 +97,12 @@ export class DocumentsService {
     // Build storage path: {entity}/{entityId}/{timestamp}_{sanitizedFilename}
     const timestamp = Date.now();
     const sanitizedName = file.originalname.replace(/[^a-zA-Z0-9._-]/g, '_');
-    const storagePath = this.buildStoragePath(dto, user.id, timestamp, sanitizedName);
+    const storagePath = this.buildStoragePath(
+      dto,
+      user.id,
+      timestamp,
+      sanitizedName,
+    );
 
     // Upload to Supabase Storage
     const filePath = await this.storageService.upload(
@@ -101,7 +115,7 @@ export class DocumentsService {
     const clientProfileId = dto.clientProfileId || user.clientProfileId || null;
 
     // Insert document record
-    const { data, error } = await adminClient
+    const { data, error } = (await adminClient
       .from('documents')
       .insert({
         name: dto.name,
@@ -116,23 +130,27 @@ export class DocumentsService {
         document_type: dto.documentType || DocumentType.OTHER,
       })
       .select(DOCUMENT_SELECT)
-      .single();
+      .single()) as DbResult<DocumentRow>;
 
     if (error || !data) {
       this.logger.error(`Failed to create document record: ${error?.message}`);
       // Clean up uploaded file on DB failure
-      await this.storageService.delete(filePath).catch((e: unknown) =>
-        this.logger.error(`Failed to clean up storage after DB error: ${e}`),
-      );
+      await this.storageService
+        .delete(filePath)
+        .catch((e: unknown) =>
+          this.logger.error(
+            `Failed to clean up storage after DB error: ${String(e)}`,
+          ),
+        );
       throw new InternalServerErrorException('Failed to save document.');
     }
 
     // Create case activity if document is linked to a case
     if (dto.caseId) {
-      await this.createDocumentActivity(adminClient, dto.caseId, user.id, data as DocumentRow);
+      await this.createDocumentActivity(adminClient, dto.caseId, user.id, data);
     }
 
-    return this.mapDocumentRow(data as DocumentRow);
+    return this.mapDocumentRow(data);
   }
 
   /**
@@ -152,12 +170,14 @@ export class DocumentsService {
     const page = pagination.page ?? 1;
     const limit = pagination.limit ?? 20;
     const sort = ALLOWED_SORT_COLUMNS.includes(pagination.sort ?? '')
-      ? (pagination.sort as string)
+      ? pagination.sort
       : 'created_at';
     const order = pagination.order ?? 'desc';
 
     // Build base query with access control
-    let countQuery = adminClient.from('documents').select('id', { count: 'exact', head: true });
+    let countQuery = adminClient
+      .from('documents')
+      .select('id', { count: 'exact', head: true });
     let dataQuery = adminClient.from('documents').select(DOCUMENT_SELECT);
 
     // Access control: clients see only their own documents
@@ -180,15 +200,23 @@ export class DocumentsService {
       dataQuery = dataQuery.eq('client_profile_id', filters.clientProfileId);
     }
     if (filters.serviceRegistrationId) {
-      countQuery = countQuery.eq('service_registration_id', filters.serviceRegistrationId);
-      dataQuery = dataQuery.eq('service_registration_id', filters.serviceRegistrationId);
+      countQuery = countQuery.eq(
+        'service_registration_id',
+        filters.serviceRegistrationId,
+      );
+      dataQuery = dataQuery.eq(
+        'service_registration_id',
+        filters.serviceRegistrationId,
+      );
     }
 
     // Count
     const { count, error: countError } = await countQuery;
     if (countError) {
       this.logger.error(`Failed to count documents: ${countError.message}`);
-      throw new InternalServerErrorException('Unable to retrieve documents count.');
+      throw new InternalServerErrorException(
+        'Unable to retrieve documents count.',
+      );
     }
 
     const total = count ?? 0;
@@ -196,9 +224,9 @@ export class DocumentsService {
     const offset = (page - 1) * limit;
 
     // Fetch data
-    const { data: rows, error } = await dataQuery
+    const { data: rows, error } = (await dataQuery
       .order(sort, { ascending: order === 'asc' })
-      .range(offset, offset + limit - 1);
+      .range(offset, offset + limit - 1)) as DbResult<DocumentRow[]>;
 
     if (error) {
       this.logger.error(`Failed to fetch documents: ${error.message}`);
@@ -206,7 +234,7 @@ export class DocumentsService {
     }
 
     return {
-      data: (rows || []).map((row) => this.mapDocumentRow(row as unknown as DocumentRow)),
+      data: (rows || []).map((row) => this.mapDocumentRow(row)),
       meta: { page, limit, total, totalPages },
     };
   }
@@ -218,22 +246,24 @@ export class DocumentsService {
    * @param user - Authenticated user (for access control)
    * @returns Document response
    */
-  async getDocumentById(documentId: string, user: AuthUser): Promise<DocumentResponse> {
+  async getDocumentById(
+    documentId: string,
+    user: AuthUser,
+  ): Promise<DocumentResponse> {
     const adminClient = this.supabaseService.getAdminClient();
 
-    const { data, error } = await adminClient
+    const { data, error } = (await adminClient
       .from('documents')
       .select(DOCUMENT_SELECT)
       .eq('id', documentId)
-      .single();
+      .single()) as DbResult<DocumentRow>;
 
     if (error || !data) {
       throw new NotFoundException('Document not found.');
     }
 
-    const row = data as unknown as DocumentRow;
-    this.assertDocumentAccess(row, user);
-    return this.mapDocumentRow(row);
+    this.assertDocumentAccess(data, user);
+    return this.mapDocumentRow(data);
   }
 
   /**
@@ -252,42 +282,45 @@ export class DocumentsService {
     const adminClient = this.supabaseService.getAdminClient();
 
     // Fetch existing document
-    const { data: existing, error: fetchError } = await adminClient
+    const { data: existing, error: fetchError } = (await adminClient
       .from('documents')
       .select(DOCUMENT_SELECT)
       .eq('id', documentId)
-      .single();
+      .single()) as DbResult<DocumentRow>;
 
     if (fetchError || !existing) {
       throw new NotFoundException('Document not found.');
     }
 
-    const existingRow = existing as unknown as DocumentRow;
-    this.assertCanModify(existingRow, user);
+    this.assertCanModify(existing, user);
 
     // Build update object (only non-undefined fields)
     const updateFields: Record<string, unknown> = {};
     if (dto.name !== undefined) updateFields.name = dto.name;
-    if (dto.description !== undefined) updateFields.description = dto.description;
-    if (dto.documentType !== undefined) updateFields.document_type = dto.documentType;
+    if (dto.description !== undefined)
+      updateFields.description = dto.description;
+    if (dto.documentType !== undefined)
+      updateFields.document_type = dto.documentType;
 
     if (Object.keys(updateFields).length === 0) {
-      return this.mapDocumentRow(existingRow);
+      return this.mapDocumentRow(existing);
     }
 
-    const { data, error } = await adminClient
+    const { data, error } = (await adminClient
       .from('documents')
       .update(updateFields)
       .eq('id', documentId)
       .select(DOCUMENT_SELECT)
-      .single();
+      .single()) as DbResult<DocumentRow>;
 
     if (error || !data) {
-      this.logger.error(`Failed to update document ${documentId}: ${error?.message}`);
+      this.logger.error(
+        `Failed to update document ${documentId}: ${error?.message}`,
+      );
       throw new InternalServerErrorException('Failed to update document.');
     }
 
-    return this.mapDocumentRow(data as unknown as DocumentRow);
+    return this.mapDocumentRow(data);
   }
 
   /**
@@ -299,30 +332,35 @@ export class DocumentsService {
   async deleteDocument(documentId: string, user: AuthUser): Promise<void> {
     const adminClient = this.supabaseService.getAdminClient();
 
-    const { data: existing, error: fetchError } = await adminClient
+    const { data: existing, error: fetchError } = (await adminClient
       .from('documents')
       .select('id, file_path, uploaded_by, client_profile_id')
       .eq('id', documentId)
-      .single();
+      .single()) as DbResult<{
+      id: string;
+      file_path: string;
+      uploaded_by: string;
+      client_profile_id: string | null;
+    }>;
 
     if (fetchError || !existing) {
       throw new NotFoundException('Document not found.');
     }
 
-    this.assertCanModify(
-      existing as unknown as { uploaded_by: string; client_profile_id?: string | null },
-      user,
-    );
+    this.assertCanModify(existing, user);
 
     // Delete from storage
-    await this.storageService.delete(
-      (existing as unknown as { file_path: string }).file_path,
-    );
+    await this.storageService.delete(existing.file_path);
 
     // Delete from database
-    const { error } = await adminClient.from('documents').delete().eq('id', documentId);
+    const { error } = await adminClient
+      .from('documents')
+      .delete()
+      .eq('id', documentId);
     if (error) {
-      this.logger.error(`Failed to delete document record ${documentId}: ${error.message}`);
+      this.logger.error(
+        `Failed to delete document record ${documentId}: ${error.message}`,
+      );
       throw new InternalServerErrorException('Failed to delete document.');
     }
 
@@ -342,24 +380,25 @@ export class DocumentsService {
   ): Promise<{ signedUrl: string }> {
     const adminClient = this.supabaseService.getAdminClient();
 
-    const { data, error } = await adminClient
+    const { data, error } = (await adminClient
       .from('documents')
       .select('id, file_path, uploaded_by, client_profile_id, case_id')
       .eq('id', documentId)
-      .single();
+      .single()) as DbResult<{
+      id: string;
+      file_path: string;
+      uploaded_by: string;
+      client_profile_id: string | null;
+      case_id: string | null;
+    }>;
 
     if (error || !data) {
       throw new NotFoundException('Document not found.');
     }
 
-    this.assertDocumentAccess(
-      data as unknown as { uploaded_by: string; client_profile_id: string | null },
-      user,
-    );
+    this.assertDocumentAccess(data, user);
 
-    const signedUrl = await this.storageService.getSignedUrl(
-      (data as unknown as { file_path: string }).file_path,
-    );
+    const signedUrl = await this.storageService.getSignedUrl(data.file_path);
     return { signedUrl };
   }
 
@@ -395,7 +434,9 @@ export class DocumentsService {
   ): void {
     // Staff/Admin/Attorney can view all
     if (
-      [UserType.ADMIN, UserType.STAFF, UserType.ATTORNEY].includes(user.userType)
+      [UserType.ADMIN, UserType.STAFF, UserType.ATTORNEY].includes(
+        user.userType,
+      )
     ) {
       return;
     }
@@ -404,7 +445,10 @@ export class DocumentsService {
       return;
     }
     // Client can view their own documents
-    if (user.clientProfileId && doc.client_profile_id === user.clientProfileId) {
+    if (
+      user.clientProfileId &&
+      doc.client_profile_id === user.clientProfileId
+    ) {
       return;
     }
     throw new ForbiddenException('You do not have access to this document.');
@@ -423,7 +467,9 @@ export class DocumentsService {
     if (doc.uploaded_by === user.id) {
       return;
     }
-    throw new ForbiddenException('You do not have permission to modify this document.');
+    throw new ForbiddenException(
+      'You do not have permission to modify this document.',
+    );
   }
 
   /**
@@ -475,7 +521,9 @@ export class DocumentsService {
         ],
       });
     } catch (err) {
-      this.logger.warn(`Failed to create case activity for document upload: ${err}`);
+      this.logger.warn(
+        `Failed to create case activity for document upload: ${err}`,
+      );
       // Don't fail the upload if activity creation fails
     }
   }
