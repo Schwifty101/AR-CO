@@ -22,7 +22,9 @@ interface CaseActivityRow {
   title: string;
   description: string | null;
   created_by: string;
-  attachments: { documentId: string; name: string; fileType: string | null }[] | null;
+  attachments:
+    | { documentId: string; name: string; fileType: string | null }[]
+    | null;
   created_at: string;
   /** Joined user_profiles via created_by foreign key */
   creator: { full_name: string } | null;

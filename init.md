@@ -6,11 +6,11 @@ This document provides a granular 3-level task breakdown for transforming the AR
 
 **Current State (as of 2026-03-01):**
 
-- HEAD TASKs 1-8 complete (Environment, Schema, DB Service, Auth, Users, Clients/Subscriptions/Complaints/Service Registrations, Cases, Consultation Booking)
+- HEAD TASKs 1-9 complete (Environment, Schema, DB Service, Auth, Users, Clients/Subscriptions/Complaints/Service Registrations, Cases, Consultation Booking, Documents)
 - Sub-task 12.9 complete (Service Registrations → Cases conversion flow)
 - Sub-tasks 12.8.4-12.8.5 complete (Admin service registrations list + detail pages)
 - **Safepay payment code is LIVE but being replaced by Lemon Squeezy** — migration in progress
-- HEAD TASKs 9-13 remain (Documents, Payments/Lemon Squeezy, Content, Admin, Testing)
+- HEAD TASKs 10-13 remain (Payments/Lemon Squeezy, Content, Admin, Testing)
 
 **Payment Provider:** [Lemon Squeezy](https://lemonsqueezy.com) (Merchant of Record) — replacing Safepay
 **SDK:** `@lemonsqueezy/lemonsqueezy.js`
@@ -485,7 +485,7 @@ Complete database architecture with 20+ tables, Row-Level Security, comprehensiv
   - If no: create Supabase auth user (auto-generated password) + user_profile (client) + client_profile
   - Link service_registration.client_profile_id
   - Send credentials email via SendGrid
-- [ ] **6.7.11**: Implement `uploadDocuments(registrationId, files)` method — _deferred to HEAD TASK 9_
+- [x] **6.7.11**: Implement `uploadDocuments(registrationId, files)` method — _completed in HEAD TASK 9_
   - Uploads to Supabase Storage, creates documents records linked via service_registration_id
 - [x] **6.7.12**: Implement `getRegistrationStatus(referenceNumber, email)` method (@Public)
 - [x] **6.7.13**: Implement `getMyRegistrations(userId, paginationDto)` method
@@ -1495,7 +1495,7 @@ Single atomic Supabase migration:
 
 - [x] Create client works
 - [x] Create case works (case_number generated)
-- [ ] Upload document works (HEAD TASK 9)
+- [x] Upload document works (HEAD TASK 9)
 - [ ] Create invoice works (HEAD TASK 10G)
 
 ### Phase 4: Client-Facing Features (Partial)
@@ -1577,7 +1577,7 @@ Single atomic Supabase migration:
 
 10D + 10E + 10F ──→ 10H (Frontend Payment Components)
 
-9 (Documents) ── independent, can run in parallel with 10A-10H
+9 (Documents) ── COMPLETE
 11 (Content) ── independent, can run in parallel with 10
 12 (Admin) ── depends on 10G for revenue analytics, otherwise independent
 13 (Testing) ── runs after all feature tasks
