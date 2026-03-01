@@ -96,3 +96,20 @@ export type {
   PaginatedSubscriptionsResponse,
   SubscriptionDetail,
 } from './subscriptions.types';
+
+// Content
+export type {
+  CreateContentPostData,
+  UpdateContentPostData,
+  ContentFilters,
+  ContentPostResponse,
+  PaginatedContentPostsResponse,
+  CreateCategoryData,
+  UpdateCategoryData,
+  CategoryResponse,
+  CreateTestimonialData,
+  TestimonialResponse,
+  PaginatedTestimonialsResponse,
+  CreateLegalNewsData,
+  LegalNewsResponse,
+} from './content.types';
