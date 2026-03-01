@@ -15,11 +15,13 @@ import { CasesModule } from './cases/cases.module';
 import { PracticeAreasModule } from './practice-areas/practice-areas.module';
 import { ConsultationsModule } from './consultations/consultations.module';
 import { SubscriptionsModule } from './subscriptions/subscriptions.module';
+import { StorageModule } from './storage/storage.module';
 
 @Module({
   imports: [
     AppConfigModule,
     DatabaseModule,
+    StorageModule,
     ThrottlerModule.forRoot([{ ttl: 60000, limit: 100 }]),
     AuthModule,
     UsersModule,
