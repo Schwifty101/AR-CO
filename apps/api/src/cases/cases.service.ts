@@ -541,12 +541,16 @@ export class CasesService {
     // 1. Fetch the registration with service details
     const { data: registration, error: regError } = await client
       .from('service_registrations')
-      .select('*, service:services!service_registrations_service_id_fkey(name, practice_area_id)')
+      .select(
+        '*, service:services!service_registrations_service_id_fkey(name, practice_area_id)',
+      )
       .eq('id', registrationId)
       .single();
 
     if (regError || !registration) {
-      throw new NotFoundException(`Service registration ${registrationId} not found`);
+      throw new NotFoundException(
+        `Service registration ${registrationId} not found`,
+      );
     }
 
     // 2. Validate state
@@ -595,7 +599,8 @@ export class CasesService {
       description: overrides.description ?? registration.description_of_need,
       priority: overrides.priority ?? CasePriority.MEDIUM,
       case_type: overrides.caseType ?? null,
-      filing_date: overrides.filingDate ?? new Date().toISOString().split('T')[0],
+      filing_date:
+        overrides.filingDate ?? new Date().toISOString().split('T')[0],
       assigned_to_id: registration.assigned_to_id,
     };
 
@@ -691,7 +696,8 @@ export class CasesService {
       filingDate: row.filing_date,
       closingDate: row.closing_date,
       serviceRegistrationId: row.service_registration_id ?? null,
-      serviceRegistrationNumber: row.service_registration?.reference_number ?? null,
+      serviceRegistrationNumber:
+        row.service_registration?.reference_number ?? null,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
     };

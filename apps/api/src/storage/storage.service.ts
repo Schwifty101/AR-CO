@@ -1,4 +1,8 @@
-import { Injectable, Logger, InternalServerErrorException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseService } from '../database/supabase.service';
 
@@ -21,7 +25,8 @@ export class StorageService {
     private readonly supabaseService: SupabaseService,
     private readonly configService: ConfigService,
   ) {
-    this.defaultBucket = this.configService.get<string>('supabase.storageBucket') || 'documents';
+    this.defaultBucket =
+      this.configService.get<string>('supabase.storageBucket') || 'documents';
   }
 
   /**
@@ -50,7 +55,9 @@ export class StorageService {
       });
 
     if (error) {
-      this.logger.error(`Failed to upload file to ${targetBucket}/${path}: ${error.message}`);
+      this.logger.error(
+        `Failed to upload file to ${targetBucket}/${path}: ${error.message}`,
+      );
       throw new InternalServerErrorException('Failed to upload file.');
     }
 
@@ -82,7 +89,9 @@ export class StorageService {
       this.logger.error(
         `Failed to create signed URL for ${targetBucket}/${path}: ${error?.message}`,
       );
-      throw new InternalServerErrorException('Failed to generate download URL.');
+      throw new InternalServerErrorException(
+        'Failed to generate download URL.',
+      );
     }
 
     return data.signedUrl;
@@ -103,7 +112,9 @@ export class StorageService {
       .remove([path]);
 
     if (error) {
-      this.logger.error(`Failed to delete file ${targetBucket}/${path}: ${error.message}`);
+      this.logger.error(
+        `Failed to delete file ${targetBucket}/${path}: ${error.message}`,
+      );
       throw new InternalServerErrorException('Failed to delete file.');
     }
 
