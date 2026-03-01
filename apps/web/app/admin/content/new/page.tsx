@@ -39,14 +39,44 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
-import { ArrowLeft, Loader2, ChevronDown, Info } from 'lucide-react';
+import { ArrowLeft, Loader2, ChevronDown, Info, Copy, Check } from 'lucide-react';
 import Link from 'next/link';
 import { createPost, getCategories } from '@/lib/api/content';
 import { ContentType } from '@repo/shared';
 import type { CategoryResponse } from '@repo/shared';
 
+/** Service account email for Google Doc sharing */
+const SERVICE_ACCOUNT_EMAIL = 'ar-co-201@ar-co-485513.iam.gserviceaccount.com';
+
 /** No category sentinel value used in the select dropdown */
 const NO_CATEGORY = '__none__';
+
+/** Copy-to-clipboard button for the service account email */
+function CopyEmailButton() {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(SERVICE_ACCOUNT_EMAIL);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <Button
+      type="button"
+      variant="outline"
+      size="icon"
+      className="h-11 w-11 shrink-0 border-2 border-destructive/30"
+      onClick={handleCopy}
+    >
+      {copied ? (
+        <Check className="h-5 w-5 text-green-500" />
+      ) : (
+        <Copy className="h-5 w-5" />
+      )}
+    </Button>
+  );
+}
 
 /**
  * Admin new content post page component
@@ -166,9 +196,12 @@ export default function NewContentPage() {
                 <p className="text-base text-foreground">
                   Before importing, you <strong>must</strong> share your Google Doc as <strong>Viewer</strong> with the following service account:
                 </p>
-                <code className="block rounded-md bg-background border-2 border-destructive/30 px-4 py-3 text-base font-bold select-all tracking-wide">
-                  ar-co-201@ar-co-485513.iam.gserviceaccount.com
-                </code>
+                <div className="flex items-center gap-2">
+                  <code className="flex-1 rounded-md bg-background border-2 border-destructive/30 px-4 py-3 text-base font-bold select-all tracking-wide">
+                    {SERVICE_ACCOUNT_EMAIL}
+                  </code>
+                  <CopyEmailButton />
+                </div>
                 <p className="text-sm text-muted-foreground">
                   Open your Google Doc → Click <strong className="text-foreground">Share</strong> → Paste the email above → Set role to <strong className="text-foreground">Viewer</strong> → Click <strong className="text-foreground">Send</strong>
                 </p>
