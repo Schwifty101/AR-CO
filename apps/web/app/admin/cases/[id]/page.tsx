@@ -50,6 +50,7 @@ import {
 } from '@/lib/api/cases';
 import { getUsers } from '@/lib/api/users';
 import { ArrowLeft, Calendar, User, Briefcase, Clock } from 'lucide-react';
+import { CaseDocumentsSection } from '@/components/documents/case-documents-section';
 import {
   STATUS_COLORS,
   PRIORITY_COLORS,
@@ -432,6 +433,9 @@ export default function AdminCaseDetailPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Case Documents */}
+      <CaseDocumentsSection caseId={caseId} allowDelete />
 
       {/* Activities Timeline */}
       <Card>
