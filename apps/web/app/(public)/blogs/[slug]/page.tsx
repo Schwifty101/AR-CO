@@ -1,174 +1,117 @@
-'use client'
-
-import { notFound } from 'next/navigation'
-import { use, useState, useEffect } from 'react'
-import Link from 'next/link'
-import { motion } from 'framer-motion'
-import { ArrowLeft, Calendar, Clock, User, Loader2 } from 'lucide-react'
-import { getPostBySlug, incrementView } from '@/lib/api/content'
+import type { Metadata } from 'next'
 import type { ContentPostResponse } from '@repo/shared'
-import styles from './page.module.css'
+import BlogPostContent from './blog-post-content'
 
 interface BlogPostPageProps {
   params: Promise<{ slug: string }>
 }
 
-/**
- * Format an ISO date string into a human-readable form.
- */
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  })
-}
-
-/** Stagger entrance variants */
-const stagger = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.1 } },
-}
-const fadeUp = {
-  hidden: { opacity: 0, y: 28 },
-  show: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] as const },
-  },
-}
+const API_BASE = process.env.API_BACKEND_URL || 'http://localhost:4000'
 
 /**
- * Individual blog post page.
- * Fetches the post by slug from the API and renders full article content.
+ * Server-side fetch for blog post metadata.
+ * Returns null if post not found.
  */
-export default function BlogPostPage({ params }: BlogPostPageProps) {
-  const { slug } = use(params)
-  const [post, setPost] = useState<ContentPostResponse | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-
-  useEffect(() => {
-    async function loadPost() {
-      try {
-        const data = await getPostBySlug(slug)
-        setPost(data)
-        // Fire-and-forget view increment
-        incrementView(data.id).catch(() => {})
-      } catch {
-        // Post not found will be handled by the null check below
-      } finally {
-        setIsLoading(false)
-      }
-    }
-    loadPost()
-  }, [slug])
-
-  if (isLoading) {
-    return (
-      <div className={styles.page}>
-        <div className={styles.backRow}>
-          <Link href="/blogs" className={styles.backLink}>
-            <ArrowLeft className={styles.backIcon} />
-            <span>All Articles</span>
-          </Link>
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'center', padding: '6rem 0' }}>
-          <Loader2 style={{ width: 32, height: 32, animation: 'spin 1s linear infinite' }} />
-        </div>
-      </div>
-    )
+async function fetchPostBySlug(slug: string): Promise<ContentPostResponse | null> {
+  try {
+    const res = await fetch(`${API_BASE}/api/content/posts/${slug}`, {
+      next: { revalidate: 60 },
+    })
+    if (!res.ok) return null
+    return (await res.json()) as ContentPostResponse
+  } catch {
+    return null
   }
+}
+
+/**
+ * Generate SEO metadata for blog post pages.
+ * Fetches post data server-side to populate title, description, and OG tags.
+ *
+ * @example
+ * ```
+ * // Generates metadata like:
+ * // <title>Post Title | AR&CO Law</title>
+ * // <meta property="og:type" content="article" />
+ * ```
+ */
+export async function generateMetadata({ params }: BlogPostPageProps): Promise<Metadata> {
+  const { slug } = await params
+  const post = await fetchPostBySlug(slug)
 
   if (!post) {
-    notFound()
+    return {
+      title: 'Post Not Found | AR&CO Law',
+      description: 'The requested blog post could not be found.',
+    }
   }
 
+  const title = post.metaTitle || `${post.title} | AR&CO Law`
+  const description = post.metaDescription || post.excerpt || ''
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: 'article',
+      publishedTime: post.publishedAt || undefined,
+      authors: post.authorName ? [post.authorName] : undefined,
+      ...(post.featuredImage && { images: [{ url: post.featuredImage }] }),
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      ...(post.featuredImage && { images: [post.featuredImage] }),
+    },
+  }
+}
+
+/**
+ * Blog post detail page (server component wrapper).
+ * Provides SEO metadata via generateMetadata, JSON-LD structured data,
+ * and renders the client component for interactive content.
+ *
+ * @example
+ * ```
+ * // Accessible at /blogs/personal-injury-claims-guide
+ * ```
+ */
+export default async function BlogPostPage({ params }: BlogPostPageProps) {
+  const { slug } = await params
+  const post = await fetchPostBySlug(slug)
+
+  const jsonLd = post
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'Article',
+        headline: post.title,
+        description: post.metaDescription || post.excerpt || '',
+        author: {
+          '@type': 'Person',
+          name: post.authorName || 'AR&CO',
+        },
+        publisher: {
+          '@type': 'Organization',
+          name: 'AR&CO Law',
+        },
+        datePublished: post.publishedAt || post.createdAt,
+        dateModified: post.updatedAt || post.createdAt,
+        ...(post.featuredImage && { image: post.featuredImage }),
+      }
+    : null
+
   return (
-    <div className={styles.page}>
-      {/* ── Back link ── */}
-      <div className={styles.backRow}>
-        <Link href="/blogs" className={styles.backLink}>
-          <ArrowLeft className={styles.backIcon} />
-          <span>All Articles</span>
-        </Link>
-      </div>
-
-      {/* ── Article Header ── */}
-      <motion.header
-        className={styles.header}
-        initial="hidden"
-        animate="show"
-        variants={stagger}
-      >
-        <motion.span className={styles.category} variants={fadeUp}>
-          {post.categoryName || 'General'}
-        </motion.span>
-
-        <motion.h1 className={styles.title} variants={fadeUp}>
-          {post.title}
-        </motion.h1>
-
-        <motion.div className={styles.meta} variants={fadeUp}>
-          <span className={styles.metaItem}>
-            <User className={styles.metaIcon} />
-            {post.authorName || 'AR&CO'}
-          </span>
-          <span className={styles.metaDivider} />
-          <span className={styles.metaItem}>
-            <Calendar className={styles.metaIcon} />
-            {formatDate(post.publishedAt || post.createdAt)}
-          </span>
-          {post.readTime && (
-            <>
-              <span className={styles.metaDivider} />
-              <span className={styles.metaItem}>
-                <Clock className={styles.metaIcon} />
-                {post.readTime}
-              </span>
-            </>
-          )}
-        </motion.div>
-
-        {/* Gold horizontal rule */}
-        <motion.div className={styles.headerRule} variants={fadeUp} />
-      </motion.header>
-
-      {/* ── Article Body ── */}
-      <motion.article
-        className={styles.body}
-        initial="hidden"
-        whileInView="show"
-        viewport={{ once: true, amount: 0.05 }}
-        variants={stagger}
-      >
-        {post.content ? (
-          <motion.div
-            className={styles.paragraph}
-            variants={fadeUp}
-            dangerouslySetInnerHTML={{ __html: post.content }}
-          />
-        ) : (
-          <motion.p className={styles.paragraph} variants={fadeUp}>
-            {post.excerpt || ''}
-          </motion.p>
-        )}
-      </motion.article>
-
-      {/* ── Footer CTA ── */}
-      <div className={styles.articleFooter}>
-        <div className={styles.footerRule} />
-        <div className={styles.footerContent}>
-          <div className={styles.authorCard}>
-            <span className={styles.authorCardLabel}>Written by</span>
-            <span className={styles.authorCardName}>{post.authorName || 'AR&CO'}</span>
-            <span className={styles.authorCardRole}>Attorney at AR&amp;CO</span>
-          </div>
-          <Link href="/blogs" className={styles.footerLink}>
-            <ArrowLeft className={styles.footerLinkIcon} />
-            Back to all articles
-          </Link>
-        </div>
-      </div>
-    </div>
+    <>
+      {jsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      )}
+      <BlogPostContent slug={slug} />
+    </>
   )
 }

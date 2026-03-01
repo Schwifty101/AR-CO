@@ -111,13 +111,37 @@ export class GoogleDocsService {
     if (!content) return '';
 
     const parts: string[] = [];
+    let inList = false;
 
     for (const element of content) {
       if (element.paragraph) {
+        const isBullet = !!element.paragraph.bullet;
+
+        // Close list if we were in one and this isn't a bullet
+        if (inList && !isBullet) {
+          parts.push('</ul>');
+          inList = false;
+        }
+
+        // Open list if this is a bullet and we're not in one
+        if (isBullet && !inList) {
+          parts.push('<ul>');
+          inList = true;
+        }
+
         parts.push(this.convertParagraph(element.paragraph));
       } else if (element.table) {
+        if (inList) {
+          parts.push('</ul>');
+          inList = false;
+        }
         parts.push(this.convertTable(element.table));
       }
+    }
+
+    // Close any open list
+    if (inList) {
+      parts.push('</ul>');
     }
 
     return parts.filter(Boolean).join('\n');
@@ -173,10 +197,19 @@ export class GoogleDocsService {
     // Skip newline-only content
     if (text === '\n') return '';
 
-    // Remove trailing newline
-    text = text.replace(/\n$/, '');
+    // Remove trailing newline and vertical tabs
+    text = text.replace(/\n$/, '').replace(/\x0b/g, '');
 
     const style = textRun.textStyle;
+
+    // Auto-link plain URLs that aren't already linked
+    if (!style?.link?.url) {
+      text = text.replace(
+        /(https?:\/\/[^\s<]+)/g,
+        '<a href="$1">$1</a>',
+      );
+    }
+
     if (!style) return text;
 
     // Apply formatting
