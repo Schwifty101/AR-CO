@@ -97,3 +97,20 @@ export {
   PaginatedSubscriptionsResponseSchema,
   SubscriptionDetailSchema,
 } from './subscriptions.schemas';
+
+// Content
+export {
+  CreateContentPostSchema,
+  UpdateContentPostSchema,
+  ContentFiltersSchema,
+  ContentPostResponseSchema,
+  PaginatedContentPostsResponseSchema,
+  CreateCategorySchema,
+  UpdateCategorySchema,
+  CategoryResponseSchema,
+  CreateTestimonialSchema,
+  TestimonialResponseSchema,
+  PaginatedTestimonialsResponseSchema,
+  CreateLegalNewsSchema,
+  LegalNewsResponseSchema,
+} from './content.schemas';
