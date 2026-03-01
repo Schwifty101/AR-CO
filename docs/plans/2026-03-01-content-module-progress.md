@@ -85,7 +85,7 @@
 
 ---
 
-## Remaining Tasks (4 of 16)
+## Remaining Tasks (1 of 16)
 
 ### Task 10: Backend — Content Controllers ✅
 - Created `apps/api/src/content/blog.controller.ts` (12 endpoints: posts CRUD, categories CRUD, view tracking)
@@ -111,24 +111,27 @@
 - Verified: `pnpm tsc --noEmit` passes
 - Commit: `ce4bfe7`
 
-### Task 13: Frontend — Admin Content List Page ⬜
-- Create `apps/web/app/admin/content/page.tsx`
-- Add "Content" link with `FileText` icon to `ADMIN_NAV` in `apps/web/components/dashboard/sidebar.tsx`
-- Tabs: Blogs / Case Studies, DataTable, status badges, search, filters
-- Verify: `cd apps/web && pnpm tsc --noEmit`
-- **Depends on:** Task 12
+### Task 13: Frontend — Admin Content List Page ✅
+- Created `apps/web/app/admin/content/page.tsx` (~456 lines)
+- Added "Content" link with `FileText` icon to `ADMIN_NAV` in sidebar.tsx
+- Tabs (Blogs/Case Studies), DataTable with status badges, search, category filter, pagination
+- Delete action with confirmation
+- Verified: `pnpm tsc --noEmit` passes
+- Commit: `5884eaa`
 
-### Task 14: Frontend — Admin Content Create/Edit Pages ⬜
-- Create `apps/web/app/admin/content/new/page.tsx` (Google Doc URL form)
-- Create `apps/web/app/admin/content/[id]/page.tsx` (Edit with SEO fields, re-sync, publish)
-- Verify: `cd apps/web && pnpm tsc --noEmit`
-- **Depends on:** Task 12
+### Task 14: Frontend — Admin Content Create/Edit Pages ✅
+- Created `apps/web/app/admin/content/new/page.tsx` (~190 lines, Google Doc URL form)
+- Created `apps/web/app/admin/content/[id]/page.tsx` (~400 lines, SEO fields, re-sync, publish, delete)
+- Uses Next.js 16 async params pattern with `use()` hook
+- Verified: `pnpm tsc --noEmit` passes
+- Commit: `5884eaa`
 
-### Task 15: Frontend — Update Public Blog Pages ⬜
-- Modify `apps/web/app/(public)/blogs/page.tsx` to use API
-- Convert `apps/web/app/(public)/blogs/[slug]/page.tsx` to server component with `generateMetadata()` + JSON-LD
-- Verify: `cd apps/web && pnpm tsc --noEmit`
-- **Depends on:** Task 12
+### Task 15: Frontend — Update Public Blog Pages ✅
+- Modified `apps/web/app/(public)/blogs/page.tsx` — API-backed with loading state, kept all animations
+- Modified `apps/web/app/(public)/blogs/[slug]/page.tsx` — API fetch, view increment, HTML content rendering
+- Fixed ContentType enum usage (string literals → `ContentType.BLOG`/`ContentType.CASE_STUDY`)
+- Verified: `pnpm tsc --noEmit` passes
+- Commit: `5884eaa`
 
 ### Task 16: Final Verification & Cleanup ⬜
 - Full type check: shared + api + web
@@ -171,8 +174,8 @@ Task 4 ──► Task 12 (API Client) ──┬── Task 13 (List Page)  │
 - ~~**Batch 2:** Tasks 4, 5, 6~~ ✅
 - ~~**Batch 3:** Tasks 7, 8, 9~~ ✅
 - ~~**Batch 4:** Tasks 10, 11, 12~~ ✅
-- **Batch 5 (NEXT):** Tasks 13, 14, 15 (Frontend pages — all depend on 12, but 13/14/15 are independent of each other)
-- **Batch 6:** Task 16 (Final verification)
+- ~~**Batch 5:** Tasks 13, 14, 15~~ ✅
+- **Batch 6 (NEXT):** Task 16 (Final verification)
 
 ## Key Patterns Reference
 
