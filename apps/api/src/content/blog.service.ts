@@ -288,14 +288,15 @@ export class BlogService {
 
     const adminClient = this.supabaseService.getAdminClient();
 
-    const { error } = await adminClient
+    const { data, error } = (await adminClient
       .from('blog_posts')
       .delete()
-      .eq('id', postId);
+      .eq('id', postId)
+      .select('id')
+      .single()) as DbResult<{ id: string }>;
 
-    if (error) {
-      this.logger.error(`Failed to delete post ${postId}`, error);
-      throw new InternalServerErrorException('Failed to delete post');
+    if (error || !data) {
+      throw new NotFoundException('Post not found');
     }
   }
 
@@ -372,6 +373,7 @@ export class BlogService {
       .from('blog_posts')
       .select(POST_SELECT_WITH_JOINS)
       .eq('slug', slug)
+      .eq('status', PostStatus.PUBLISHED)
       .single()) as DbResult<BlogPostRow>;
 
     if (error || !data) {
@@ -566,13 +568,15 @@ export class BlogService {
   async deleteCategory(categoryId: string): Promise<void> {
     const adminClient = this.supabaseService.getAdminClient();
 
-    const { error } = await adminClient
+    const { data, error } = (await adminClient
       .from('blog_categories')
       .delete()
-      .eq('id', categoryId);
+      .eq('id', categoryId)
+      .select('id')
+      .single()) as DbResult<{ id: string }>;
 
-    if (error) {
-      throw new InternalServerErrorException('Failed to delete category');
+    if (error || !data) {
+      throw new NotFoundException('Category not found');
     }
   }
 
