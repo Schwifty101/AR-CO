@@ -9,6 +9,7 @@ import type {
   AuthResponseUserSchema,
   AuthResponseSchema,
   AuthMessageSchema,
+  SignupPendingResponseSchema,
 } from '../schemas/auth.schemas';
 
 /** Signup request data */
@@ -37,3 +38,6 @@ export type AuthResponse = z.infer<typeof AuthResponseSchema>;
 
 /** Message-only auth response */
 export type AuthMessage = z.infer<typeof AuthMessageSchema>;
+
+/** Response when signup requires email confirmation */
+export type SignupPendingResponse = z.infer<typeof SignupPendingResponseSchema>;

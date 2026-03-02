@@ -81,3 +81,9 @@ export const AuthResponseSchema = z.object({
 export const AuthMessageSchema = z.object({
   message: z.string(),
 });
+
+/** Response after signup when email confirmation is pending */
+export const SignupPendingResponseSchema = z.object({
+  message: z.string(),
+  email: z.string().email(),
+});

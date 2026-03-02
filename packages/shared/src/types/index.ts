@@ -10,6 +10,7 @@ export type {
   AuthResponseUser,
   AuthResponse,
   AuthMessage,
+  SignupPendingResponse,
 } from './auth.types';
 
 export type {
