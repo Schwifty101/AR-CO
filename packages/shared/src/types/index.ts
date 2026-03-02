@@ -130,3 +130,18 @@ export type {
   PaginatedAuditLogsResponse,
   AuditLogUser,
 } from './audit.types';
+
+// Admin
+export type {
+  CreateInteractionData,
+  UpdateInteractionData,
+  InteractionResponse,
+  PaginatedInteractionsResponse,
+  CreateActivityLogData,
+  ActivityLogResponse,
+  ActivityLogFilters,
+  PaginatedActivityLogsResponse,
+  AdminAnalyticsStats,
+  CaseAnalytics,
+  RevenueAnalytics,
+} from './admin.types';
