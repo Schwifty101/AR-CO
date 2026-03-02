@@ -180,7 +180,7 @@ export class ComplaintsController {
    * ```
    */
   @Patch(':id/status')
-  @Roles(UserType.ADMIN, UserType.STAFF)
+  @Roles(UserType.ADMIN, UserType.STAFF, UserType.ATTORNEY)
   @HttpCode(HttpStatus.OK)
   async updateComplaintStatus(
     @Param('id') id: string,
@@ -211,7 +211,7 @@ export class ComplaintsController {
    * ```
    */
   @Patch(':id/assign')
-  @Roles(UserType.ADMIN, UserType.STAFF)
+  @Roles(UserType.ADMIN, UserType.STAFF, UserType.ATTORNEY)
   @HttpCode(HttpStatus.OK)
   async assignComplaint(
     @Param('id') id: string,

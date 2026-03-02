@@ -84,11 +84,19 @@ interface DashboardSidebarProps {
 /**
  * Dashboard sidebar navigation
  */
+/** Sidebar items hidden from staff and attorney users */
+const ADMIN_ONLY_PATHS = new Set(['/admin/subscriptions']);
+
 export function DashboardSidebar({ userType }: DashboardSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const { clearAuth } = useAuth();
-  const navItems = userType === 'admin' ? ADMIN_NAV : CLIENT_NAV;
+  const { clearAuth, user } = useAuth();
+  const actualUserType = user?.userType;
+  const isAdminRole = actualUserType === 'admin';
+
+  const navItems = userType === 'admin'
+    ? ADMIN_NAV.filter((item) => isAdminRole || !ADMIN_ONLY_PATHS.has(item.href))
+    : CLIENT_NAV;
 
   return (
     <aside className="hidden md:flex h-full w-64 flex-col border-r border-border bg-sidebar p-4">

@@ -160,7 +160,7 @@ export class SubscriptionsController {
    *   "http://localhost:4000/api/subscriptions?status=active&page=1&limit=20"
    * ```
    */
-  @Roles(UserType.ADMIN, UserType.STAFF)
+  @Roles(UserType.ADMIN)
   @Get()
   async getSubscriptions(
     @Query('status') status?: SubscriptionStatus,
@@ -188,7 +188,7 @@ export class SubscriptionsController {
    *   http://localhost:4000/api/subscriptions/sub-uuid
    * ```
    */
-  @Roles(UserType.ADMIN, UserType.STAFF)
+  @Roles(UserType.ADMIN)
   @Get(':id')
   async getSubscriptionById(@Param('id') id: string) {
     return this.subscriptionsService.getSubscriptionById(id);
@@ -210,7 +210,7 @@ export class SubscriptionsController {
    *   http://localhost:4000/api/subscriptions/sub-uuid/cancel
    * ```
    */
-  @Roles(UserType.CLIENT, UserType.ADMIN, UserType.STAFF)
+  @Roles(UserType.CLIENT, UserType.ADMIN)
   @Patch(':id/cancel')
   async cancelSubscription(
     @Param('id') id: string,

@@ -192,7 +192,7 @@ export class ConsultationsController {
    * ```
    */
   @Get()
-  @Roles(UserType.ADMIN, UserType.STAFF)
+  @Roles(UserType.ADMIN, UserType.STAFF, UserType.ATTORNEY)
   async getBookings(
     @Query(new ZodValidationPipe(PaginationSchema))
     paginationQuery: PaginationParams,
@@ -312,7 +312,7 @@ export class ConsultationsController {
    * ```
    */
   @Get(':id')
-  @Roles(UserType.ADMIN, UserType.STAFF)
+  @Roles(UserType.ADMIN, UserType.STAFF, UserType.ATTORNEY)
   async getBookingById(@Param('id') id: string): Promise<ConsultationResponse> {
     return this.consultationsService.getBookingById(id);
   }
@@ -333,7 +333,7 @@ export class ConsultationsController {
    * ```
    */
   @Patch(':id/cancel')
-  @Roles(UserType.ADMIN, UserType.STAFF)
+  @Roles(UserType.ADMIN, UserType.STAFF, UserType.ATTORNEY)
   async cancelBooking(@Param('id') id: string): Promise<ConsultationResponse> {
     return this.consultationsService.cancelBooking(id);
   }

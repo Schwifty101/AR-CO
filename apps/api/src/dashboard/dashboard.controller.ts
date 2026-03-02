@@ -38,7 +38,7 @@ export class DashboardController {
    * @returns Admin dashboard statistics
    */
   @Get('admin/stats')
-  @Roles(UserType.ADMIN, UserType.STAFF)
+  @Roles(UserType.ADMIN, UserType.STAFF, UserType.ATTORNEY)
   async getAdminStats(): Promise<AdminDashboardStats> {
     return this.dashboardService.getAdminStats();
   }

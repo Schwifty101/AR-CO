@@ -70,6 +70,7 @@ import type {
   CategoryResponse,
 } from '@/lib/api/content';
 import { ContentType, PostStatus } from '@repo/shared';
+import { useAuth } from '@/lib/auth/use-auth';
 
 /** Post status badge color mapping */
 const STATUS_COLORS: Record<PostStatus, string> = {
@@ -100,6 +101,8 @@ function formatDate(dateString: string): string {
  */
 export default function AdminContentPage() {
   const router = useRouter();
+  const { user: currentUser } = useAuth();
+  const isAdmin = currentUser?.userType === 'admin';
 
   // Data states
   const [posts, setPosts] = useState<ContentPostResponse[]>([]);
@@ -264,100 +267,102 @@ export default function AdminContentPage() {
             Manage blog posts and case studies
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <Dialog open={isCategoryDialogOpen} onOpenChange={setIsCategoryDialogOpen}>
-            <DialogTrigger asChild>
-              <Button variant="outline">
-                <Settings2 className="h-4 w-4 mr-2" />
-                Categories
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Manage Categories</DialogTitle>
-                <DialogDescription>
-                  Create and manage content categories for blog posts and case studies.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4 pt-2">
-                {/* Create new category */}
-                <div className="flex items-end gap-2">
-                  <div className="flex-1 space-y-2">
-                    <Label htmlFor="newCategoryName">New Category</Label>
-                    <Input
-                      id="newCategoryName"
-                      placeholder="e.g. Corporate Law"
-                      value={newCategoryName}
-                      onChange={(e) => setNewCategoryName(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault();
-                          handleCreateCategory();
-                        }
-                      }}
-                    />
-                  </div>
-                  <Button
-                    onClick={handleCreateCategory}
-                    disabled={isCreatingCategory || !newCategoryName.trim()}
-                    size="sm"
-                  >
-                    {isCreatingCategory ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Plus className="h-4 w-4" />
-                    )}
-                  </Button>
-                </div>
-
-                {/* Existing categories */}
-                <div className="space-y-1">
-                  <Label className="text-muted-foreground text-xs">
-                    Existing Categories ({categories.length})
-                  </Label>
-                  {categories.length === 0 ? (
-                    <p className="text-sm text-muted-foreground py-4 text-center">
-                      No categories yet. Create one above.
-                    </p>
-                  ) : (
-                    <div className="rounded-md border divide-y max-h-[300px] overflow-y-auto">
-                      {categories.map((cat) => (
-                        <div
-                          key={cat.id}
-                          className="flex items-center justify-between px-3 py-2"
-                        >
-                          <div>
-                            <p className="text-sm font-medium">{cat.name}</p>
-                            <p className="text-xs text-muted-foreground">/{cat.slug}</p>
-                          </div>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-7 w-7 text-destructive hover:text-destructive"
-                            disabled={deletingCategoryId === cat.id}
-                            onClick={() => handleDeleteCategory(cat.id, cat.name)}
-                          >
-                            {deletingCategoryId === cat.id ? (
-                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                            ) : (
-                              <Trash2 className="h-3.5 w-3.5" />
-                            )}
-                          </Button>
-                        </div>
-                      ))}
+        {isAdmin && (
+          <div className="flex items-center gap-2">
+            <Dialog open={isCategoryDialogOpen} onOpenChange={setIsCategoryDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline">
+                  <Settings2 className="h-4 w-4 mr-2" />
+                  Categories
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Manage Categories</DialogTitle>
+                  <DialogDescription>
+                    Create and manage content categories for blog posts and case studies.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 pt-2">
+                  {/* Create new category */}
+                  <div className="flex items-end gap-2">
+                    <div className="flex-1 space-y-2">
+                      <Label htmlFor="newCategoryName">New Category</Label>
+                      <Input
+                        id="newCategoryName"
+                        placeholder="e.g. Corporate Law"
+                        value={newCategoryName}
+                        onChange={(e) => setNewCategoryName(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            handleCreateCategory();
+                          }
+                        }}
+                      />
                     </div>
-                  )}
+                    <Button
+                      onClick={handleCreateCategory}
+                      disabled={isCreatingCategory || !newCategoryName.trim()}
+                      size="sm"
+                    >
+                      {isCreatingCategory ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Plus className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </div>
+
+                  {/* Existing categories */}
+                  <div className="space-y-1">
+                    <Label className="text-muted-foreground text-xs">
+                      Existing Categories ({categories.length})
+                    </Label>
+                    {categories.length === 0 ? (
+                      <p className="text-sm text-muted-foreground py-4 text-center">
+                        No categories yet. Create one above.
+                      </p>
+                    ) : (
+                      <div className="rounded-md border divide-y max-h-[300px] overflow-y-auto">
+                        {categories.map((cat) => (
+                          <div
+                            key={cat.id}
+                            className="flex items-center justify-between px-3 py-2"
+                          >
+                            <div>
+                              <p className="text-sm font-medium">{cat.name}</p>
+                              <p className="text-xs text-muted-foreground">/{cat.slug}</p>
+                            </div>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7 text-destructive hover:text-destructive"
+                              disabled={deletingCategoryId === cat.id}
+                              onClick={() => handleDeleteCategory(cat.id, cat.name)}
+                            >
+                              {deletingCategoryId === cat.id ? (
+                                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                              ) : (
+                                <Trash2 className="h-3.5 w-3.5" />
+                              )}
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            </DialogContent>
-          </Dialog>
-          <Link href="/admin/content/new">
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              New Post
-            </Button>
-          </Link>
-        </div>
+              </DialogContent>
+            </Dialog>
+            <Link href="/admin/content/new">
+              <Button>
+                <Plus className="h-4 w-4 mr-2" />
+                New Post
+              </Button>
+            </Link>
+          </div>
+        )}
       </div>
 
       {/* Content type tabs */}
@@ -479,7 +484,7 @@ export default function AdminContentPage() {
                       <TableHead>Author</TableHead>
                       <TableHead>Published</TableHead>
                       <TableHead>Views</TableHead>
-                      <TableHead className="w-[80px]">Actions</TableHead>
+                      {isAdmin && <TableHead className="w-[80px]">Actions</TableHead>}
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -492,12 +497,12 @@ export default function AdminContentPage() {
                           <TableCell><Skeleton className="h-4 w-28" /></TableCell>
                           <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                           <TableCell><Skeleton className="h-4 w-12" /></TableCell>
-                          <TableCell><Skeleton className="h-8 w-8" /></TableCell>
+                          {isAdmin && <TableCell><Skeleton className="h-8 w-8" /></TableCell>}
                         </TableRow>
                       ))
                     ) : posts.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={7} className="py-12">
+                        <TableCell colSpan={isAdmin ? 7 : 6} className="py-12">
                           <div className="flex flex-col items-center justify-center text-center">
                             <FileText className="h-12 w-12 text-muted-foreground/50 mb-4" />
                             <h3 className="text-lg font-medium mb-1">
@@ -543,16 +548,18 @@ export default function AdminContentPage() {
                           <TableCell className="text-muted-foreground">
                             {post.viewCount}
                           </TableCell>
-                          <TableCell>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 text-destructive hover:text-destructive"
-                              onClick={(e) => handleDelete(e, post.id, post.title)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </TableCell>
+                          {isAdmin && (
+                            <TableCell>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 text-destructive hover:text-destructive"
+                                onClick={(e) => handleDelete(e, post.id, post.title)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </TableCell>
+                          )}
                         </TableRow>
                       ))
                     )}

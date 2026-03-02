@@ -4,7 +4,7 @@
 
 This document provides a granular 3-level task breakdown for transforming the AR-CO NestJS backend from minimal setup to a full-featured law firm management platform.
 
-**Current State (as of 2026-03-02):**
+**Current State (as of 2026-03-03):**
 
 - HEAD TASKs 1-9 complete (Environment, Schema, DB Service, Auth, Users, Clients/Subscriptions/Complaints/Service Registrations, Cases, Consultation Booking, Documents)
 - **HEAD TASK 11 complete** (Content Module — Google Docs CMS, SEO, Blog/Case Studies, Testimonials, Legal News)
@@ -19,8 +19,23 @@ This document provides a granular 3-level task breakdown for transforming the AR
   - Sub-tasks 12.8.4-12.8.5 complete (Admin service registrations list + detail pages)
   - Remaining: 12.1.4-12.1.6 (advanced analytics), 12.2 (CRM), 12.3 (activity logs), 12.4.2 (admin controller), 12.5.1-12.5.3 (admin schemas), 12.6.1 (AdminModule)
 - Auth enhancement: Email confirmation flow implemented (signup defers profile creation, signin checks confirmation)
+- **Auth fix: Invite redirect & RBAC** — invite magic link now redirects to `/auth/callback` for proper role-based routing; attorney added to admin-side redirects; role-based permission model implemented (see below)
 - **Safepay payment code is LIVE but being replaced by Lemon Squeezy** — migration in progress
 - HEAD TASKs 10, 13-14 remain (Payments/Lemon Squeezy, Testing, RLS Optimization)
+
+**Role-Based Access Control (Admin Dashboard):**
+
+| Feature | Admin | Attorney | Staff |
+|---------|-------|----------|-------|
+| Dashboard stats | Full | View | View |
+| Users | Invite + Delete | View list | View list |
+| Clients | Full CRUD | Create + Edit + View | View only |
+| Cases | Full CRUD | Create + Edit + View | View only |
+| Complaints | Full | Manage (status/assign) | View only |
+| Consultations | Full | View + Cancel | View only |
+| Subscriptions | Full | Hidden | Hidden |
+| Content (Blog/Case Studies) | Full CRUD | View only | View only |
+| Service Registrations | Full | View + Manage | View only |
 
 **Payment Provider:** [Lemon Squeezy](https://lemonsqueezy.com) (Merchant of Record) — replacing Safepay
 **SDK:** `@lemonsqueezy/lemonsqueezy.js`

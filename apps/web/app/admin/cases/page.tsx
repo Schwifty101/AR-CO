@@ -51,6 +51,7 @@ import {
   type CaseResponse,
   type CaseFilters,
 } from '@/lib/api/cases';
+import { useAuth } from '@/lib/auth/use-auth';
 import {
   STATUS_COLORS,
   PRIORITY_COLORS,
@@ -90,6 +91,8 @@ function CasesPageSkeleton() {
 function AdminCasesContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { user: currentUser } = useAuth();
+  const canEdit = currentUser?.userType === 'admin' || currentUser?.userType === 'attorney';
   const [cases, setCases] = useState<CaseResponse[]>([]);
   const [total, setTotal] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
@@ -171,9 +174,11 @@ function AdminCasesContent() {
             Manage all legal cases
           </p>
         </div>
-        <Button onClick={() => router.push('/admin/cases/new')}>
-          New Case
-        </Button>
+        {canEdit && (
+          <Button onClick={() => router.push('/admin/cases/new')}>
+            New Case
+          </Button>
+        )}
       </div>
 
       <Card>

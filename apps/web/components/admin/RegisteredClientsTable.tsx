@@ -68,6 +68,7 @@ import {
   type ClientResponse,
   type CreateClientData,
 } from '@/lib/api/clients';
+import { useAuth } from '@/lib/auth/use-auth';
 
 /** Items per page */
 const PAGE_SIZE = 20;
@@ -102,6 +103,8 @@ function formatDate(dateString: string): string {
  */
 export default function RegisteredClientsTable() {
   const router = useRouter();
+  const { user: currentUser } = useAuth();
+  const canEdit = currentUser?.userType === 'admin' || currentUser?.userType === 'attorney';
   const [clients, setClients] = useState<ClientResponse[]>([]);
   const [total, setTotal] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
@@ -262,6 +265,7 @@ export default function RegisteredClientsTable() {
 
   return (
     <div className="space-y-6">
+      {canEdit && (
       <div className="flex justify-end">
         <Dialog open={addDialogOpen} onOpenChange={handleDialogChange}>
           <DialogTrigger asChild>
@@ -412,6 +416,7 @@ export default function RegisteredClientsTable() {
           </DialogContent>
         </Dialog>
       </div>
+      )}
 
       <Card>
         <CardHeader>

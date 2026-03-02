@@ -95,7 +95,7 @@ export class ClientsController {
    * ```
    */
   @Post()
-  @Roles(UserType.ADMIN, UserType.STAFF)
+  @Roles(UserType.ADMIN, UserType.STAFF, UserType.ATTORNEY)
   @HttpCode(HttpStatus.CREATED)
   async createClient(
     @Body(new ZodValidationPipe(CreateClientSchema))
@@ -130,7 +130,7 @@ export class ClientsController {
    * ```
    */
   @Patch(':id')
-  @Roles(UserType.ADMIN, UserType.STAFF)
+  @Roles(UserType.ADMIN, UserType.STAFF, UserType.ATTORNEY)
   @HttpCode(HttpStatus.OK)
   async updateClient(
     @Param('id') id: string,

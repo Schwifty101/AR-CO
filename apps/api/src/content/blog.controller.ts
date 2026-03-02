@@ -125,7 +125,7 @@ export class BlogController {
    * ```
    */
   @Get('posts/admin')
-  @Roles(UserType.ADMIN, UserType.STAFF)
+  @Roles(UserType.ADMIN, UserType.STAFF, UserType.ATTORNEY)
   async getAllPosts(
     @Query(new ZodValidationPipe(PaginationSchema))
     pagination: PaginationParams,
@@ -257,7 +257,7 @@ export class BlogController {
    * ```
    */
   @Post('posts/:id/sync')
-  @Roles(UserType.ADMIN, UserType.STAFF)
+  @Roles(UserType.ADMIN, UserType.STAFF, UserType.ATTORNEY)
   async syncPost(@Param('id') id: string): Promise<ContentPostResponse> {
     return this.blogService.syncFromGoogleDoc(id);
   }

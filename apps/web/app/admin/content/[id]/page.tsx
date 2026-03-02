@@ -49,6 +49,7 @@ import { updatePost, syncPost, deletePost, getCategories } from '@/lib/api/conte
 import { getSessionToken } from '@/lib/api/auth-helpers';
 import { ContentType, PostStatus } from '@repo/shared';
 import type { ContentPostResponse, CategoryResponse } from '@repo/shared';
+import { useAuth } from '@/lib/auth/use-auth';
 
 /** No category sentinel value used in the select dropdown */
 const NO_CATEGORY = '__none__';
@@ -102,6 +103,8 @@ interface EditContentPageProps {
 export default function EditContentPage({ params }: EditContentPageProps) {
   const { id } = use(params);
   const router = useRouter();
+  const { user: currentUser } = useAuth();
+  const isAdmin = currentUser?.userType === 'admin';
 
   // Data state
   const [post, setPost] = useState<ContentPostResponse | null>(null);
@@ -301,16 +304,18 @@ export default function EditContentPage({ params }: EditContentPageProps) {
           <Badge className={STATUS_BADGE_CLASSES[post.status] ?? ''}>
             {post.status.charAt(0).toUpperCase() + post.status.slice(1)}
           </Badge>
-          <Button onClick={handleSave} disabled={isSaving}>
-            {isSaving ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Saving...
-              </>
-            ) : (
-              'Save Changes'
-            )}
-          </Button>
+          {isAdmin && (
+            <Button onClick={handleSave} disabled={isSaving}>
+              {isSaving ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                'Save Changes'
+              )}
+            </Button>
+          )}
         </div>
       </div>
 
@@ -330,6 +335,7 @@ export default function EditContentPage({ params }: EditContentPageProps) {
               id="title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
+              disabled={!isAdmin}
             />
           </div>
 
@@ -340,6 +346,7 @@ export default function EditContentPage({ params }: EditContentPageProps) {
               id="slug"
               value={slug}
               onChange={(e) => setSlug(e.target.value)}
+              disabled={!isAdmin}
             />
           </div>
 
@@ -352,6 +359,7 @@ export default function EditContentPage({ params }: EditContentPageProps) {
               value={excerpt}
               onChange={(e) => setExcerpt(e.target.value)}
               placeholder="Brief summary of the post..."
+              disabled={!isAdmin}
             />
           </div>
 
@@ -364,6 +372,7 @@ export default function EditContentPage({ params }: EditContentPageProps) {
               value={featuredImage}
               onChange={(e) => setFeaturedImage(e.target.value)}
               placeholder="https://example.com/image.jpg"
+              disabled={!isAdmin}
             />
           </div>
 
@@ -371,7 +380,7 @@ export default function EditContentPage({ params }: EditContentPageProps) {
             {/* Category */}
             <div className="space-y-2">
               <Label htmlFor="editCategory">Category</Label>
-              <Select value={categoryId} onValueChange={setCategoryId}>
+              <Select value={categoryId} onValueChange={setCategoryId} disabled={!isAdmin}>
                 <SelectTrigger id="editCategory">
                   <SelectValue placeholder="Select a category" />
                 </SelectTrigger>
@@ -392,6 +401,7 @@ export default function EditContentPage({ params }: EditContentPageProps) {
               <Select
                 value={contentType}
                 onValueChange={(v) => setContentType(v as ContentType)}
+                disabled={!isAdmin}
               >
                 <SelectTrigger id="editContentType">
                   <SelectValue />
@@ -412,6 +422,7 @@ export default function EditContentPage({ params }: EditContentPageProps) {
               id="editFeatured"
               checked={isFeatured}
               onCheckedChange={(checked) => setIsFeatured(checked === true)}
+              disabled={!isAdmin}
             />
             <Label htmlFor="editFeatured" className="cursor-pointer">
               Featured post
@@ -443,6 +454,7 @@ export default function EditContentPage({ params }: EditContentPageProps) {
               onChange={(e) => setMetaTitle(e.target.value)}
               maxLength={70}
               placeholder="SEO-friendly page title"
+              disabled={!isAdmin}
             />
           </div>
 
@@ -461,6 +473,7 @@ export default function EditContentPage({ params }: EditContentPageProps) {
               onChange={(e) => setMetaDescription(e.target.value)}
               maxLength={170}
               placeholder="Concise description for search results..."
+              disabled={!isAdmin}
             />
           </div>
 
@@ -488,6 +501,7 @@ export default function EditContentPage({ params }: EditContentPageProps) {
             <Select
               value={status}
               onValueChange={(v) => setStatus(v as PostStatus)}
+              disabled={!isAdmin}
             >
               <SelectTrigger id="editStatus" className="w-[200px]">
                 <SelectValue />
@@ -534,23 +548,25 @@ export default function EditContentPage({ params }: EditContentPageProps) {
                 <ExternalLink className="h-3 w-3" />
               </a>
             </div>
-            <Button
-              variant="outline"
-              onClick={handleSync}
-              disabled={isSyncing}
-            >
-              {isSyncing ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Syncing...
-                </>
-              ) : (
-                <>
-                  <RefreshCw className="mr-2 h-4 w-4" />
-                  Re-sync from Google Doc
-                </>
-              )}
-            </Button>
+            {(isAdmin || currentUser?.userType === 'attorney') && (
+              <Button
+                variant="outline"
+                onClick={handleSync}
+                disabled={isSyncing}
+              >
+                {isSyncing ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Syncing...
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw className="mr-2 h-4 w-4" />
+                    Re-sync from Google Doc
+                  </>
+                )}
+              </Button>
+            )}
           </CardContent>
         </Card>
       )}
@@ -577,21 +593,23 @@ export default function EditContentPage({ params }: EditContentPageProps) {
         </CardContent>
       </Card>
 
-      {/* ── Danger Zone Card ── */}
-      <Card className="border-destructive/50">
-        <CardHeader>
-          <CardTitle className="text-destructive">Danger Zone</CardTitle>
-          <CardDescription>
-            Irreversible actions. Proceed with caution.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Button variant="destructive" onClick={handleDelete}>
-            <Trash2 className="mr-2 h-4 w-4" />
-            Delete Post
-          </Button>
-        </CardContent>
-      </Card>
+      {/* ── Danger Zone Card (admin only) ── */}
+      {isAdmin && (
+        <Card className="border-destructive/50">
+          <CardHeader>
+            <CardTitle className="text-destructive">Danger Zone</CardTitle>
+            <CardDescription>
+              Irreversible actions. Proceed with caution.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button variant="destructive" onClick={handleDelete}>
+              <Trash2 className="mr-2 h-4 w-4" />
+              Delete Post
+            </Button>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

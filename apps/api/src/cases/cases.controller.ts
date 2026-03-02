@@ -121,7 +121,7 @@ export class CasesController {
    * ```
    */
   @Post('from-registration/:registrationId')
-  @Roles(UserType.ADMIN, UserType.STAFF)
+  @Roles(UserType.ADMIN, UserType.STAFF, UserType.ATTORNEY)
   @HttpCode(HttpStatus.CREATED)
   async createCaseFromRegistration(
     @Param('registrationId') registrationId: string,
@@ -231,7 +231,7 @@ export class CasesController {
    * @returns The updated case
    */
   @Patch(':id/assign')
-  @Roles(UserType.ADMIN, UserType.STAFF)
+  @Roles(UserType.ADMIN, UserType.STAFF, UserType.ATTORNEY)
   @HttpCode(HttpStatus.OK)
   async assign(
     @Param('id') id: string,

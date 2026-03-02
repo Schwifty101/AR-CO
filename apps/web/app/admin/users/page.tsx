@@ -53,6 +53,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { getUsers, deleteUser, inviteUser, type UserProfile, type InviteUserData } from '@/lib/api/users';
+import { useAuth } from '@/lib/auth/use-auth';
 
 /** User type badge color mapping */
 const USER_TYPE_COLORS: Record<string, string> = {
@@ -69,6 +70,9 @@ const PAGE_SIZE = 20;
  * Admin users list page component
  */
 export default function AdminUsersPage() {
+  const { user: currentUser } = useAuth();
+  const isAdmin = currentUser?.userType === 'admin';
+
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [total, setTotal] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
@@ -267,102 +271,104 @@ export default function AdminUsersPage() {
             Manage admin, staff, and attorney accounts
           </p>
         </div>
-        <Dialog open={inviteDialogOpen} onOpenChange={handleDialogChange}>
-          <DialogTrigger asChild>
-            <Button>
-              <UserPlus className="mr-2 h-4 w-4" />
-              Invite User
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Invite New User</DialogTitle>
-              <DialogDescription>
-                Send an invitation email to a new admin, staff, or attorney user.
-              </DialogDescription>
-            </DialogHeader>
+        {isAdmin && (
+          <Dialog open={inviteDialogOpen} onOpenChange={handleDialogChange}>
+            <DialogTrigger asChild>
+              <Button>
+                <UserPlus className="mr-2 h-4 w-4" />
+                Invite User
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Invite New User</DialogTitle>
+                <DialogDescription>
+                  Send an invitation email to a new admin, staff, or attorney user.
+                </DialogDescription>
+              </DialogHeader>
 
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">Email *</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="user@example.com"
-                  value={inviteFormData.email}
-                  onChange={(e) =>
-                    setInviteFormData({ ...inviteFormData, email: e.target.value })
-                  }
-                  disabled={isInviting}
-                />
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email *</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="user@example.com"
+                    value={inviteFormData.email}
+                    onChange={(e) =>
+                      setInviteFormData({ ...inviteFormData, email: e.target.value })
+                    }
+                    disabled={isInviting}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="fullName">Full Name *</Label>
+                  <Input
+                    id="fullName"
+                    type="text"
+                    placeholder="John Doe"
+                    value={inviteFormData.fullName}
+                    onChange={(e) =>
+                      setInviteFormData({ ...inviteFormData, fullName: e.target.value })
+                    }
+                    disabled={isInviting}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="userType">User Type *</Label>
+                  <Select
+                    value={inviteFormData.userType}
+                    onValueChange={(value) =>
+                      setInviteFormData({
+                        ...inviteFormData,
+                        userType: value as 'admin' | 'staff' | 'attorney',
+                      })
+                    }
+                    disabled={isInviting}
+                  >
+                    <SelectTrigger id="userType">
+                      <SelectValue placeholder="Select user type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="admin">Admin</SelectItem>
+                      <SelectItem value="staff">Staff</SelectItem>
+                      <SelectItem value="attorney">Attorney</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="phoneNumber">Phone Number (Optional)</Label>
+                  <Input
+                    id="phoneNumber"
+                    type="tel"
+                    placeholder="+92 300 1234567"
+                    value={inviteFormData.phoneNumber}
+                    onChange={(e) =>
+                      setInviteFormData({ ...inviteFormData, phoneNumber: e.target.value })
+                    }
+                    disabled={isInviting}
+                  />
+                </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="fullName">Full Name *</Label>
-                <Input
-                  id="fullName"
-                  type="text"
-                  placeholder="John Doe"
-                  value={inviteFormData.fullName}
-                  onChange={(e) =>
-                    setInviteFormData({ ...inviteFormData, fullName: e.target.value })
-                  }
-                  disabled={isInviting}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="userType">User Type *</Label>
-                <Select
-                  value={inviteFormData.userType}
-                  onValueChange={(value) =>
-                    setInviteFormData({
-                      ...inviteFormData,
-                      userType: value as 'admin' | 'staff' | 'attorney',
-                    })
-                  }
+              <DialogFooter>
+                <Button
+                  variant="outline"
+                  onClick={() => setInviteDialogOpen(false)}
                   disabled={isInviting}
                 >
-                  <SelectTrigger id="userType">
-                    <SelectValue placeholder="Select user type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="admin">Admin</SelectItem>
-                    <SelectItem value="staff">Staff</SelectItem>
-                    <SelectItem value="attorney">Attorney</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="phoneNumber">Phone Number (Optional)</Label>
-                <Input
-                  id="phoneNumber"
-                  type="tel"
-                  placeholder="+92 300 1234567"
-                  value={inviteFormData.phoneNumber}
-                  onChange={(e) =>
-                    setInviteFormData({ ...inviteFormData, phoneNumber: e.target.value })
-                  }
-                  disabled={isInviting}
-                />
-              </div>
-            </div>
-
-            <DialogFooter>
-              <Button
-                variant="outline"
-                onClick={() => setInviteDialogOpen(false)}
-                disabled={isInviting}
-              >
-                Cancel
-              </Button>
-              <Button onClick={handleInviteUser} disabled={isInviting}>
-                {isInviting ? 'Sending...' : 'Send Invitation'}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+                  Cancel
+                </Button>
+                <Button onClick={handleInviteUser} disabled={isInviting}>
+                  {isInviting ? 'Sending...' : 'Send Invitation'}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        )}
       </div>
 
       <Card>
@@ -415,7 +421,7 @@ export default function AdminUsersPage() {
                       <TableHead>Type</TableHead>
                       <TableHead>Phone</TableHead>
                       <TableHead>Joined</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
+                      {isAdmin && <TableHead className="text-right">Actions</TableHead>}
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -438,15 +444,17 @@ export default function AdminUsersPage() {
                           <TableCell>
                             <Skeleton className="h-4 w-24" />
                           </TableCell>
-                          <TableCell className="text-right">
-                            <Skeleton className="h-8 w-16 ml-auto" />
-                          </TableCell>
+                          {isAdmin && (
+                            <TableCell className="text-right">
+                              <Skeleton className="h-8 w-16 ml-auto" />
+                            </TableCell>
+                          )}
                         </TableRow>
                       ))
                     ) : users.length === 0 ? (
                       <TableRow>
                         <TableCell
-                          colSpan={6}
+                          colSpan={isAdmin ? 6 : 5}
                           className="text-center text-muted-foreground py-8"
                         >
                           No users found
@@ -477,20 +485,22 @@ export default function AdminUsersPage() {
                           <TableCell className="text-muted-foreground">
                             {formatDate(user.createdAt)}
                           </TableCell>
-                          <TableCell className="text-right">
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              onClick={() =>
-                                handleDeleteUser(user.id, user.fullName)
-                              }
-                              disabled={deletingUserId === user.id}
-                            >
-                              {deletingUserId === user.id
-                                ? 'Deleting...'
-                                : 'Delete'}
-                            </Button>
-                          </TableCell>
+                          {isAdmin && (
+                            <TableCell className="text-right">
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() =>
+                                  handleDeleteUser(user.id, user.fullName)
+                                }
+                                disabled={deletingUserId === user.id}
+                              >
+                                {deletingUserId === user.id
+                                  ? 'Deleting...'
+                                  : 'Delete'}
+                              </Button>
+                            </TableCell>
+                          )}
                         </TableRow>
                       ))
                     )}

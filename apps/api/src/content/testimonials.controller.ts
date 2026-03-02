@@ -133,7 +133,7 @@ export class TestimonialsController {
    * ```
    */
   @Get('all')
-  @Roles(UserType.ADMIN, UserType.STAFF)
+  @Roles(UserType.ADMIN, UserType.STAFF, UserType.ATTORNEY)
   async getAllTestimonials(
     @Query(new ZodValidationPipe(PaginationSchema))
     pagination: PaginationParams,

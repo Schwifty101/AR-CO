@@ -364,7 +364,7 @@ export class UsersController {
    * ```
    */
   @Get()
-  @Roles(UserType.ADMIN, UserType.STAFF)
+  @Roles(UserType.ADMIN, UserType.STAFF, UserType.ATTORNEY)
   async getAllUsers(
     @Query(new ZodValidationPipe(PaginationSchema))
     pagination: PaginationParams,
