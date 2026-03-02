@@ -31,6 +31,7 @@ import {
   LogOut,
   Calendar,
   FileText,
+  ScrollText,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -61,6 +62,7 @@ export const ADMIN_NAV: NavItem[] = [
   { label: 'Documents', href: '/admin/documents', icon: FileText },
   { label: 'Consultations', href: '/admin/consultations', icon: Calendar },
   { label: 'Content', href: '/admin/content', icon: FileText },
+  { label: 'Audit Logs', href: '/admin/audit-logs', icon: ScrollText },
 ];
 
 /** Client navigation items */
@@ -84,8 +86,11 @@ interface DashboardSidebarProps {
 /**
  * Dashboard sidebar navigation
  */
-/** Sidebar items hidden from staff and attorney users */
+/** Sidebar items visible only to admin users */
 const ADMIN_ONLY_PATHS = new Set(['/admin/subscriptions']);
+
+/** Sidebar items visible to admin and attorney users (hidden from staff) */
+const ADMIN_ATTORNEY_PATHS = new Set(['/admin/audit-logs']);
 
 export function DashboardSidebar({ userType }: DashboardSidebarProps) {
   const pathname = usePathname();
@@ -95,7 +100,11 @@ export function DashboardSidebar({ userType }: DashboardSidebarProps) {
   const isAdminRole = actualUserType === 'admin';
 
   const navItems = userType === 'admin'
-    ? ADMIN_NAV.filter((item) => isAdminRole || !ADMIN_ONLY_PATHS.has(item.href))
+    ? ADMIN_NAV.filter((item) => {
+        if (ADMIN_ONLY_PATHS.has(item.href)) return isAdminRole;
+        if (ADMIN_ATTORNEY_PATHS.has(item.href)) return isAdminRole || actualUserType === 'attorney';
+        return true;
+      })
     : CLIENT_NAV;
 
   return (
