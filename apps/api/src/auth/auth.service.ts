@@ -258,7 +258,12 @@ export class AuthService {
       const phoneNumber =
         (authUser.user_metadata?.phone_number as string) || undefined;
 
-      await this.createUserProfile(authUser.id, fullName, userType, phoneNumber);
+      await this.createUserProfile(
+        authUser.id,
+        fullName,
+        userType,
+        phoneNumber,
+      );
 
       if (userType === 'client') {
         await this.createClientProfile(authUser.id);

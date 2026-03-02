@@ -19,7 +19,7 @@
  */
 
 import { createBrowserClient } from '@/lib/supabase/client';
-import type { AuthResponse, SignupData } from './types';
+import type { AuthResponse, SignupData, SignupPendingResponse } from './types';
 
 /**
  * Initiate Google OAuth sign-in flow
@@ -82,10 +82,13 @@ export async function signInWithEmail(
 /**
  * Register a new client account with email/password
  *
+ * Returns a pending response with the email address.
+ * No session is created until the user confirms their email.
+ *
  * @param signupData - Registration form data
- * @returns Auth response with user info and tokens
+ * @returns Pending response with message and email
  */
-export async function signUp(signupData: SignupData): Promise<AuthResponse> {
+export async function signUp(signupData: SignupData): Promise<SignupPendingResponse> {
   const response = await fetch('/api/auth/signup', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -97,16 +100,7 @@ export async function signUp(signupData: SignupData): Promise<AuthResponse> {
     throw new Error(error.message || 'Sign up failed');
   }
 
-  const data = (await response.json()) as AuthResponse;
-
-  // Set the session in the browser Supabase client
-  const supabase = createBrowserClient();
-  await supabase.auth.setSession({
-    access_token: data.accessToken,
-    refresh_token: data.refreshToken,
-  });
-
-  return data;
+  return (await response.json()) as SignupPendingResponse;
 }
 
 /**

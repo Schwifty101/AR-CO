@@ -25,7 +25,7 @@ import { updateSession } from '@/lib/supabase/middleware';
 const PROTECTED_ROUTES = ['/admin', '/client'];
 
 /** Routes that should redirect authenticated users */
-const AUTH_ROUTES = ['/auth/signin', '/auth/signup', '/auth/forgot-password'];
+const AUTH_ROUTES = ['/auth/signin', '/auth/signup', '/auth/forgot-password', '/auth/verify-email'];
 
 /**
  * Middleware function
