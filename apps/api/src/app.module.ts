@@ -19,6 +19,7 @@ import { StorageModule } from './storage/storage.module';
 import { DocumentsModule } from './documents/documents.module';
 import { ContentModule } from './content/content.module';
 import { AuditModule } from './audit/audit.module';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { AuditModule } from './audit/audit.module';
     DocumentsModule,
     ContentModule,
     AuditModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [AppService],
