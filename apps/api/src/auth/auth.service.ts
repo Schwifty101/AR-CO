@@ -255,11 +255,18 @@ export class AuthService {
         (authUser.user_metadata?.name as string) ||
         authUser.email;
 
-      await this.createUserProfile(authUser.id, fullName, userType);
+      const phoneNumber =
+        (authUser.user_metadata?.phone_number as string) || undefined;
+
+      await this.createUserProfile(authUser.id, fullName, userType, phoneNumber);
 
       if (userType === 'client') {
         await this.createClientProfile(authUser.id);
       }
+
+      await this.logAuthEvent(authUser.id, 'SIGNUP', 'user', {
+        provider: (authUser.app_metadata?.provider as string) || 'email',
+      });
 
       profile = {
         full_name: fullName,
