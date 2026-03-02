@@ -1,5 +1,5 @@
 /**
- * Next.js Middleware
+ * Next.js Proxy
  *
  * Handles session refresh and route protection for the AR-CO platform.
  * - Refreshes Supabase session on each request
@@ -7,11 +7,11 @@
  * - Redirects authenticated users away from /auth/*
  * - Routes users based on user_type after auth
  *
- * @module Middleware
+ * @module Proxy
  *
  * @example
  * ```typescript
- * // Matched routes are processed by this middleware:
+ * // Matched routes are processed by this proxy:
  * // /auth/signin -> redirects to dashboard if authenticated
  * // /admin/dashboard -> redirects to /auth/signin if not authenticated
  * // /client/dashboard -> redirects to /auth/signin if not authenticated
@@ -19,7 +19,7 @@
  */
 
 import { NextResponse, type NextRequest } from 'next/server';
-import { updateSession } from '@/lib/supabase/middleware';
+import { updateSession } from '@/lib/supabase/proxy';
 
 /** Routes that require authentication */
 const PROTECTED_ROUTES = ['/admin', '/client'];
@@ -28,11 +28,11 @@ const PROTECTED_ROUTES = ['/admin', '/client'];
 const AUTH_ROUTES = ['/auth/signin', '/auth/signup', '/auth/forgot-password', '/auth/verify-email'];
 
 /**
- * Middleware function
+ * Proxy function
  *
  * Runs on every matched request to handle auth routing.
  */
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   try {
     const { supabaseResponse, user } = await updateSession(request);
     const { pathname } = request.nextUrl;
@@ -84,7 +84,7 @@ export async function middleware(request: NextRequest) {
 
     return supabaseResponse;
   } catch (error) {
-    console.error('Middleware error:', error);
+    console.error('Proxy error:', error);
     // Return next response on any error to prevent blocking
     return NextResponse.next();
   }
@@ -109,7 +109,7 @@ async function getAccessToken(request: NextRequest): Promise<string | null> {
   }
 }
 
-/** Configure which routes this middleware runs on */
+/** Configure which routes this proxy runs on */
 export const config = {
   matcher: [
     /*

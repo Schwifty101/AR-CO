@@ -73,7 +73,9 @@
       "Bash(echo:*)",
       "Bash(kill 21515:*)",
       "Bash(kill 34164:*)",
-      "Bash(echo === Filter by action=SIGNOUT ===:*)"
+      "Bash(echo === Filter by action=SIGNOUT ===:*)",
+      "Bash(npm view:*)",
+      "Bash(true:*)"
     ],
     "env": {
       "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"

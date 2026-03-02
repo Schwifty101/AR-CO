@@ -45,7 +45,7 @@ export async function createServerClient() {
             );
           } catch {
             // setAll called from a Server Component — can be ignored
-            // if middleware refreshes the session
+            // if proxy refreshes the session
           }
         },
       },

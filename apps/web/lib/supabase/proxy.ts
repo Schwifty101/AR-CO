@@ -1,16 +1,16 @@
 /**
- * Supabase Middleware Client
+ * Supabase Proxy Client
  *
- * Creates a Supabase client for use in Next.js middleware.
+ * Creates a Supabase client for use in Next.js proxy.
  * Handles session refresh on each request.
  *
- * @module SupabaseMiddlewareClient
+ * @module SupabaseProxyClient
  *
  * @example
  * ```typescript
- * import { updateSession } from '@/lib/supabase/middleware';
+ * import { updateSession } from '@/lib/supabase/proxy';
  *
- * export async function middleware(request: NextRequest) {
+ * export async function proxy(request: NextRequest) {
  *   return await updateSession(request);
  * }
  * ```
@@ -28,7 +28,7 @@ interface CookieToSet {
 /**
  * Refresh the Supabase session and return updated response
  *
- * Should be called in Next.js middleware to keep sessions fresh.
+ * Should be called in Next.js proxy to keep sessions fresh.
  *
  * @param request - Incoming Next.js request
  * @returns NextResponse with updated session cookies
@@ -41,7 +41,7 @@ export async function updateSession(request: NextRequest) {
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!supabaseUrl || !supabaseAnonKey) {
-    console.error('Missing Supabase environment variables in middleware');
+    console.error('Missing Supabase environment variables in proxy');
     return { supabaseResponse, user: null };
   }
 
