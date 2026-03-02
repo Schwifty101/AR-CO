@@ -62,7 +62,7 @@ export async function GET(request: NextRequest) {
   }
 
   const dashboard =
-    userType === 'admin' || userType === 'staff'
+    userType === 'admin' || userType === 'staff' || userType === 'attorney'
       ? '/admin/dashboard'
       : '/client/dashboard';
 

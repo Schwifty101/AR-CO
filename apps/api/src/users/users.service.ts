@@ -564,9 +564,13 @@ export class UsersService {
     const adminClient = this.supabaseService.getAdminClient();
 
     // 1. Invite user via Supabase (sends magic link email)
+    const frontendUrl =
+      process.env.CORS_ORIGINS?.split(',')[0] || 'http://localhost:3000';
+
     const { data: authData, error: authError } =
       await adminClient.auth.admin.inviteUserByEmail(dto.email, {
         data: { full_name: dto.fullName },
+        redirectTo: `${frontendUrl}/auth/callback`,
       });
 
     if (authError || !authData?.user) {

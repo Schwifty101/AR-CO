@@ -86,7 +86,7 @@ export async function GET(request: NextRequest) {
 
   // 4. Default: redirect based on userType
   const dashboard =
-    userType === 'admin' || userType === 'staff'
+    userType === 'admin' || userType === 'staff' || userType === 'attorney'
       ? '/admin/dashboard'
       : '/client/dashboard';
 

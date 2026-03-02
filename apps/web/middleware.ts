@@ -71,7 +71,7 @@ export async function middleware(request: NextRequest) {
           const userData = (await response.json()) as { userType: string };
           const url = request.nextUrl.clone();
           url.pathname =
-            userData.userType === 'admin' || userData.userType === 'staff'
+            userData.userType === 'admin' || userData.userType === 'staff' || userData.userType === 'attorney'
               ? '/admin/dashboard'
               : '/client/dashboard';
           return NextResponse.redirect(url);
