@@ -46,6 +46,7 @@ import type {
   AuthResponse,
   AuthResponseUser,
   AuthMessage,
+  SignupPendingResponse,
 } from '@repo/shared';
 
 /** Metadata for activity log entries */
@@ -76,10 +77,11 @@ export class AuthService {
    * Register a new client user with email/password
    *
    * Admin emails are blocked from email/password registration.
-   * Creates a Supabase auth user, user_profile, and client_profile.
+   * Creates a Supabase auth user and sends confirmation email.
+   * Profile creation is deferred until email confirmation callback.
    *
    * @param {SignupData} dto - Signup credentials and profile data
-   * @returns {Promise<AuthResponse>} User profile with session tokens
+   * @returns {Promise<SignupPendingResponse>} Pending confirmation message with email
    * @throws {ForbiddenException} If email is in admin whitelist
    * @throws {UnauthorizedException} If Supabase signup fails
    *
@@ -91,9 +93,10 @@ export class AuthService {
    *   fullName: 'Jane Smith',
    *   phoneNumber: '+92-300-9876543',
    * });
+   * // result = { message: 'Please check your email...', email: 'new.client@example.com' }
    * ```
    */
-  async signup(dto: SignupData): Promise<AuthResponse> {
+  async signup(dto: SignupData): Promise<SignupPendingResponse> {
     if (this.adminWhitelistService.isAdminEmail(dto.email)) {
       throw new ForbiddenException(
         'Admin accounts must use Google OAuth. Please sign in with Google.',
@@ -108,39 +111,38 @@ export class AuthService {
       options: {
         data: {
           full_name: dto.fullName,
+          phone_number: dto.phoneNumber || null,
         },
       },
     });
 
     if (authError || !authData.user) {
-      this.logger.warn(`Signup failed for email: ${dto.email}`);
+      this.logger.warn(
+        `Signup failed for email: ${dto.email} - ${authError?.message ?? 'no user returned'}`,
+      );
+
+      if (authError?.status === 429) {
+        throw new UnauthorizedException(
+          'Too many signup attempts. Please wait a few minutes and try again.',
+        );
+      }
+
       throw new UnauthorizedException(
         'Unable to create account. Please try again.',
       );
     }
 
-    const userId = authData.user.id;
-
-    await this.createUserProfile(
-      userId,
-      dto.fullName,
-      'client',
-      dto.phoneNumber,
-    );
-    await this.createClientProfile(userId);
-    await this.logAuthEvent(userId, 'SIGNUP', 'user', {
-      provider: 'email',
-    });
+    // Check if user already has a confirmed profile (re-signup scenario)
+    const existingProfile = await this.fetchUserProfileOrNull(authData.user.id);
+    if (existingProfile) {
+      throw new UnauthorizedException(
+        'An account with this email already exists. Please sign in instead.',
+      );
+    }
 
     return {
-      user: {
-        id: userId,
-        email: dto.email,
-        fullName: dto.fullName,
-        userType: UserType.CLIENT,
-      },
-      accessToken: authData.session?.access_token ?? '',
-      refreshToken: authData.session?.refresh_token ?? '',
+      message: 'Please check your email to confirm your account.',
+      email: dto.email,
     };
   }
 
@@ -169,6 +171,11 @@ export class AuthService {
       });
 
     if (authError || !authData.user || !authData.session) {
+      if (authError?.message?.toLowerCase().includes('email not confirmed')) {
+        throw new UnauthorizedException(
+          'Please confirm your email address before signing in. Check your inbox for a confirmation link.',
+        );
+      }
       throw new UnauthorizedException('Invalid email or password');
     }
 

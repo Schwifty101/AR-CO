@@ -56,6 +56,7 @@ import type {
   AuthResponse,
   AuthResponseUser,
   AuthMessage,
+  SignupPendingResponse,
 } from '@repo/shared';
 
 /**
@@ -71,12 +72,14 @@ export class AuthController {
    * Register a new client with email/password
    *
    * Admin emails are blocked and must use Google OAuth.
+   * Returns a pending confirmation message; profile creation
+   * is deferred until the user confirms their email.
    */
   @Post('signup')
   @Public()
   async signup(
     @Body(new ZodValidationPipe(SignupSchema)) dto: SignupData,
-  ): Promise<AuthResponse> {
+  ): Promise<SignupPendingResponse> {
     return this.authService.signup(dto);
   }
 
