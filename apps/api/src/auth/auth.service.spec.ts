@@ -92,26 +92,29 @@ describe('AuthService', () => {
       ).rejects.toThrow(ForbiddenException);
     });
 
-    it('should create a client user with email/password', async () => {
+    it('should return pending confirmation response on successful signup', async () => {
       const userId = 'test-uuid-123';
       mockAdminClient.auth.signUp.mockResolvedValue({
         data: {
           user: { id: userId },
-          session: { access_token: 'at', refresh_token: 'rt' },
+          session: null,
         },
         error: null,
       });
 
-      // Mock user_profiles insert
+      // Mock user_profiles select (no existing profile)
       mockAdminClient.from.mockImplementation((table: string) => {
         if (table === 'user_profiles') {
-          return { insert: jest.fn().mockResolvedValue({ error: null }) };
-        }
-        if (table === 'client_profiles') {
-          return { insert: jest.fn().mockResolvedValue({ error: null }) };
-        }
-        if (table === 'activity_logs') {
-          return { insert: jest.fn().mockResolvedValue({ error: null }) };
+          return {
+            select: jest.fn().mockReturnValue({
+              eq: jest.fn().mockReturnValue({
+                single: jest.fn().mockResolvedValue({
+                  data: null,
+                  error: { code: 'PGRST116' },
+                }),
+              }),
+            }),
+          };
         }
         return mockQueryBuilder(null);
       });
@@ -122,9 +125,10 @@ describe('AuthService', () => {
         fullName: 'Client User',
       });
 
-      expect(result.user.email).toBe('client@example.com');
-      expect(result.user.userType).toBe('client');
-      expect(result.accessToken).toBe('at');
+      expect(result.message).toBe(
+        'Please check your email to confirm your account.',
+      );
+      expect(result.email).toBe('client@example.com');
     });
 
     it('should throw UnauthorizedException on signup failure', async () => {
