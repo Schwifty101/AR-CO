@@ -69,7 +69,11 @@
       "Bash(cd \"/Users/sobanahmad/Work/AR&CO/AR-CO\" && git rm --cached \\\\\n  docs/plans/2026-02-20-smooth-scrolling-design.md \\\\\n  docs/plans/2026-02-20-smooth-scrolling-plan.md \\\\\n  docs/plans/2026-03-01-content-module-design.md \\\\\n  docs/plans/2026-03-01-content-module-plan.md \\\\\n  docs/plans/2026-03-01-content-module-progress.md 2>&1)",
       "mcp__supabase__get_logs",
       "mcp__supabase__search_docs",
-      "Bash(sed:*)"
+      "Bash(sed:*)",
+      "Bash(echo:*)",
+      "Bash(kill 21515:*)",
+      "Bash(kill 34164:*)",
+      "Bash(echo === Filter by action=SIGNOUT ===:*)"
     ],
     "env": {
       "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
