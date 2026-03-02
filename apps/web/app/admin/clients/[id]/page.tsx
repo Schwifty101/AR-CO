@@ -46,6 +46,7 @@ import {
   type DocumentRecord,
   type InvoiceRecord,
 } from './clientDetailTabs';
+import { InteractionsTab } from './interactionsTab';
 
 /**
  * Admin client detail page component
@@ -302,6 +303,7 @@ export default function AdminClientDetailPage() {
             <TabsTrigger value="cases">Cases</TabsTrigger>
             <TabsTrigger value="documents">Documents</TabsTrigger>
             <TabsTrigger value="invoices">Invoices</TabsTrigger>
+            <TabsTrigger value="interactions">Interactions</TabsTrigger>
           </TabsList>
           <TabsContent value="cases">
             <CasesTabContent
@@ -323,6 +325,9 @@ export default function AdminClientDetailPage() {
               isLoading={invoicesLoading}
               isLoaded={invoicesLoaded}
             />
+          </TabsContent>
+          <TabsContent value="interactions">
+            <InteractionsTab clientProfileId={clientId} />
           </TabsContent>
         </Tabs>
       )}

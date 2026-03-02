@@ -25,6 +25,19 @@ import { getAuditLogs, getAuditLogUsers } from '@/lib/api/audit-logs';
 import type { AuditLogResponse, AuditLogUser } from '@repo/shared';
 import { AuditAction, AuditEntityType } from '@repo/shared';
 
+/** Auth session actions excluded from audit logs display */
+const HIDDEN_AUTH_ACTIONS = new Set([
+  AuditAction.SIGNIN,
+  AuditAction.SIGNOUT,
+  AuditAction.OAUTH_LOGIN,
+  AuditAction.TOKEN_REFRESH,
+]);
+
+/** Filtered actions for the dropdown (excludes session noise) */
+const VISIBLE_ACTIONS = Object.values(AuditAction).filter(
+  (a) => !HIDDEN_AUTH_ACTIONS.has(a),
+);
+
 /** Action badge color mapping */
 const ACTION_COLORS: Record<string, string> = {
   CREATE: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
@@ -36,12 +49,8 @@ const ACTION_COLORS: Record<string, string> = {
   CANCEL: 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200',
   ASSIGN: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
   SIGNUP: 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200',
-  SIGNIN: 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200',
-  OAUTH_LOGIN: 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200',
   EMAIL_CONFIRM: 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200',
   PASSWORD_RESET: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
-  TOKEN_REFRESH: 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200',
-  SIGNOUT: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
 };
 
 /** Items per page */
@@ -96,8 +105,12 @@ export default function AdminAuditLogsPage() {
       if (dateTo) params.dateTo = dateTo;
 
       const result = await getAuditLogs(params);
-      setLogs(result.data);
-      setTotal(result.total);
+      // When no action filter is set, hide noisy auth session actions
+      const filtered = actionFilter
+        ? result.data
+        : result.data.filter((l) => !HIDDEN_AUTH_ACTIONS.has(l.action as AuditAction));
+      setLogs(filtered);
+      setTotal(actionFilter ? result.total : filtered.length);
       setTotalPages(Math.max(1, Math.ceil(result.total / PAGE_SIZE)));
     } catch {
       toast.error('Failed to load audit logs');
@@ -161,7 +174,7 @@ export default function AdminAuditLogsPage() {
                 <SelectTrigger id="action-filter"><SelectValue placeholder="All actions" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All actions</SelectItem>
-                  {Object.values(AuditAction).map((a) => (
+                  {VISIBLE_ACTIONS.map((a) => (
                     <SelectItem key={a} value={a}>{a.replace(/_/g, ' ')}</SelectItem>
                   ))}
                 </SelectContent>

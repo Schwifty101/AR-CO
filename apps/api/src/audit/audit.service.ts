@@ -103,7 +103,7 @@ export class AuditService {
     let query = adminClient
       .from('activity_logs')
       .select(
-        '*, user_profiles!activity_logs_user_id_fkey(full_name, email:user_id)',
+        '*, user_profiles!activity_logs_user_id_fkey(full_name)',
         { count: 'exact' },
       )
       .order('created_at', { ascending: false })

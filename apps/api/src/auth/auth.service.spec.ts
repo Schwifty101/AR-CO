@@ -12,6 +12,7 @@ import { ForbiddenException, UnauthorizedException } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SupabaseService } from '../database/supabase.service';
 import { AdminWhitelistService } from '../database/admin-whitelist.service';
+import { AuditService } from '../audit/audit.service';
 
 /** Mock Supabase client returned by getAdminClient() */
 const mockAdminClient = {
@@ -61,6 +62,12 @@ describe('AuthService', () => {
           provide: AdminWhitelistService,
           useValue: {
             isAdminEmail: jest.fn().mockReturnValue(false),
+          },
+        },
+        {
+          provide: AuditService,
+          useValue: {
+            log: jest.fn().mockResolvedValue(undefined),
           },
         },
       ],
