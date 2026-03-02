@@ -193,3 +193,12 @@ export enum AuditEntityType {
   DOCUMENT = 'document',
   AUTH = 'auth',
 }
+
+/** Client interaction type — matches DB interaction_type enum */
+export enum InteractionType {
+  CALL = 'call',
+  EMAIL = 'email',
+  MEETING = 'meeting',
+  WHATSAPP = 'whatsapp',
+  OTHER = 'other',
+}

@@ -16,6 +16,7 @@ export {
   DocumentType,
   ContentType,
   PostStatus,
+  InteractionType,
 } from './enums';
 export * from './schemas';
 export * from './types';
