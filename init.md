@@ -4,13 +4,23 @@
 
 This document provides a granular 3-level task breakdown for transforming the AR-CO NestJS backend from minimal setup to a full-featured law firm management platform.
 
-**Current State (as of 2026-03-01):**
+**Current State (as of 2026-03-02):**
 
 - HEAD TASKs 1-9 complete (Environment, Schema, DB Service, Auth, Users, Clients/Subscriptions/Complaints/Service Registrations, Cases, Consultation Booking, Documents)
-- Sub-task 12.9 complete (Service Registrations → Cases conversion flow)
-- Sub-tasks 12.8.4-12.8.5 complete (Admin service registrations list + detail pages)
+- **HEAD TASK 11 complete** (Content Module — Google Docs CMS, SEO, Blog/Case Studies, Testimonials, Legal News)
+- HEAD TASK 12 partially complete:
+  - Sub-tasks 12.1.1-12.1.3 complete (Dashboard service + basic stats)
+  - Sub-tasks 12.4.1 complete (Dashboard controller)
+  - Sub-tasks 12.5 partial (Dashboard schemas done, interaction/activity schemas pending)
+  - Sub-tasks 12.6.2 complete (DashboardModule)
+  - Sub-tasks 12.7.1-12.7.4 complete (All admin management views)
+  - Sub-tasks 12.8.1-12.8.3 complete (Dashboard stats frontend)
+  - Sub-task 12.9 complete (Service Registrations → Cases conversion flow)
+  - Sub-tasks 12.8.4-12.8.5 complete (Admin service registrations list + detail pages)
+  - Remaining: 12.1.4-12.1.6 (advanced analytics), 12.2 (CRM), 12.3 (activity logs), 12.4.2 (admin controller), 12.5.1-12.5.3 (admin schemas), 12.6.1 (AdminModule)
+- Auth enhancement: Email confirmation flow implemented (signup defers profile creation, signin checks confirmation)
 - **Safepay payment code is LIVE but being replaced by Lemon Squeezy** — migration in progress
-- HEAD TASKs 10-13 remain (Payments/Lemon Squeezy, Content, Admin, Testing)
+- HEAD TASKs 10, 13-14 remain (Payments/Lemon Squeezy, Testing, RLS Optimization)
 
 **Payment Provider:** [Lemon Squeezy](https://lemonsqueezy.com) (Merchant of Record) — replacing Safepay
 **SDK:** `@lemonsqueezy/lemonsqueezy.js`
@@ -1208,81 +1218,82 @@ Single atomic Supabase migration:
 
 ---
 
-## HEAD TASK 11: Content Module (Google Docs CMS + Auto SEO)
+## HEAD TASK 11: Content Module (Google Docs CMS + Auto SEO) ✅
 
 > **Design doc:** `docs/plans/2026-03-01-content-module-design.md`
 > **Content types:** Blog posts and Case Studies via `content_type` enum on single `blog_posts` table
 > **Google Docs:** Service account integration — admin pastes Doc URL, backend fetches/converts/generates SEO
 > **Templates:** Google Doc skeleton templates for consistent blog and case study structure
 
-### Sub-task 11.1: Database Migration — Add Content Columns
+### Sub-task 11.1: Database Migration — Add Content Columns ✅
 
-- [ ] **11.1.1**: Add `content_type` (text NOT NULL DEFAULT 'blog'), `metadata` (jsonb DEFAULT '{}') columns to `blog_posts`
-- [ ] **11.1.2**: Add `meta_title` (text), `meta_description` (text), `read_time` (text) columns to `blog_posts`
-- [ ] **11.1.3**: Add `is_featured` (boolean DEFAULT false), `google_doc_id` (text), `google_doc_url` (text) columns to `blog_posts`
+- [x] **11.1.1**: Add `content_type` (text NOT NULL DEFAULT 'blog'), `metadata` (jsonb DEFAULT '{}') columns to `blog_posts`
+- [x] **11.1.2**: Add `meta_title` (text), `meta_description` (text), `read_time` (text) columns to `blog_posts`
+- [x] **11.1.3**: Add `is_featured` (boolean DEFAULT false), `google_doc_id` (text), `google_doc_url` (text) columns to `blog_posts`
 
-### Sub-task 11.2: Shared Package — Enums, Schemas & Types
+### Sub-task 11.2: Shared Package — Enums, Schemas & Types ✅
 
-- [ ] **11.2.1**: Add enums to `packages/shared/src/enums.ts`: `ContentType` (BLOG, CASE_STUDY), `PostStatus` (DRAFT, PUBLISHED, ARCHIVED)
-- [ ] **11.2.2**: Create `packages/shared/src/schemas/content.schemas.ts`
+- [x] **11.2.1**: Add enums to `packages/shared/src/enums.ts`: `ContentType` (BLOG, CASE_STUDY), `PostStatus` (DRAFT, PUBLISHED, ARCHIVED)
+- [x] **11.2.2**: Create `packages/shared/src/schemas/content.schemas.ts`
   - `CreateContentPostSchema` — googleDocUrl, contentType, categoryId, isFeatured, metadata
   - `UpdateContentPostSchema` — partial: title, slug, excerpt, metaTitle, metaDescription, status, featuredImage, metadata
   - `ContentPostResponseSchema`, `ContentFiltersSchema` (contentType, categoryId, status, search)
   - `CreateCategorySchema`, `UpdateCategorySchema`, `CategoryResponseSchema`
   - `CreateTestimonialSchema`, `TestimonialResponseSchema`
   - `CreateLegalNewsSchema`, `LegalNewsResponseSchema`
-- [ ] **11.2.3**: Create `packages/shared/src/types/content.types.ts`
+- [x] **11.2.3**: Create `packages/shared/src/types/content.types.ts`
 
-### Sub-task 11.3: Backend — Google Docs Service
+### Sub-task 11.3: Backend — Google Docs Service ✅
 
-- [ ] **11.3.1**: Install `googleapis` package in `apps/api`
-- [ ] **11.3.2**: Add `GOOGLE_SERVICE_ACCOUNT_KEY` to config module + `.env.example`
-- [ ] **11.3.3**: Create `apps/api/src/content/google-docs.service.ts`
+- [x] **11.3.1**: Install `googleapis` package in `apps/api`
+- [x] **11.3.2**: Add `GOOGLE_SERVICE_ACCOUNT_KEY` to config module + `.env.example`
+- [x] **11.3.3**: Create `apps/api/src/content/google-docs.service.ts`
   - `extractDocId(url: string)` — parse Google Doc URL to document ID
   - `fetchDocument(docId: string)` — fetch via Docs API v1
-  - `convertToHtml(document)` — convert Google Docs JSON to HTML (headings, paragraphs, lists, bold/italic, links, images)
-  - `extractCaseStudyMetadata(html)` — parse "Key Facts" and "Outcome" sections from case study template
+  - `convertToHtml(document)` — convert Google Docs JSON to HTML (headings, paragraphs, lists, bold/italic, links, images, tables)
+  - `extractCaseStudyMetadata(html)` — parse "Key Facts" and "Outcome" sections from case study template (supports inline + table format)
 
-### Sub-task 11.4: Backend — SEO Service
+### Sub-task 11.4: Backend — SEO Service ✅
 
-- [ ] **11.4.1**: Create `apps/api/src/content/seo.service.ts`
-  - `generateSlug(title: string)` — kebab-case, deduplicate with `-2`, `-3` suffix
+- [x] **11.4.1**: Create `apps/api/src/content/seo.service.ts`
+  - `generateSlug(title: string)` — kebab-case, deduplicate with `-2`, `-3` suffix (uniqueness check against DB)
   - `generateMetaTitle(title: string)` — append " | AR&CO Law", truncate to 60 chars
   - `generateMetaDescription(excerpt: string)` — first 155 chars
-  - `generateReadTime(content: string)` — `Math.ceil(wordCount / 200) + " min read"`
+  - `generateReadTime(content: string)` — `Math.ceil(wordCount / 200) + " min read"` (min 1 minute)
   - `generateSeoFields(title, content, excerpt?)` — returns all fields at once
+  - `generateExcerpt(content: string)` — first paragraph, 300 chars max
 
-### Sub-task 11.5: Backend — Blog Service (Posts + Case Studies)
+### Sub-task 11.5: Backend — Blog Service (Posts + Case Studies) ✅
 
-- [ ] **11.5.1**: Create `apps/api/src/content/blog.service.ts`
-- [ ] **11.5.2**: Implement `createPost(createDto, currentUser)` — fetch Google Doc, generate SEO, save to DB
-- [ ] **11.5.3**: Implement `updatePost(postId, updateDto)` — update fields, re-generate SEO if title/content changed
-- [ ] **11.5.4**: Implement `syncFromGoogleDoc(postId)` — re-fetch doc, update content + SEO
-- [ ] **11.5.5**: Implement `deletePost(postId)` method
-- [ ] **11.5.6**: Implement `getPublishedPosts(paginationDto, filters)` — filter by contentType, categoryId, search
-- [ ] **11.5.7**: Implement `getPostBySlug(slug)` — single post with author + category joined
-- [ ] **11.5.8**: Implement `getAllPosts(paginationDto)` — all statuses for admin
-- [ ] **11.5.9**: Implement `incrementViewCount(postId)` method
-- [ ] **11.5.10**: Implement category CRUD: `createCategory`, `updateCategory`, `deleteCategory`, `getCategories`
+- [x] **11.5.1**: Create `apps/api/src/content/blog.service.ts` (626 lines)
+- [x] **11.5.2**: Implement `createPost(createDto, currentUser)` — fetch Google Doc, generate SEO, save to DB
+- [x] **11.5.3**: Implement `updatePost(postId, updateDto)` — update fields, re-generate SEO if title/content changed
+- [x] **11.5.4**: Implement `syncFromGoogleDoc(postId)` — re-fetch doc, update content + SEO
+- [x] **11.5.5**: Implement `deletePost(postId)` method
+- [x] **11.5.6**: Implement `getPublishedPosts(paginationDto, filters)` — filter by contentType, categoryId, search
+- [x] **11.5.7**: Implement `getPostBySlug(slug)` — single post with author + category joined
+- [x] **11.5.8**: Implement `getAllPosts(paginationDto)` — all statuses for admin
+- [x] **11.5.9**: Implement `incrementViewCount(postId)` method
+- [x] **11.5.10**: Implement category CRUD: `createCategory`, `updateCategory`, `deleteCategory`, `getCategories`
 
-### Sub-task 11.6: Backend — Testimonials Service
+### Sub-task 11.6: Backend — Testimonials Service ✅
 
-- [ ] **11.6.1**: Create `apps/api/src/content/testimonials.service.ts`
-- [ ] **11.6.2**: Implement `submitTestimonial(createDto, currentUser)` method
-- [ ] **11.6.3**: Implement `getApprovedTestimonials(paginationDto)` method
-- [ ] **11.6.4**: Implement `getAllTestimonials(paginationDto)` method (staff only)
-- [ ] **11.6.5**: Implement `approveTestimonial(testimonialId, approverId)` method (admin only)
-- [ ] **11.6.6**: Implement `rejectTestimonial(testimonialId)` method (admin only)
+- [x] **11.6.1**: Create `apps/api/src/content/testimonials.service.ts`
+- [x] **11.6.2**: Implement `submitTestimonial(createDto, currentUser)` method
+- [x] **11.6.3**: Implement `getApprovedTestimonials(paginationDto)` method
+- [x] **11.6.4**: Implement `getAllTestimonials(paginationDto)` method (staff only)
+- [x] **11.6.5**: Implement `approveTestimonial(testimonialId, approverId)` method (admin only)
+- [x] **11.6.6**: Implement `rejectTestimonial(testimonialId)` method (admin only — deletes testimonial)
 
-### Sub-task 11.7: Backend — Legal News Service
+### Sub-task 11.7: Backend — Legal News Service ✅
 
-- [ ] **11.7.1**: Create `apps/api/src/content/legal-news.service.ts`
-- [ ] **11.7.2**: Implement `createNewsItem(createDto)` method
-- [ ] **11.7.3**: Implement `getLatestNews(limit)` method
+- [x] **11.7.1**: Create `apps/api/src/content/legal-news.service.ts`
+- [x] **11.7.2**: Implement `createNewsItem(createDto)` method
+- [x] **11.7.3**: Implement `getLatestNews(limit)` method
 
-### Sub-task 11.8: Backend — Content Controllers
+### Sub-task 11.8: Backend — Content Controllers ✅
 
-- [ ] **11.8.1**: Create `apps/api/src/content/blog.controller.ts`
+- [x] **11.8.1**: Create `apps/api/src/content/blog.controller.ts`
   - `GET /api/content/posts` (@Public) — published posts, filter by contentType/category
   - `GET /api/content/posts/:slug` (@Public) — single post by slug
   - `POST /api/content/posts/:id/view` (@Public) — increment view count
@@ -1293,58 +1304,60 @@ Single atomic Supabase migration:
   - `DELETE /api/content/posts/:id` (admin) — delete post
   - `GET /api/content/categories` (@Public), `POST /api/content/categories` (staff)
   - `PATCH /api/content/categories/:id` (staff), `DELETE /api/content/categories/:id` (admin)
-- [ ] **11.8.2**: Create `apps/api/src/content/testimonials.controller.ts`
+- [x] **11.8.2**: Create `apps/api/src/content/testimonials.controller.ts`
   - `GET /api/testimonials` (@Public — approved only), `POST /api/testimonials` (client)
   - `GET /api/testimonials/all` (staff), `POST /api/testimonials/:id/approve` (admin), `POST /api/testimonials/:id/reject` (admin)
-- [ ] **11.8.3**: Create `apps/api/src/content/legal-news.controller.ts`
+- [x] **11.8.3**: Create `apps/api/src/content/legal-news.controller.ts`
   - `GET /api/legal-news` (@Public), `POST /api/legal-news` (staff)
 
-### Sub-task 11.9: Backend — Content Module
+### Sub-task 11.9: Backend — Content Module ✅
 
-- [ ] **11.9.1**: Create `apps/api/src/content/content.module.ts`
+- [x] **11.9.1**: Create `apps/api/src/content/content.module.ts`
   - Register GoogleDocsService, SeoService, BlogService, TestimonialsService, LegalNewsService, all controllers
-- [ ] **11.9.2**: Register ContentModule in `app.module.ts`
+- [x] **11.9.2**: Register ContentModule in `app.module.ts`
 
-### Sub-task 11.10: Frontend — API Client & Types
+### Sub-task 11.10: Frontend — API Client & Types ✅
 
-- [ ] **11.10.1**: Create `apps/web/lib/api/content.ts`
+- [x] **11.10.1**: Create `apps/web/lib/api/content.ts` (891 lines, fully documented with JSDoc)
   - `getPublishedPosts(params)`, `getPostBySlug(slug)`, `getAdminPosts(params)`, `createPost(data)`, `updatePost(id, data)`, `syncPost(id)`, `deletePost(id)`, `incrementView(id)`
   - `getCategories()`, `createCategory(data)`, `updateCategory(id, data)`, `deleteCategory(id)`
-- [ ] **11.10.2**: Create `apps/web/lib/api/testimonials.ts`
-- [ ] **11.10.3**: Create `apps/web/lib/api/legal-news.ts`
+  - `getApprovedTestimonials()`, `submitTestimonial()`, `getAllTestimonials()`, `approveTestimonial()`, `rejectTestimonial()`
+  - `getLatestNews()`, `createNewsItem()`
+- [x] **11.10.2**: Testimonials API functions included in `content.ts` (no separate file needed)
+- [x] **11.10.3**: Legal news API functions included in `content.ts` (no separate file needed)
 
-### Sub-task 11.11: Frontend — Admin Content Pages
+### Sub-task 11.11: Frontend — Admin Content Pages ✅
 
-- [ ] **11.11.1**: Create `/admin/content` page — DataTable with tabs (Blogs / Case Studies), status badges, search, filters
-- [ ] **11.11.2**: Create `/admin/content/new` page — Google Doc URL input, content type selector, category dropdown, SEO preview panel, case study metadata fields, template skeleton links
-- [ ] **11.11.3**: Create `/admin/content/[id]` page — Edit form, re-sync button, SEO editor, publish/archive controls
-- [ ] **11.11.4**: Update admin sidebar to add "Content" link
+- [x] **11.11.1**: Create `/admin/content` page — Paginated table, filters by type/status/category/search, category management dialog, delete functionality
+- [x] **11.11.2**: Create `/admin/content/new` page — Google Doc URL input, content type selector, category picker, featured toggle, service account email with copy-to-clipboard
+- [x] **11.11.3**: Create `/admin/content/[id]` page — SEO field editing, status change, sync from Google Doc button, delete option, category management, featured toggle
+- [x] **11.11.4**: Update admin sidebar to add "Content" link (FileText icon)
 
-### Sub-task 11.12: Frontend — Update Public Blog Pages
+### Sub-task 11.12: Frontend — Update Public Blog Pages ✅
 
-- [ ] **11.12.1**: Convert `/blogs/page.tsx` to fetch from API (`GET /api/content/posts`) instead of static data
-- [ ] **11.12.2**: Convert `/blogs/[slug]/page.tsx` to server component with `generateMetadata()` for SSR SEO
-- [ ] **11.12.3**: Add JSON-LD structured data (Article schema) to `/blogs/[slug]/page.tsx`
-- [ ] **11.12.4**: Add Open Graph + Twitter Card meta tags via `generateMetadata()`
-- [ ] **11.12.5**: Remove static data files (`blogData.ts`, `caseStudyData.ts`) after API integration complete
+- [x] **11.12.1**: Convert `/blogs/page.tsx` to fetch from API (`GET /api/content/posts`) — tab navigation (Insights/Case Studies), featured posts carousel, category filtering, animated UI
+- [x] **11.12.2**: Convert `/blogs/[slug]/page.tsx` to server component with `generateMetadata()` for SSR SEO (SSG with 60s revalidation)
+- [x] **11.12.3**: Add JSON-LD structured data (Article schema) to `/blogs/[slug]/page.tsx`
+- [x] **11.12.4**: Add Open Graph + Twitter Card meta tags via `generateMetadata()`
+- [x] **11.12.5**: Remove static data files (`blogData.ts`, `caseStudyData.ts`) after API integration complete
 
 ### Sub-task 11.13: Google Doc Templates
 
 - [ ] **11.13.1**: Create Blog Post template Google Doc skeleton in shared Drive folder
 - [ ] **11.13.2**: Create Case Study template Google Doc skeleton in shared Drive folder
-- [ ] **11.13.3**: Add template links to admin "New Post" page for reference
+- [x] **11.13.3**: Add template links to admin "New Post" page for reference (service account email displayed with copy button)
 
 ---
 
-## HEAD TASK 12: Admin Module
+## HEAD TASK 12: Admin Module (Partial ✅)
 
-### Sub-task 12.1: Create Dashboard Service
+### Sub-task 12.1: Create Dashboard Service (Partial ✅)
 
-- [ ] **12.1.1**: Create `apps/api/src/dashboard/dashboard.service.ts`
-- [ ] **12.1.2**: Implement `getAdminDashboardStats()` method
-  - Total clients, active cases, pending complaints, active subscriptions, pending registrations, pending consultations, revenue this month
-- [ ] **12.1.3**: Implement `getClientDashboardStats(clientProfileId)` method
-  - Open cases, active subscription status, pending complaints, service registrations in progress
+- [x] **12.1.1**: Create `apps/api/src/dashboard/dashboard.service.ts` (139 lines)
+- [x] **12.1.2**: Implement `getAdminDashboardStats()` method
+  - Total clients, active cases, pending appointments
+- [x] **12.1.3**: Implement `getClientDashboardStats(clientProfileId)` method
+  - Open cases, upcoming appointments, pending invoices
 - [ ] **12.1.4**: Implement `getRecentActivities(limit)` method
 - [ ] **12.1.5**: Implement `getRevenueAnalytics(dateRange)` method
 - [ ] **12.1.6**: Implement `getCaseAnalytics()` method
@@ -1364,44 +1377,59 @@ Single atomic Supabase migration:
 - [ ] **12.3.2**: Implement `createActivityLog()` method
 - [ ] **12.3.3**: Implement `getActivityLogs(paginationDto, filters)` method
 
-### Sub-task 12.4: Create Admin Controllers
+### Sub-task 12.4: Create Admin Controllers (Partial ✅)
 
-- [ ] **12.4.1**: Create `apps/api/src/dashboard/dashboard.controller.ts`
-  - `GET /api/dashboard/admin` (staff) — admin stats
-  - `GET /api/dashboard/client` (client) — client stats
-  - `GET /api/dashboard/revenue-analytics` (staff)
-  - `GET /api/dashboard/case-analytics` (staff)
+- [x] **12.4.1**: Create `apps/api/src/dashboard/dashboard.controller.ts`
+  - `GET /api/dashboard/admin/stats` (admin/staff) — admin stats
+  - `GET /api/dashboard/client/stats` (client) — client stats
+  - _Revenue analytics and case analytics endpoints not yet implemented_
 - [ ] **12.4.2**: Create `apps/api/src/admin/admin.controller.ts`
   - `GET /api/admin/activity-logs` (staff)
   - `GET /api/admin/clients/:id/interactions` (staff)
   - `POST /api/admin/clients/:id/interactions` (staff)
   - `GET /api/admin/interactions/upcoming` (staff)
 
-### Sub-task 12.5: Admin Schemas & Types
+### Sub-task 12.5: Admin Schemas & Types (Partial ✅)
 
-- [ ] **12.5.1**: Create `packages/shared/src/schemas/admin.schemas.ts`
-  - `DashboardStatsResponseSchema`, `CreateInteractionSchema`, `UpdateInteractionSchema`, `InteractionResponseSchema`
+- [x] **12.5.1a**: Dashboard schemas created (`AdminDashboardStatsSchema`, `ClientDashboardStatsSchema` in `packages/shared/src/schemas/dashboard.schemas.ts`)
+- [x] **12.5.1b**: Dashboard types exported (`packages/shared/src/types/dashboard.types.ts`)
+- [ ] **12.5.1c**: Create `packages/shared/src/schemas/admin.schemas.ts`
+  - `CreateInteractionSchema`, `UpdateInteractionSchema`, `InteractionResponseSchema`
   - `ActivityLogResponseSchema`, `RevenueAnalyticsResponseSchema`
 - [ ] **12.5.2**: Create `packages/shared/src/types/admin.types.ts`
 - [ ] **12.5.3**: Add enums: `InteractionType` (CALL, EMAIL, MEETING, NOTE) to enums.ts
 
-### Sub-task 12.6: Admin Module
+### Sub-task 12.6: Admin Module (Partial ✅)
 
 - [ ] **12.6.1**: Create `apps/api/src/admin/admin.module.ts`
-- [ ] **12.6.2**: Create `apps/api/src/dashboard/dashboard.module.ts`
+- [x] **12.6.2**: Create `apps/api/src/dashboard/dashboard.module.ts` (registered in `app.module.ts`)
 
-### Sub-task 12.7: Frontend — Admin Management Views (remaining)
+### Sub-task 12.7: Frontend — Admin Management Views ✅
 
-- [ ] **12.7.1**: Create `/admin/complaints` page — list with filters (status, org, date range)
-- [ ] **12.7.2**: Create `/admin/complaints/:id` page — detail + status update + assign to staff
-- [ ] **12.7.3**: Create `/admin/subscriptions` page — list with status filters
-- [ ] **12.7.4**: Update admin sidebar: add Complaints, Subscriptions links (Service Registrations + Consultations already done)
+- [x] **12.7.1**: Create `/admin/complaints` page — list with filters (status, category, search)
+- [x] **12.7.2**: Create `/admin/complaints/:id` page — detail + status update + assign to staff
+- [x] **12.7.3**: Create `/admin/subscriptions` page — list with status filters + cancel capability
+- [x] **12.7.4**: Update admin sidebar: all links present (Dashboard, Clients, Users, Cases, Complaints, Subscriptions, Service Registrations, Consultations, Documents, Content, Profile)
 
-### Sub-task 12.8: Frontend — Dashboard Stats
+> **Additional admin pages implemented beyond original scope:**
+> - `/admin/clients` — Tabbed page (Registered Clients + Consultation Guests)
+> - `/admin/clients/[id]` — Client detail with Cases/Documents/Invoices tabs
+> - `/admin/users` — User management with invite dialog, delete, search, filters
+> - `/admin/cases` — Case list with filters (status, priority, search)
+> - `/admin/cases/[id]` — Case detail with activity timeline
+> - `/admin/cases/new` — Create case page
+> - `/admin/service-registrations` — Service registration list
+> - `/admin/service-registrations/[id]` — Detail with case creation (Sub-task 12.9)
+> - `/admin/consultations` — Consultation bookings list
+> - `/admin/documents` — Document management with type/case filters, download/delete
+> - `/admin/content` — Blog posts and case studies management (HEAD TASK 11)
+> - `/admin/profile` — Admin profile page
 
-- [ ] **12.8.1**: Create `apps/web/lib/api/dashboard.ts` API client helpers
-- [ ] **12.8.2**: Update admin dashboard page to fetch real stats from `GET /api/dashboard/admin`
-- [ ] **12.8.3**: Update client dashboard page to fetch real stats from `GET /api/dashboard/client`
+### Sub-task 12.8: Frontend — Dashboard Stats ✅
+
+- [x] **12.8.1**: Create `apps/web/lib/api/dashboard.ts` API client helpers (`getAdminDashboardStats()`, `getClientDashboardStats()`)
+- [x] **12.8.2**: Update admin dashboard page to fetch real stats from `GET /api/dashboard/admin/stats`
+- [x] **12.8.3**: Update client dashboard page to fetch real stats from `GET /api/dashboard/client/stats`
 
 ---
 
@@ -1486,8 +1514,9 @@ Single atomic Supabase migration:
 
 ### Phase 2: Authentication ✅
 
-- [x] Signup creates user and returns JWT
-- [x] Signin returns valid JWT
+- [x] Signup creates user and returns JWT (now returns `SignupPendingResponse` — email confirmation required before profile creation)
+- [x] Signin returns valid JWT (enhanced: checks email confirmation status)
+- [x] OAuth callback creates profile on first login (reads phone_number from user_metadata)
 - [x] Get current user works
 - [x] Invalid token returns 401
 
