@@ -7,6 +7,8 @@ import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
 import { SupabaseService } from './database/supabase.service';
 import { AdminWhitelistService } from './database/admin-whitelist.service';
+import { AuditInterceptor } from './audit/audit.interceptor';
+import { AuditService } from './audit/audit.service';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { rawBody: true });
@@ -31,6 +33,10 @@ async function bootstrap() {
     new JwtAuthGuard(reflector, supabaseService),
     new RolesGuard(reflector, adminWhitelistService),
   );
+
+  // Register global audit interceptor
+  const auditService = app.get(AuditService);
+  app.useGlobalInterceptors(new AuditInterceptor(reflector, auditService));
 
   // Enable CORS with configured origins
   const corsOrigins = configService.get<string[]>('app.corsOrigins') || [];

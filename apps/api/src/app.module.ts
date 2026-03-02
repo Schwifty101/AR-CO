@@ -18,6 +18,7 @@ import { SubscriptionsModule } from './subscriptions/subscriptions.module';
 import { StorageModule } from './storage/storage.module';
 import { DocumentsModule } from './documents/documents.module';
 import { ContentModule } from './content/content.module';
+import { AuditModule } from './audit/audit.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { ContentModule } from './content/content.module';
     SubscriptionsModule,
     DocumentsModule,
     ContentModule,
+    AuditModule,
   ],
   controllers: [AppController],
   providers: [AppService],
