@@ -159,3 +159,37 @@ export enum PostStatus {
   PUBLISHED = 'published',
   ARCHIVED = 'archived',
 }
+
+/** Actions tracked in the audit log system */
+export enum AuditAction {
+  CREATE = 'CREATE',
+  UPDATE = 'UPDATE',
+  DELETE = 'DELETE',
+  STATUS_CHANGE = 'STATUS_CHANGE',
+  ASSIGN = 'ASSIGN',
+  INVITE = 'INVITE',
+  CANCEL = 'CANCEL',
+  ADD_ACTIVITY = 'ADD_ACTIVITY',
+  SIGNUP = 'SIGNUP',
+  SIGNIN = 'SIGNIN',
+  OAUTH_LOGIN = 'OAUTH_LOGIN',
+  EMAIL_CONFIRM = 'EMAIL_CONFIRM',
+  PASSWORD_RESET = 'PASSWORD_RESET',
+  TOKEN_REFRESH = 'TOKEN_REFRESH',
+  SIGNOUT = 'SIGNOUT',
+}
+
+/** Entity types tracked in the audit log system */
+export enum AuditEntityType {
+  USER = 'user',
+  CLIENT = 'client',
+  CASE = 'case',
+  COMPLAINT = 'complaint',
+  SERVICE_REGISTRATION = 'service_registration',
+  CONSULTATION = 'consultation',
+  SUBSCRIPTION = 'subscription',
+  BLOG_POST = 'blog_post',
+  BLOG_CATEGORY = 'blog_category',
+  DOCUMENT = 'document',
+  AUTH = 'auth',
+}
