@@ -32,6 +32,7 @@ import {
   Injectable,
   NotFoundException,
   InternalServerErrorException,
+  ConflictException,
   BadRequestException,
   Logger,
 } from '@nestjs/common';
@@ -564,12 +565,23 @@ export class UsersService {
 
     // 1. Invite user via Supabase (sends magic link email)
     const { data: authData, error: authError } =
-      await adminClient.auth.admin.inviteUserByEmail(dto.email);
+      await adminClient.auth.admin.inviteUserByEmail(dto.email, {
+        data: { full_name: dto.fullName },
+      });
 
     if (authError || !authData?.user) {
       this.logger.error(`Failed to invite user ${dto.email}`, authError);
+      if (
+        authError &&
+        'code' in authError &&
+        authError.code === 'email_exists'
+      ) {
+        throw new ConflictException(
+          'A user with this email address has already been registered.',
+        );
+      }
       throw new InternalServerErrorException(
-        'Unable to invite user. The email may already be registered.',
+        'Unable to invite user. Please try again.',
       );
     }
 

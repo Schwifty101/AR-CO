@@ -9,6 +9,7 @@ import {
   Injectable,
   NotFoundException,
   ForbiddenException,
+  ConflictException,
   InternalServerErrorException,
   Logger,
 } from '@nestjs/common';
@@ -265,16 +266,25 @@ export class ClientsService {
 
     // Invite user via email (sends magic link for password setup)
     const { data: authData, error: authError } =
-      (await adminClient.auth.admin.inviteUserByEmail(
-        dto.email,
-      )) as AuthCreateResult;
+      (await adminClient.auth.admin.inviteUserByEmail(dto.email, {
+        data: { full_name: dto.fullName },
+      })) as AuthCreateResult;
 
     if (authError || !authData?.user) {
       this.logger.error(
         `Failed to create auth user for ${dto.email}: ${authError?.message}`,
       );
+      if (
+        authError &&
+        'code' in authError &&
+        authError.code === 'email_exists'
+      ) {
+        throw new ConflictException(
+          'A user with this email address has already been registered.',
+        );
+      }
       throw new InternalServerErrorException(
-        'Unable to create user account. The email may already be registered.',
+        'Unable to create user account. Please try again.',
       );
     }
 
