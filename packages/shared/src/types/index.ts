@@ -122,3 +122,11 @@ export type {
   CreateLegalNewsData,
   LegalNewsResponse,
 } from './content.types';
+
+// Audit
+export type {
+  AuditLogResponse,
+  AuditLogFilters,
+  PaginatedAuditLogsResponse,
+  AuditLogUser,
+} from './audit.types';

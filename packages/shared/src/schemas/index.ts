@@ -123,3 +123,11 @@ export {
   CreateLegalNewsSchema,
   LegalNewsResponseSchema,
 } from './content.schemas';
+
+// Audit
+export {
+  AuditLogResponseSchema,
+  AuditLogFiltersSchema,
+  PaginatedAuditLogsResponseSchema,
+  AuditLogUserSchema,
+} from './audit.schemas';
