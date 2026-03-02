@@ -21,6 +21,7 @@ This document provides a granular 3-level task breakdown for transforming the AR
 - Auth enhancement: Email confirmation flow implemented (signup defers profile creation, signin checks confirmation)
 - **Auth fix: Invite redirect & RBAC** — invite magic link now redirects to `/auth/callback` for proper role-based routing; attorney added to admin-side redirects; role-based permission model implemented (see below)
 - **Safepay payment code is LIVE but being replaced by Lemon Squeezy** — migration in progress
+- **HEAD TASK 15 complete** (Audit & Activity Logs — global interceptor, AuditService, admin audit logs page)
 - HEAD TASKs 10, 13-14 remain (Payments/Lemon Squeezy, Testing, RLS Optimization)
 
 **Role-Based Access Control (Admin Dashboard):**
@@ -1513,6 +1514,65 @@ Single atomic Supabase migration:
 - [ ] **14.4.1**: Run Supabase security advisors — zero auth_rls_initplan warnings
 - [ ] **14.4.2**: Run Supabase performance advisors — zero duplicate_index warnings
 - [ ] **14.4.3**: Verify all API endpoints still work (no RLS regressions)
+
+---
+
+## HEAD TASK 15: Audit & Activity Logs
+
+### Sub-task 15.1: Shared Package (Enums, Schemas, Types)
+
+- [x] **15.1.1**: Add `AuditAction` and `AuditEntityType` enums to `packages/shared/src/enums.ts`
+- [x] **15.1.2**: Create `packages/shared/src/schemas/audit.schemas.ts` (AuditLogResponseSchema, AuditLogFiltersSchema, PaginatedAuditLogsResponseSchema, AuditLogUserSchema)
+- [x] **15.1.3**: Create `packages/shared/src/types/audit.types.ts` (inferred from schemas)
+- [x] **15.1.4**: Add barrel exports in `schemas/index.ts` and `types/index.ts`
+
+### Sub-task 15.2: Database Indexes
+
+- [x] **15.2.1**: Add indexes on `activity_logs` table (created_at DESC, user_id, entity_type, action)
+
+### Sub-task 15.3: Backend — AuditService
+
+- [x] **15.3.1**: Create `apps/api/src/audit/audit.service.ts` with `log()`, `findAll()`, `getDistinctUsers()` methods
+- [x] **15.3.2**: Create `@SkipAudit()` decorator at `apps/api/src/common/decorators/skip-audit.decorator.ts`
+
+### Sub-task 15.4: Backend — AuditInterceptor
+
+- [x] **15.4.1**: Create `apps/api/src/audit/audit.interceptor.ts` — global interceptor for POST/PATCH/DELETE
+  - Route-to-action mapping for ~25 admin routes
+  - Sensitive field redaction (passwords, tokens)
+  - IP address and user agent extraction
+  - Fire-and-forget pattern (never blocks response)
+
+### Sub-task 15.5: Backend — AuditController
+
+- [x] **15.5.1**: Create `apps/api/src/audit/audit.controller.ts`
+  - `GET /api/audit-logs` — paginated list with filters (`@Roles(ADMIN, ATTORNEY)`)
+  - `GET /api/audit-logs/users` — distinct users for filter dropdown
+
+### Sub-task 15.6: Backend — AuditModule + Registration
+
+- [x] **15.6.1**: Create `apps/api/src/audit/audit.module.ts` (`@Global()`, exports AuditService)
+- [x] **15.6.2**: Register AuditModule in `app.module.ts`
+- [x] **15.6.3**: Register AuditInterceptor globally in `main.ts`
+
+### Sub-task 15.7: Backend — Auth Event Migration
+
+- [x] **15.7.1**: Inject AuditService into AuthService, replace `logAuthEvent()` with `auditService.log()`
+- [x] **15.7.2**: Remove `ActivityLogMetadata` interface (replaced by `Record<string, unknown>`)
+
+### Sub-task 15.8: Frontend — API Client & Page
+
+- [x] **15.8.1**: Create `apps/web/lib/api/audit-logs.ts` (getAuditLogs, getAuditLogUsers)
+- [x] **15.8.2**: Create `/admin/audit-logs` page with filterable table
+  - Filters: user, action, entity type, date range
+  - Color-coded action badges
+  - Expandable rows with metadata JSON
+  - Loading skeletons and empty state
+  - Pagination (25 per page)
+
+### Sub-task 15.9: Frontend — Sidebar Update
+
+- [x] **15.9.1**: Add "Audit Logs" link to admin sidebar (visible to Admin + Attorney only)
 
 ---
 
