@@ -9,6 +9,7 @@ export {
   AuthResponseUserSchema,
   AuthResponseSchema,
   AuthMessageSchema,
+  SignupPendingResponseSchema,
 } from './auth.schemas';
 
 export {
