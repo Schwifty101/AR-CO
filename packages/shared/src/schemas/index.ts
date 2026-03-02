@@ -131,3 +131,18 @@ export {
   PaginatedAuditLogsResponseSchema,
   AuditLogUserSchema,
 } from './audit.schemas';
+
+// Admin
+export {
+  CreateInteractionSchema,
+  UpdateInteractionSchema,
+  InteractionResponseSchema,
+  PaginatedInteractionsResponseSchema,
+  CreateActivityLogSchema,
+  ActivityLogResponseSchema,
+  ActivityLogFiltersSchema,
+  PaginatedActivityLogsResponseSchema,
+  AdminAnalyticsStatsSchema,
+  CaseAnalyticsSchema,
+  RevenueAnalyticsSchema,
+} from './admin.schemas';
