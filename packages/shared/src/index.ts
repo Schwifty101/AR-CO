@@ -17,6 +17,8 @@ export {
   ContentType,
   PostStatus,
   InteractionType,
+  AuditAction,
+  AuditEntityType,
 } from './enums';
 export * from './schemas';
 export * from './types';
