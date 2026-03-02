@@ -8,16 +8,11 @@ This document provides a granular 3-level task breakdown for transforming the AR
 
 - HEAD TASKs 1-9 complete (Environment, Schema, DB Service, Auth, Users, Clients/Subscriptions/Complaints/Service Registrations, Cases, Consultation Booking, Documents)
 - **HEAD TASK 11 complete** (Content Module — Google Docs CMS, SEO, Blog/Case Studies, Testimonials, Legal News)
-- HEAD TASK 12 partially complete:
-  - Sub-tasks 12.1.1-12.1.3 complete (Dashboard service + basic stats)
-  - Sub-tasks 12.4.1 complete (Dashboard controller)
-  - Sub-tasks 12.5 partial (Dashboard schemas done, interaction/activity schemas pending)
-  - Sub-tasks 12.6.2 complete (DashboardModule)
-  - Sub-tasks 12.7.1-12.7.4 complete (All admin management views)
-  - Sub-tasks 12.8.1-12.8.3 complete (Dashboard stats frontend)
-  - Sub-task 12.9 complete (Service Registrations → Cases conversion flow)
-  - Sub-tasks 12.8.4-12.8.5 complete (Admin service registrations list + detail pages)
-  - Remaining: 12.1.4-12.1.6 (advanced analytics), 12.2 (CRM), 12.3 (activity logs), 12.4.2 (admin controller), 12.5.1-12.5.3 (admin schemas), 12.6.1 (AdminModule)
+- HEAD TASK 12 nearly complete (backend done, frontend remaining):
+  - **Backend complete:** Dashboard service (stats + analytics + case analytics + revenue placeholder), Dashboard controller (8 endpoints), Admin schemas/types/enum (InteractionType, 11 Zod schemas, 11 TS types), AdminModule (ClientInteractionsService, ActivityLogsService, AdminController with 6 CRM endpoints)
+  - **Frontend complete:** All admin management views (12.7), Dashboard stats integration (12.8), Service Registrations → Cases (12.9)
+  - **Frontend remaining:** Admin API client (`apps/web/lib/api/admin.ts` for analytics + interactions), Dashboard analytics cards + recent activity feed, Interactions tab on client detail page, final tsc verification
+  - Activity logs page NOT needed — covered by HEAD TASK 15's `/admin/audit-logs` page
 - Auth enhancement: Email confirmation flow implemented (signup defers profile creation, signin checks confirmation)
 - **Auth fix: Invite redirect & RBAC** — invite magic link now redirects to `/auth/callback` for proper role-based routing; attorney added to admin-side redirects; role-based permission model implemented (see below)
 - **Safepay payment code is LIVE but being replaced by Lemon Squeezy** — migration in progress
@@ -1367,57 +1362,69 @@ Single atomic Supabase migration:
 
 ## HEAD TASK 12: Admin Module (Partial ✅)
 
-### Sub-task 12.1: Create Dashboard Service (Partial ✅)
+### Sub-task 12.1: Create Dashboard Service ✅
 
-- [x] **12.1.1**: Create `apps/api/src/dashboard/dashboard.service.ts` (139 lines)
+- [x] **12.1.1**: Create `apps/api/src/dashboard/dashboard.service.ts`
 - [x] **12.1.2**: Implement `getAdminDashboardStats()` method
   - Total clients, active cases, pending appointments
 - [x] **12.1.3**: Implement `getClientDashboardStats(clientProfileId)` method
   - Open cases, upcoming appointments, pending invoices
-- [ ] **12.1.4**: Implement `getRecentActivities(limit)` method
-- [ ] **12.1.5**: Implement `getRevenueAnalytics(dateRange)` method
-- [ ] **12.1.6**: Implement `getCaseAnalytics()` method
+- [x] **12.1.4**: Implement `getRecentActivities(limit)` method
+  - Queries activity_logs with user_profiles join, returns camelCase mapped entries
+- [x] **12.1.5**: Implement `getRevenueAnalytics(dateRange)` method
+  - Placeholder returning zeroed structure — TODO comments for Task 10 integration
+- [x] **12.1.6**: Implement `getCaseAnalytics()` method
+  - byStatus, byPriority breakdowns, resolutionRate, avgResolutionDays
+- [x] **12.1.7**: Implement `getAnalyticsStats()` method
+  - activeSubscribers, openComplaints, pendingRegistrations counts
 
-### Sub-task 12.2: Create Client Interactions Service (CRM)
+### Sub-task 12.2: Create Client Interactions Service (CRM) ✅
 
-- [ ] **12.2.1**: Create `apps/api/src/admin/client-interactions.service.ts`
-- [ ] **12.2.2**: Implement `logInteraction(createDto, currentUser)` method
-- [ ] **12.2.3**: Implement `getClientInteractions(clientId, paginationDto)` method
-- [ ] **12.2.4**: Implement `getUpcomingInteractions(paginationDto)` method
-- [ ] **12.2.5**: Implement `updateInteraction(interactionId, updateDto)` method
-- [ ] **12.2.6**: Implement `completeInteraction(interactionId)` method
+- [x] **12.2.1**: Create `apps/api/src/admin/client-interactions.service.ts`
+- [x] **12.2.2**: Implement `logInteraction(clientProfileId, createDto, currentUser)` method
+- [x] **12.2.3**: Implement `getClientInteractions(clientId, paginationDto)` method
+- [x] **12.2.4**: Implement `getUpcomingInteractions(paginationDto)` method
+- [x] **12.2.5**: Implement `updateInteraction(interactionId, updateDto)` method
+- [x] **12.2.6**: Implement `completeInteraction(interactionId)` method
 
-### Sub-task 12.3: Create Activity Logs Service
+### Sub-task 12.3: Create Activity Logs Service ✅
 
-- [ ] **12.3.1**: Create `apps/api/src/admin/activity-logs.service.ts`
-- [ ] **12.3.2**: Implement `createActivityLog()` method
-- [ ] **12.3.3**: Implement `getActivityLogs(paginationDto, filters)` method
+- [x] **12.3.1**: Create `apps/api/src/admin/activity-logs.service.ts`
+- [x] **12.3.2**: Implement `createLog(dto, userId?)` method (fire-and-forget, non-blocking)
+- [x] **12.3.3**: Implement `getLogs(pagination, filters)` method (paginated, filterable)
+> Note: HEAD TASK 15's AuditService provides the primary audit trail via global interceptor. This ActivityLogsService is a simpler complement for programmatic log creation.
 
-### Sub-task 12.4: Create Admin Controllers (Partial ✅)
+### Sub-task 12.4: Create Admin Controllers ✅
 
 - [x] **12.4.1**: Create `apps/api/src/dashboard/dashboard.controller.ts`
-  - `GET /api/dashboard/admin/stats` (admin/staff) — admin stats
+  - `GET /api/dashboard/admin/stats` (admin/attorney/staff) — primary stats
   - `GET /api/dashboard/client/stats` (client) — client stats
-  - _Revenue analytics and case analytics endpoints not yet implemented_
-- [ ] **12.4.2**: Create `apps/api/src/admin/admin.controller.ts`
-  - `GET /api/admin/activity-logs` (staff)
-  - `GET /api/admin/clients/:id/interactions` (staff)
-  - `POST /api/admin/clients/:id/interactions` (staff)
-  - `GET /api/admin/interactions/upcoming` (staff)
+  - `GET /api/dashboard/admin/analytics` — secondary analytics stats
+  - `GET /api/dashboard/admin/recent-activities?limit=N` — recent activity feed
+  - `GET /api/dashboard/admin/case-analytics` — case breakdown
+  - `GET /api/dashboard/admin/revenue-analytics` — placeholder
+- [x] **12.4.2**: Create `apps/api/src/admin/admin.controller.ts`
+  - `GET /api/admin/activity-logs` (admin/attorney/staff) — query with filters
+  - `GET /api/admin/clients/:clientProfileId/interactions` — list
+  - `POST /api/admin/clients/:clientProfileId/interactions` — create (Zod-validated)
+  - `GET /api/admin/interactions/upcoming` — upcoming scheduled
+  - `PATCH /api/admin/interactions/:id` — update (Zod-validated)
+  - `PATCH /api/admin/interactions/:id/complete` — mark complete
 
-### Sub-task 12.5: Admin Schemas & Types (Partial ✅)
+### Sub-task 12.5: Admin Schemas & Types ✅
 
-- [x] **12.5.1a**: Dashboard schemas created (`AdminDashboardStatsSchema`, `ClientDashboardStatsSchema` in `packages/shared/src/schemas/dashboard.schemas.ts`)
-- [x] **12.5.1b**: Dashboard types exported (`packages/shared/src/types/dashboard.types.ts`)
-- [ ] **12.5.1c**: Create `packages/shared/src/schemas/admin.schemas.ts`
-  - `CreateInteractionSchema`, `UpdateInteractionSchema`, `InteractionResponseSchema`
-  - `ActivityLogResponseSchema`, `RevenueAnalyticsResponseSchema`
-- [ ] **12.5.2**: Create `packages/shared/src/types/admin.types.ts`
-- [ ] **12.5.3**: Add enums: `InteractionType` (CALL, EMAIL, MEETING, NOTE) to enums.ts
+- [x] **12.5.1a**: Dashboard schemas (`AdminDashboardStatsSchema`, `ClientDashboardStatsSchema`)
+- [x] **12.5.1b**: Dashboard types exported
+- [x] **12.5.1c**: Create `packages/shared/src/schemas/admin.schemas.ts`
+  - Interaction: `CreateInteractionSchema`, `UpdateInteractionSchema`, `InteractionResponseSchema`, `PaginatedInteractionsResponseSchema`
+  - Activity Logs: `CreateActivityLogSchema`, `ActivityLogResponseSchema`, `ActivityLogFiltersSchema`, `PaginatedActivityLogsResponseSchema`
+  - Analytics: `AdminAnalyticsStatsSchema`, `CaseAnalyticsSchema`, `RevenueAnalyticsSchema`
+- [x] **12.5.2**: Create `packages/shared/src/types/admin.types.ts` (11 types inferred from schemas)
+- [x] **12.5.3**: Add `InteractionType` enum (CALL, EMAIL, MEETING, WHATSAPP, OTHER) — matches DB `interaction_type` enum
 
-### Sub-task 12.6: Admin Module (Partial ✅)
+### Sub-task 12.6: Admin Module ✅
 
-- [ ] **12.6.1**: Create `apps/api/src/admin/admin.module.ts`
+- [x] **12.6.1**: Create `apps/api/src/admin/admin.module.ts` (providers: ClientInteractionsService, ActivityLogsService; exports: ActivityLogsService)
 - [x] **12.6.2**: Create `apps/api/src/dashboard/dashboard.module.ts` (registered in `app.module.ts`)
 
 ### Sub-task 12.7: Frontend — Admin Management Views ✅
@@ -1441,11 +1448,22 @@ Single atomic Supabase migration:
 > - `/admin/content` — Blog posts and case studies management (HEAD TASK 11)
 > - `/admin/profile` — Admin profile page
 
-### Sub-task 12.8: Frontend — Dashboard Stats ✅
+### Sub-task 12.8: Frontend — Dashboard Stats (Partial ✅)
 
 - [x] **12.8.1**: Create `apps/web/lib/api/dashboard.ts` API client helpers (`getAdminDashboardStats()`, `getClientDashboardStats()`)
 - [x] **12.8.2**: Update admin dashboard page to fetch real stats from `GET /api/dashboard/admin/stats`
 - [x] **12.8.3**: Update client dashboard page to fetch real stats from `GET /api/dashboard/client/stats`
+- [ ] **12.8.6**: Create `apps/web/lib/api/admin.ts` — frontend API client for analytics + CRM interactions
+  - Analytics: `getAnalyticsStats()`, `getRecentActivities()`, `getCaseAnalytics()`
+  - Interactions: `getClientInteractions()`, `createInteraction()`, `updateInteraction()`, `completeInteraction()`, `getUpcomingInteractions()`
+- [ ] **12.8.7**: Update admin dashboard page — enable 3 disabled analytics cards (Active Subscribers, Open Complaints, Pending Registrations) with real data from `getAnalyticsStats()`, add "Recent Activity" feed section
+- [ ] **12.8.8**: Add "Interactions" tab to `/admin/clients/[id]` page
+  - Interaction list (type icon, subject, staff name, date, completion badge)
+  - "Log Interaction" dialog (type select, subject, notes, scheduled date)
+  - "Complete" action per row
+- [ ] **12.8.9**: Final `pnpm tsc --noEmit` verification on both apps
+
+> Note: Activity logs page NOT needed here — covered by HEAD TASK 15's `/admin/audit-logs` page
 
 ---
 
