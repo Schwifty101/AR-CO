@@ -98,9 +98,12 @@ export class AuthService {
       );
     }
 
-    const adminClient = this.supabaseService.getAdminClient();
+    // Use anon client for signUp so Supabase sends the confirmation email.
+    // The admin (service role) client auto-confirms users and skips emails.
+    // Use anon client so Supabase sends the confirmation email
+    const anonClient = this.supabaseService.getClient();
 
-    const { data: authData, error: authError } = await adminClient.auth.signUp({
+    const { data: authData, error: authError } = await anonClient.auth.signUp({
       email: dto.email,
       password: dto.password,
       options: {
@@ -127,13 +130,33 @@ export class AuthService {
       );
     }
 
-    // Check if user already has a confirmed profile (re-signup scenario)
+    // Anon client returns a fake user with empty identities for existing accounts
+    if (!authData.user.identities || authData.user.identities.length === 0) {
+      throw new UnauthorizedException(
+        'An account with this email already exists. Please sign in instead.',
+      );
+    }
+
+    // Check if user already has a profile (re-signup scenario)
     const existingProfile = await this.fetchUserProfileOrNull(authData.user.id);
     if (existingProfile) {
       throw new UnauthorizedException(
         'An account with this email already exists. Please sign in instead.',
       );
     }
+
+    // Create profiles now so they exist when the user confirms email and signs in
+    await this.createUserProfile(
+      authData.user.id,
+      dto.fullName,
+      'client',
+      dto.phoneNumber,
+    );
+    await this.createClientProfile(authData.user.id);
+
+    await this.logAuthEvent(authData.user.id, 'SIGNUP', 'user', {
+      provider: 'email',
+    });
 
     return {
       message: 'Please check your email to confirm your account.',
