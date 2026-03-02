@@ -34,3 +34,6 @@ export type { AuthMessage as AuthMessageResponse } from '@repo/shared';
 
 /** Signup form data */
 export type { SignupData } from '@repo/shared';
+
+/** Response when signup requires email confirmation */
+export type { SignupPendingResponse } from '@repo/shared';

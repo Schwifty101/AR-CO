@@ -16,7 +16,6 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { OAuthButton } from './oauth-button';
-import { useAuth } from '@/lib/auth/use-auth';
 import { signUp, signInWithGoogle } from '@/lib/auth/auth-actions';
 import { SignupSchema } from '@repo/shared';
 import { motion } from 'framer-motion';
@@ -39,7 +38,6 @@ export function SignupForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get('redirect');
-  const { setUser } = useAuth();
   const [oauthLoading, setOauthLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -74,8 +72,7 @@ export function SignupForm() {
         fullName: data.fullName,
         phoneNumber: data.phoneNumber,
       });
-      setUser(result.user);
-      router.push(redirectTo || '/client/dashboard');
+      router.push(`/auth/verify-email?email=${encodeURIComponent(result.email)}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Sign up failed');
     }
