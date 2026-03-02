@@ -35,6 +35,7 @@ import {
 } from '@nestjs/common';
 import { SupabaseService } from '../database/supabase.service';
 import { AdminWhitelistService } from '../database/admin-whitelist.service';
+import { AuditService } from '../audit/audit.service';
 import { UserType } from '@repo/shared';
 import type {
   SignupData,
@@ -48,13 +49,6 @@ import type {
   AuthMessage,
   SignupPendingResponse,
 } from '@repo/shared';
-
-/** Metadata for activity log entries */
-interface ActivityLogMetadata {
-  provider?: string;
-  action_detail?: string;
-  [key: string]: unknown;
-}
 
 /**
  * Authentication service
@@ -71,6 +65,7 @@ export class AuthService {
   constructor(
     private readonly supabaseService: SupabaseService,
     private readonly adminWhitelistService: AdminWhitelistService,
+    private readonly auditService: AuditService,
   ) {}
 
   /**
@@ -587,29 +582,23 @@ export class AuthService {
   }
 
   /**
-   * Log an authentication event to activity_logs
+   * Log an authentication event via the centralized AuditService
    *
-   * Uses admin client to bypass RLS.
-   * Failures are logged but don't propagate to the caller.
+   * Delegates to AuditService which handles admin client usage, RLS bypass,
+   * and silent failure logging.
    */
   private async logAuthEvent(
     userId: string,
     action: string,
     entityType: string,
-    metadata?: ActivityLogMetadata,
+    metadata?: Record<string, unknown>,
   ): Promise<void> {
-    try {
-      const adminClient = this.supabaseService.getAdminClient();
-
-      await adminClient.from('activity_logs').insert({
-        user_id: userId,
-        action,
-        entity_type: entityType,
-        entity_id: userId,
-        metadata: metadata || {},
-      });
-    } catch (error) {
-      this.logger.warn(`Failed to log auth event: ${action}`, error);
-    }
+    await this.auditService.log({
+      userId,
+      action,
+      entityType,
+      entityId: userId,
+      metadata,
+    });
   }
 }
