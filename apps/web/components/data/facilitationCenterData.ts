@@ -23,11 +23,13 @@ export interface FacilitationService {
 export interface FormField {
   id: string;
   label: string;
-  type: 'text' | 'tel' | 'email' | 'select' | 'textarea' | 'checkbox' | 'file' | 'radio';
+  type: 'text' | 'tel' | 'email' | 'select' | 'textarea' | 'checkbox' | 'file' | 'radio' | 'info';
   required: boolean;
   placeholder?: string;
   options?: string[];
   hint?: string;
+  /** Static content displayed for 'info' type fields */
+  content?: string;
 }
 
 export interface FormSection {
@@ -87,14 +89,14 @@ export const facilitationServices: FacilitationService[] = [
     ],
   },
   {
-    id: 'ip-registration',
-    title: 'Intellectual Property (IP) Registration',
+    id: 'trademark-registration',
+    title: 'Trademark Registration',
     tagline: 'Protect Your Brand Identity',
     whatWeDo: [
       'Register trademarks with IPO-Pakistan',
-      'File copyright registrations',
-      'Handle IP application follow-ups',
-      'Provide protection-focused filing',
+      'Handle name reservation and classification',
+      'Complete TM-1 application process',
+      'Provide post-registration compliance guidance',
     ],
     processSteps: [
       {
@@ -133,6 +135,256 @@ export const facilitationServices: FacilitationService[] = [
       {
         question: 'Is trademark registration mandatory?',
         answer: 'Not mandatory, but strongly recommended to protect your brand.',
+      },
+    ],
+  },
+  {
+    id: 'copyright-registration',
+    title: 'Copyright Registration',
+    tagline: 'Secure Your Creative Works',
+    whatWeDo: [
+      'Register literary, artistic, and musical works',
+      'File copyright applications with IPO-Pakistan',
+      'Handle documentation and follow-ups',
+      'Provide copyright protection guidance',
+    ],
+    processSteps: [
+      {
+        title: 'Work Assessment',
+        description: 'Review the creative work, determine copyright category, and assess registrability',
+        duration: '1 day',
+      },
+      {
+        title: 'Application Preparation',
+        description: 'Prepare copyright registration application with work description and supporting documents',
+        duration: '2-3 days',
+      },
+      {
+        title: 'IPO Filing',
+        description: 'Submit copyright application to Intellectual Property Organization of Pakistan',
+        duration: '1 day',
+      },
+      {
+        title: 'Examination',
+        description: 'IPO reviews the application and verifies the originality of the work',
+        duration: '2-4 weeks',
+      },
+      {
+        title: 'Certificate Issuance',
+        description: 'IPO issues copyright registration certificate upon successful examination',
+        duration: '1-2 weeks',
+      },
+    ],
+    whyYouNeedIt: 'Protects original creative works from unauthorized use and infringement.',
+    whyChooseUs: 'Experienced handling of all creative work categories with thorough documentation.',
+    faqs: [
+      {
+        question: 'What types of works can be copyrighted?',
+        answer: 'Literary, artistic, musical, software, and dramatic works.',
+      },
+      {
+        question: 'How long does copyright protection last?',
+        answer: 'Lifetime of the author plus 50 years in Pakistan.',
+      },
+    ],
+  },
+  {
+    id: 'patent-filing',
+    title: 'Patent Filing',
+    tagline: 'Protect Your Innovation',
+    whatWeDo: [
+      'File patent applications with IPO-Pakistan',
+      'Handle prior art searches',
+      'Prepare technical specifications and claims',
+      'Manage patent prosecution and follow-ups',
+    ],
+    processSteps: [
+      {
+        title: 'Prior Art Search',
+        description: 'Conduct comprehensive search to confirm invention novelty and patentability',
+        duration: '3-5 days',
+      },
+      {
+        title: 'Specification Drafting',
+        description: 'Prepare patent specification, claims, abstract, and technical drawings',
+        duration: '1-2 weeks',
+      },
+      {
+        title: 'Patent Application Filing',
+        description: 'File complete patent application with IPO-Pakistan along with filing fees',
+        duration: '1-2 days',
+      },
+      {
+        title: 'Examination',
+        description: 'IPO examines application for novelty, inventive step, and industrial applicability',
+        duration: '12-24 months',
+      },
+      {
+        title: 'Patent Grant',
+        description: 'IPO grants patent upon successful examination, valid for 20 years from filing date',
+        duration: '1-2 months',
+      },
+    ],
+    whyYouNeedIt: 'Grants exclusive rights to your invention, preventing others from making or selling it.',
+    whyChooseUs: 'Technical expertise in patent drafting and strong knowledge of IPO prosecution process.',
+    faqs: [
+      {
+        question: 'What inventions can be patented?',
+        answer: 'New, inventive, and industrially applicable products or processes.',
+      },
+      {
+        question: 'How long does patent protection last?',
+        answer: '20 years from the filing date, subject to renewal fees.',
+      },
+    ],
+  },
+  {
+    id: 'ip-objection-handling',
+    title: 'IP Objection Handling',
+    tagline: 'Defend Your Intellectual Property',
+    whatWeDo: [
+      'Respond to IPO examination reports and objections',
+      'Draft legal arguments and counter-submissions',
+      'Appear before IPO hearing officers',
+      'Handle opposition and rectification proceedings',
+    ],
+    processSteps: [
+      {
+        title: 'Objection Review',
+        description: 'Analyse the IPO objection letter, identify grounds, and assess response strategy',
+        duration: '2-3 days',
+      },
+      {
+        title: 'Response Preparation',
+        description: 'Draft detailed legal response addressing each objection ground with supporting arguments',
+        duration: '5-7 days',
+      },
+      {
+        title: 'Submission to IPO',
+        description: 'File formal response with IPO within the prescribed deadline',
+        duration: '1 day',
+      },
+      {
+        title: 'Hearing (if required)',
+        description: 'Represent client at IPO hearing if the objection is not resolved on papers',
+        duration: '2-4 weeks',
+      },
+      {
+        title: 'Resolution',
+        description: 'Obtain IPO decision — acceptance, conditional acceptance, or further appeal guidance',
+        duration: '2-6 months',
+      },
+    ],
+    whyYouNeedIt: 'Failure to respond to objections results in abandonment of your IP application.',
+    whyChooseUs: 'Strong track record in overcoming IPO objections with well-reasoned legal arguments.',
+    faqs: [
+      {
+        question: 'What is an IPO objection?',
+        answer: 'A formal query from IPO during examination requiring a written legal response.',
+      },
+      {
+        question: 'What happens if I miss the deadline?',
+        answer: 'The application is treated as abandoned. We help you respond on time.',
+      },
+    ],
+  },
+  {
+    id: 'renewal-services',
+    title: 'Renewal Services',
+    tagline: 'Keep Your IP Rights Active',
+    whatWeDo: [
+      'Renew trademarks before expiry',
+      'Handle patent annuity payments',
+      'Track renewal deadlines and notify clients',
+      'Process renewal applications with IPO',
+    ],
+    processSteps: [
+      {
+        title: 'Deadline Tracking',
+        description: 'Review IP portfolio, identify upcoming renewal dates, and alert client well in advance',
+        duration: '1 day',
+      },
+      {
+        title: 'Renewal Application',
+        description: 'Prepare renewal application form and supporting documents as required by IPO',
+        duration: '1-2 days',
+      },
+      {
+        title: 'Fee Payment',
+        description: 'Submit renewal application with government renewal fees to IPO',
+        duration: '1 day',
+      },
+      {
+        title: 'IPO Processing',
+        description: 'IPO processes renewal and updates the IP register accordingly',
+        duration: '1-2 weeks',
+      },
+      {
+        title: 'Renewal Certificate',
+        description: 'Receive renewed registration certificate confirming extended protection',
+        duration: '3-5 days',
+      },
+    ],
+    whyYouNeedIt: 'Failure to renew results in lapse of IP rights and loss of legal protection.',
+    whyChooseUs: 'Proactive deadline management ensuring your IP rights never lapse.',
+    faqs: [
+      {
+        question: 'When should I renew my trademark?',
+        answer: 'Trademarks are valid for 10 years and must be renewed before expiry.',
+      },
+      {
+        question: 'Can I renew after expiry?',
+        answer: 'A grace period may be available with late fees, but early renewal is strongly advised.',
+      },
+    ],
+  },
+  {
+    id: 'ip-objections',
+    title: 'Objections',
+    tagline: 'Challenge Competing IP Applications',
+    whatWeDo: [
+      'File oppositions against conflicting trademarks',
+      'Handle rectification applications',
+      'Represent clients in IPO opposition proceedings',
+      'Draft and file opposition notices',
+    ],
+    processSteps: [
+      {
+        title: 'Conflict Analysis',
+        description: 'Review conflicting application, assess grounds for opposition, and advise on merits',
+        duration: '2-3 days',
+      },
+      {
+        title: 'Opposition Notice',
+        description: 'Draft and file Notice of Opposition within the 2-month publication window',
+        duration: '3-5 days',
+      },
+      {
+        title: 'Statement of Case',
+        description: 'Prepare detailed statement of grounds and supporting evidence',
+        duration: '1-2 weeks',
+      },
+      {
+        title: 'Counter-Statement Review',
+        description: 'Analyse the applicant\'s counter-statement and prepare rebuttal arguments',
+        duration: '2-3 weeks',
+      },
+      {
+        title: 'Hearing & Decision',
+        description: 'Attend IPO hearing, present arguments, and obtain decision on opposition',
+        duration: '3-6 months',
+      },
+    ],
+    whyYouNeedIt: 'Prevents registration of marks that conflict with or damage your existing IP rights.',
+    whyChooseUs: 'Strategic opposition filings backed by strong legal arguments and IPO experience.',
+    faqs: [
+      {
+        question: 'Who can file an opposition?',
+        answer: 'Any person who believes a published trademark conflicts with their rights.',
+      },
+      {
+        question: 'What is the deadline to oppose?',
+        answer: 'Two months from the date of publication in the Trademark Journal.',
       },
     ],
   },
@@ -533,6 +785,130 @@ export const facilitationServices: FacilitationService[] = [
       {
         question: 'Can overseas owners transfer property?',
         answer: 'Yes, through proper authorization.',
+      },
+    ],
+  },
+  {
+    id: 'immovable-property-due-diligence',
+    title: 'Immovable Property Due Diligence',
+    tagline: 'Verify Before You Buy — Land, Plots, Houses & Commercial Property',
+    whatWeDo: [
+      'Conduct 30+ years title chain review',
+      'Verify Sale Deed, Gift Deed, Allotment Letters & Mutation (Intiqal)',
+      'Check revenue records (Fard / Jamabandi) and Power of Attorney authenticity',
+      'Search court cases, stay orders, legal heirs & family dispute risks',
+      'Verify mortgages, bank charges, loan liabilities, property tax & utility dues',
+      'Confirm development authority approvals, NOCs, layout plans & blacklist status',
+      'Check building plan approvals, zoning compliance and development charges',
+      'Verify corporate seller credentials via SECP, Board Resolution & authorized signatory',
+      'Provide written Legal Opinion with Risk Grading and Marketability Assessment',
+    ],
+    processSteps: [
+      {
+        title: 'Title & Ownership Verification',
+        description: '30+ years title chain review. Sale Deed / Gift Deed / Allotment Letter verification. Mutation (Intiqal) confirmation. Revenue record (Fard / Jamabandi) verification. Power of Attorney authentication.',
+        duration: '2–3 days',
+      },
+      {
+        title: 'Litigation & Dispute Check',
+        description: 'Court case search. Stay order verification. Legal heirs verification. Family dispute risk assessment.',
+        duration: '1–2 days',
+      },
+      {
+        title: 'Encumbrance & Financial Liability Check',
+        description: 'Mortgage / Bank charge verification. Loan liability confirmation. Property tax clearance. Utility dues verification.',
+        duration: '1–2 days',
+      },
+      {
+        title: 'Development Authority & Society Verification',
+        description: 'Verification of approval status, NOC, layout plan, plot in approved map, development charges, blacklist / public warning check, building plan approval, and zoning compliance with LDA, CDA, RDA, DHA and other relevant authorities.',
+        duration: '2–3 days',
+      },
+      {
+        title: 'Final Legal Opinion & Risk Assessment',
+        description: 'Written Legal Opinion. Risk Grading (Low / Medium / High). Marketability Assessment. Advisory before transaction.',
+        duration: '1–2 days',
+      },
+    ],
+    whyYouNeedIt: 'Property fraud, illegal housing schemes, and hidden encumbrances are common in Pakistan. A thorough legal verification before purchase protects your investment and prevents costly disputes.',
+    whyChooseUs: 'Comprehensive 30+ year title review, authority verification across LDA, CDA, RDA & DHA, and a written legal opinion with risk grading — giving you complete clarity before you commit.',
+    faqs: [
+      {
+        question: 'What is included in the title chain review?',
+        answer: 'We review 30+ years of ownership history including Sale Deeds, Gift Deeds, Allotment Letters, Mutation records, and revenue records (Fard / Jamabandi).',
+      },
+      {
+        question: 'Do you verify properties in housing societies?',
+        answer: 'Yes. We verify approval status, NOC, layout plans, plot in approved map, development charges, and blacklist status with all relevant development authorities.',
+      },
+      {
+        question: 'What is the final output?',
+        answer: 'You receive a written Legal Opinion with a Risk Grading (Low / Medium / High), Marketability Assessment, and advisory recommendations before the transaction.',
+      },
+      {
+        question: 'Can you verify a property being sold by a company?',
+        answer: 'Yes. For corporate sellers we verify SECP records, Board Resolution, and authorized signatory credentials.',
+      },
+    ],
+  },
+  {
+    id: 'movable-property-due-diligence',
+    title: 'Movable Property Due Diligence',
+    tagline: 'Legal Verification for Vehicles & Movable Assets',
+    whatWeDo: [
+      'Verify vehicle ownership via registration book and Excise department records',
+      'Check transfer history to identify prior ownership and disputes',
+      'Confirm outstanding token tax, challans and traffic violation status',
+      'Verify smart card authenticity',
+      'Cross-check against stolen vehicle database and FIR records',
+      'Confirm bank hypothecation / financed status and obtain bank clearance letter',
+      'Provide written verification report before purchase',
+    ],
+    processSteps: [
+      {
+        title: 'Vehicle Ownership Verification',
+        description: 'Registration book verification. Excise department record check. Transfer history verification.',
+        duration: '1 day',
+      },
+      {
+        title: 'Token Tax & Dues Check',
+        description: 'Outstanding token tax confirmation. Challan / traffic violation status check. Smart card verification.',
+        duration: '1 day',
+      },
+      {
+        title: 'Theft & Criminal Record Check',
+        description: 'Stolen vehicle database verification. FIR record check (if applicable).',
+        duration: '1 day',
+      },
+      {
+        title: 'Bank Hypothecation Check',
+        description: 'Confirm whether the vehicle is financed. Obtain bank clearance letter if required.',
+        duration: '1–2 days',
+      },
+      {
+        title: 'Verification Report',
+        description: 'Comprehensive written report covering all findings, risk assessment, and advisory before transaction.',
+        duration: '1 day',
+      },
+    ],
+    whyYouNeedIt: 'Vehicle fraud, stolen cars, and hidden loan hypothecations are widespread. A proper legal check before purchase safeguards you from financial and criminal liability.',
+    whyChooseUs: 'Complete verification covering ownership, dues, theft records, and bank hypothecation — with a written report delivered promptly so you can transact with confidence.',
+    faqs: [
+      {
+        question: 'What documents do I need to provide?',
+        answer: 'The vehicle registration number is sufficient. We handle the record searches across Excise, traffic, and banking databases.',
+      },
+      {
+        question: 'Can you check if a vehicle is stolen?',
+        answer: 'Yes. We cross-check the vehicle against the stolen vehicle database and FIR records.',
+      },
+      {
+        question: 'What if the vehicle has an outstanding bank loan?',
+        answer: 'We confirm the financed status and advise whether a bank clearance letter is required before transfer.',
+      },
+      {
+        question: 'Does this cover commercial vehicles too?',
+        answer: 'Yes. Our verification covers cars, motorcycles, and commercial vehicles.',
       },
     ],
   },
@@ -983,15 +1359,137 @@ export const facilitationRegistrationForm: FormSection[] = [
     ],
   },
   {
-    title: 'REGISTRATION FEE & PAYMENT',
+    title: 'FEES & PAYMENT',
     fields: [
       {
-        id: 'feeInfo',
-        label: 'Service Registration & Initial Legal Review Fee',
+        id: 'feeAcknowledge',
+        label: 'I have reviewed the fee breakdown above and agree to proceed with the payment.',
+        type: 'checkbox',
+        required: true,
+      },
+    ],
+  },
+  {
+    title: 'DECLARATION & CONSENT',
+    fields: [
+      {
+        id: 'consentAccurate',
+        label: 'I confirm that the information provided is accurate to the best of my knowledge.',
+        type: 'checkbox',
+        required: true,
+      },
+      {
+        id: 'consentNonRefundable',
+        label: 'I understand that the registration fee is non-refundable and does not constitute full legal fees for my matter.',
+        type: 'checkbox',
+        required: true,
+      },
+      {
+        id: 'consentTerms',
+        label: 'I agree to the Terms & Conditions and Privacy Policy of the firm.',
+        type: 'checkbox',
+        required: true,
+      },
+    ],
+  },
+];
+
+/** IDs of all IP services — used to detect IP-specific form/fee handling */
+export const IP_SERVICE_IDS = new Set([
+  'trademark-registration',
+  'copyright-registration',
+  'patent-filing',
+  'ip-objection-handling',
+  'renewal-services',
+  'ip-objections',
+]);
+
+/** Fee constants for IP services (PKR) */
+export const IP_FEES = {
+  serviceCharges: 5000,
+  registrationFee: 400,
+  governmentCharges: 3000,
+} as const;
+
+/**
+ * Form sections used specifically for IP services.
+ * The FEES & PAYMENT section is rendered with custom UI in the form page.
+ */
+export const ipServicesForm: FormSection[] = [
+  {
+    title: 'CLIENT INFORMATION',
+    fields: [
+      {
+        id: 'fullName',
+        label: 'Full Name (as per passport / CNIC)',
+        type: 'text',
+        required: true,
+        placeholder: 'Enter your full legal name',
+      },
+      {
+        id: 'email',
+        label: 'Email Address',
+        type: 'email',
+        required: true,
+        placeholder: 'your.email@example.com',
+      },
+      {
+        id: 'contactNumber',
+        label: 'Contact Number (WhatsApp preferred)',
+        type: 'tel',
+        required: true,
+        placeholder: 'Country code + number',
+      },
+      {
+        id: 'countryOfResidence',
+        label: 'Country of Residence',
+        type: 'select',
+        required: true,
+        options: ['Pakistan', 'United Kingdom', 'United States', 'Canada', 'UAE', 'Saudi Arabia', 'Other'],
+        placeholder: 'Select your country',
+      },
+    ],
+  },
+  {
+    title: 'IP SERVICE DETAILS',
+    fields: [
+      {
+        id: 'applicantType',
+        label: 'Applicant Type',
+        type: 'select',
+        required: true,
+        options: ['Individual', 'Company / Partnership'],
+        placeholder: 'Select applicant type',
+      },
+      {
+        id: 'brandProductName',
+        label: 'Brand / Product / Work Name',
+        type: 'text',
+        required: true,
+        placeholder: 'Enter the name to be registered or protected',
+      },
+      {
+        id: 'ipDescription',
+        label: 'Brief Description',
+        type: 'textarea',
+        required: true,
+        placeholder: 'Describe the IP you want to register or protect (key facts only)',
+      },
+    ],
+  },
+  {
+    title: 'FEES & PAYMENT',
+    fields: [
+      {
+        id: 'govtChargesHandling',
+        label: 'Government Charges (PKR 3,000)',
         type: 'radio',
         required: true,
-        options: ['PKR 5,000', 'USD 50 (International Clients)'],
-        hint: 'This fee includes: Initial legal review, Case feasibility assessment, Consultation scheduling, File opening & allocation of legal counsel',
+        options: [
+          'Yes – transfer to AR&CO, we will handle the government payment on your behalf',
+          'No – I will make the government payment directly',
+        ],
+        hint: 'Applicable government charges: PKR 3,000',
       },
     ],
   },

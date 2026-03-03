@@ -16,6 +16,8 @@ import styles from './FacilitationOverlay.module.css'
 interface SubService {
   label: string
   href: string
+  /** Nested sub-services shown on click instead of navigating */
+  subServices?: { label: string; href: string }[]
 }
 
 interface OverlayCategory {
@@ -37,10 +39,21 @@ const OVERLAY_CATEGORIES: OverlayCategory[] = [
     id: 'facilitation',
     title: 'Facilitation Centre',
     tagline: 'Business Registration, Licensing & Compliance',
-    services: facilitationServices.map((s) => ({
-      label: s.title,
-      href: `/services/facilitation/${toSlug(s.id)}`,
-    })),
+    services: facilitationServices
+      .filter((s) => s.id !== 'immovable-property-due-diligence' && s.id !== 'movable-property-due-diligence')
+      .map((s) => {
+        if (s.id === 'property-transfer') {
+          return {
+            label: s.title,
+            href: `/services/facilitation/${toSlug(s.id)}`,
+            subServices: [
+              { label: 'Immovable Property Due Diligence', href: '/services/facilitation/immovable-property-due-diligence' },
+              { label: 'Movable Property Due Diligence', href: '/services/facilitation/movable-property-due-diligence' },
+            ],
+          }
+        }
+        return { label: s.title, href: `/services/facilitation/${toSlug(s.id)}` }
+      }),
   },
   {
     id: 'overseas',
@@ -90,6 +103,7 @@ interface FacilitationOverlayProps {
  */
 export default function FacilitationOverlay({ isOpen, onClose }: FacilitationOverlayProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null)
+  const [expandedServiceHref, setExpandedServiceHref] = useState<string | null>(null)
   const { openOverlay: openConsultationOverlay } = useConsultationOverlay()
 
   const handleKeyDown = useCallback(
@@ -120,11 +134,19 @@ export default function FacilitationOverlay({ isOpen, onClose }: FacilitationOve
       unlock()
       window.removeEventListener('keydown', handleKeyDown)
       setExpandedId(null)
+      setExpandedServiceHref(null)
     }
   }, [isOpen, handleKeyDown, lock, unlock])
 
   const toggleCategory = (id: string) => {
-    setExpandedId((prev) => (prev === id ? null : id))
+    setExpandedId((prev) => {
+      if (prev === id) {
+        setExpandedServiceHref(null)
+        return null
+      }
+      setExpandedServiceHref(null)
+      return id
+    })
   }
 
   return (
@@ -354,6 +376,79 @@ export default function FacilitationOverlay({ isOpen, onClose }: FacilitationOve
                                     duration: 0.25,
                                   }}
                                 >
+                                  {service.subServices ? (
+                                    /* Expandable service — reveals sub-services on click */
+                                    <div>
+                                      <button
+                                        className={styles.serviceLink}
+                                        onClick={() => setExpandedServiceHref(
+                                          expandedServiceHref === service.href ? null : service.href
+                                        )}
+                                        style={{ width: '100%', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}
+                                      >
+                                        <span className={styles.serviceDot} />
+                                        <span className={styles.serviceLabel}>{service.label}</span>
+                                        <svg
+                                          width="14"
+                                          height="14"
+                                          fill="none"
+                                          viewBox="0 0 24 24"
+                                          stroke="currentColor"
+                                          style={{
+                                            marginLeft: 'auto',
+                                            flexShrink: 0,
+                                            opacity: 0.5,
+                                            transform: expandedServiceHref === service.href ? 'rotate(90deg)' : 'none',
+                                            transition: 'transform 0.25s ease',
+                                          }}
+                                        >
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
+                                        </svg>
+                                      </button>
+                                      <AnimatePresence initial={false}>
+                                        {expandedServiceHref === service.href && (
+                                          <motion.div
+                                            initial={{ height: 0, opacity: 0 }}
+                                            animate={{ height: 'auto', opacity: 1 }}
+                                            exit={{ height: 0, opacity: 0 }}
+                                            transition={{
+                                              height: { duration: 0.3, ease: [0.32, 0.72, 0, 1] },
+                                              opacity: { duration: 0.2, delay: 0.05 },
+                                            }}
+                                            style={{ overflow: 'hidden', paddingLeft: '1.25rem' }}
+                                          >
+                                            {service.subServices.map((sub, subIdx) => (
+                                              <motion.div
+                                                key={sub.href}
+                                                initial={{ opacity: 0, x: -6 }}
+                                                animate={{ opacity: 1, x: 0 }}
+                                                transition={{ delay: 0.05 * subIdx, duration: 0.2 }}
+                                              >
+                                                <Link
+                                                  href={sub.href}
+                                                  onClick={onClose}
+                                                  className={styles.serviceLink}
+                                                >
+                                                  <span className={styles.serviceDot} style={{ opacity: 0.6 }} />
+                                                  <span className={styles.serviceLabel} style={{ opacity: 0.85 }}>{sub.label}</span>
+                                                  <svg
+                                                    className={styles.serviceArrow}
+                                                    width="14"
+                                                    height="14"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                    stroke="currentColor"
+                                                  >
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                                                  </svg>
+                                                </Link>
+                                              </motion.div>
+                                            ))}
+                                          </motion.div>
+                                        )}
+                                      </AnimatePresence>
+                                    </div>
+                                  ) : (
                                   <Link
                                     href={service.href}
                                     onClick={onClose}
@@ -377,6 +472,7 @@ export default function FacilitationOverlay({ isOpen, onClose }: FacilitationOve
                                       />
                                     </svg>
                                   </Link>
+                                  )}
                                 </motion.div>
                               ))}
                             </div>
