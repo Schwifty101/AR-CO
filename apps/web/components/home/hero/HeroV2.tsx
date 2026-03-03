@@ -79,16 +79,14 @@ const NEWSPAPER_HEADLINES: BgItem[] = [
 export default function HeroV2({ onProgress, onReady, playing = false }: HeroV2Props) {
   const [mounted,    setMounted]    = useState(false)
   const [appLoaded,  setAppLoaded]  = useState(false)
-  const [isMobile,   setIsMobile]   = useState(false)
   const videoRef      = useRef<HTMLVideoElement>(null)
   const onProgressRef = useRef(onProgress)
   const onReadyRef    = useRef(onReady)
   useEffect(() => { onProgressRef.current = onProgress }, [onProgress])
   useEffect(() => { onReadyRef.current    = onReady    }, [onReady])
 
-  // Detect mobile once on mount (client-only)
+  // Set mounted after brief delay (client-only)
   useEffect(() => {
-    setIsMobile(window.matchMedia('(max-width: 768px)').matches)
     const mountId = setTimeout(() => setMounted(true), 80)
     return () => clearTimeout(mountId)
   }, [])
@@ -107,13 +105,6 @@ export default function HeroV2({ onProgress, onReady, playing = false }: HeroV2P
 
   // ── Video buffering progress → drives loading screen ──────────────────
   useEffect(() => {
-    // On mobile the video is not loaded — dismiss the loading screen immediately.
-    if (window.matchMedia('(max-width: 768px)').matches) {
-      onProgressRef.current?.(100)
-      onReadyRef.current?.()
-      return
-    }
-
     const video = videoRef.current
     if (!video) return
 
@@ -192,8 +183,7 @@ export default function HeroV2({ onProgress, onReady, playing = false }: HeroV2P
         preload="auto"
         aria-hidden="true"
       >
-        {/* Video is desktop-only — mobile shows the dark hero background instead */}
-        {!isMobile && <source src="/banner/hero-bg.webm" type="video/webm" />}
+        <source src="/banner/hero-bg.webm" type="video/webm" />
       </video>
       <div className={styles.videoOverlay} aria-hidden="true" />
 

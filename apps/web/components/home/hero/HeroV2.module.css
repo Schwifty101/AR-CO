@@ -195,11 +195,14 @@
 @media (max-width: 768px) {
   .bgItemWrapper { display: none; }
 
-  /* Shift video frame to the right on mobile */
-  .videoBg { object-position: 48% center; }
+  /* Shift video frame down (matching desktop 8% offset) and to the right on mobile */
+  .videoBg {
+    object-position: 48% center;
+    transform: translateY(8%);
+  }
 
   .centerWrapper {
-    top: 45%;
+    top: 50%;
     /* Remove parallax transform on mobile — no scroll listener, no jank */
     transform: translateX(-50%);
     will-change: auto;
