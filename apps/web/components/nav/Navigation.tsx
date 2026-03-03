@@ -524,15 +524,14 @@ const FullScreenMenu: React.FC<IFullScreenMenuProps> = ({ onClose, navItems, onO
                     ))}
 
                     {/* Mobile Only: Sign In & Upgrade Button as last menu items */}
-                    <div className={`${styles.menuLinkWrapper} md:hidden`}>
+                    <div className={`${styles.menuLinkWrapper} md:hidden`} style={{ marginTop: '0.5rem' }}>
                         <motion.div variants={linkVariants}>
                             <Link
                                 href="/auth/signin"
-                                className={styles.menuLink}
+                                className={`${styles.ctaButton} ${styles.ctaButtonOutline}`}
                                 onClick={onClose}
-                                style={{ color: 'var(--heritage-charcoal)' }}
                             >
-                                <SlotMachineText>signin / signup</SlotMachineText>
+                                signin / signup
                             </Link>
                         </motion.div>
                     </div>

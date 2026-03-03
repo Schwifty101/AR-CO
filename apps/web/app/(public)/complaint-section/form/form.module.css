@@ -446,12 +446,12 @@
 
 @media (max-width: 768px) {
   .main {
-    padding-top: 5rem;
+    padding-top: 3.5rem;
   }
 
   .layout {
     flex-direction: column;
-    padding: 1.5rem 1.5rem 4rem;
+    padding: 1.5rem 1.5rem 2rem;
     gap: 2rem;
   }
 
@@ -542,7 +542,7 @@
 
 @media (max-width: 480px) {
   .layout {
-    padding: 1.5rem 1.25rem 3rem;
+    padding: 1rem 1.25rem 1.5rem;
   }
 
   .btnBack,

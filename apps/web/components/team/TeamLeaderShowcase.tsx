@@ -24,6 +24,7 @@ export default function TeamLeaderShowcase({ leader }: TeamLeaderShowcaseProps) 
         const initScrollTrigger = () => {
             if (ctx) return
             if (!sectionRef.current) return
+            if (window.innerWidth < 768) return
 
             ctx = gsap.context(() => {
                 const triggerConfig = {
@@ -95,7 +96,7 @@ export default function TeamLeaderShowcase({ leader }: TeamLeaderShowcaseProps) 
 
                 {/* LEFT COLUMN: Text Content - Editorial Style */}
                 <div className="lg:col-span-5 flex flex-col justify-center order-2 lg:order-1">
-                    <div ref={textRef} className="will-change-transform" style={{ opacity: 1 }}>
+                    <div ref={textRef} className="lg:will-change-transform" style={{ opacity: 1 }}>
                         {/* Decorative Label */}
                         <div className="flex items-center gap-4 mb-8">
                             <div className="h-[1px] w-12 bg-heritage-gold"></div>
@@ -168,7 +169,7 @@ export default function TeamLeaderShowcase({ leader }: TeamLeaderShowcaseProps) 
 
                 {/* RIGHT COLUMN: Image - Abstract Composition */}
                 <div className="lg:col-span-7 relative h-[600px] lg:h-[800px] order-1 lg:order-2">
-                    <div ref={imageRef} className="relative w-full h-full will-change-transform">
+                    <div ref={imageRef} className="relative w-full h-full lg:will-change-transform">
                         {/* Main Image Container with Abstract Mask/Shape */}
                         <div className="absolute inset-0 z-10 overflow-hidden rounded-sm">
                             <Image

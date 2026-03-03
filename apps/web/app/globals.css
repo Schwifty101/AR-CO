@@ -254,7 +254,7 @@ html.lenis body {
     url('/fonts/lora/Lora-Variable.woff') format('woff'),
     url('/fonts/lora/Lora-Variable.ttf') format('truetype');
   font-weight: 400 700;
-  font-display: swap;
+  font-display: block;
   font-style: normal;
 }
 
@@ -264,7 +264,7 @@ html.lenis body {
     url('/fonts/lora/Lora-VariableItalic.woff') format('woff'),
     url('/fonts/lora/Lora-VariableItalic.ttf') format('truetype');
   font-weight: 400 700;
-  font-display: swap;
+  font-display: block;
   font-style: italic;
 }
 
