@@ -386,11 +386,11 @@
 .menuLink {
     display: block;
     font-family: 'Lora', Georgia, serif;
-    font-size: clamp(2.25rem, 9vh, 5.5rem);
+    font-size: clamp(2rem, 8vh, 5rem);
     font-weight: 400;
     font-style: italic;
     letter-spacing: -0.02em;
-    line-height: 1.15;
+    line-height: 1.1;
     color: var(--heritage-cream);
     text-decoration: none;
     transition: color 0.3s cubic-bezier(0.4, 0, 0.2, 1);

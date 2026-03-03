@@ -170,24 +170,23 @@ export default function Testimonials() {
       }
     )
 
-    // Animate all cards with stagger
-    const allCards = [
+    // Animate desktop cards only (mobile cards are display:none on desktop — animating
+    // them would cause extra paint on every stagger tick for invisible elements)
+    const desktopCards = [
       ...column1.querySelectorAll(`.${styles.card}`),
       ...column2.querySelectorAll(`.${styles.card}`),
       ...column3.querySelectorAll(`.${styles.card}`),
-      ...(section.querySelectorAll(`.${styles.mobileContainer} .${styles.card}`) || [])
     ]
 
-    gsap.fromTo(allCards,
-      {
-        opacity: 0,
-        y: 60,
-      },
+    gsap.fromTo(desktopCards,
+      { opacity: 0, y: 60 },
       {
         opacity: 1,
         y: 0,
-        duration: 0.8,
+        duration: 0.7,
         ease: "power3.out",
+        stagger: 0.06,
+        overwrite: "auto",
         scrollTrigger: {
           trigger: section,
           start: "top 70%",
@@ -196,35 +195,51 @@ export default function Testimonials() {
       }
     )
 
-    // Calculate scroll distance based on column heights
-    const scrollDistance = column1.scrollHeight * 0.6
+    // Mobile cards live in a separate container and must be animated independently —
+    // they have opacity:0 in CSS and the desktop animation above never touches them
+    const mobileCards = section.querySelectorAll(`.${styles.mobileContainer} .${styles.card}`)
+    if (mobileCards.length > 0) {
+      gsap.fromTo(mobileCards,
+        { opacity: 0, y: 40 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.6,
+          ease: "power3.out",
+          stagger: 0.05,
+          overwrite: "auto",
+          scrollTrigger: {
+            trigger: section,
+            start: "top 75%",
+            toggleActions: "play none none reverse"
+          }
+        }
+      )
+    }
 
     // Create parallax scroll effect - left/right columns move faster than middle
-    // No pinning - everything scrolls naturally but at different speeds
+    // scrollDistance is computed inside invalidateOnRefresh to avoid forced reflow on init
     const tl = gsap.timeline({
       scrollTrigger: {
         trigger: section,
         start: "top bottom",
         end: "bottom top",
-        scrub: 1,
+        scrub: 0.8,
+        fastScrollEnd: true,
         invalidateOnRefresh: true,
+        onRefresh(self) {
+          const dist = column1.scrollHeight * 0.6
+          gsap.set(column1, { y: -dist * 1.3 * self.progress })
+          gsap.set(column2, { y: -dist * 1.0 * self.progress })
+          gsap.set(column3, { y: -dist * 1.3 * self.progress })
+        }
       }
     })
 
-    // Left and right columns scroll faster (larger negative Y movement)
-    // Middle column scrolls slower (smaller negative Y movement)
-    tl.to(column1, {
-      y: -scrollDistance * 1.3, // 30% faster
-      ease: "none"
-    }, 0)
-      .to(column2, {
-        y: -scrollDistance * 1.0, // slightly slower (middle column)
-        ease: "none"
-      }, 0)
-      .to(column3, {
-        y: -scrollDistance * 1.3, // 30% faster
-        ease: "none"
-      }, 0)
+    const scrollDistance = column1.scrollHeight * 0.6
+    tl.to(column1, { y: -scrollDistance * 1.3, ease: "none" }, 0)
+      .to(column2, { y: -scrollDistance * 1.0, ease: "none" }, 0)
+      .to(column3, { y: -scrollDistance * 1.3, ease: "none" }, 0)
 
     return () => {
       ScrollTrigger.getAll().forEach(trigger => {
