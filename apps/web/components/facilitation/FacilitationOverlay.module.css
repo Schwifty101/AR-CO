@@ -4,34 +4,14 @@
 .categoryPanel {
   position: relative;
   cursor: pointer;
-  overflow: hidden;
   border-bottom: 1px solid rgba(249, 248, 246, 0.08);
   border-radius: 1rem;
-  transition: background 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .categoryPanel:hover {
   background: transparent;
 }
 
-.categoryPanel::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 0;
-  height: 100%;
-  background: linear-gradient(
-    90deg,
-    rgba(212, 175, 55, 0.08) 0%,
-    transparent 100%
-  );
-  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.categoryPanelActive::before {
-  width: 100%;
-}
 
 /* ─── Panel Header ─── */
 .panelHeader {

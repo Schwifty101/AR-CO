@@ -38,9 +38,10 @@ export default function TeamHero({
   // Split statement into words for stagger animation
   const words = brandStatement.split(' ')
 
-  // Initialize parallax effect on background image
+  // Initialize parallax effect on background image — desktop only
   useEffect(() => {
     if (!backgroundImage) return
+    if (window.innerWidth < 768) return
     const cleanup = initTeamParallax('.heroBackgroundImage', 0.3)
     return cleanup
   }, [backgroundImage])

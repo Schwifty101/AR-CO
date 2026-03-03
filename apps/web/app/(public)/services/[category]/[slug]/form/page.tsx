@@ -1506,8 +1506,7 @@ export default function ServiceForm({ params }: PageProps) {
         <div
           ref={formWrapperRef}
           data-lenis-prevent
-          className="flex-1 flex flex-col overflow-hidden"
-          style={{ padding: '0 1rem 0 2.5rem' }}
+          className="flex-1 flex flex-col overflow-hidden pr-4 md:pl-10"
         >
           {/* Mobile title — visible on mobile only */}
           <div className="md:hidden shrink-0" style={{ padding: '0.25rem 0 1rem' }}>
