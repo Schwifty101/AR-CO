@@ -1,0 +1,577 @@
+/* ============================================================
+   Complaint Section — Editorial Luxury
+   Heritage gold / cream / dark aesthetic
+   ============================================================ */
+
+.main {
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+  background:
+    radial-gradient(ellipse 75% 55% at 50% 0%,   rgba(212, 175, 55, 0.07) 0%, transparent 65%),
+    radial-gradient(ellipse 65% 45% at 20% 30%,  rgba(212, 175, 55, 0.05) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 55% at 80% 70%,  rgba(212, 175, 55, 0.03) 0%, transparent 70%),
+    #0d0906;
+  color: var(--heritage-cream);
+}
+
+/* ── Shared utilities ──────────────────────────────────────── */
+
+.fullRule {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(212, 175, 55, 0.3) 50%,
+    transparent 100%
+  );
+  transform-origin: left;
+}
+
+.sectionEyebrow {
+  display: block;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 0.65rem;
+  font-weight: 500;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: var(--heritage-gold);
+  opacity: 0.75;
+  margin-bottom: 1.1rem;
+}
+
+.sectionHeader {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.sectionTitle {
+  font-family: 'Lora', Georgia, serif;
+  font-size: clamp(2.2rem, 5vw, 4rem);
+  font-weight: 300;
+  line-height: 1.2;
+  letter-spacing: -0.03em;
+  color: var(--heritage-cream);
+  margin: 0 0 1rem;
+}
+
+.sectionTitle em {
+  font-style: italic;
+  color: var(--heritage-gold);
+}
+
+.sectionSub {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: clamp(0.9rem, 1.2vw, 1.05rem);
+  line-height: 1.65;
+  color: rgba(249, 248, 246, 0.5);
+  max-width: 52ch;
+  margin: 0 auto;
+}
+
+/* ── CTA Button ────────────────────────────────────────────── */
+
+.ctaPrimary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.1rem 2.75rem;
+  background: var(--heritage-gold);
+  color: var(--wood-espresso);
+  border: none;
+  border-radius: 100px;
+  text-decoration: none;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 0.9rem;
+  font-style: italic;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: none;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.ctaPrimary::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.12);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.ctaPrimary:hover::before {
+  transform: scaleX(1);
+}
+
+.ctaPrimary:hover {
+  box-shadow: 0 12px 48px rgba(212, 175, 55, 0.35);
+  transform: translateY(-1px);
+}
+
+.ctaIcon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+  transition: transform 0.3s ease;
+}
+
+.ctaPrimary:hover .ctaIcon {
+  transform: translate(2px, -2px);
+}
+
+.ctaPrimary span {
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Hero ──────────────────────────────────────────────────── */
+
+.hero {
+  position: relative;
+  min-height: 92vh;
+  display: flex;
+  align-items: center;
+  padding: 10rem 4rem 5rem;
+  overflow: hidden;
+}
+
+.heroInner {
+  max-width: 900px;
+  position: relative;
+  z-index: 2;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 0.65rem;
+  font-weight: 500;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: var(--heritage-gold);
+  opacity: 0.8;
+  margin-bottom: 1.75rem;
+  padding: 0.4rem 1rem;
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  border-radius: 100px;
+}
+
+.heroTitle {
+  font-family: 'Lora', Georgia, serif;
+  font-size: clamp(2.8rem, 6vw, 5.5rem);
+  font-style: italic;
+  font-weight: 300;
+  line-height: 1.1;
+  letter-spacing: -0.04em;
+  color: var(--heritage-cream);
+  margin: 0 0 2rem;
+}
+
+.heroTitle em {
+  color: var(--heritage-gold);
+}
+
+.heroSub {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: clamp(1rem, 1.4vw, 1.2rem);
+  line-height: 1.7;
+  color: rgba(249, 248, 246, 0.55);
+  max-width: 58ch;
+  margin: 0 0 2.5rem;
+}
+
+.heroCtas {
+  display: flex;
+  align-items: center;
+  gap: 1.75rem;
+  flex-wrap: wrap;
+}
+
+.ctaNote {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(249, 248, 246, 0.3);
+}
+
+/* Vertical side label */
+.heroSideLabel {
+  position: absolute;
+  right: 2.5rem;
+  top: 50%;
+  transform: translateY(-50%) rotate(90deg);
+  font-family: 'Lora', Georgia, serif;
+  font-size: 0.6rem;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: rgba(212, 175, 55, 0.18);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* ── Institutions Grid ─────────────────────────────────────── */
+
+.institutionsSection {
+  padding: 4rem 4rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.institutionsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  border: 1px solid rgba(212, 175, 55, 0.1);
+}
+
+.institutionCard {
+  display: flex;
+  flex-direction: column;
+  padding: 2rem 1.75rem;
+  border-right: 1px solid rgba(212, 175, 55, 0.1);
+  border-bottom: 1px solid rgba(212, 175, 55, 0.1);
+  transition: background 0.3s ease;
+}
+
+.institutionCard:hover {
+  background: rgba(212, 175, 55, 0.04);
+}
+
+.instCode {
+  font-family: 'Lora', Georgia, serif;
+  font-size: 1.15rem;
+  font-style: italic;
+  font-weight: 400;
+  color: var(--heritage-gold);
+  opacity: 0.85;
+  margin-bottom: 0.5rem;
+  letter-spacing: 0.04em;
+}
+
+.instName {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 0.72rem;
+  line-height: 1.45;
+  color: rgba(249, 248, 246, 0.45);
+  letter-spacing: 0.02em;
+}
+
+/* ── Services Grid ─────────────────────────────────────────── */
+
+.servicesSection {
+  padding: 4rem 4rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.servicesGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px;
+  border: 1px solid rgba(212, 175, 55, 0.1);
+}
+
+.serviceCard {
+  padding: 2.5rem 2rem;
+  border-right: 1px solid rgba(212, 175, 55, 0.1);
+  border-bottom: 1px solid rgba(212, 175, 55, 0.1);
+  transition: background 0.3s ease;
+}
+
+.serviceCard:hover {
+  background: rgba(212, 175, 55, 0.04);
+}
+
+.serviceIconWrap {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: 40px;
+  height: 40px;
+  margin-bottom: 1.25rem;
+}
+
+.serviceIcon {
+  width: 22px;
+  height: 22px;
+  color: var(--heritage-gold);
+  opacity: 0.7;
+}
+
+.serviceCardTitle {
+  font-family: 'Lora', Georgia, serif;
+  font-size: 1rem;
+  font-style: italic;
+  font-weight: 500;
+  color: var(--heritage-cream);
+  margin: 0 0 0.75rem;
+  letter-spacing: 0.01em;
+}
+
+.serviceCardDesc {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 0.8rem;
+  line-height: 1.6;
+  color: rgba(249, 248, 246, 0.45);
+  margin: 0;
+}
+
+/* ── Process List ──────────────────────────────────────────── */
+
+.processSection {
+  padding: 4rem 4rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.processList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.processItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 3rem;
+  padding: 2rem 0;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.08);
+}
+
+.processItem:last-child {
+  border-bottom: none;
+}
+
+.processStep {
+  font-family: 'Lora', Georgia, serif;
+  font-size: 2.5rem;
+  font-style: italic;
+  font-weight: 300;
+  color: var(--heritage-gold);
+  opacity: 0.25;
+  line-height: 1;
+  flex-shrink: 0;
+  width: 3.5rem;
+  text-align: right;
+  letter-spacing: -0.03em;
+}
+
+.processContent {
+  flex: 1;
+}
+
+.processTitle {
+  font-family: 'Lora', Georgia, serif;
+  font-size: 1.1rem;
+  font-style: italic;
+  font-weight: 500;
+  color: var(--heritage-cream);
+  margin: 0 0 0.6rem;
+  letter-spacing: 0.01em;
+}
+
+.processDesc {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 0.85rem;
+  line-height: 1.65;
+  color: rgba(249, 248, 246, 0.45);
+  max-width: 65ch;
+  margin: 0;
+}
+
+/* ── CTA Banner ────────────────────────────────────────────── */
+
+.ctaSection {
+  padding: 0 4rem;
+  max-width: 1400px;
+  margin: 0 auto 4rem;
+}
+
+.ctaBanner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4rem;
+  padding: 4rem 0;
+}
+
+.ctaBannerText {
+  flex: 1;
+  max-width: 600px;
+}
+
+.ctaBannerEyebrow {
+  display: block;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 0.65rem;
+  font-weight: 500;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: var(--heritage-gold);
+  opacity: 0.75;
+  margin-bottom: 1.1rem;
+}
+
+.ctaBannerTitle {
+  font-family: 'Lora', Georgia, serif;
+  font-size: clamp(2rem, 4vw, 3.5rem);
+  font-weight: 300;
+  line-height: 1.2;
+  letter-spacing: -0.03em;
+  color: var(--heritage-cream);
+  margin: 0 0 1.25rem;
+}
+
+.ctaBannerTitle em {
+  font-style: italic;
+  color: var(--heritage-gold);
+}
+
+.ctaBannerSub {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 0.9rem;
+  line-height: 1.7;
+  color: rgba(249, 248, 246, 0.5);
+  max-width: 52ch;
+  margin: 0;
+}
+
+.ctaBannerActions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1rem;
+  flex-shrink: 0;
+}
+
+.ctaBannerDisclaimer {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(249, 248, 246, 0.25);
+  margin: 0;
+}
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+
+@media (max-width: 1200px) {
+  .institutionsGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 1024px) {
+  .hero {
+    padding: 9rem 2.5rem 4rem;
+  }
+
+  .institutionsSection,
+  .servicesSection,
+  .processSection,
+  .ctaSection {
+    padding-left: 2.5rem;
+    padding-right: 2.5rem;
+  }
+
+  .servicesGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .ctaBanner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3rem;
+  }
+
+  .ctaBannerActions {
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero {
+    padding: 8rem 1.5rem 4rem;
+    min-height: 80vh;
+  }
+
+  .heroSideLabel {
+    display: none;
+  }
+
+  .institutionsSection,
+  .servicesSection,
+  .processSection,
+  .ctaSection {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+    padding-top: 3.5rem;
+    padding-bottom: 3.5rem;
+  }
+
+  .institutionsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .servicesGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .processItem {
+    gap: 1.5rem;
+  }
+
+  .processStep {
+    font-size: 1.8rem;
+    width: 2.5rem;
+  }
+
+  .ctaBanner {
+    padding: 3rem 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero {
+    padding: 7rem 1.25rem 3rem;
+  }
+
+  .institutionsSection,
+  .servicesSection,
+  .processSection,
+  .ctaSection {
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+  }
+
+  .institutionsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .ctaPrimary {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* ── Reduced motion ────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .ctaPrimary,
+  .ctaPrimary::before {
+    transition: none !important;
+  }
+}

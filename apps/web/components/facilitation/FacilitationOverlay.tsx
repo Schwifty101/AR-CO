@@ -75,13 +75,6 @@ const OVERLAY_CATEGORIES: OverlayCategory[] = [
     tagline: 'Court Representation & Legal Disputes',
     services: [],
   },
-  {
-    id: 'complaint-section',
-    title: 'Complaint Section',
-    tagline: 'Premium Service - Formal Legal Complaints & Representations',
-    services: [],
-    isPremium: true,
-  },
 ]
 
 interface FacilitationOverlayProps {

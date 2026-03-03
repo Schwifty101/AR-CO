@@ -1,0 +1,577 @@
+/* ============================================================
+   Complaint Form — Editorial Legal Intake
+   Heritage gold / cream / dark aesthetic
+   ============================================================ */
+
+.main {
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+  background:
+    radial-gradient(ellipse 75% 55% at 50% 0%,   rgba(212, 175, 55, 0.07) 0%, transparent 65%),
+    radial-gradient(ellipse 65% 45% at 20% 30%,  rgba(212, 175, 55, 0.05) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 55% at 80% 70%,  rgba(212, 175, 55, 0.03) 0%, transparent 70%),
+    #0d0906;
+  color: var(--heritage-cream);
+  padding-top: 6rem;
+}
+
+/* ── Confirmation Modal ─────────────────────────────────────── */
+
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(8, 5, 4, 0.82);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  z-index: 1000;
+}
+
+.modal {
+  background: #080604;
+  border: 1px solid rgba(212, 175, 55, 0.22);
+  border-radius: 1.25rem;
+  padding: 3rem 2.5rem;
+  max-width: 460px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 32px 80px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(212, 175, 55, 0.05);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.modalIcon {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  background: rgba(212, 175, 55, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--heritage-gold);
+  margin-bottom: 1.75rem;
+}
+
+.modalEyebrow {
+  display: block;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 0.6rem;
+  font-weight: 500;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: var(--heritage-gold);
+  opacity: 0.75;
+  margin-bottom: 0.85rem;
+}
+
+.modalTitle {
+  font-family: 'Lora', Georgia, serif;
+  font-size: clamp(1.6rem, 4vw, 2.2rem);
+  font-weight: 300;
+  line-height: 1.2;
+  letter-spacing: -0.03em;
+  color: var(--heritage-cream);
+  margin: 0 0 1.25rem;
+}
+
+.modalTitle em {
+  font-style: italic;
+  color: var(--heritage-gold);
+}
+
+.modalBody {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 0.88rem;
+  line-height: 1.75;
+  color: rgba(249, 248, 246, 0.48);
+  max-width: 38ch;
+  margin: 0 0 2.25rem;
+}
+
+.modalBody strong {
+  color: var(--heritage-cream);
+  font-weight: 600;
+}
+
+.modalBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.95rem 2.5rem;
+  background: var(--heritage-gold);
+  color: var(--wood-espresso);
+  border: none;
+  border-radius: 100px;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 0.9rem;
+  font-style: italic;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.modalBtn:hover {
+  box-shadow: 0 8px 36px rgba(212, 175, 55, 0.32);
+  transform: translateY(-1px);
+}
+
+/* ── Two-pane layout ────────────────────────────────────────── */
+
+.layout {
+  display: flex;
+  padding: 2.5rem 3rem 5rem;
+  gap: 5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* ── Sidebar ────────────────────────────────────────────────── */
+
+.sidebar {
+  width: 300px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 2rem;
+  height: fit-content;
+}
+
+.sidebarInner {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+.sidebarEyebrow {
+  display: block;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 0.6rem;
+  font-weight: 500;
+  letter-spacing: 0.38em;
+  text-transform: uppercase;
+  color: var(--heritage-gold);
+  opacity: 0.6;
+  margin-bottom: 1rem;
+}
+
+.sidebarTitle {
+  font-family: 'Lora', Georgia, serif;
+  font-size: clamp(1.9rem, 2.8vw, 2.7rem);
+  font-style: italic;
+  font-weight: 300;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  color: var(--heritage-cream);
+  margin: 0 0 0.85rem;
+}
+
+.sidebarTitle em {
+  color: var(--heritage-gold);
+}
+
+.sidebarSub {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 0.8rem;
+  line-height: 1.65;
+  color: rgba(249, 248, 246, 0.38);
+  margin: 0;
+}
+
+/* ── Step navigation ────────────────────────────────────────── */
+
+.stepNav {
+  display: flex;
+  flex-direction: column;
+}
+
+.stepItem {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.stepDotWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+  padding-top: 0.1rem;
+}
+
+.stepDot {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1px solid rgba(212, 175, 55, 0.18);
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(212, 175, 55, 0.4);
+  flex-shrink: 0;
+  transition: all 0.35s ease;
+}
+
+.stepActive .stepDot {
+  border-color: var(--heritage-gold);
+  background: rgba(212, 175, 55, 0.12);
+  box-shadow: 0 0 14px rgba(212, 175, 55, 0.14);
+}
+
+.stepDone .stepDot {
+  border-color: rgba(212, 175, 55, 0.45);
+  background: rgba(212, 175, 55, 0.08);
+  color: var(--heritage-gold);
+}
+
+.stepLine {
+  width: 1px;
+  flex: 1;
+  min-height: 2.5rem;
+  background: rgba(212, 175, 55, 0.09);
+  margin: 0.35rem 0;
+  transition: background 0.35s ease;
+}
+
+.stepDone .stepLine {
+  background: rgba(212, 175, 55, 0.2);
+}
+
+.stepLabel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  padding-bottom: 2rem;
+}
+
+.stepNumber {
+  font-family: 'Lora', Georgia, serif;
+  font-size: 0.58rem;
+  font-style: italic;
+  letter-spacing: 0.12em;
+  color: rgba(212, 175, 55, 0.3);
+  transition: color 0.35s ease;
+}
+
+.stepActive .stepNumber,
+.stepDone .stepNumber {
+  color: rgba(212, 175, 55, 0.55);
+}
+
+.stepTitle {
+  font-family: 'Lora', Georgia, serif;
+  font-size: 0.88rem;
+  font-style: italic;
+  font-weight: 500;
+  color: rgba(249, 248, 246, 0.28);
+  transition: color 0.35s ease;
+  line-height: 1.3;
+}
+
+.stepActive .stepTitle {
+  color: var(--heritage-cream);
+}
+
+.stepDone .stepTitle {
+  color: rgba(249, 248, 246, 0.5);
+}
+
+.stepSubtitle {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 0.68rem;
+  color: rgba(249, 248, 246, 0.18);
+  transition: color 0.35s ease;
+}
+
+.stepActive .stepSubtitle {
+  color: rgba(249, 248, 246, 0.38);
+}
+
+/* ── Form panel ─────────────────────────────────────────────── */
+
+.formPanel {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Section heading ────────────────────────────────────────── */
+
+.sectionHeading {
+  margin-bottom: 2.5rem;
+}
+
+.sectionNumber {
+  display: block;
+  font-family: 'Lora', Georgia, serif;
+  font-size: 0.65rem;
+  font-style: italic;
+  letter-spacing: 0.15em;
+  color: rgba(212, 175, 55, 0.5);
+  margin-bottom: 0.5rem;
+}
+
+.sectionTitle {
+  font-family: 'Lora', Georgia, serif;
+  font-size: clamp(1.9rem, 3vw, 2.8rem);
+  font-style: italic;
+  font-weight: 300;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  color: var(--heritage-cream);
+  margin: 0 0 0.5rem;
+}
+
+.sectionSubtitle {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 0.85rem;
+  color: rgba(249, 248, 246, 0.38);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ── Fields ─────────────────────────────────────────────────── */
+
+.fieldsWrap {
+  flex: 1;
+}
+
+.fieldsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+/* ── Navigation buttons ─────────────────────────────────────── */
+
+.formNav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(212, 175, 55, 0.08);
+  gap: 1rem;
+}
+
+.btnBack {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.85rem 1.75rem;
+  background: transparent;
+  border: 1px solid rgba(249, 248, 246, 0.1);
+  border-radius: 100px;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 0.85rem;
+  font-style: italic;
+  color: rgba(249, 248, 246, 0.4);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btnBack:hover:not(:disabled) {
+  border-color: rgba(249, 248, 246, 0.2);
+  color: rgba(249, 248, 246, 0.65);
+  background: rgba(249, 248, 246, 0.04);
+}
+
+.btnBack:disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+}
+
+.btnNext {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.95rem 2.25rem;
+  background: var(--heritage-gold);
+  color: var(--wood-espresso);
+  border: none;
+  border-radius: 100px;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 0.9rem;
+  font-style: italic;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.btnNext::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.1);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.4s ease;
+}
+
+.btnNext:hover::before {
+  transform: scaleX(1);
+}
+
+.btnNext:hover {
+  box-shadow: 0 8px 36px rgba(212, 175, 55, 0.32);
+  transform: translateY(-1px);
+}
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+
+@media (max-width: 1024px) {
+  .layout {
+    padding: 2rem 2.5rem 4rem;
+    gap: 3.5rem;
+  }
+
+  .sidebar {
+    width: 260px;
+  }
+}
+
+@media (max-width: 768px) {
+  .main {
+    padding-top: 5rem;
+  }
+
+  .layout {
+    flex-direction: column;
+    padding: 1.5rem 1.5rem 4rem;
+    gap: 2rem;
+  }
+
+  /* On mobile the sidebar sits at the top, shows only the step nav */
+  .sidebar {
+    width: 100%;
+    position: static;
+  }
+
+  /* Hide the header text block on mobile — only show steps */
+  .sidebarHeader {
+    display: none;
+  }
+
+  /* Compact step nav: horizontal strip with dots connected by lines */
+  .stepNav {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+
+  .stepItem {
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    position: relative;
+  }
+
+  /* Dot only — no layout line inside it */
+  .stepDotWrap {
+    flex-direction: row;
+    align-items: center;
+    padding-top: 0;
+    width: auto;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Hide the original vertical stepLine; connectors drawn via ::after */
+  .stepLine {
+    display: none;
+  }
+
+  /* Horizontal connector: runs from center of this dot to center of next dot */
+  .stepItem:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    top: 11px; /* vertical center of the 22px dot */
+    left: 50%;
+    width: 100%;
+    height: 1px;
+    background: rgba(212, 175, 55, 0.09);
+    z-index: 0;
+    transition: background 0.35s ease;
+  }
+
+  .stepDone:not(:last-child)::after {
+    background: rgba(212, 175, 55, 0.2);
+  }
+
+  /* Labels below dots: only show number + title, hide subtitle */
+  .stepLabel {
+    padding-bottom: 0;
+    align-items: center;
+    text-align: center;
+  }
+
+  .stepSubtitle {
+    display: none;
+  }
+
+  .stepNumber {
+    font-size: 0.55rem;
+  }
+
+  .stepTitle {
+    font-size: 0.75rem;
+  }
+
+  .fieldsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .btnNext {
+    padding: 0.9rem 1.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .layout {
+    padding: 1.5rem 1.25rem 3rem;
+  }
+
+  .btnBack,
+  .btnNext {
+    padding: 0.8rem 1.25rem;
+    font-size: 0.82rem;
+  }
+
+  .btnNext {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .stepTitle {
+    font-size: 0.65rem;
+  }
+}
+
+/* ── Reduced motion ─────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .btnNext,
+  .btnNext::before,
+  .btnBack,
+  .stepDot,
+  .stepTitle,
+  .stepSubtitle,
+  .stepNumber,
+  .modalBtn {
+    transition: none !important;
+  }
+}

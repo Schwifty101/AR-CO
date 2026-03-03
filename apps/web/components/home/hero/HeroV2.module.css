@@ -10,7 +10,46 @@
   height: 100vh;
   min-height: 640px;
   overflow: hidden;
-  background: transparent;
+  background: #080402;
+}
+
+/* ── Background video ───────────────────────────────────────────────────── */
+.videoBg {
+  position: absolute;
+  /* -10% top + 120% height = 10% overflow above & below the hero,
+     giving ~80px headroom on a 800px viewport for the parallax to
+     translate down without ever exposing the dark background. */
+  top: -10%;
+  left: 0;
+  right: 0;
+  z-index: 0;
+  width: 100%;
+  height: 120%;
+  object-fit: cover;
+  object-position: center;
+  /* Start hidden; fades in when loading screen exits */
+  opacity: 0;
+  transition: opacity 1.1s cubic-bezier(0.32, 0.72, 0, 1);
+  will-change: transform;
+}
+
+.videoBgVisible {
+  opacity: 1;
+}
+
+/* ── Overlay: dark at top for nav legibility, moderate beneath ─────────── */
+.videoOverlay {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(6, 3, 1, 0.92) 0%,
+    rgba(6, 3, 1, 0.72) 18%,
+    rgba(6, 3, 1, 0.50) 40%,
+    rgba(6, 3, 1, 0.48) 100%
+  );
+  pointer-events: none;
 }
 
 /* ── Atmospheric grain ──────────────────────────────────────────────────── */
@@ -101,7 +140,7 @@
 /* ── Centre wrapper — AR&CO + tagline, scroll-parallaxed as one unit ──── */
 .centerWrapper {
   position: absolute;
-  top: 38%;
+  top: 48%;
   left: 50%;
   transform: translateX(-50%) translateY(calc(var(--global-sy, 0) * 0.15 * -1px));
   z-index: 3;
@@ -117,42 +156,66 @@
 /* "AR&CO" — larger than the tagline below it */
 .centerBrand {
   font-family: 'Lora', Georgia, serif;
-  font-size: 1.6rem;
+  font-size: clamp(2.8rem, 5vw, 4.2rem);
   font-weight: 300;
   font-style: italic;
   letter-spacing: 0.15em;
   color: var(--heritage-cream, #F9F8F6);
-  opacity: 0.38;
-  margin: 0;
+  opacity: 0.88;
+  line-height: 1;
+  margin: 0 0 0.35rem;
 }
 
 /* "Top Law Associates" — gold, spaced, underlined */
 .centerLabel {
   font-family: 'Lora', Georgia, serif;
-  font-size: 0.95rem;
+  font-size: clamp(0.85rem, 1.4vw, 1.1rem);
   font-weight: 500;
   letter-spacing: 0.45em;
   text-transform: uppercase;
   color: var(--heritage-gold, #D4AF37);
-  opacity: 0.55;
+  opacity: 0.85;
   padding-bottom: 0.3em;
-  border-bottom: 0.5px solid rgba(212, 175, 55, 0.45);
+  border-bottom: 0.5px solid rgba(212, 175, 55, 0.6);
   margin: 0;
+}
+
+/* Desktop only: parallax — video drifts down at ~30% of scroll speed.
+   --global-sy = scrollY * 0.35 (set on :root by the home-page scroll listener).
+   At 100vh scroll (~800px): 800 * 0.35 * 0.25 ≈ 70px — safely inside the
+   80px headroom provided by top:-10% / height:120% above. */
+@media (min-width: 769px) {
+  .videoBg {
+    /* 8% restores the original static framing offset; the calc adds parallax on top */
+    transform: translateY(calc(8% + var(--global-sy, 0) * 0.25px));
+  }
 }
 
 /* Hide background text on mobile — too cluttered */
 @media (max-width: 768px) {
   .bgItemWrapper { display: none; }
 
-  .centerWrapper { top: 35%; }
+  /* Shift video frame to the right on mobile */
+  .videoBg { object-position: 48% center; }
+
+  .centerWrapper {
+    top: 45%;
+    /* Remove parallax transform on mobile — no scroll listener, no jank */
+    transform: translateX(-50%);
+    will-change: auto;
+  }
+
+  /* Strip compositor layers from hidden parallax text on mobile */
+  .parallaxQuote,
+  .parallaxHeadline { will-change: auto; }
 
   .centerLabel {
-    font-size: 0.72rem;
+    font-size: 0.78rem;
     letter-spacing: 0.28em;
   }
 
   .centerBrand {
-    font-size: 1.15rem;
+    font-size: 2.4rem;
   }
 }
 
