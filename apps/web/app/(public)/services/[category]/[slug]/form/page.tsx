@@ -2,6 +2,7 @@
 
 import { use, useState, useRef, useEffect, Fragment } from 'react'
 import { notFound, useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { getEmojiFlag, getCountryDataList } from 'countries-list'
 import { isValidPhoneNumber } from 'react-phone-number-input'
@@ -10,10 +11,12 @@ import * as Popover from '@radix-ui/react-popover'
 import {
   isValidCategory,
   findServiceBySlug,
-  getCategoryForm,
+  getFormForService,
   getCategoryDocuments,
+  IP_SERVICE_IDS,
   type CategoryType,
 } from '@/lib/categoryDataMapper'
+import { IP_FEES } from '@/components/data/facilitationCenterData'
 import type { FormField } from '@/components/data/facilitationCenterData'
 
 interface PageProps {
@@ -300,6 +303,8 @@ export default function ServiceForm({ params }: PageProps) {
   const [direction, setDirection] = useState(1)
   const [formData, setFormData] = useState<Record<string, FormFieldValue>>({})
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
+  const [submitted, setSubmitted] = useState(false)
+  const [referenceNumber, setReferenceNumber] = useState('')
 
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const formWrapperRef = useRef<HTMLDivElement>(null)
@@ -307,7 +312,8 @@ export default function ServiceForm({ params }: PageProps) {
   // Validate category and find service
   const categoryValid = isValidCategory(category)
   const service = categoryValid ? findServiceBySlug(category as CategoryType, slug) : null
-  const formSections = categoryValid ? getCategoryForm(category as CategoryType) : []
+  const isIpService = IP_SERVICE_IDS.has(slug)
+  const formSections = categoryValid ? getFormForService(category as CategoryType, slug) : []
   const total = formSections.length
 
   const currentSection = total > 0 ? formSections[currentIndex] : null
@@ -542,6 +548,19 @@ export default function ServiceForm({ params }: PageProps) {
     return errors
   }
 
+  const handleIpSubmit = () => {
+    if (!currentSection) return
+    const errors = validateSection(currentSection.fields, formData)
+    if (Object.keys(errors).length > 0) {
+      setValidationErrors(errors)
+      if (scrollContainerRef.current) scrollContainerRef.current.scrollTop = 0
+      return
+    }
+    const refNum = `IP-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`
+    setReferenceNumber(refNum)
+    setSubmitted(true)
+  }
+
   const goNext = () => {
     if (isLast || !currentSection) return
 
@@ -573,6 +592,11 @@ export default function ServiceForm({ params }: PageProps) {
     }))
     clearFieldError(fieldId)
   }
+
+  /** Whether the user opted for AR&CO to handle the government payment */
+  const govtChargesYes = typeof formData['govtChargesHandling'] === 'string'
+    && (formData['govtChargesHandling'] as string).startsWith('Yes')
+  const ipTotal = IP_FEES.serviceCharges + IP_FEES.registrationFee + (govtChargesYes ? IP_FEES.governmentCharges : 0)
 
   // Early returns after all hooks
   if (!categoryValid) return notFound()
@@ -1103,6 +1127,246 @@ export default function ServiceForm({ params }: PageProps) {
     )
   }
 
+  // IP acknowledgment screen — shown after successful IP form submission
+  if (submitted && isIpService) {
+    const ackTotal = IP_FEES.serviceCharges + IP_FEES.registrationFee + (govtChargesYes ? IP_FEES.governmentCharges : 0)
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        className="flex flex-col items-center justify-center px-6 md:px-16"
+        style={{ minHeight: '600px', paddingTop: '3rem', paddingBottom: '3rem' }}
+      >
+        {/* Gold check icon */}
+        <div
+          style={{
+            width: '56px',
+            height: '56px',
+            borderRadius: '50%',
+            border: '1px solid rgba(212, 175, 55, 0.4)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginBottom: '1.5rem',
+          }}
+        >
+          <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="var(--heritage-gold)" strokeWidth={1.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+
+        {/* Acknowledgment heading */}
+        <h2
+          style={{
+            fontFamily: "'Lora', Georgia, serif",
+            fontSize: 'clamp(1.6rem, 4vw, 2.4rem)',
+            fontWeight: 300,
+            fontStyle: 'italic',
+            lineHeight: 1.2,
+            letterSpacing: '-0.03em',
+            color: 'var(--heritage-cream)',
+            textAlign: 'center',
+            marginBottom: '0.75rem',
+          }}
+        >
+          Application Received
+        </h2>
+
+        <p
+          style={{
+            fontFamily: "'Georgia', 'Times New Roman', serif",
+            fontSize: '0.9rem',
+            color: 'rgba(249, 248, 246, 0.55)',
+            textAlign: 'center',
+            lineHeight: 1.7,
+            maxWidth: '480px',
+            marginBottom: '2rem',
+          }}
+        >
+          This is an acknowledgment of your application. Please use the reference number below for all future correspondence.
+        </p>
+
+        {/* Reference number box */}
+        <div
+          style={{
+            padding: '1rem 2rem',
+            border: '1px solid rgba(212, 175, 55, 0.3)',
+            borderRadius: '0.75rem',
+            background: 'rgba(212, 175, 55, 0.04)',
+            marginBottom: '2rem',
+            textAlign: 'center',
+          }}
+        >
+          <span
+            style={{
+              display: 'block',
+              fontFamily: "'Georgia', 'Times New Roman', serif",
+              fontSize: '0.7rem',
+              letterSpacing: '0.12em',
+              textTransform: 'uppercase',
+              color: 'rgba(249, 248, 246, 0.35)',
+              marginBottom: '0.4rem',
+            }}
+          >
+            Reference Number
+          </span>
+          <span
+            style={{
+              fontFamily: "'Lora', Georgia, serif",
+              fontSize: '1.5rem',
+              fontWeight: 500,
+              letterSpacing: '0.06em',
+              color: 'var(--heritage-gold)',
+            }}
+          >
+            {referenceNumber}
+          </span>
+        </div>
+
+        {/* Fee summary */}
+        <div
+          style={{
+            width: '100%',
+            maxWidth: '440px',
+            border: '1px solid rgba(249, 248, 246, 0.08)',
+            borderRadius: '0.75rem',
+            overflow: 'hidden',
+            marginBottom: '2rem',
+          }}
+        >
+          <div
+            style={{
+              padding: '0.75rem 1.25rem',
+              borderBottom: '1px solid rgba(249, 248, 246, 0.06)',
+              background: 'rgba(249, 248, 246, 0.02)',
+            }}
+          >
+            <span
+              style={{
+                fontFamily: "'Georgia', 'Times New Roman', serif",
+                fontSize: '0.7rem',
+                letterSpacing: '0.1em',
+                textTransform: 'uppercase',
+                color: 'rgba(249, 248, 246, 0.35)',
+              }}
+            >
+              Payment Summary
+            </span>
+          </div>
+          {[
+            { label: 'Service Charges', amount: IP_FEES.serviceCharges },
+            { label: 'Registration Fee', amount: IP_FEES.registrationFee },
+            ...(govtChargesYes ? [{ label: 'Government Charges (handled by AR&CO)', amount: IP_FEES.governmentCharges }] : []),
+          ].map((row) => (
+            <div
+              key={row.label}
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '0.7rem 1.25rem',
+                borderBottom: '1px solid rgba(249, 248, 246, 0.04)',
+              }}
+            >
+              <span style={{ fontFamily: "'Georgia', 'Times New Roman', serif", fontSize: '0.85rem', color: 'rgba(249, 248, 246, 0.55)' }}>
+                {row.label}
+              </span>
+              <span style={{ fontFamily: "'Georgia', 'Times New Roman', serif", fontSize: '0.85rem', color: 'var(--heritage-cream)' }}>
+                PKR {row.amount.toLocaleString()}
+              </span>
+            </div>
+          ))}
+          {!govtChargesYes && (
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '0.7rem 1.25rem',
+                borderBottom: '1px solid rgba(249, 248, 246, 0.04)',
+              }}
+            >
+              <span style={{ fontFamily: "'Georgia', 'Times New Roman', serif", fontSize: '0.85rem', color: 'rgba(249, 248, 246, 0.4)', fontStyle: 'italic' }}>
+                Government Charges (paid by applicant)
+              </span>
+              <span style={{ fontFamily: "'Georgia', 'Times New Roman', serif", fontSize: '0.85rem', color: 'rgba(249, 248, 246, 0.4)', fontStyle: 'italic' }}>
+                PKR {IP_FEES.governmentCharges.toLocaleString()}
+              </span>
+            </div>
+          )}
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              padding: '0.85rem 1.25rem',
+              background: 'rgba(212, 175, 55, 0.04)',
+            }}
+          >
+            <span style={{ fontFamily: "'Georgia', 'Times New Roman', serif", fontSize: '0.9rem', fontWeight: 600, color: 'var(--heritage-cream)' }}>
+              Total Due
+            </span>
+            <span style={{ fontFamily: "'Lora', Georgia, serif", fontSize: '1.1rem', fontWeight: 600, color: 'var(--heritage-gold)' }}>
+              PKR {ackTotal.toLocaleString()}
+            </span>
+          </div>
+        </div>
+
+        {/* Payment instructions */}
+        {!govtChargesYes && (
+          <div
+            style={{
+              width: '100%',
+              maxWidth: '440px',
+              padding: '1rem 1.25rem',
+              border: '1px solid rgba(212, 175, 55, 0.15)',
+              borderRadius: '0.75rem',
+              background: 'rgba(212, 175, 55, 0.03)',
+              marginBottom: '2rem',
+            }}
+          >
+            <p style={{ fontFamily: "'Georgia', 'Times New Roman', serif", fontSize: '0.82rem', color: 'rgba(249, 248, 246, 0.55)', lineHeight: 1.7, margin: 0 }}>
+              The applicable government charges are PKR 3,000. Kindly make the payment and forward the draft along with the receipt once completed. Alternatively, you may transfer the amount to us, and we will handle the payment on your behalf.
+            </p>
+          </div>
+        )}
+
+        {/* Continue to FAQ */}
+        <button
+          onClick={() => router.push(`/services/${category}/${slug}/faq`)}
+          className="inline-flex items-center gap-2 transition-all duration-300"
+          style={{
+            padding: '0.7rem 1.75rem',
+            background: 'var(--heritage-gold)',
+            border: 'none',
+            borderRadius: '100px',
+            color: 'var(--wood-espresso)',
+            fontFamily: "'Georgia', 'Times New Roman', serif",
+            fontSize: '0.85rem',
+            fontStyle: 'italic',
+            fontWeight: 600,
+            letterSpacing: '0.04em',
+            cursor: 'pointer',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = '#c9a430'
+            e.currentTarget.style.boxShadow = '0 4px 20px rgba(212, 175, 55, 0.25)'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'var(--heritage-gold)'
+            e.currentTarget.style.boxShadow = 'none'
+          }}
+        >
+          <span>Continue</span>
+          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+          </svg>
+        </button>
+      </motion.div>
+    )
+  }
+
   return (
     <div
       className="form-page-outer flex flex-col px-6 md:px-16"
@@ -1242,8 +1506,7 @@ export default function ServiceForm({ params }: PageProps) {
         <div
           ref={formWrapperRef}
           data-lenis-prevent
-          className="flex-1 flex flex-col overflow-hidden"
-          style={{ padding: '0 1rem 0 2.5rem' }}
+          className="flex-1 flex flex-col overflow-hidden pr-4 md:pl-10"
         >
           {/* Mobile title — visible on mobile only */}
           <div className="md:hidden shrink-0" style={{ padding: '0.25rem 0 1rem' }}>
@@ -1281,6 +1544,72 @@ export default function ServiceForm({ params }: PageProps) {
                 className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar focus:outline-none"
                 style={{ padding: '1.5rem 1rem 1rem 0.5rem' }}
               >
+                {/* FEES & PAYMENT — fee breakdown for all facilitation services */}
+                {category === 'facilitation' && currentSection.title === 'FEES & PAYMENT' && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: 0.1 }}
+                    style={{ marginBottom: '1.75rem', maxWidth: '420px' }}
+                  >
+                    {/* Intro text */}
+                    <p style={{ fontFamily: "'Georgia', 'Times New Roman', serif", fontSize: '0.82rem', color: 'rgba(249, 248, 246, 0.45)', lineHeight: 1.7, marginBottom: '1.25rem', fontStyle: 'italic' }}>
+                      To proceed further, complete the form below to get started with your application.
+                    </p>
+
+                    {/* Fee rows */}
+                    <div
+                      style={{
+                        border: '1px solid rgba(249, 248, 246, 0.08)',
+                        borderRadius: '0.75rem',
+                        overflow: 'hidden',
+                        marginBottom: '1rem',
+                      }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.65rem 1rem', borderBottom: '1px solid rgba(249, 248, 246, 0.05)' }}>
+                        <span style={{ fontFamily: "'Georgia', 'Times New Roman', serif", fontSize: '0.82rem', color: 'rgba(249, 248, 246, 0.55)' }}>Service Charges</span>
+                        <span style={{ fontFamily: "'Georgia', 'Times New Roman', serif", fontSize: '0.82rem', color: 'var(--heritage-cream)' }}>PKR {IP_FEES.serviceCharges.toLocaleString()}</span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.65rem 1rem', borderBottom: isIpService ? '1px solid rgba(249, 248, 246, 0.05)' : 'none' }}>
+                        <span style={{ fontFamily: "'Georgia', 'Times New Roman', serif", fontSize: '0.82rem', color: 'rgba(249, 248, 246, 0.55)' }}>Registration Fee</span>
+                        <span style={{ fontFamily: "'Georgia', 'Times New Roman', serif", fontSize: '0.82rem', color: 'var(--heritage-cream)' }}>PKR {IP_FEES.registrationFee.toLocaleString()}</span>
+                      </div>
+                      {/* IP-only: optional government charges row */}
+                      {isIpService && (
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.65rem 1rem' }}>
+                          <span style={{ fontFamily: "'Georgia', 'Times New Roman', serif", fontSize: '0.82rem', color: 'rgba(249, 248, 246, 0.35)', fontStyle: 'italic' }}>Government Charges (optional)</span>
+                          <span style={{ fontFamily: "'Georgia', 'Times New Roman', serif", fontSize: '0.82rem', color: 'rgba(249, 248, 246, 0.35)', fontStyle: 'italic' }}>PKR {IP_FEES.governmentCharges.toLocaleString()}</span>
+                        </div>
+                      )}
+                      {/* Dynamic total */}
+                      <div
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          padding: '0.75rem 1rem',
+                          background: 'rgba(212, 175, 55, 0.05)',
+                          borderTop: '1px solid rgba(212, 175, 55, 0.12)',
+                        }}
+                      >
+                        <span style={{ fontFamily: "'Georgia', 'Times New Roman', serif", fontSize: '0.88rem', fontWeight: 600, color: 'var(--heritage-cream)' }}>
+                          Total Due
+                        </span>
+                        <span style={{ fontFamily: "'Lora', Georgia, serif", fontSize: '1rem', fontWeight: 600, color: 'var(--heritage-gold)' }}>
+                          PKR {(isIpService ? ipTotal : IP_FEES.serviceCharges + IP_FEES.registrationFee).toLocaleString()}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* IP-only: govt charges instruction */}
+                    {isIpService && (
+                      <p style={{ fontFamily: "'Georgia', 'Times New Roman', serif", fontSize: '0.78rem', color: 'rgba(249, 248, 246, 0.35)', lineHeight: 1.6, fontStyle: 'italic' }}>
+                        The applicable government charges are PKR 3,000. Kindly make the payment and forward the draft along with the receipt once completed. Alternatively, you may transfer the amount to us, and we will handle the payment on your behalf.
+                      </p>
+                    )}
+                  </motion.div>
+                )}
+
                 {/* Form fields */}
                 <motion.div
                   className={`grid gap-6 ${
@@ -1292,6 +1621,77 @@ export default function ServiceForm({ params }: PageProps) {
                 >
                   {currentSection.fields.map((field, idx) => renderField(field, idx))}
                 </motion.div>
+
+                {/* Terms & Privacy links — shown in Declaration / Consent section */}
+                {isLast && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: 0.25 }}
+                    style={{ marginTop: '1.5rem', display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}
+                  >
+                    <Link
+                      href="/terms"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.4rem',
+                        padding: '0.65rem 1.25rem',
+                        border: '1px solid rgba(212, 175, 55, 0.3)',
+                        borderRadius: '100px',
+                        fontFamily: "'Georgia', 'Times New Roman', serif",
+                        fontSize: '0.85rem',
+                        fontStyle: 'italic',
+                        color: 'rgba(249, 248, 246, 0.5)',
+                        textDecoration: 'none',
+                        letterSpacing: '0.04em',
+                        transition: 'border-color 0.3s, color 0.3s',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.borderColor = 'rgba(249, 248, 246, 0.25)'
+                        e.currentTarget.style.color = 'rgba(249, 248, 246, 0.75)'
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.borderColor = 'rgba(212, 175, 55, 0.3)'
+                        e.currentTarget.style.color = 'rgba(249, 248, 246, 0.5)'
+                      }}
+                    >
+                      Terms &amp; Conditions
+                    </Link>
+                    <Link
+                      href="/privacy"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.4rem',
+                        padding: '0.65rem 1.25rem',
+                        border: '1px solid rgba(212, 175, 55, 0.3)',
+                        borderRadius: '100px',
+                        fontFamily: "'Georgia', 'Times New Roman', serif",
+                        fontSize: '0.85rem',
+                        fontStyle: 'italic',
+                        color: 'rgba(249, 248, 246, 0.5)',
+                        textDecoration: 'none',
+                        letterSpacing: '0.04em',
+                        transition: 'border-color 0.3s, color 0.3s',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.borderColor = 'rgba(249, 248, 246, 0.25)'
+                        e.currentTarget.style.color = 'rgba(249, 248, 246, 0.75)'
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.borderColor = 'rgba(212, 175, 55, 0.3)'
+                        e.currentTarget.style.color = 'rgba(249, 248, 246, 0.5)'
+                      }}
+                    >
+                      Privacy Policy
+                    </Link>
+                  </motion.div>
+                )}
               </div>
 
               {/* Navigation buttons */}
@@ -1349,7 +1749,7 @@ export default function ServiceForm({ params }: PageProps) {
                 <button
                   onClick={
                     isLast
-                      ? () => router.push(`/services/${category}/${slug}/faq`)
+                      ? (isIpService ? handleIpSubmit : () => router.push(`/services/${category}/${slug}/faq`))
                       : goNext
                   }
                   className="inline-flex items-center gap-2 transition-all duration-300"

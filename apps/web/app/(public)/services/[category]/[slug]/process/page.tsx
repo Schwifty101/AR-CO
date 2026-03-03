@@ -32,6 +32,25 @@ export default function ServiceProcess({ params }: PageProps) {
 
   const steps = service.processSteps
 
+  // Compute total estimated time by summing numeric ranges in duration strings
+  // e.g. "1-2 days" + "3-5 days" → "4-7 days"
+  const totalTime = (() => {
+    let minTotal = 0
+    let maxTotal = 0
+    for (const step of steps) {
+      const match = step.duration.match(/(\d+)(?:\s*[-–]\s*(\d+))?/)
+      if (match) {
+        const lo = parseInt(match[1], 10)
+        const hi = match[2] ? parseInt(match[2], 10) : lo
+        minTotal += lo
+        maxTotal += hi
+      }
+    }
+    if (minTotal === 0) return null
+    const unit = steps[0]?.duration.toLowerCase().includes('week') ? 'weeks' : 'days'
+    return minTotal === maxTotal ? `${minTotal} ${unit}` : `${minTotal}–${maxTotal} ${unit}`
+  })()
+
   // Check if documents exist for this category to determine next step
   const documents = getCategoryDocuments(category as CategoryType)
   const hasDocuments = documents && documents.length > 0
@@ -48,6 +67,18 @@ export default function ServiceProcess({ params }: PageProps) {
       >
         <em>Our Process</em>
       </motion.h1>
+
+      {/* Total estimated time */}
+      {totalTime && (
+        <motion.p
+          className={styles.totalTime}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.6, delay: 0.4 }}
+        >
+          Est. {totalTime} total
+        </motion.p>
+      )}
 
       {/* Timeline */}
       <div className={styles.timeline}>

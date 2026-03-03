@@ -76,7 +76,7 @@ export default function TeamPage() {
 
             {/* 1.75 Team Leader Showcase */}
             {teamMembers.filter(m => m.isPrimary).map(leader => (
-                <div key={leader.id} className="relative z-20 mb-24 lg:mb-32">
+                <div key={leader.id} className="relative z-20 mb-4 lg:mb-8">
                     <TeamLeaderShowcase leader={leader} />
                 </div>
             ))}

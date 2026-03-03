@@ -6,7 +6,6 @@ import QuoteSection from "@/components/home/quote/QuoteSection"
 import AboutSection from "@/components/home/about/AboutSection"
 import Testimonials from "@/components/home/testimonials/Testimonials"
 import ClientLogosCarousel from "@/components/home/ClientLogosCarousel"
-import BannerSection from "@/components/home/banner/BannerSection"
 import HomeLoadingScreen from "@/components/HomeLoadingScreen"
 import { getSmoother } from '@/components/SmoothScroll'
 
@@ -30,62 +29,48 @@ interface PageBgItem {
 
 const PAGE_BG_QUOTES: PageBgItem[] = [
   // ── QuoteSection area (~100–170vh) ──────────────────────────────────────────
-  { text: "Justice delayed is justice denied",           top: "105vh", left: "3%",  fontSize: "1.10rem", opacity: 0.085, depth: 0.45 },
-  { text: "The rule of law governs all",                 top: "118vh", left: "62%", fontSize: "1.00rem", opacity: 0.068, depth: 0.30 },
-  { text: "Audi alteram partem",                         top: "130vh", left: "28%", fontSize: "1.15rem", opacity: 0.085, depth: 0.55 },
-  { text: "Ubi jus ibi remedium",                        top: "145vh", left: "72%", fontSize: "0.95rem", opacity: 0.068, depth: 0.40 },
-  { text: "No man is above the law",                     top: "158vh", left: "5%",  fontSize: "1.05rem", opacity: 0.085, depth: 0.50 },
-  { text: "Equal justice under law",                     top: "152vh", left: "50%", fontSize: "1.00rem", opacity: 0.068, depth: 0.35 },
+  { text: "Justice delayed is justice denied",           top: "105vh", left: "3%",  fontSize: "1.10rem", opacity: 0.12, depth: 0.45 },
+  { text: "Audi alteram partem",                         top: "130vh", left: "28%", fontSize: "1.15rem", opacity: 0.12, depth: 0.55 },
+  { text: "No man is above the law",                     top: "158vh", left: "5%",  fontSize: "1.05rem", opacity: 0.12, depth: 0.50 },
 
   // ── AboutSection area (~180–360vh) ──────────────────────────────────────────
-  { text: "Equal protection under law",                  top: "188vh", left: "70%", fontSize: "1.05rem", opacity: 0.085, depth: 0.55 },
-  { text: "Due process of law",                          top: "208vh", left: "6%",  fontSize: "1.15rem", opacity: 0.085, depth: 0.40 },
-  { text: "Truth is the foundation of justice",          top: "230vh", left: "55%", fontSize: "0.95rem", opacity: 0.068, depth: 0.60 },
-  { text: "Presumption of innocence",                    top: "252vh", left: "22%", fontSize: "1.10rem", opacity: 0.085, depth: 0.35 },
-  { text: "Liberty under law",                           top: "275vh", left: "68%", fontSize: "1.05rem", opacity: 0.068, depth: 0.50 },
-  { text: "Justice must be seen to be done",             top: "295vh", left: "2%",  fontSize: "1.00rem", opacity: 0.068, depth: 0.45 },
-  { text: "Stare decisis",                               top: "318vh", left: "74%", fontSize: "1.15rem", opacity: 0.085, depth: 0.30 },
-  { text: "Habeas corpus",                               top: "340vh", left: "16%", fontSize: "1.20rem", opacity: 0.085, depth: 0.55 },
-  { text: "The burden of proof",                         top: "356vh", left: "45%", fontSize: "1.00rem", opacity: 0.068, depth: 0.40 },
+  { text: "Due process of law",                          top: "208vh", left: "6%",  fontSize: "1.15rem", opacity: 0.12, depth: 0.40 },
+  { text: "Presumption of innocence",                    top: "252vh", left: "22%", fontSize: "1.10rem", opacity: 0.12, depth: 0.35 },
+  { text: "Liberty under law",                           top: "275vh", left: "68%", fontSize: "1.05rem", opacity: 0.10, depth: 0.50 },
+  { text: "Stare decisis",                               top: "318vh", left: "74%", fontSize: "1.15rem", opacity: 0.12, depth: 0.30 },
+  { text: "Habeas corpus",                               top: "340vh", left: "16%", fontSize: "1.20rem", opacity: 0.12, depth: 0.55 },
 
   // ── Testimonials area (~660–800vh) ──────────────────────────────────────────
-  { text: "Fiat justitia ruat caelum",                   top: "668vh", left: "12%", fontSize: "1.05rem", opacity: 0.085, depth: 0.45 },
-  { text: "Nemo judex in sua causa",                     top: "685vh", left: "60%", fontSize: "0.95rem", opacity: 0.068, depth: 0.35 },
-  { text: "Pacta sunt servanda",                         top: "702vh", left: "8%",  fontSize: "1.10rem", opacity: 0.085, depth: 0.50 },
-  { text: "Justice is the end of government",            top: "720vh", left: "52%", fontSize: "1.00rem", opacity: 0.068, depth: 0.40 },
-  { text: "Res ipsa loquitur",                           top: "740vh", left: "25%", fontSize: "1.05rem", opacity: 0.085, depth: 0.55 },
-  { text: "The rule of law",                             top: "758vh", left: "68%", fontSize: "1.15rem", opacity: 0.068, depth: 0.30 },
+  { text: "Fiat justitia ruat caelum",                   top: "668vh", left: "12%", fontSize: "1.05rem", opacity: 0.12, depth: 0.45 },
+  { text: "Pacta sunt servanda",                         top: "702vh", left: "8%",  fontSize: "1.10rem", opacity: 0.12, depth: 0.50 },
+  { text: "Res ipsa loquitur",                           top: "740vh", left: "25%", fontSize: "1.05rem", opacity: 0.12, depth: 0.55 },
 ]
 
 // ── Newspaper headlines — bold, uppercase, with rule ──────────────────────────
 
 const PAGE_BG_HEADLINES: PageBgItem[] = [
   // ── QuoteSection area ───────────────────────────────────────────────────────
-  { text: "HIGH COURT GRANTS INJUNCTION IN LANDMARK CASE",      top: "112vh", left: "42%", fontSize: "0.85rem", opacity: 0.068, depth: 0.50 },
-  { text: "SUPREME COURT UPHOLDS CIVIL RIGHTS CHARTER",         top: "162vh", left: "18%", fontSize: "0.82rem", opacity: 0.051, depth: 0.35 },
+  { text: "HIGH COURT GRANTS INJUNCTION IN LANDMARK CASE",      top: "112vh", left: "42%", fontSize: "0.85rem", opacity: 0.11, depth: 0.50 },
 
   // ── AboutSection area ───────────────────────────────────────────────────────
-  { text: "LANDMARK RULING RESHAPES CORPORATE LIABILITY",       top: "195vh", left: "2%",  fontSize: "0.85rem", opacity: 0.068, depth: 0.40 },
-  { text: "JUDICIARY ANNOUNCES SWEEPING COURT REFORMS",         top: "238vh", left: "52%", fontSize: "0.82rem", opacity: 0.051, depth: 0.55 },
-  { text: "APPELLATE DIVISION OVERTURNS LOWER COURT VERDICT",   top: "285vh", left: "32%", fontSize: "0.82rem", opacity: 0.068, depth: 0.45 },
-  { text: "COMMERCIAL COURT RECORDS HISTORIC RULING",           top: "328vh", left: "58%", fontSize: "0.80rem", opacity: 0.051, depth: 0.30 },
-  { text: "NEW COMPLIANCE FRAMEWORK FOR CORPORATE SECTOR",      top: "352vh", left: "4%",  fontSize: "0.82rem", opacity: 0.068, depth: 0.50 },
+  { text: "LANDMARK RULING RESHAPES CORPORATE LIABILITY",       top: "195vh", left: "2%",  fontSize: "0.85rem", opacity: 0.11, depth: 0.40 },
+  { text: "APPELLATE DIVISION OVERTURNS LOWER COURT VERDICT",   top: "285vh", left: "32%", fontSize: "0.82rem", opacity: 0.11, depth: 0.45 },
+  { text: "COMMERCIAL COURT RECORDS HISTORIC RULING",           top: "328vh", left: "58%", fontSize: "0.80rem", opacity: 0.10, depth: 0.30 },
 
   // ── Testimonials area ───────────────────────────────────────────────────────
-  { text: "COMMERCIAL COURTS SEE RECORD FILINGS THIS TERM",     top: "675vh", left: "48%", fontSize: "0.85rem", opacity: 0.068, depth: 0.40 },
-  { text: "INTERNATIONAL ARBITRATION SEES RECORD GROWTH",       top: "712vh", left: "2%",  fontSize: "0.82rem", opacity: 0.051, depth: 0.50 },
-  { text: "ATTORNEY GENERAL DEFENDS PUBLIC INTEREST",           top: "745vh", left: "58%", fontSize: "0.82rem", opacity: 0.068, depth: 0.35 },
+  { text: "COMMERCIAL COURTS SEE RECORD FILINGS THIS TERM",     top: "675vh", left: "48%", fontSize: "0.85rem", opacity: 0.11, depth: 0.40 },
+  { text: "ATTORNEY GENERAL DEFENDS PUBLIC INTEREST",           top: "745vh", left: "58%", fontSize: "0.82rem", opacity: 0.11, depth: 0.35 },
 ]
 
 // ─── Page component ───────────────────────────────────────────────────────────
 
 export default function Home() {
-  // ── Banner frame loading state ────────────────────────────────────────────
-  const [bannerProgress, setBannerProgress] = useState(0)
-  const [bannerLoaded, setBannerLoaded]     = useState(false)
+  // ── Hero video loading state — drives the loading screen ─────────────────
+  const [videoProgress, setVideoProgress] = useState(0)
+  const [videoReady,    setVideoReady]    = useState(false)
 
-  const handleBannerProgress = useCallback((pct: number) => setBannerProgress(pct), [])
-  const handleBannerComplete = useCallback(() => setBannerLoaded(true), [])
+  const handleVideoProgress = useCallback((pct: number) => setVideoProgress(pct), [])
+  const handleVideoReady    = useCallback(() => setVideoReady(true), [])
 
   // ── Hash-based scroll navigation ─────────────────────────────────────────
   useEffect(() => {
@@ -113,6 +98,10 @@ export default function Home() {
   // On mobile, native scroll fires very rapidly so we rAF-throttle the DOM
   // write to once per rendered frame instead of once per scroll event.
   useEffect(() => {
+    // Parallax is desktop-only — skip entirely on mobile to avoid per-frame
+    // style recalculations that cause scroll jank on low-powered devices.
+    if (window.matchMedia('(max-width: 768px)').matches) return
+
     let rafId: number | null = null
     const handleScroll = () => {
       if (rafId !== null) return
@@ -134,8 +123,8 @@ export default function Home() {
 
   return (
     <>
-      {/* ── Home loading screen — slides left once all banner frames are ready */}
-      <HomeLoadingScreen progress={bannerProgress} isComplete={bannerLoaded} />
+      {/* ── Home loading screen — waits for hero video to buffer ────────── */}
+      <HomeLoadingScreen progress={videoProgress} isComplete={videoReady} />
 
       <main className={`page-transition ${styles.homePage}`}>
         {/* Fixed espresso background + atmospheric gold glow */}
@@ -176,13 +165,13 @@ export default function Home() {
         </div>
 
         {/* ── Page sections ────────────────────────────────────────────────── */}
-        <Hero />
+        <Hero
+          onProgress={handleVideoProgress}
+          onReady={handleVideoReady}
+          playing={videoReady}
+        />
         <QuoteSection />
         <AboutSection />
-        <BannerSection
-          onProgress={handleBannerProgress}
-          onComplete={handleBannerComplete}
-        />
         <ClientLogosCarousel />
         <Testimonials />
       </main>
