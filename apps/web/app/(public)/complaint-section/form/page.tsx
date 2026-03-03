@@ -312,11 +312,11 @@ function wordCountColor(count: number, limit: number) {
 
 const slideVariants = {
   enter: (dir: number) => ({ x: dir > 0 ? 48 : -48, opacity: 0 }),
-  center: { x: 0, opacity: 1, transition: { duration: 0.45, ease: [0.32, 0.72, 0, 1] } },
+  center: { x: 0, opacity: 1, transition: { duration: 0.45, ease: [0.32, 0.72, 0, 1] as [number, number, number, number] } },
   exit: (dir: number) => ({
     x: dir > 0 ? -48 : 48,
     opacity: 0,
-    transition: { duration: 0.3, ease: [0.32, 0.72, 0, 1] },
+    transition: { duration: 0.3, ease: [0.32, 0.72, 0, 1] as [number, number, number, number] },
   }),
 }
 

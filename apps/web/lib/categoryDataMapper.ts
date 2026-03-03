@@ -1,6 +1,8 @@
 import {
   facilitationServices,
   facilitationRegistrationForm,
+  ipServicesForm,
+  IP_SERVICE_IDS,
   commonDocuments as facilitationDocuments,
   type FacilitationService,
   type FormSection,
@@ -100,6 +102,21 @@ export function getCategoryForm(category: CategoryType): FormSection[] {
   const categoryData = getCategoryData(category)
   return categoryData?.form || []
 }
+
+/**
+ * Get form sections for a specific service within a category.
+ * Returns the IP-specific form for IP service slugs, otherwise falls back to
+ * the standard category form.
+ */
+export function getFormForService(category: CategoryType, slug: string): FormSection[] {
+  if (category === 'facilitation' && IP_SERVICE_IDS.has(slug)) {
+    return ipServicesForm
+  }
+  return getCategoryForm(category)
+}
+
+/** Re-export IP_SERVICE_IDS for use in UI components */
+export { IP_SERVICE_IDS }
 
 /**
  * Get documents for a specific category (if available)

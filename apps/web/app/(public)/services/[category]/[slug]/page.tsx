@@ -92,7 +92,7 @@ function ServiceOverviewInner({ service, category, slug }: InnerProps) {
         style={{ y: contentY, opacity: contentOpacity }}
       >
 
-        {/* ── Service Title — left-aligned, italic, Lora ───────────────── */}
+          {/* ── Service Title — left-aligned, italic, Lora ───────────────── */}
         <motion.header
           className={overviewStyles.titleBlock}
           initial={{ opacity: 0, y: 32 }}
