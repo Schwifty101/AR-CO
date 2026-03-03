@@ -36,10 +36,9 @@ export default function TeamLeaderShowcase({ leader }: TeamLeaderShowcaseProps) 
                 if (textRef.current) {
                     gsap.fromTo(
                         textRef.current,
-                        { y: 100, opacity: 0 },
+                        { y: 100 },
                         {
                             y: -100,
-                            opacity: 1,
                             ease: 'none',
                             scrollTrigger: triggerConfig,
                         },
@@ -96,7 +95,7 @@ export default function TeamLeaderShowcase({ leader }: TeamLeaderShowcaseProps) 
 
                 {/* LEFT COLUMN: Text Content - Editorial Style */}
                 <div className="lg:col-span-5 flex flex-col justify-center order-2 lg:order-1">
-                    <div ref={textRef} className="will-change-transform" style={{ opacity: 0 }}>
+                    <div ref={textRef} className="will-change-transform" style={{ opacity: 1 }}>
                         {/* Decorative Label */}
                         <div className="flex items-center gap-4 mb-8">
                             <div className="h-[1px] w-12 bg-heritage-gold"></div>
@@ -120,12 +119,12 @@ export default function TeamLeaderShowcase({ leader }: TeamLeaderShowcaseProps) 
                         </h1>
 
                         {/* Role */}
-                        <p className="text-xl md:text-2xl font-light text-heritage-gold/80 mb-10 italic" style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}>
+                        <p className="text-xl md:text-2xl font-light text-heritage-gold mb-10 italic" style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}>
                             {leader.role}
                         </p>
 
                         {/* Bio */}
-                        <p className="text-sm md:text-base leading-relaxed text-heritage-cream/70 mb-12 max-w-lg border-l border-heritage-gold/20 pl-6" style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}>
+                        <p className="text-sm md:text-base leading-relaxed text-heritage-cream mb-12 max-w-lg border-l border-heritage-gold/40 pl-6" style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}>
                             {leader.bio}
                         </p>
 
@@ -147,7 +146,7 @@ export default function TeamLeaderShowcase({ leader }: TeamLeaderShowcaseProps) 
                         {/* Additional Info Block */}
                         <div className="mt-12 pt-8 border-t border-heritage-gold/10 grid grid-cols-2 gap-8">
                             <div>
-                                <span className="block text-[10px] uppercase tracking-widest text-heritage-cream/40 mb-2" style={{ fontFamily: "'Lora', Georgia, serif" }}>Experience</span>
+                                <span className="block text-[10px] uppercase tracking-widest text-heritage-cream/70 mb-2" style={{ fontFamily: "'Lora', Georgia, serif" }}>Experience</span>
                                 <span className="text-2xl font-normal" style={{
                                     fontFamily: "'Lora', Georgia, serif",
                                     color: 'var(--heritage-cream)'
@@ -156,8 +155,8 @@ export default function TeamLeaderShowcase({ leader }: TeamLeaderShowcaseProps) 
                                 </span>
                             </div>
                             <div>
-                                <span className="block text-[10px] uppercase tracking-widest text-heritage-cream/40 mb-2" style={{ fontFamily: "'Lora', Georgia, serif" }}>Education</span>
-                                <div className="text-sm text-heritage-cream/80" style={{ fontFamily: "'Lora', Georgia, serif" }}>
+                                <span className="block text-[10px] uppercase tracking-widest text-heritage-cream/70 mb-2" style={{ fontFamily: "'Lora', Georgia, serif" }}>Education</span>
+                                <div className="text-sm text-heritage-cream" style={{ fontFamily: "'Lora', Georgia, serif" }}>
                                     {leader.education?.map((edu, i) => (
                                         <div key={i}>{edu}</div>
                                     ))}
