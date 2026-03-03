@@ -15,7 +15,7 @@ export default function TeamInteractiveList({ members }: TeamInteractiveListProp
 
     return (
         <section
-            className="py-32 px-4 md:px-8 lg:px-16 max-w-[1900px] mx-auto w-full relative min-h-screen mb-16"
+            className="pt-32 pb-8 px-4 md:px-8 lg:px-16 max-w-[1900px] mx-auto w-full relative min-h-screen mb-0"
             onMouseLeave={() => setActiveMemberId(null)}
         >
             <div className="relative z-10">
@@ -31,14 +31,15 @@ export default function TeamInteractiveList({ members }: TeamInteractiveListProp
                                     alt={member.name}
                                     fill
                                     className="object-cover object-top filter grayscale-[20%]"
-                                    sizes="(max-width: 768px) 100vw, 400px"
+                                    sizes="100vw"
+                                    quality={90}
                                 />
                                 <div className="absolute inset-0 bg-gradient-to-t from-wood-espresso/90 via-transparent to-transparent opacity-40" />
                             </div>
 
                             {/* Text Content */}
                             <div>
-                                <h2 className="text-5xl font-medium mb-3 italic" style={{
+                                <h2 className="text-3xl font-medium mb-3 italic" style={{
                                     fontFamily: "'Lora', Georgia, serif",
                                     letterSpacing: '-0.02em',
                                     lineHeight: 0.9,
@@ -103,7 +104,7 @@ export default function TeamInteractiveList({ members }: TeamInteractiveListProp
                                         {/* Name Row */}
                                         <div className="flex items-baseline justify-between w-full overflow-hidden">
                                             <h2
-                                                className="text-5xl md:text-7xl lg:text-8xl font-light tracking-tighter transition-all duration-500 ease-out origin-left italic"
+                                                className="text-4xl md:text-5xl lg:text-6xl font-light tracking-tighter transition-all duration-500 ease-out origin-left italic"
                                                 style={{
                                                     fontFamily: "'Lora', Georgia, serif",
                                                     letterSpacing: '-0.04em',
@@ -197,7 +198,8 @@ export default function TeamInteractiveList({ members }: TeamInteractiveListProp
                                                         alt={member.name}
                                                         fill
                                                         className="object-cover transition-all duration-700"
-                                                        sizes="400px"
+                                                        sizes="(max-width: 1024px) 50vw, 33vw"
+                                                        quality={90}
                                                         priority={true}
                                                     />
                                                     <div className="absolute inset-0 bg-gradient-to-t from-heritage-walnut/80 via-transparent to-transparent opacity-60" />
