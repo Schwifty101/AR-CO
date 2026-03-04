@@ -1513,27 +1513,27 @@ Single atomic Supabase migration:
 
 ### Sub-task 14.1: Drop Duplicate Indexes
 
-- [ ] **14.1.1**: Identify 5 duplicate indexes (where `idx_*` duplicates `*_key` constraint)
-- [ ] **14.1.2**: Apply migration to drop redundant `idx_*` indexes
+- [X] **14.1.1**: Identify 5 duplicate indexes (where `idx_*` duplicates `*_key` constraint)
+- [X] **14.1.2**: Apply migration to drop redundant `idx_*` indexes
 
 ### Sub-task 14.2: Fix auth_rls_initplan Warnings
 
-- [ ] **14.2.1**: Audit all RLS policies using `auth.uid()` directly
-- [ ] **14.2.2**: Rewrite to use `(select auth.uid())` pattern (evaluated once per query, not per row)
-- [ ] **14.2.3**: Apply migration (drop old policies, create optimized ones)
+- [X] **14.2.1**: Audit all RLS policies using `auth.uid()` directly
+- [X] **14.2.2**: Rewrite to use `(select auth.uid())` pattern (evaluated once per query, not per row)
+- [X] **14.2.3**: Apply migration (drop old policies, create optimized ones)
 
 ### Sub-task 14.3: Consolidate Multiple Permissive Policies
 
-- [ ] **14.3.1**: Audit all tables with multiple permissive policies for same role+action
-- [ ] **14.3.2**: Consolidate into single policy with OR conditions
+- [X] **14.3.1**: Audit all tables with multiple permissive policies for same role+action
+- [X] **14.3.2**: Consolidate into single policy with OR conditions
   - Naming convention: `{action}_{table_name}` (e.g., `select_user_profiles`)
-- [ ] **14.3.3**: Apply migration (drop 88 old policies, create 79 consolidated)
+- [X] **14.3.3**: Apply migration (drop 88 old policies, create 79 consolidated + 10 newer table policies)
 
 ### Sub-task 14.4: Verification
 
-- [ ] **14.4.1**: Run Supabase security advisors — zero auth_rls_initplan warnings
-- [ ] **14.4.2**: Run Supabase performance advisors — zero duplicate_index warnings
-- [ ] **14.4.3**: Verify all API endpoints still work (no RLS regressions)
+- [X] **14.4.1**: Run Supabase security advisors — zero auth_rls_initplan warnings
+- [X] **14.4.2**: Run Supabase performance advisors — zero duplicate_index warnings
+- [X] **14.4.3**: Verify all API endpoints still work (no RLS regressions, backend uses admin client)
 
 ---
 
@@ -1661,7 +1661,7 @@ Single atomic Supabase migration:
 - [X] Access control enforced
 - [X] Guest endpoints (@Public) don't leak data
 - [X] Subscription check prevents unauthorized complaint submission
-- [ ] Database RLS optimized (HEAD TASK 14)
+- [X] Database RLS optimized (HEAD TASK 14)
 
 ### Phase 7: Testing
 
