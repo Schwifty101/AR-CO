@@ -99,7 +99,7 @@ export async function createRegistration(
   });
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to create service registration');
   }
 
@@ -142,7 +142,7 @@ export async function initiatePayment(
   });
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to initiate payment');
   }
 
@@ -183,7 +183,7 @@ export async function checkRegistrationStatus(
   });
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to check registration status');
   }
 
@@ -226,7 +226,7 @@ export async function getMyRegistrations(
   });
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to fetch registrations');
   }
 
@@ -268,7 +268,7 @@ export async function getRegistrationById(id: string): Promise<ServiceRegistrati
   });
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to fetch registration');
   }
 
@@ -309,7 +309,7 @@ export async function updateRegistrationStatus(
   });
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to update registration status');
   }
 
@@ -349,7 +349,7 @@ export async function assignRegistration(
   });
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to assign registration');
   }
 

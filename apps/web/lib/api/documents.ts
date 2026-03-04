@@ -79,7 +79,7 @@ export async function uploadDocument(
   });
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to upload document');
   }
 
@@ -125,7 +125,7 @@ export async function getDocuments(
   });
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to fetch documents');
   }
 
@@ -163,7 +163,7 @@ export async function getDocumentById(documentId: string): Promise<DocumentRespo
   });
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to fetch document');
   }
 
@@ -199,7 +199,7 @@ export async function updateDocument(
   });
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to update document');
   }
 
@@ -233,7 +233,7 @@ export async function downloadDocument(
   });
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to get download URL');
   }
 
@@ -262,7 +262,7 @@ export async function deleteDocument(documentId: string): Promise<void> {
   });
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to delete document');
   }
 }

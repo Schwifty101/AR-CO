@@ -68,7 +68,7 @@ export async function getPracticeAreas(): Promise<PracticeArea[]> {
   });
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to fetch practice areas');
   }
 

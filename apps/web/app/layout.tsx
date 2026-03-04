@@ -8,6 +8,7 @@ import { FacilitationProvider, FacilitationOverlayWrapper } from "@/components/f
 import { ConsultationProvider, ConsultationOverlayWrapper } from "@/components/consultation"
 import { AboutProvider, AboutOverlayWrapper } from "@/components/about"
 import PageTransition from "@/components/PageTransition"
+import { Toaster } from "@/components/ui/sonner"
 import "./globals.css"
 
 export const metadata: Metadata = {
@@ -85,6 +86,7 @@ export default function RootLayout({
           </PracticeAreasProvider>
         </AuthProvider>
         <Analytics />
+        <Toaster />
       </body>
     </html>
   )

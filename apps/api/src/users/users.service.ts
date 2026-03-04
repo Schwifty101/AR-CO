@@ -35,6 +35,8 @@ import {
   ConflictException,
   BadRequestException,
   Logger,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 import { SupabaseService } from '../database/supabase.service';
 import type {
@@ -575,15 +577,22 @@ export class UsersService {
 
     if (authError || !authData?.user) {
       this.logger.error(`Failed to invite user ${dto.email}`, authError);
-      if (
-        authError &&
-        'code' in authError &&
-        authError.code === 'email_exists'
-      ) {
-        throw new ConflictException(
-          'A user with this email address has already been registered.',
-        );
+
+      if (authError && 'code' in authError) {
+        const code = (authError as { code: string }).code;
+        if (code === 'email_exists') {
+          throw new ConflictException(
+            'A user with this email address has already been registered.',
+          );
+        }
+        if (code === 'over_email_send_rate_limit') {
+          throw new HttpException(
+            'Too many invitation emails sent. Please wait a few minutes before trying again.',
+            HttpStatus.TOO_MANY_REQUESTS,
+          );
+        }
       }
+
       throw new InternalServerErrorException(
         'Unable to invite user. Please try again.',
       );

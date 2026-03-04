@@ -42,7 +42,7 @@ export async function getAnalyticsStats(): Promise<AdminAnalyticsStats> {
   });
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to fetch analytics stats');
   }
 
@@ -67,7 +67,7 @@ export async function getRecentActivities(
   );
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to fetch recent activities');
   }
 
@@ -88,7 +88,7 @@ export async function getCaseAnalytics(): Promise<CaseAnalytics> {
   });
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to fetch case analytics');
   }
 
@@ -120,7 +120,7 @@ export async function getClientInteractions(
   );
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to fetch client interactions');
   }
 
@@ -154,7 +154,7 @@ export async function createInteraction(
   );
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to create interaction');
   }
 
@@ -185,7 +185,7 @@ export async function updateInteraction(
   });
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to update interaction');
   }
 
@@ -213,7 +213,7 @@ export async function completeInteraction(
   );
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to complete interaction');
   }
 
@@ -241,7 +241,7 @@ export async function getUpcomingInteractions(
   );
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to fetch upcoming interactions');
   }
 

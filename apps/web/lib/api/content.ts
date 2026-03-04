@@ -141,7 +141,7 @@ export async function getPublishedPosts(
   });
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to fetch published posts');
   }
 
@@ -182,7 +182,7 @@ export async function getPostBySlug(slug: string): Promise<ContentPostResponse> 
   });
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to fetch post');
   }
 
@@ -234,7 +234,7 @@ export async function getAdminPosts(
   });
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to fetch admin posts');
   }
 
@@ -287,7 +287,7 @@ export async function createPost(
   });
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to create post');
   }
 
@@ -331,7 +331,7 @@ export async function updatePost(
   });
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to update post');
   }
 
@@ -366,7 +366,7 @@ export async function syncPost(id: string): Promise<ContentPostResponse> {
   });
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to sync post');
   }
 
@@ -400,7 +400,7 @@ export async function deletePost(id: string): Promise<void> {
   });
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to delete post');
   }
 }
@@ -430,7 +430,7 @@ export async function incrementView(id: string): Promise<void> {
   });
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to increment view count');
   }
 }
@@ -464,7 +464,7 @@ export async function getCategories(): Promise<CategoryResponse[]> {
   });
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to fetch categories');
   }
 
@@ -506,7 +506,7 @@ export async function createCategory(
   });
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to create category');
   }
 
@@ -548,7 +548,7 @@ export async function updateCategory(
   });
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to update category');
   }
 
@@ -583,7 +583,7 @@ export async function deleteCategory(id: string): Promise<void> {
   });
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to delete category');
   }
 }
@@ -626,7 +626,7 @@ export async function getApprovedTestimonials(
   });
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to fetch approved testimonials');
   }
 
@@ -675,7 +675,7 @@ export async function submitTestimonial(
   });
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to submit testimonial');
   }
 
@@ -717,7 +717,7 @@ export async function getAllTestimonials(
   });
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to fetch all testimonials');
   }
 
@@ -762,7 +762,7 @@ export async function approveTestimonial(
   });
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to approve testimonial');
   }
 
@@ -797,7 +797,7 @@ export async function rejectTestimonial(id: string): Promise<void> {
   });
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to reject testimonial');
   }
 }
@@ -839,7 +839,7 @@ export async function getLatestNews(
   });
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to fetch latest news');
   }
 
@@ -882,7 +882,7 @@ export async function createNewsItem(
   });
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to create news item');
   }
 

@@ -57,7 +57,7 @@ export async function getAdminDashboardStats(): Promise<AdminDashboardStats> {
   });
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to fetch admin dashboard stats');
   }
 
@@ -84,7 +84,7 @@ export async function getClientDashboardStats(): Promise<ClientDashboardStats> {
   });
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to fetch client dashboard stats');
   }
 

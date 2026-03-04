@@ -74,7 +74,7 @@ export async function getAuditLogs(
   });
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to fetch audit logs');
   }
 
@@ -108,7 +108,7 @@ export async function getAuditLogUsers(): Promise<AuditLogUser[]> {
   });
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to fetch audit log users');
   }
 

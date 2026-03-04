@@ -89,7 +89,7 @@ export async function submitComplaint(
   });
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to submit complaint');
   }
 
@@ -137,7 +137,7 @@ export async function getComplaints(
   });
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to fetch complaints');
   }
 
@@ -179,7 +179,7 @@ export async function getComplaintById(id: string): Promise<ComplaintResponse> {
   });
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to fetch complaint');
   }
 
@@ -220,7 +220,7 @@ export async function updateComplaintStatus(
   });
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to update complaint status');
   }
 
@@ -260,7 +260,7 @@ export async function assignComplaint(
   });
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to assign complaint');
   }
 

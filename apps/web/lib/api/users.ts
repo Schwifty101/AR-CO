@@ -90,7 +90,7 @@ export async function getUserProfile(): Promise<UserProfile> {
   });
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to fetch user profile');
   }
 
@@ -118,7 +118,7 @@ export async function updateUserProfile(
   });
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to update profile');
   }
 
@@ -148,7 +148,7 @@ export async function updateClientProfile(
   });
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to update client profile');
   }
 
@@ -178,7 +178,7 @@ export async function updateAttorneyProfile(
   });
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to update attorney profile');
   }
 
@@ -215,7 +215,7 @@ export async function getUsers(
   });
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to fetch users');
   }
 
@@ -249,7 +249,7 @@ export async function deleteUser(userId: string): Promise<void> {
   });
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to delete user');
   }
 }
@@ -303,7 +303,7 @@ export async function inviteUser(data: InviteUserData): Promise<InviteUserRespon
   });
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to invite user');
   }
 

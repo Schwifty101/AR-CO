@@ -115,7 +115,7 @@ export async function getCases(
   });
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to fetch cases');
   }
 
@@ -156,7 +156,7 @@ export async function getCaseById(id: string): Promise<CaseResponse> {
   });
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to fetch case');
   }
 
@@ -193,7 +193,7 @@ export async function createCase(data: CreateCaseData): Promise<CaseResponse> {
   });
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to create case');
   }
 
@@ -229,7 +229,7 @@ export async function updateCase(
   });
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to update case');
   }
 
@@ -265,7 +265,7 @@ export async function updateCaseStatus(
   });
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to update case status');
   }
 
@@ -295,7 +295,7 @@ export async function deleteCase(id: string): Promise<void> {
   });
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to delete case');
   }
 }
@@ -331,7 +331,7 @@ export async function assignCase(
   });
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to assign case');
   }
 
@@ -371,7 +371,7 @@ export async function getCaseActivities(
   });
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to fetch case activities');
   }
 
@@ -419,7 +419,7 @@ export async function addCaseActivity(
   });
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to add case activity');
   }
 

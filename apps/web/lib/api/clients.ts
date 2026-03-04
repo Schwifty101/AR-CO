@@ -83,7 +83,7 @@ export async function getClients(
   });
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to fetch clients');
   }
 
@@ -124,7 +124,7 @@ export async function getClientById(id: string): Promise<ClientResponse> {
   });
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to fetch client');
   }
 
@@ -165,7 +165,7 @@ export async function createClient(data: CreateClientData): Promise<ClientRespon
   });
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to create client');
   }
 
@@ -204,7 +204,7 @@ export async function updateClient(
   });
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to update client');
   }
 
@@ -236,7 +236,7 @@ export async function deleteClient(id: string): Promise<void> {
   });
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to delete client');
   }
 }
@@ -267,7 +267,7 @@ export async function getClientCases(clientId: string): Promise<unknown[]> {
   });
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to fetch client cases');
   }
 
@@ -300,7 +300,7 @@ export async function getClientDocuments(clientId: string): Promise<unknown[]> {
   });
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to fetch client documents');
   }
 
@@ -333,7 +333,7 @@ export async function getClientInvoices(clientId: string): Promise<unknown[]> {
   });
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to fetch client invoices');
   }
 

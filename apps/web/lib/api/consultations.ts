@@ -113,7 +113,7 @@ export async function createConsultation(
   });
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to create consultation booking');
   }
 
@@ -147,7 +147,7 @@ export async function initiatePayment(
   });
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to initiate payment');
   }
 
@@ -188,7 +188,7 @@ export async function confirmPayment(
   });
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to confirm payment');
   }
 
@@ -225,7 +225,7 @@ export async function checkBookingStatus(
   const response = await fetch(`/api/consultations/status?${queryParams.toString()}`);
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to check booking status');
   }
 
@@ -266,7 +266,7 @@ export async function getMyConsultations(
   });
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to fetch your consultations');
   }
 
@@ -324,7 +324,7 @@ export async function getConsultations(
   });
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to fetch consultations');
   }
 
@@ -368,7 +368,7 @@ export async function getConsultationById(
   });
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to fetch consultation');
   }
 
@@ -404,7 +404,7 @@ export async function cancelConsultation(
   });
 
   if (!response.ok) {
-    const error = (await response.json()) as { message?: string };
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to cancel consultation');
   }
 

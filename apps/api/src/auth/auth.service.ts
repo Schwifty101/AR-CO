@@ -27,11 +27,14 @@
  */
 
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   InternalServerErrorException,
   Logger,
   UnauthorizedException,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 import { SupabaseService } from '../database/supabase.service';
 import { AdminWhitelistService } from '../database/admin-whitelist.service';
@@ -444,6 +447,21 @@ export class AuthService {
 
     if (updateError) {
       this.logger.error(`Password update failed for user ${user.id}`);
+
+      if ('code' in updateError) {
+        const code = (updateError as { code: string }).code;
+        if (code === 'same_password') {
+          throw new BadRequestException(
+            'New password must be different from the current password.',
+          );
+        }
+        if (code === 'weak_password') {
+          throw new BadRequestException(
+            'Password does not meet strength requirements.',
+          );
+        }
+      }
+
       throw new InternalServerErrorException(
         'Unable to update password. Please try again.',
       );
