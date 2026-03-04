@@ -71,19 +71,23 @@ export class StorageService {
    * @param path - Storage path of the file
    * @param expiresIn - URL expiration in seconds (default: 86400 = 24 hours)
    * @param bucket - Storage bucket name (defaults to configured bucket)
+   * @param downloadAs - If provided, sets Content-Disposition filename for download
    * @returns Signed download URL
    */
   async getSignedUrl(
     path: string,
     expiresIn: number = 86400,
     bucket?: string,
+    downloadAs?: string,
   ): Promise<string> {
     const targetBucket = bucket || this.defaultBucket;
     const adminClient = this.supabaseService.getAdminClient();
 
     const { data, error } = await adminClient.storage
       .from(targetBucket)
-      .createSignedUrl(path, expiresIn);
+      .createSignedUrl(path, expiresIn, {
+        ...(downloadAs ? { download: downloadAs } : {}),
+      });
 
     if (error || !data?.signedUrl) {
       this.logger.error(

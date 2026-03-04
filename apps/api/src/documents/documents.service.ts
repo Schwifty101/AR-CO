@@ -111,8 +111,20 @@ export class DocumentsService {
       file.mimetype,
     );
 
-    // Determine client_profile_id
-    const clientProfileId = dto.clientProfileId || user.clientProfileId || null;
+    // Determine client_profile_id: explicit > user's own > case's client > null
+    let clientProfileId = dto.clientProfileId || user.clientProfileId || null;
+
+    if (!clientProfileId && dto.caseId) {
+      const { data: caseRow } = await adminClient
+        .from('cases')
+        .select('client_profile_id')
+        .eq('id', dto.caseId)
+        .single();
+
+      if (caseRow?.client_profile_id) {
+        clientProfileId = caseRow.client_profile_id;
+      }
+    }
 
     // Insert document record
     const { data, error } = (await adminClient
@@ -400,10 +412,11 @@ export class DocumentsService {
 
     const { data, error } = (await adminClient
       .from('documents')
-      .select('id, file_path, uploaded_by, client_profile_id, case_id')
+      .select('id, name, file_path, uploaded_by, client_profile_id, case_id')
       .eq('id', documentId)
       .single()) as DbResult<{
       id: string;
+      name: string;
       file_path: string;
       uploaded_by: string;
       client_profile_id: string | null;
@@ -416,7 +429,12 @@ export class DocumentsService {
 
     this.assertDocumentAccess(data, user);
 
-    const signedUrl = await this.storageService.getSignedUrl(data.file_path);
+    const signedUrl = await this.storageService.getSignedUrl(
+      data.file_path,
+      86400,
+      undefined,
+      data.name,
+    );
     return { signedUrl };
   }
 

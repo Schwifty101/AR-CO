@@ -80,7 +80,8 @@
       "Bash(ffmpeg:*)",
       "Bash(brew install:*)",
       "Bash(rm:*)",
-      "Bash(du:*)"
+      "Bash(du:*)",
+      "WebFetch(domain:supabase.com)"
     ],
     "env": {
       "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
