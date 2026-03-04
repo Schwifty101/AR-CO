@@ -117,12 +117,12 @@ export default function AdminCaseDetailPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [caseId]);
 
-  // Load assignees (staff + attorneys) for assignment dropdown
+  // Load assignees (admins + attorneys) for assignment dropdown
   useEffect(() => {
     async function loadAssignees() {
       try {
         setIsLoadingAssignees(true);
-        const data = await getUsers({ userTypes: ['staff', 'attorney'], limit: 100 });
+        const data = await getUsers({ userTypes: ['admin', 'attorney'], limit: 100 });
         const mapped = data.users.map((u) => ({
           id: u.id,
           name: u.fullName,

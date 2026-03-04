@@ -42,6 +42,7 @@ import {
   CasePriority,
   CaseActivityType,
   ServiceRegistrationStatus,
+  UserType,
   type PaginationParams,
   type CreateCaseData,
   type UpdateCaseData,
@@ -508,6 +509,23 @@ export class CasesService {
   ): Promise<CaseResponse> {
     this.logger.log(`Assigning user ${dto.assignedToId} to case ${caseId}`);
     const adminClient = this.supabaseService.getAdminClient();
+
+    const { data: assignee, error: assigneeError } = await adminClient
+      .from('user_profiles')
+      .select('user_type')
+      .eq('id', dto.assignedToId)
+      .single();
+
+    if (assigneeError || !assignee) {
+      throw new NotFoundException('Assignee not found');
+    }
+
+    const allowedTypes: string[] = [UserType.ADMIN, UserType.ATTORNEY];
+    if (!allowedTypes.includes(assignee.user_type)) {
+      throw new BadRequestException(
+        'Cases can only be assigned to admins or attorneys',
+      );
+    }
 
     const { data, error } = (await adminClient
       .from('cases')
