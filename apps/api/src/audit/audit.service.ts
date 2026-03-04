@@ -102,10 +102,9 @@ export class AuditService {
 
     let query = adminClient
       .from('activity_logs')
-      .select(
-        '*, user_profiles!activity_logs_user_id_fkey(full_name)',
-        { count: 'exact' },
-      )
+      .select('*, user_profiles!activity_logs_user_id_fkey(full_name)', {
+        count: 'exact',
+      })
       .order('created_at', { ascending: false })
       .range(offset, offset + filters.limit - 1);
 
@@ -132,7 +131,10 @@ export class AuditService {
       return { data: [], total: 0 };
     }
 
-    return { data: data || [], total: count || 0 };
+    return {
+      data: (data || []) as Record<string, unknown>[],
+      total: count || 0,
+    };
   }
 
   /**
@@ -147,7 +149,9 @@ export class AuditService {
       .not('user_id', 'is', null);
 
     if (error || !data) {
-      this.logger.error(`Failed to get distinct audit log users: ${error?.message}`);
+      this.logger.error(
+        `Failed to get distinct audit log users: ${error?.message}`,
+      );
       return [];
     }
 

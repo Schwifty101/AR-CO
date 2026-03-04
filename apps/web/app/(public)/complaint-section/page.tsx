@@ -106,10 +106,7 @@ export default function ComplaintSectionPage() {
 
   useEffect(() => {
     if (isLoading) return
-    if (!user) {
-      setHasSubscription(false)
-      return
-    }
+    if (!user) return
     getMySubscription()
       .then(sub => setHasSubscription(sub?.status === 'active'))
       .catch(() => setHasSubscription(false))

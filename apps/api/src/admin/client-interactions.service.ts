@@ -128,9 +128,10 @@ export class ClientInteractionsService {
    * @param pagination - Page and limit parameters
    * @returns Paginated list of upcoming interactions sorted by scheduled date
    */
-  async getUpcomingInteractions(
-    pagination: { page: number; limit: number },
-  ): Promise<PaginatedInteractionsResponse> {
+  async getUpcomingInteractions(pagination: {
+    page: number;
+    limit: number;
+  }): Promise<PaginatedInteractionsResponse> {
     const client = this.supabaseService.getAdminClient();
     const { page, limit } = pagination;
     const from = (page - 1) * limit;
@@ -146,10 +147,7 @@ export class ClientInteractionsService {
       .range(from, to);
 
     if (error) {
-      this.logger.error(
-        'Failed to fetch upcoming interactions',
-        error.message,
-      );
+      this.logger.error('Failed to fetch upcoming interactions', error.message);
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
 
@@ -225,14 +223,13 @@ export class ClientInteractionsService {
 
   /** Map a DB row to InteractionResponse (snake_case -> camelCase) */
   private mapRow(row: Record<string, unknown>): InteractionResponse {
-    const profile = row.user_profiles as
-      | { full_name: string }
-      | null;
+    const profile = row.user_profiles as { full_name: string } | null;
     return {
       id: row.id as string,
       clientProfileId: row.client_profile_id as string,
       staffUserId: row.staff_user_id as string,
-      interactionType: row.interaction_type as InteractionResponse['interactionType'],
+      interactionType:
+        row.interaction_type as InteractionResponse['interactionType'],
       subject: row.subject as string,
       notes: (row.notes as string) ?? null,
       scheduledAt: (row.scheduled_at as string) ?? null,

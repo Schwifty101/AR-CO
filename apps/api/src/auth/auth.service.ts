@@ -33,8 +33,6 @@ import {
   InternalServerErrorException,
   Logger,
   UnauthorizedException,
-  HttpException,
-  HttpStatus,
 } from '@nestjs/common';
 import { SupabaseService } from '../database/supabase.service';
 import { AdminWhitelistService } from '../database/admin-whitelist.service';

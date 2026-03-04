@@ -13,7 +13,10 @@ import {
   ConsultationUrgency,
 } from '@repo/shared';
 import { CONSULTATION_FEE_PKR } from './consultations.types';
-import type { ConsultationRow, CalcomWebhookPayload } from './consultations.types';
+import type {
+  ConsultationRow,
+  CalcomWebhookPayload,
+} from './consultations.types';
 
 describe('ConsultationsService', () => {
   let service: ConsultationsService;
@@ -227,7 +230,14 @@ describe('ConsultationsService', () => {
           ilike: jest.fn().mockReturnValue({
             order: jest.fn().mockReturnValue({
               range: jest.fn().mockResolvedValue({
-                data: [mockBookingRow, { ...mockBookingRow, id: 'booking-uuid-2', reference_number: 'CON-2026-0002' }],
+                data: [
+                  mockBookingRow,
+                  {
+                    ...mockBookingRow,
+                    id: 'booking-uuid-2',
+                    reference_number: 'CON-2026-0002',
+                  },
+                ],
                 error: null,
               }),
             }),
@@ -274,7 +284,12 @@ describe('ConsultationsService', () => {
         }),
       });
 
-      const result = await service.getBookings({ page: 1, limit: 20, sort: 'created_at', order: 'desc' });
+      const result = await service.getBookings({
+        page: 1,
+        limit: 20,
+        sort: 'created_at',
+        order: 'desc',
+      });
 
       expect(mockAdminClient.from).toHaveBeenCalledWith(
         'consultation_bookings',
@@ -388,7 +403,9 @@ describe('ConsultationsService', () => {
             select: jest.fn().mockReturnValue({
               eq: jest.fn().mockReturnValue({
                 single: jest.fn().mockResolvedValue({
-                  data: { booking_status: ConsultationBookingStatus.PENDING_PAYMENT },
+                  data: {
+                    booking_status: ConsultationBookingStatus.PENDING_PAYMENT,
+                  },
                   error: null,
                 }),
               }),

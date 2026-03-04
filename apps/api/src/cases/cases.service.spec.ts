@@ -592,10 +592,9 @@ describe('CasesService', () => {
 
       expect(result.status).toBe(CaseStatus.RESOLVED);
       // Verify the update payload includes closing_date
-      const updatePayload = mockUpdate.mock.calls[0][0] as Record<
-        string,
-        unknown
-      >;
+      const updatePayload = (
+        mockUpdate.mock.calls[0] as Record<string, unknown>[]
+      )[0];
       expect(updatePayload.status).toBe(CaseStatus.RESOLVED);
       expect(updatePayload.closing_date).toBeDefined();
     });
@@ -716,11 +715,7 @@ describe('CasesService', () => {
         }),
       });
 
-      const result = await service.assign(
-        'case-uuid-1',
-        assignDto,
-        staffUser,
-      );
+      const result = await service.assign('case-uuid-1', assignDto, staffUser);
 
       expect(result.assignedToId).toBe('attorney-profile-uuid');
       expect(result.assignedToName).toBe('Attorney Name');
@@ -849,7 +844,11 @@ describe('CasesService', () => {
       });
 
       await expect(
-        service.createCaseFromRegistration('non-existent', overrides, staffUser),
+        service.createCaseFromRegistration(
+          'non-existent',
+          overrides,
+          staffUser,
+        ),
       ).rejects.toThrow(NotFoundException);
     });
 
@@ -1136,10 +1135,9 @@ describe('CasesService', () => {
       expect(result.priority).toBe(CasePriority.HIGH);
 
       // Verify the insert was called with correct payload
-      const insertPayload = mockInsert.mock.calls[0][0] as Record<
-        string,
-        unknown
-      >;
+      const insertPayload = (
+        mockInsert.mock.calls[0] as Record<string, unknown>[]
+      )[0];
       expect(insertPayload.title).toBe('Custom Title');
       expect(insertPayload.description).toBe('Custom description');
       expect(insertPayload.priority).toBe(CasePriority.HIGH);

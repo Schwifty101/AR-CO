@@ -44,22 +44,6 @@ describe('DashboardService', () => {
      *   2. cases: .select().in()          → resolves
      *   3. appointments: .select().in().gte() → resolves
      */
-    function buildCountChain(result: { count: number | null; error: { message: string } | null }) {
-      const terminal = jest.fn().mockResolvedValue(result);
-      return {
-        select: jest.fn().mockReturnValue({
-          eq: jest.fn().mockResolvedValue(result),
-          in: jest.fn().mockReturnValue({
-            gte: jest.fn().mockResolvedValue(result),
-            // also resolve directly for cases (no gte)
-            ...result,
-            then: (resolve: (v: unknown) => void) => Promise.resolve(result).then(resolve),
-          }),
-        }),
-        _terminal: terminal,
-      };
-    }
-
     it('should return admin stats with correct counts', async () => {
       const clientsChain = {
         select: jest.fn().mockReturnValue({
@@ -100,18 +84,27 @@ describe('DashboardService', () => {
     it('should return 0 on DB errors and log warnings', async () => {
       const clientsChain = {
         select: jest.fn().mockReturnValue({
-          eq: jest.fn().mockResolvedValue({ count: null, error: { message: 'clients err' } }),
+          eq: jest.fn().mockResolvedValue({
+            count: null,
+            error: { message: 'clients err' },
+          }),
         }),
       };
       const casesChain = {
         select: jest.fn().mockReturnValue({
-          in: jest.fn().mockResolvedValue({ count: null, error: { message: 'cases err' } }),
+          in: jest.fn().mockResolvedValue({
+            count: null,
+            error: { message: 'cases err' },
+          }),
         }),
       };
       const appointmentsChain = {
         select: jest.fn().mockReturnValue({
           in: jest.fn().mockReturnValue({
-            gte: jest.fn().mockResolvedValue({ count: null, error: { message: 'appointments err' } }),
+            gte: jest.fn().mockResolvedValue({
+              count: null,
+              error: { message: 'appointments err' },
+            }),
           }),
         }),
       };
@@ -215,7 +208,9 @@ describe('DashboardService', () => {
 
       expect(mockAdminClient.from).toHaveBeenCalledWith('subscriptions');
       expect(mockAdminClient.from).toHaveBeenCalledWith('complaints');
-      expect(mockAdminClient.from).toHaveBeenCalledWith('service_registrations');
+      expect(mockAdminClient.from).toHaveBeenCalledWith(
+        'service_registrations',
+      );
     });
   });
 
@@ -307,10 +302,30 @@ describe('DashboardService', () => {
   describe('getCaseAnalytics', () => {
     it('should compute analytics with resolution rate', async () => {
       const mockCases = [
-        { status: 'active', priority: 'high', created_at: '2026-01-01T00:00:00Z', updated_at: '2026-01-15T00:00:00Z' },
-        { status: 'active', priority: 'medium', created_at: '2026-02-01T00:00:00Z', updated_at: '2026-02-10T00:00:00Z' },
-        { status: 'resolved', priority: 'high', created_at: '2026-01-01T00:00:00Z', updated_at: '2026-01-11T00:00:00Z' },
-        { status: 'closed', priority: 'low', created_at: '2026-02-01T00:00:00Z', updated_at: '2026-02-15T00:00:00Z' },
+        {
+          status: 'active',
+          priority: 'high',
+          created_at: '2026-01-01T00:00:00Z',
+          updated_at: '2026-01-15T00:00:00Z',
+        },
+        {
+          status: 'active',
+          priority: 'medium',
+          created_at: '2026-02-01T00:00:00Z',
+          updated_at: '2026-02-10T00:00:00Z',
+        },
+        {
+          status: 'resolved',
+          priority: 'high',
+          created_at: '2026-01-01T00:00:00Z',
+          updated_at: '2026-01-11T00:00:00Z',
+        },
+        {
+          status: 'closed',
+          priority: 'low',
+          created_at: '2026-02-01T00:00:00Z',
+          updated_at: '2026-02-15T00:00:00Z',
+        },
       ];
 
       mockAdminClient.from.mockReturnValueOnce({

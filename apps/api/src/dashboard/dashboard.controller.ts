@@ -116,10 +116,10 @@ export class DashboardController {
    */
   @Get('admin/revenue-analytics')
   @Roles(UserType.ADMIN, UserType.ATTORNEY, UserType.STAFF)
-  async getRevenueAnalytics(
+  getRevenueAnalytics(
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
-  ): Promise<RevenueAnalytics> {
+  ): RevenueAnalytics {
     return this.dashboardService.getRevenueAnalytics(startDate, endDate);
   }
 }

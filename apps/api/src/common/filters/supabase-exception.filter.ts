@@ -231,68 +231,74 @@ export class SupabaseExceptionFilter implements ExceptionFilter {
     code?: string;
     message: string;
   }): { httpStatus: number; userMessage: string } {
-    const codeMap: Record<string, { httpStatus: number; userMessage: string }> = {
-      over_email_send_rate_limit: {
-        httpStatus: HttpStatus.TOO_MANY_REQUESTS,
-        userMessage: 'Too many emails sent. Please wait a few minutes before trying again.',
-      },
-      email_exists: {
-        httpStatus: HttpStatus.CONFLICT,
-        userMessage: 'A user with this email already exists.',
-      },
-      user_not_found: {
-        httpStatus: HttpStatus.NOT_FOUND,
-        userMessage: 'User not found.',
-      },
-      invalid_credentials: {
-        httpStatus: HttpStatus.UNAUTHORIZED,
-        userMessage: 'Invalid email or password.',
-      },
-      email_not_confirmed: {
-        httpStatus: HttpStatus.FORBIDDEN,
-        userMessage: 'Please confirm your email before signing in.',
-      },
-      weak_password: {
-        httpStatus: HttpStatus.BAD_REQUEST,
-        userMessage: 'Password does not meet strength requirements.',
-      },
-      otp_expired: {
-        httpStatus: HttpStatus.BAD_REQUEST,
-        userMessage: 'Verification code has expired. Please request a new one.',
-      },
-      same_password: {
-        httpStatus: HttpStatus.BAD_REQUEST,
-        userMessage: 'New password must be different from the current password.',
-      },
-      session_not_found: {
-        httpStatus: HttpStatus.UNAUTHORIZED,
-        userMessage: 'Session expired. Please sign in again.',
-      },
-      user_banned: {
-        httpStatus: HttpStatus.FORBIDDEN,
-        userMessage: 'This account has been suspended.',
-      },
-    };
+    const codeMap: Record<string, { httpStatus: number; userMessage: string }> =
+      {
+        over_email_send_rate_limit: {
+          httpStatus: HttpStatus.TOO_MANY_REQUESTS,
+          userMessage:
+            'Too many emails sent. Please wait a few minutes before trying again.',
+        },
+        email_exists: {
+          httpStatus: HttpStatus.CONFLICT,
+          userMessage: 'A user with this email already exists.',
+        },
+        user_not_found: {
+          httpStatus: HttpStatus.NOT_FOUND,
+          userMessage: 'User not found.',
+        },
+        invalid_credentials: {
+          httpStatus: HttpStatus.UNAUTHORIZED,
+          userMessage: 'Invalid email or password.',
+        },
+        email_not_confirmed: {
+          httpStatus: HttpStatus.FORBIDDEN,
+          userMessage: 'Please confirm your email before signing in.',
+        },
+        weak_password: {
+          httpStatus: HttpStatus.BAD_REQUEST,
+          userMessage: 'Password does not meet strength requirements.',
+        },
+        otp_expired: {
+          httpStatus: HttpStatus.BAD_REQUEST,
+          userMessage:
+            'Verification code has expired. Please request a new one.',
+        },
+        same_password: {
+          httpStatus: HttpStatus.BAD_REQUEST,
+          userMessage:
+            'New password must be different from the current password.',
+        },
+        session_not_found: {
+          httpStatus: HttpStatus.UNAUTHORIZED,
+          userMessage: 'Session expired. Please sign in again.',
+        },
+        user_banned: {
+          httpStatus: HttpStatus.FORBIDDEN,
+          userMessage: 'This account has been suspended.',
+        },
+      };
 
     if (error.code && codeMap[error.code]) {
       return codeMap[error.code];
     }
 
     // Fall back to status code from the auth error
-    const httpStatus = error.status >= 400 && error.status < 600
-      ? error.status
-      : HttpStatus.INTERNAL_SERVER_ERROR;
+    const httpStatus =
+      error.status >= 400 && error.status < 600
+        ? error.status
+        : HttpStatus.INTERNAL_SERVER_ERROR;
 
     // Sanitize message — don't expose raw Supabase internals
-    const userMessage = httpStatus >= 500
-      ? 'An unexpected error occurred. Please try again.'
-      : httpStatus === 401
-        ? 'Authentication failed. Please sign in again.'
-        : httpStatus === 403
-          ? 'Access denied.'
-          : httpStatus === 429
-            ? 'Too many requests. Please wait before trying again.'
-            : 'Request failed. Please try again.';
+    const userMessage =
+      httpStatus >= 500
+        ? 'An unexpected error occurred. Please try again.'
+        : httpStatus === 401
+          ? 'Authentication failed. Please sign in again.'
+          : httpStatus === 403
+            ? 'Access denied.'
+            : httpStatus === 429
+              ? 'Too many requests. Please wait before trying again.'
+              : 'Request failed. Please try again.';
 
     return { httpStatus, userMessage };
   }

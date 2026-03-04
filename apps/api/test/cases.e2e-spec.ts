@@ -119,7 +119,9 @@ describe('CasesController (e2e)', () => {
     // The JwtAuthGuard mock sets request.user so @CurrentUser() works.
     app.useGlobalGuards(
       {
-        canActivate: (context) => {
+        canActivate: (context: {
+          switchToHttp: () => { getRequest: () => Record<string, unknown> };
+        }) => {
           const req = context.switchToHttp().getRequest();
           req.user = mockUser;
           return true;
@@ -253,7 +255,9 @@ describe('CasesController (e2e)', () => {
       .expect(HttpStatus.CREATED);
 
     expect(res.body).toEqual(mockCaseResponse);
-    expect(mockCasesService.createCaseFromRegistration).toHaveBeenCalledTimes(1);
+    expect(mockCasesService.createCaseFromRegistration).toHaveBeenCalledTimes(
+      1,
+    );
   });
 
   // ──────────────────────────────────────────────
@@ -267,7 +271,9 @@ describe('CasesController (e2e)', () => {
     expect(res.body).toEqual(mockPaginatedActivities);
     // getCaseById is called first to verify access, then getCaseActivities
     expect(mockCasesService.getCaseById).toHaveBeenCalledTimes(1);
-    expect(mockCaseActivitiesService.getCaseActivities).toHaveBeenCalledTimes(1);
+    expect(mockCaseActivitiesService.getCaseActivities).toHaveBeenCalledTimes(
+      1,
+    );
   });
 
   // ──────────────────────────────────────────────

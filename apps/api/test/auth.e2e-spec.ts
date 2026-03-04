@@ -44,7 +44,8 @@ const mockSignupPendingResponse = {
 
 /** Mock auth message response */
 const mockAuthMessage = {
-  message: 'If an account with that email exists, a password reset link has been sent.',
+  message:
+    'If an account with that email exists, a password reset link has been sent.',
 };
 
 /** Mock current user response */
@@ -69,7 +70,9 @@ describe('AuthController (e2e)', () => {
     processOAuthCallback: jest.fn().mockResolvedValue(mockAuthResponse),
     refreshToken: jest.fn().mockResolvedValue(mockAuthResponse),
     requestPasswordReset: jest.fn().mockResolvedValue(mockAuthMessage),
-    confirmPasswordReset: jest.fn().mockResolvedValue({ message: 'Password has been reset successfully.' }),
+    confirmPasswordReset: jest
+      .fn()
+      .mockResolvedValue({ message: 'Password has been reset successfully.' }),
     getCurrentUser: jest.fn().mockResolvedValue(mockCurrentUserResponse),
     signout: jest.fn().mockResolvedValue(mockSignoutMessage),
   };
@@ -95,7 +98,9 @@ describe('AuthController (e2e)', () => {
     // The JwtAuthGuard mock sets request.user so @CurrentUser() works on protected routes.
     app.useGlobalGuards(
       {
-        canActivate: (context) => {
+        canActivate: (context: {
+          switchToHttp: () => { getRequest: () => Record<string, unknown> };
+        }) => {
           const req = context.switchToHttp().getRequest();
           req.user = mockUser;
           return true;

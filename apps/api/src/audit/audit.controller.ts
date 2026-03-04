@@ -32,7 +32,8 @@ export class AuditController {
   @Get()
   @Roles(UserType.ADMIN, UserType.ATTORNEY)
   async getAuditLogs(
-    @Query(new ZodValidationPipe(AuditLogFiltersSchema)) filters: AuditLogFilters,
+    @Query(new ZodValidationPipe(AuditLogFiltersSchema))
+    filters: AuditLogFilters,
   ): Promise<PaginatedAuditLogsResponse> {
     const result = await this.auditService.findAll(filters);
 

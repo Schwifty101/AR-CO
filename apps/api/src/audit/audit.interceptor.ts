@@ -49,45 +49,109 @@ interface RouteMapping {
 function resolveRouteMapping(method: string, path: string): RouteMapping {
   const normalized = path.replace(/^\/api\//, '').replace(/\/$/, '');
 
-  const mappings: Array<{ pattern: RegExp; action: string; entityType: string }> = [
+  const mappings: Array<{
+    pattern: RegExp;
+    action: string;
+    entityType: string;
+  }> = [
     // Users
     { pattern: /^users\/invite$/, action: 'INVITE', entityType: 'user' },
-    { pattern: /^users\/[^/]+$/, action: method === 'DELETE' ? 'DELETE' : 'UPDATE', entityType: 'user' },
+    {
+      pattern: /^users\/[^/]+$/,
+      action: method === 'DELETE' ? 'DELETE' : 'UPDATE',
+      entityType: 'user',
+    },
 
     // Cases
-    { pattern: /^cases\/[^/]+\/activities$/, action: 'ADD_ACTIVITY', entityType: 'case' },
-    { pattern: /^cases\/[^/]+\/status$/, action: 'STATUS_CHANGE', entityType: 'case' },
+    {
+      pattern: /^cases\/[^/]+\/activities$/,
+      action: 'ADD_ACTIVITY',
+      entityType: 'case',
+    },
+    {
+      pattern: /^cases\/[^/]+\/status$/,
+      action: 'STATUS_CHANGE',
+      entityType: 'case',
+    },
     { pattern: /^cases\/[^/]+\/assign$/, action: 'ASSIGN', entityType: 'case' },
-    { pattern: /^cases\/[^/]+$/, action: method === 'DELETE' ? 'DELETE' : 'UPDATE', entityType: 'case' },
+    {
+      pattern: /^cases\/[^/]+$/,
+      action: method === 'DELETE' ? 'DELETE' : 'UPDATE',
+      entityType: 'case',
+    },
     { pattern: /^cases$/, action: 'CREATE', entityType: 'case' },
 
     // Clients
-    { pattern: /^clients\/[^/]+$/, action: method === 'DELETE' ? 'DELETE' : 'UPDATE', entityType: 'client' },
+    {
+      pattern: /^clients\/[^/]+$/,
+      action: method === 'DELETE' ? 'DELETE' : 'UPDATE',
+      entityType: 'client',
+    },
     { pattern: /^clients$/, action: 'CREATE', entityType: 'client' },
 
     // Complaints
-    { pattern: /^complaints\/[^/]+\/status$/, action: 'STATUS_CHANGE', entityType: 'complaint' },
-    { pattern: /^complaints\/[^/]+\/assign$/, action: 'ASSIGN', entityType: 'complaint' },
+    {
+      pattern: /^complaints\/[^/]+\/status$/,
+      action: 'STATUS_CHANGE',
+      entityType: 'complaint',
+    },
+    {
+      pattern: /^complaints\/[^/]+\/assign$/,
+      action: 'ASSIGN',
+      entityType: 'complaint',
+    },
     { pattern: /^complaints$/, action: 'CREATE', entityType: 'complaint' },
 
     // Service registrations
-    { pattern: /^service-registrations\/[^/]+\/status$/, action: 'STATUS_CHANGE', entityType: 'service_registration' },
-    { pattern: /^service-registrations\/[^/]+\/assign$/, action: 'ASSIGN', entityType: 'service_registration' },
+    {
+      pattern: /^service-registrations\/[^/]+\/status$/,
+      action: 'STATUS_CHANGE',
+      entityType: 'service_registration',
+    },
+    {
+      pattern: /^service-registrations\/[^/]+\/assign$/,
+      action: 'ASSIGN',
+      entityType: 'service_registration',
+    },
 
     // Consultations
-    { pattern: /^consultations\/[^/]+\/cancel$/, action: 'CANCEL', entityType: 'consultation' },
+    {
+      pattern: /^consultations\/[^/]+\/cancel$/,
+      action: 'CANCEL',
+      entityType: 'consultation',
+    },
 
     // Content — blog posts
-    { pattern: /^content\/posts\/[^/]+\/sync$/, action: 'UPDATE', entityType: 'blog_post' },
-    { pattern: /^content\/posts\/[^/]+$/, action: method === 'DELETE' ? 'DELETE' : 'UPDATE', entityType: 'blog_post' },
+    {
+      pattern: /^content\/posts\/[^/]+\/sync$/,
+      action: 'UPDATE',
+      entityType: 'blog_post',
+    },
+    {
+      pattern: /^content\/posts\/[^/]+$/,
+      action: method === 'DELETE' ? 'DELETE' : 'UPDATE',
+      entityType: 'blog_post',
+    },
     { pattern: /^content\/posts$/, action: 'CREATE', entityType: 'blog_post' },
 
     // Content — categories
-    { pattern: /^content\/categories\/[^/]+$/, action: method === 'DELETE' ? 'DELETE' : 'UPDATE', entityType: 'blog_category' },
-    { pattern: /^content\/categories$/, action: 'CREATE', entityType: 'blog_category' },
+    {
+      pattern: /^content\/categories\/[^/]+$/,
+      action: method === 'DELETE' ? 'DELETE' : 'UPDATE',
+      entityType: 'blog_category',
+    },
+    {
+      pattern: /^content\/categories$/,
+      action: 'CREATE',
+      entityType: 'blog_category',
+    },
 
     // Subscriptions
-    { pattern: /^subscriptions\/[^/]+\/cancel$/, action: 'CANCEL', entityType: 'subscription' },
+    {
+      pattern: /^subscriptions\/[^/]+\/cancel$/,
+      action: 'CANCEL',
+      entityType: 'subscription',
+    },
   ];
 
   for (const mapping of mappings) {
@@ -96,7 +160,8 @@ function resolveRouteMapping(method: string, path: string): RouteMapping {
     }
   }
 
-  const fallbackAction = method === 'POST' ? 'CREATE' : method === 'DELETE' ? 'DELETE' : 'UPDATE';
+  const fallbackAction =
+    method === 'POST' ? 'CREATE' : method === 'DELETE' ? 'DELETE' : 'UPDATE';
   const entityType = normalized.split('/')[0] || 'unknown';
   return { action: fallbackAction, entityType };
 }
@@ -164,10 +229,10 @@ export class AuditInterceptor implements NestInterceptor {
       return next.handle();
     }
 
-    const skipAudit = this.reflector.getAllAndOverride<boolean>(SKIP_AUDIT_KEY, [
-      context.getHandler(),
-      context.getClass(),
-    ]);
+    const skipAudit = this.reflector.getAllAndOverride<boolean>(
+      SKIP_AUDIT_KEY,
+      [context.getHandler(), context.getClass()],
+    );
     if (skipAudit) {
       return next.handle();
     }
@@ -183,8 +248,13 @@ export class AuditInterceptor implements NestInterceptor {
 
   private async logAction(request: Request): Promise<void> {
     const user = (request as unknown as { user?: AuthUser }).user;
-    const path = request.route?.path || request.path;
-    const { action, entityType } = resolveRouteMapping(request.method, request.path);
+    const path =
+      (request as unknown as { route?: { path?: string } }).route?.path ||
+      request.path;
+    const { action, entityType } = resolveRouteMapping(
+      request.method,
+      request.path,
+    );
 
     const params = request.params || {};
     const rawId = params.id;
@@ -199,7 +269,9 @@ export class AuditInterceptor implements NestInterceptor {
         route: path,
         method: request.method,
         params,
-        body: request.body ? sanitizeBody(request.body as Record<string, unknown>) : {},
+        body: request.body
+          ? sanitizeBody(request.body as Record<string, unknown>)
+          : {},
       },
       ipAddress: getClientIp(request),
       userAgent: (request.headers['user-agent'] as string) || null,

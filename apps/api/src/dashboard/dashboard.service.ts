@@ -232,9 +232,7 @@ export class DashboardService {
     }
 
     return (data ?? []).map((row: Record<string, unknown>) => {
-      const profile = row.user_profiles as
-        | { full_name: string }
-        | null;
+      const profile = row.user_profiles as { full_name: string } | null;
       return {
         id: row.id,
         userId: row.user_id,
@@ -301,9 +299,7 @@ export class DashboardService {
       byPriority,
       resolutionRate: total > 0 ? Math.round((resolvedCount / total) * 100) : 0,
       avgResolutionDays:
-        resolvedCount > 0
-          ? Math.round(totalResolutionDays / resolvedCount)
-          : 0,
+        resolvedCount > 0 ? Math.round(totalResolutionDays / resolvedCount) : 0,
       totalCases: total,
     };
   }
@@ -319,10 +315,10 @@ export class DashboardService {
    * @param _endDate - End of period (unused until Task 10)
    * @returns Placeholder revenue analytics
    */
-  async getRevenueAnalytics(
+  getRevenueAnalytics(
     _startDate?: string,
     _endDate?: string,
-  ): Promise<RevenueAnalytics> {
+  ): RevenueAnalytics {
     // TODO (Task 10): Replace with real queries against invoices table:
     //   - totalRevenue: SUM(amount) from invoices WHERE status = 'paid'
     //   - periodRevenue: SUM(amount) from invoices WHERE paid_at BETWEEN startDate AND endDate

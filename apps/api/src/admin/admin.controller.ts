@@ -34,10 +34,7 @@ import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
 import type { AuthUser } from '../common/interfaces/auth-user.interface';
 import { ClientInteractionsService } from './client-interactions.service';
 import { ActivityLogsService } from './activity-logs.service';
-import {
-  CreateInteractionSchema,
-  UpdateInteractionSchema,
-} from '@repo/shared';
+import { CreateInteractionSchema, UpdateInteractionSchema } from '@repo/shared';
 import type {
   CreateInteractionData,
   UpdateInteractionData,
@@ -126,11 +123,7 @@ export class AdminController {
     @Body() dto: CreateInteractionData,
     @CurrentUser() user: AuthUser,
   ): Promise<InteractionResponse> {
-    return this.interactionsService.logInteraction(
-      clientProfileId,
-      dto,
-      user,
-    );
+    return this.interactionsService.logInteraction(clientProfileId, dto, user);
   }
 
   /**

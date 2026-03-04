@@ -123,9 +123,7 @@ export class ActivityLogsService {
     }
 
     const mapped = (data ?? []).map((row: Record<string, unknown>) => {
-      const profile = row.user_profiles as
-        | { full_name: string }
-        | null;
+      const profile = row.user_profiles as { full_name: string } | null;
       return {
         id: row.id as string,
         userId: (row.user_id as string) ?? null,

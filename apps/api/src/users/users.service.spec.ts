@@ -455,7 +455,10 @@ describe('UsersService', () => {
       expect(result.userType).toBe(UserType.STAFF);
       expect(mockAdminClient.auth.admin.inviteUserByEmail).toHaveBeenCalledWith(
         'invited@example.com',
-        { data: { full_name: 'New Staff' }, redirectTo: 'http://localhost:3000/auth/callback' },
+        {
+          data: { full_name: 'New Staff' },
+          redirectTo: 'http://localhost:3000/auth/callback',
+        },
       );
     });
 

@@ -114,7 +114,9 @@ describe('ConsultationsController (e2e)', () => {
     // The JwtAuthGuard mock sets request.user so @CurrentUser() works.
     app.useGlobalGuards(
       {
-        canActivate: (context) => {
+        canActivate: (context: {
+          switchToHttp: () => { getRequest: () => Record<string, unknown> };
+        }) => {
           const req = context.switchToHttp().getRequest();
           req.user = mockUser;
           return true;
@@ -219,7 +221,9 @@ describe('ConsultationsController (e2e)', () => {
       .expect(HttpStatus.OK);
 
     expect(res.body).toEqual(mockPaginatedConsultations);
-    expect(mockConsultationsService.getMyConsultations).toHaveBeenCalledTimes(1);
+    expect(mockConsultationsService.getMyConsultations).toHaveBeenCalledTimes(
+      1,
+    );
     expect(mockConsultationsService.getMyConsultations).toHaveBeenCalledWith(
       mockUser.email,
       expect.any(Object),
