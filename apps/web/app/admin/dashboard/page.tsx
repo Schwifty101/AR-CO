@@ -135,12 +135,12 @@ export default function AdminDashboardPage() {
   }
 
   return (
-    <div className="space-y-8 p-8">
+    <div className="space-y-6 p-4 md:space-y-8 md:p-8">
       <div className="flex flex-col gap-2">
         <motion.h1
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-4xl font-bold tracking-tight"
+          className="text-2xl md:text-4xl font-bold tracking-tight"
         >
           Admin Dashboard
         </motion.h1>
@@ -148,7 +148,7 @@ export default function AdminDashboardPage() {
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="text-lg text-muted-foreground"
+          className="text-base md:text-lg text-muted-foreground"
         >
           Welcome back, {user?.fullName || 'Admin'}. Here&apos;s what&apos;s happening today.
         </motion.p>

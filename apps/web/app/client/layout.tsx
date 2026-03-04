@@ -16,7 +16,7 @@ export default function ClientLayout({
         <DashboardHeader userType="client" />
         <div className="flex flex-1">
           <DashboardSidebar userType="client" />
-          <main className="flex-1 p-6">{children}</main>
+          <main className="flex-1 p-3 md:p-6">{children}</main>
         </div>
       </div>
     </div>

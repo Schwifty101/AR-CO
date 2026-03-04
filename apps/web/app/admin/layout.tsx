@@ -16,7 +16,7 @@ export default function AdminLayout({
         <DashboardHeader userType="admin" />
         <div className="flex flex-1">
           <DashboardSidebar userType="admin" />
-          <main className="flex-1 p-6">{children}</main>
+          <main className="flex-1 p-3 md:p-6">{children}</main>
         </div>
       </div>
     </div>

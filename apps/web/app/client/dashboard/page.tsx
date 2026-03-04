@@ -70,12 +70,12 @@ export default function ClientDashboardPage() {
   }
 
   return (
-    <div className="space-y-8 p-8">
+    <div className="space-y-6 p-4 md:space-y-8 md:p-8">
       <div className="flex flex-col gap-2">
         <motion.h1
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-4xl font-bold tracking-tight"
+          className="text-2xl md:text-4xl font-bold tracking-tight"
         >
           Client Portal
         </motion.h1>
@@ -83,7 +83,7 @@ export default function ClientDashboardPage() {
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="text-lg text-muted-foreground"
+          className="text-base md:text-lg text-muted-foreground"
         >
           Welcome, {user?.fullName || 'Client'}. Manage your legal matters here.
         </motion.p>
