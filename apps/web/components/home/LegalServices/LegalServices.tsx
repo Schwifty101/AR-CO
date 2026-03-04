@@ -5,7 +5,7 @@ import { motion, useScroll, useTransform, useSpring } from "framer-motion"
 import { ArrowUpRight } from "lucide-react"
 import { useFacilitationOverlay } from "@/components/facilitation"
 import TextReveal from "@/components/shared/animations/TextReveal"
-import styles from "./QuoteSection.module.css"
+import styles from "./LegalServices.module.css"
 
 /**
  * Service verticals displayed as full-width editorial rows.

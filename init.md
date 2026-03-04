@@ -21,17 +21,17 @@ This document provides a granular 3-level task breakdown for transforming the AR
 
 **Role-Based Access Control (Admin Dashboard):**
 
-| Feature | Admin | Attorney | Staff |
-|---------|-------|----------|-------|
-| Dashboard stats | Full | View | View |
-| Users | Invite + Delete | View list | View list |
-| Clients | Full CRUD | Create + Edit + View | View only |
-| Cases | Full CRUD | Create + Edit + View | View only |
-| Complaints | Full | Manage (status/assign) | View only |
-| Consultations | Full | View + Cancel | View only |
-| Subscriptions | Full | Hidden | Hidden |
-| Content (Blog/Case Studies) | Full CRUD | View only | View only |
-| Service Registrations | Full | View + Manage | View only |
+| Feature                     | Admin           | Attorney               | Staff     |
+| --------------------------- | --------------- | ---------------------- | --------- |
+| Dashboard stats             | Full            | View                   | View      |
+| Users                       | Invite + Delete | View list              | View list |
+| Clients                     | Full CRUD       | Create + Edit + View   | View only |
+| Cases                       | Full CRUD       | Create + Edit + View   | View only |
+| Complaints                  | Full            | Manage (status/assign) | View only |
+| Consultations               | Full            | View + Cancel          | View only |
+| Subscriptions               | Full            | Hidden                 | Hidden    |
+| Content (Blog/Case Studies) | Full CRUD       | View only              | View only |
+| Service Registrations       | Full            | View + Manage          | View only |
 
 **Payment Provider:** [Lemon Squeezy](https://lemonsqueezy.com) (Merchant of Record) — replacing Safepay
 **SDK:** `@lemonsqueezy/lemonsqueezy.js`
@@ -46,30 +46,30 @@ Complete database architecture with 20+ tables, Row-Level Security, comprehensiv
 
 ### Sub-task 1.1: Install Dependencies
 
-- [x] **1.1.1**: Install Supabase client (`@supabase/supabase-js`)
-- [x] **1.1.2**: Install validation packages (`class-validator`, `class-transformer`, `joi`)
-- [x]     **1.1.3**: Install authentication packages (`@nestjs/passport`, `passport`, `passport-jwt`, `@nestjs/jwt`)
-- [x] **1.1.4**: Install security packages (`bcrypt`, `@types/bcrypt`)
-- [x] **1.1.5**: Install file upload packages (`multer`, `@types/multer`, `@nestjs/platform-express`)
-- [x] **1.1.6**: Install utility packages (`axios`, `dayjs`, `uuid`)
-- [x] **1.1.7**: Install email service packages (`@sendgrid/mail`)
-- [x] **1.1.8**: Install logging packages (`winston`, `nest-winston`)
+- [X] **1.1.1**: Install Supabase client (`@supabase/supabase-js`)
+- [X] **1.1.2**: Install validation packages (`class-validator`, `class-transformer`, `joi`)
+- [X] **1.1.3**: Install authentication packages (`@nestjs/passport`, `passport`, `passport-jwt`, `@nestjs/jwt`)
+- [X] **1.1.4**: Install security packages (`bcrypt`, `@types/bcrypt`)
+- [X] **1.1.5**: Install file upload packages (`multer`, `@types/multer`, `@nestjs/platform-express`)
+- [X] **1.1.6**: Install utility packages (`axios`, `dayjs`, `uuid`)
+- [X] **1.1.7**: Install email service packages (`@sendgrid/mail`)
+- [X] **1.1.8**: Install logging packages (`winston`, `nest-winston`)
 
 ### Sub-task 1.2: Create Environment Configuration
 
-- [x] **1.2.1**: Create `.env` file with Supabase credentials (URL, anon key, service role key)
-- [x] **1.2.2**: Add JWT configuration (secret, access token expiration, refresh token expiration)
-- [x] **1.2.3**: Add Lemon Squeezy configuration (API key, store ID, webhook secret, variant IDs)
-- [x] **1.2.4**: Add email service configuration (SendGrid API key, from email)
-- [x] **1.2.5**: Add application configuration (PORT, NODE_ENV, CORS origins)
-- [x] **1.2.6**: Create `.env.example` template file
+- [X] **1.2.1**: Create `.env` file with Supabase credentials (URL, anon key, service role key)
+- [X] **1.2.2**: Add JWT configuration (secret, access token expiration, refresh token expiration)
+- [X] **1.2.3**: Add Lemon Squeezy configuration (API key, store ID, webhook secret, variant IDs)
+- [X] **1.2.4**: Add email service configuration (SendGrid API key, from email)
+- [X] **1.2.5**: Add application configuration (PORT, NODE_ENV, CORS origins)
+- [X] **1.2.6**: Create `.env.example` template file
 
 ### Sub-task 1.3: Setup Configuration Module
 
-- [x] **1.3.1**: Create `apps/api/src/config/configuration.ts` with typed config object
-- [x] **1.3.2**: Create `apps/api/src/config/validation.schema.ts` with Joi validation schema
-- [x] **1.3.3**: Create `apps/api/src/config/config.module.ts` using NestJS ConfigModule
-- [x] **1.3.4**: Import ConfigModule in `apps/api/src/app.module.ts`
+- [X] **1.3.1**: Create `apps/api/src/config/configuration.ts` with typed config object
+- [X] **1.3.2**: Create `apps/api/src/config/validation.schema.ts` with Joi validation schema
+- [X] **1.3.3**: Create `apps/api/src/config/config.module.ts` using NestJS ConfigModule
+- [X] **1.3.4**: Import ConfigModule in `apps/api/src/app.module.ts`
 
 ---
 
@@ -77,114 +77,114 @@ Complete database architecture with 20+ tables, Row-Level Security, comprehensiv
 
 ### Sub-task 2.1: Create User Management Tables
 
-- [x] **2.1.1**: Create `user_profiles` table (extends Supabase auth.users)
+- [X] **2.1.1**: Create `user_profiles` table (extends Supabase auth.users)
   - Columns: id (uuid, FK to auth.users), full_name, phone_number, user_type (enum), created_at, updated_at
-- [x] **2.1.2**: Create `client_profiles` table with company info
+- [X] **2.1.2**: Create `client_profiles` table with company info
   - Columns: id (uuid), user_profile_id (FK), company_name, company_type, tax_id, address, city, country, created_at, updated_at
-- [x] **2.1.3**: Create `attorney_profiles` table with specializations
+- [X] **2.1.3**: Create `attorney_profiles` table with specializations
   - Columns: id (uuid), user_profile_id (FK), bar_number, specializations (text[]), education, experience_years, hourly_rate, created_at, updated_at
 
 ### Sub-task 2.2: Create Core Business Tables
 
-- [x] **2.2.1**: Create `practice_areas` table
+- [X] **2.2.1**: Create `practice_areas` table
   - Columns: id (uuid), name, slug, description, icon, is_active, created_at, updated_at
-- [x] **2.2.2**: Create `services` table
+- [X] **2.2.2**: Create `services` table
   - Columns: id (uuid), practice_area_id (FK), name, slug, description, base_fee, estimated_duration, is_active, created_at, updated_at
-- [x] **2.2.3**: Create `cases` table with case_number auto-generation
+- [X] **2.2.3**: Create `cases` table with case_number auto-generation
   - Columns: id (uuid), case_number (auto-generated, unique), client_profile_id (FK), attorney_profile_id (FK), practice_area_id (FK), service_id (FK), title, description, status (enum), priority (enum), case_type, filing_date, closing_date, created_at, updated_at
-- [x] **2.2.4**: Create `case_activities` table for timeline
+- [X] **2.2.4**: Create `case_activities` table for timeline
   - Columns: id (uuid), case_id (FK), activity_type (enum), title, description, created_by (FK to user_profiles), attachments (jsonb), created_at
 
 ### Sub-task 2.3: Create Appointment Tables
 
-- [x] **2.3.1**: Create `appointments` table with double-booking prevention
+- [X] **2.3.1**: Create `appointments` table with double-booking prevention
   - Columns: id (uuid), client_profile_id (FK), attorney_profile_id (FK), appointment_date, start_time, end_time, duration_minutes, appointment_type (enum), status (enum), subject, notes, meeting_link, created_at, updated_at
   - Unique constraint: (attorney_profile_id, appointment_date, start_time) to prevent double-booking
-- [x] **2.3.2**: Create `availability_slots` table for attorney scheduling
+- [X] **2.3.2**: Create `availability_slots` table for attorney scheduling
   - Columns: id (uuid), attorney_profile_id (FK), day_of_week (int), start_time, end_time, is_available, created_at, updated_at
 
 ### Sub-task 2.4: Create Financial Tables
 
-- [x] **2.4.1**: Create `invoices` table with auto invoice_number
+- [X] **2.4.1**: Create `invoices` table with auto invoice_number
   - Columns: id (uuid), invoice_number (auto-generated), client_profile_id (FK), case_id (FK, optional), issue_date, due_date, subtotal, tax_amount, discount_amount, total_amount, status (enum), payment_terms, notes, created_at, updated_at
-- [x] **2.4.2**: Create `invoice_items` table
+- [X] **2.4.2**: Create `invoice_items` table
   - Columns: id (uuid), invoice_id (FK), description, quantity, unit_price, amount, created_at
-- [x] **2.4.3**: Create `payments` table with Lemon Squeezy integration
+- [X] **2.4.3**: Create `payments` table with Lemon Squeezy integration
   - Columns: id (uuid), invoice_id (FK), client_profile_id (FK), amount, payment_method (enum), lemonsqueezy_order_id, lemonsqueezy_checkout_id, status (enum), payment_date, metadata (jsonb), created_at, updated_at
 
 ### Sub-task 2.5: Create Document Tables
 
-- [x] **2.5.1**: Create `documents` table with encryption metadata
+- [X] **2.5.1**: Create `documents` table with encryption metadata
   - Columns: id (uuid), name, description, file_path (Supabase Storage path), file_size, file_type, uploaded_by (FK to user_profiles), case_id (FK, optional), client_profile_id (FK, optional), document_type (enum), is_encrypted, encryption_metadata (jsonb), created_at, updated_at
 
 ### Sub-task 2.6: Create Content Tables
 
-- [x] **2.6.1**: Create `blog_categories` table
+- [X] **2.6.1**: Create `blog_categories` table
   - Columns: id (uuid), name, slug, description, created_at, updated_at
-- [x] **2.6.2**: Create `blog_posts` table
+- [X] **2.6.2**: Create `blog_posts` table
   - Columns: id (uuid), title, slug, excerpt, content, featured_image, author_id (FK to user_profiles), category_id (FK), status (enum), published_at, view_count, created_at, updated_at
-- [x] **2.6.3**: Create `testimonials` table
+- [X] **2.6.3**: Create `testimonials` table
   - Columns: id (uuid), client_profile_id (FK), content, rating (int), is_approved, approved_by (FK to user_profiles), approved_at, created_at, updated_at
-- [x] **2.6.4**: Create `legal_news` table for news ticker
+- [X] **2.6.4**: Create `legal_news` table for news ticker
   - Columns: id (uuid), title, source, url, published_at, created_at
 
 ### Sub-task 2.7: Create Admin & Tracking Tables
 
-- [x] **2.7.1**: Create `client_interactions` table for CRM
+- [X] **2.7.1**: Create `client_interactions` table for CRM
   - Columns: id (uuid), client_profile_id (FK), staff_user_id (FK to user_profiles), interaction_type (enum), subject, notes, scheduled_at, completed_at, created_at, updated_at
-- [x] **2.7.2**: Create `activity_logs` table for audit trail
+- [X] **2.7.2**: Create `activity_logs` table for audit trail
   - Columns: id (uuid), user_id (FK to user_profiles), action, entity_type, entity_id, metadata (jsonb), ip_address, user_agent, created_at
 
 ### Sub-task 2.8: Create Private Schema Utility Functions
 
-- [x] **2.8.1**: Create `private.get_user_type(user_id uuid)` function
+- [X] **2.8.1**: Create `private.get_user_type(user_id uuid)` function
   - Returns user_type from user_profiles table
-- [x] **2.8.2**: Create `private.is_admin(user_id uuid)` function
+- [X] **2.8.2**: Create `private.is_admin(user_id uuid)` function
   - Returns boolean, checks if user_type = 'admin'
-- [x] **2.8.3**: Create `private.is_staff(user_id uuid)` function
+- [X] **2.8.3**: Create `private.is_staff(user_id uuid)` function
   - Returns boolean, checks if user_type IN ('admin', 'attorney', 'staff')
-- [x] **2.8.4**: Create `private.get_client_profile_id(user_id uuid)` function
+- [X] **2.8.4**: Create `private.get_client_profile_id(user_id uuid)` function
   - Returns client_profile_id for given user_id
-- [x] **2.8.5**: Create `private.get_attorney_profile_id(user_id uuid)` function
+- [X] **2.8.5**: Create `private.get_attorney_profile_id(user_id uuid)` function
   - Returns attorney_profile_id for given user_id
-- [x] **2.8.6**: Test all utility functions with sample data
+- [X] **2.8.6**: Test all utility functions with sample data
 
 ### Sub-task 2.9: Apply RLS Policies
 
-- [x] **2.9.1**: Enable RLS on all tables
-- [x] **2.9.2**: Create RLS policies for `user_profiles`
+- [X] **2.9.1**: Enable RLS on all tables
+- [X] **2.9.2**: Create RLS policies for `user_profiles`
   - Users can read their own profile
   - Staff can read all profiles
   - Users can update their own profile
   - Admin can update any profile
-- [x] **2.9.3**: Create RLS policies for `client_profiles`
+- [X] **2.9.3**: Create RLS policies for `client_profiles`
   - Clients can read their own profile
   - Staff can read all client profiles
   - Staff can update client profiles
-- [x] **2.9.4**: Create RLS policies for `attorney_profiles`
+- [X] **2.9.4**: Create RLS policies for `attorney_profiles`
   - Attorneys can read their own profile
   - Staff can read all attorney profiles
   - Admin can update attorney profiles
-- [x] **2.9.5**: Create RLS policies for `cases`
+- [X] **2.9.5**: Create RLS policies for `cases`
   - Clients can read their own cases
   - Attorneys can read cases assigned to them
   - Staff can read all cases
   - Staff can create/update/delete cases
-- [x] **2.9.6**: Create RLS policies for `documents`
+- [X] **2.9.6**: Create RLS policies for `documents`
   - Clients can read documents linked to their cases/profile
   - Attorneys can read documents for assigned cases
   - Staff can read all documents
   - Document uploader and staff can delete documents
-- [x] **2.9.7**: Create RLS policies for `appointments`
+- [X] **2.9.7**: Create RLS policies for `appointments`
   - Clients can read their own appointments
   - Attorneys can read their assigned appointments
   - Staff can read all appointments
   - Staff can create/update appointments
-- [x] **2.9.8**: Create RLS policies for `invoices` and `payments`
+- [X] **2.9.8**: Create RLS policies for `invoices` and `payments`
   - Clients can read their own invoices/payments
   - Staff can read all invoices/payments
   - Staff can create/update invoices
-- [x] **2.9.9**: Create RLS policies for content tables (blog_posts, testimonials)
+- [X] **2.9.9**: Create RLS policies for content tables (blog_posts, testimonials)
   - All users can read published blog posts
   - Staff can create/update blog posts
   - Clients can submit testimonials
@@ -192,16 +192,16 @@ Complete database architecture with 20+ tables, Row-Level Security, comprehensiv
 
 ### Sub-task 2.10: Create Database Triggers
 
-- [x] **2.10.1**: Create `generate_case_number()` trigger function
+- [X] **2.10.1**: Create `generate_case_number()` trigger function
   - Format: "CASE-YYYY-NNNN" (e.g., CASE-2025-0001)
   - Auto-increment per year
-- [x] **2.10.2**: Apply case_number trigger to `cases` table
-- [x] **2.10.3**: Create `generate_invoice_number()` trigger function
+- [X] **2.10.2**: Apply case_number trigger to `cases` table
+- [X] **2.10.3**: Create `generate_invoice_number()` trigger function
   - Format: "INV-YYYY-NNNN" (e.g., INV-2025-0001)
-- [x] **2.10.4**: Apply invoice_number trigger to `invoices` table
-- [x] **2.10.5**: Create `update_updated_at_column()` trigger function
+- [X] **2.10.4**: Apply invoice_number trigger to `invoices` table
+- [X] **2.10.5**: Create `update_updated_at_column()` trigger function
   - Automatically updates updated_at timestamp
-- [x] **2.10.6**: Apply updated_at trigger to all tables with updated_at column
+- [X] **2.10.6**: Apply updated_at trigger to all tables with updated_at column
 
 ---
 
@@ -209,62 +209,62 @@ Complete database architecture with 20+ tables, Row-Level Security, comprehensiv
 
 ### Sub-task 3.1: Create Database Module
 
-- [x] **3.1.1**: Create `apps/api/src/database/supabase.service.ts` with SupabaseService class
+- [X] **3.1.1**: Create `apps/api/src/database/supabase.service.ts` with SupabaseService class
   - Method: `getClient(accessToken?: string)` - Returns authenticated Supabase client
   - Method: `getAdminClient()` - Returns service role client (bypasses RLS)
   - Method: `getUserFromToken(token)` - Validates JWT and retrieves user profile
-- [x] **3.1.2**: Create `apps/api/src/database/admin-whitelist.service.ts`
+- [X] **3.1.2**: Create `apps/api/src/database/admin-whitelist.service.ts`
   - Method: `isAdminEmail(email)` - Checks admin whitelist
-- [x] **3.1.3**: Create `apps/api/src/database/database.module.ts`
+- [X] **3.1.3**: Create `apps/api/src/database/database.module.ts`
   - Register SupabaseService and AdminWhitelistService as global providers
-- [x] **3.1.4**: Import DatabaseModule in `app.module.ts`
+- [X] **3.1.4**: Import DatabaseModule in `app.module.ts`
 
 ### Sub-task 3.2: Create Common Guards
 
-- [x] **3.2.1**: Create `apps/api/src/common/guards/jwt-auth.guard.ts`
+- [X] **3.2.1**: Create `apps/api/src/common/guards/jwt-auth.guard.ts`
   - Extract JWT from Authorization header
   - Validate token with Supabase via getUserFromToken()
   - Attach user to request object
   - Respect @Public() decorator
-- [x] **3.2.2**: Create `apps/api/src/common/guards/roles.guard.ts`
+- [X] **3.2.2**: Create `apps/api/src/common/guards/roles.guard.ts`
   - Check user_type against required roles from @Roles() decorator
   - Check admin whitelist for bypass
-- [x] **3.2.3**: Register guards globally in `main.ts` with proper execution order
+- [X] **3.2.3**: Register guards globally in `main.ts` with proper execution order
 
 ### Sub-task 3.3: Create Common Decorators
 
-- [x] **3.3.1**: Create `apps/api/src/common/decorators/current-user.decorator.ts`
+- [X] **3.3.1**: Create `apps/api/src/common/decorators/current-user.decorator.ts`
   - Extracts user from request object
   - Supports extracting specific properties
-- [x] **3.3.2**: Create `apps/api/src/common/decorators/roles.decorator.ts`
+- [X] **3.3.2**: Create `apps/api/src/common/decorators/roles.decorator.ts`
   - Decorator to specify required roles for endpoints
-- [x] **3.3.3**: Create `apps/api/src/common/decorators/public.decorator.ts`
+- [X] **3.3.3**: Create `apps/api/src/common/decorators/public.decorator.ts`
   - Decorator to mark endpoints as public (skip authentication)
 
 ### Sub-task 3.4: Create Common DTOs and Interfaces
 
-- [x] **3.4.1**: Create `apps/api/src/common/dto/pagination.dto.ts`
+- [X] **3.4.1**: Create `apps/api/src/common/dto/pagination.dto.ts`
   - PaginationDto with page, limit, sort, order
   - Full class-validator validation
-- [x] **3.4.2**: Create `apps/api/src/common/interfaces/auth-user.interface.ts`
+- [X] **3.4.2**: Create `apps/api/src/common/interfaces/auth-user.interface.ts`
   - AuthUser interface with id, email, userType, fullName, phoneNumber
   - Optional: clientProfileId, attorneyProfileId
-- [x] **3.4.3**: Create `apps/api/src/common/enums/user-type.enum.ts`
+- [X] **3.4.3**: Create `apps/api/src/common/enums/user-type.enum.ts`
   - UserType enum: CLIENT, ATTORNEY, STAFF, ADMIN
 
 ### Sub-task 3.5: Create Exception Filters
 
-- [x] **3.5.1**: Create `apps/api/src/common/filters/http-exception.filter.ts`
+- [X] **3.5.1**: Create `apps/api/src/common/filters/http-exception.filter.ts`
   - Standardizes HTTP error responses
-- [x] **3.5.2**: Create `apps/api/src/common/filters/supabase-exception.filter.ts`
+- [X] **3.5.2**: Create `apps/api/src/common/filters/supabase-exception.filter.ts`
   - Maps Supabase errors to HTTP status codes
 
 ### Sub-task 3.6: Application Integration
 
-- [x] **3.6.1**: Update `main.ts` with global guards and filters
-- [x] **3.6.2**: Extend `configuration.ts` with AdminConfig
-- [x] **3.6.3**: Update `validation.schema.ts` with ADMIN_EMAILS
-- [x] **3.6.4**: Update `.env` and `.env.example` with ADMIN_EMAILS
+- [X] **3.6.1**: Update `main.ts` with global guards and filters
+- [X] **3.6.2**: Extend `configuration.ts` with AdminConfig
+- [X] **3.6.3**: Update `validation.schema.ts` with ADMIN_EMAILS
+- [X] **3.6.4**: Update `.env` and `.env.example` with ADMIN_EMAILS
 
 ---
 
@@ -272,23 +272,23 @@ Complete database architecture with 20+ tables, Row-Level Security, comprehensiv
 
 ### Sub-task 4.1: Create Auth DTOs & Validation (7/7) ✅
 
-- [x] **4.1.1**: Create `apps/api/src/auth/dto/signup.dto.ts`
+- [X] **4.1.1**: Create `apps/api/src/auth/dto/signup.dto.ts`
   - Fields: email (@IsEmail), password (@MinLength(8), @MaxLength(72), @Matches for complexity), fullName, phoneNumber (optional)
-- [x] **4.1.2**: Create `apps/api/src/auth/dto/signin.dto.ts`
+- [X] **4.1.2**: Create `apps/api/src/auth/dto/signin.dto.ts`
   - Fields: email, password
-- [x] **4.1.3**: Create `apps/api/src/auth/dto/oauth-callback.dto.ts`
+- [X] **4.1.3**: Create `apps/api/src/auth/dto/oauth-callback.dto.ts`
   - Fields: accessToken, refreshToken
-- [x] **4.1.4**: Create `apps/api/src/auth/dto/refresh-token.dto.ts`
+- [X] **4.1.4**: Create `apps/api/src/auth/dto/refresh-token.dto.ts`
   - Fields: refreshToken
-- [x] **4.1.5**: Create `apps/api/src/auth/dto/password-reset.dto.ts`
+- [X] **4.1.5**: Create `apps/api/src/auth/dto/password-reset.dto.ts`
   - PasswordResetRequestDto (email), PasswordResetConfirmDto (accessToken, newPassword)
-- [x] **4.1.6**: Create `apps/api/src/auth/dto/auth-response.dto.ts`
+- [X] **4.1.6**: Create `apps/api/src/auth/dto/auth-response.dto.ts`
   - AuthResponseDto (user, accessToken, refreshToken), AuthMessageDto (message)
-- [x] **4.1.7**: Create `apps/api/src/auth/dto/index.ts` (barrel export)
+- [X] **4.1.7**: Create `apps/api/src/auth/dto/index.ts` (barrel export)
 
 ### Sub-task 4.2: Create Auth Service (1/1) ✅
 
-- [x] **4.2.1**: Create `apps/api/src/auth/auth.service.ts`
+- [X] **4.2.1**: Create `apps/api/src/auth/auth.service.ts`
   - `signup(dto)` - Email/password signup (clients only, blocks admin emails)
   - `signin(dto)` - Email/password signin
   - `processOAuthCallback(dto)` - Handle OAuth tokens, create/fetch profile, detect user type
@@ -300,39 +300,39 @@ Complete database architecture with 20+ tables, Row-Level Security, comprehensiv
 
 ### Sub-task 4.3: Create Auth Controller (1/1) ✅
 
-- [x] **4.3.1**: Create `apps/api/src/auth/auth.controller.ts`
+- [X] **4.3.1**: Create `apps/api/src/auth/auth.controller.ts`
   - POST /api/auth/signup, signin, oauth/callback, refresh, password-reset/request, password-reset/confirm (all @Public)
   - GET /api/auth/me, POST /api/auth/signout (protected)
 
 ### Sub-task 4.4: Create Auth Module & Integration (2/2) ✅
 
-- [x] **4.4.1**: Create `apps/api/src/auth/auth.module.ts`
-- [x] **4.4.2**: Import AuthModule in app.module.ts, add global ValidationPipe in main.ts
+- [X] **4.4.1**: Create `apps/api/src/auth/auth.module.ts`
+- [X] **4.4.2**: Import AuthModule in app.module.ts, add global ValidationPipe in main.ts
 
 ### Sub-task 4.5: Frontend Auth Infrastructure (5/5) ✅
 
-- [x] **4.5.1**: Install @supabase/supabase-js and @supabase/ssr
-- [x] **4.5.2**: Create Supabase client configuration (browser, server, middleware)
-- [x] **4.5.3**: Create Auth Context & Hooks (AuthProvider, useAuth, auth-actions)
-- [x] **4.5.4**: Create Next.js middleware (session refresh, route protection, user type routing)
-- [x] **4.5.5**: Wrap root layout with AuthProvider
+- [X] **4.5.1**: Install @supabase/supabase-js and @supabase/ssr
+- [X] **4.5.2**: Create Supabase client configuration (browser, server, middleware)
+- [X] **4.5.3**: Create Auth Context & Hooks (AuthProvider, useAuth, auth-actions)
+- [X] **4.5.4**: Create Next.js middleware (session refresh, route protection, user type routing)
+- [X] **4.5.5**: Wrap root layout with AuthProvider
 
 ### Sub-task 4.6: Frontend Auth Pages (6/6) ✅
 
-- [x] **4.6.1**: Create Sign-In Page (tabbed Google OAuth + email/password)
-- [x] **4.6.2**: Create Sign-Up Page (client registration)
-- [x] **4.6.3**: Create OAuth Callback Handler (code exchange + backend POST + redirect)
-- [x] **4.6.4**: Create Password Reset Pages (request + confirm)
-- [x] **4.6.5**: Create Dashboard Layouts & Pages (admin + client with sidebar/header)
-- [x] **4.6.6**: Update .env.example with Supabase configuration
+- [X] **4.6.1**: Create Sign-In Page (tabbed Google OAuth + email/password)
+- [X] **4.6.2**: Create Sign-Up Page (client registration)
+- [X] **4.6.3**: Create OAuth Callback Handler (code exchange + backend POST + redirect)
+- [X] **4.6.4**: Create Password Reset Pages (request + confirm)
+- [X] **4.6.5**: Create Dashboard Layouts & Pages (admin + client with sidebar/header)
+- [X] **4.6.6**: Update .env.example with Supabase configuration
 
 ### Sub-task 4.7: Testing (1/1) ✅
 
-- [x] **4.7.1**: Create auth.service.spec.ts (12 unit tests, all passing)
+- [X] **4.7.1**: Create auth.service.spec.ts (12 unit tests, all passing)
 
 ### Sub-task 4.8: Bug Fixes (1/1) ✅
 
-- [x] **4.8.1**: Fix getUserFromToken() in supabase.service.ts (wrong column name + missing columns)
+- [X] **4.8.1**: Fix getUserFromToken() in supabase.service.ts (wrong column name + missing columns)
 
 ---
 
@@ -340,48 +340,48 @@ Complete database architecture with 20+ tables, Row-Level Security, comprehensiv
 
 ### Sub-task 5.1: Create Users Service
 
-- [x] **5.1.1**: Create `apps/api/src/users/users.service.ts`
-- [x] **5.1.2**: Implement `getUserProfile(userId)` method with RLS
-- [x] **5.1.3**: Implement `updateUserProfile(userId, updateDto)` method
-- [x] **5.1.4**: Implement `deleteUser(userId)` method (admin only)
-- [x] **5.1.5**: Implement `getAllUsers(paginationDto)` method (staff only)
+- [X] **5.1.1**: Create `apps/api/src/users/users.service.ts`
+- [X] **5.1.2**: Implement `getUserProfile(userId)` method with RLS
+- [X] **5.1.3**: Implement `updateUserProfile(userId, updateDto)` method
+- [X] **5.1.4**: Implement `deleteUser(userId)` method (admin only)
+- [X] **5.1.5**: Implement `getAllUsers(paginationDto)` method (staff only)
 
 ### Sub-task 5.2: Create Users Controller
 
-- [x] **5.2.1**: Create `apps/api/src/users/users.controller.ts`
-- [x] **5.2.2**: Create endpoint: `GET /api/users/profile` (current user)
-- [x] **5.2.3**: Create endpoint: `PATCH /api/users/profile` (update own profile)
-- [x] **5.2.4**: Create endpoint: `GET /api/users` (staff only, with pagination)
-- [x] **5.2.5**: Apply @UseGuards(AuthGuard, RolesGuard) and @Roles() decorators
+- [X] **5.2.1**: Create `apps/api/src/users/users.controller.ts`
+- [X] **5.2.2**: Create endpoint: `GET /api/users/profile` (current user)
+- [X] **5.2.3**: Create endpoint: `PATCH /api/users/profile` (update own profile)
+- [X] **5.2.4**: Create endpoint: `GET /api/users` (staff only, with pagination)
+- [X] **5.2.5**: Apply @UseGuards(AuthGuard, RolesGuard) and @Roles() decorators
 
 ### Sub-task 5.3: Create Profile DTOs
 
 > **Note:** DTOs are implemented as Zod schemas in `packages/shared/src/schemas/users.schemas.ts` with types in `packages/shared/src/types/users.types.ts`, instead of class-validator DTOs in `apps/api/src/users/dto/`.
 
-- [x] **5.3.1**: Create `apps/api/src/users/dto/update-user-profile.dto.ts`
+- [X] **5.3.1**: Create `apps/api/src/users/dto/update-user-profile.dto.ts`
   - Optional fields: fullName, phoneNumber
-- [x] **5.3.2**: Create `apps/api/src/users/dto/create-client-profile.dto.ts`
+- [X] **5.3.2**: Create `apps/api/src/users/dto/create-client-profile.dto.ts`
   - Fields: companyName, companyType, taxId, address, city, country
-- [x] **5.3.3**: Create `apps/api/src/users/dto/update-client-profile.dto.ts`
+- [X] **5.3.3**: Create `apps/api/src/users/dto/update-client-profile.dto.ts`
   - All fields optional
-- [x] **5.3.4**: Create `apps/api/src/users/dto/create-attorney-profile.dto.ts`
+- [X] **5.3.4**: Create `apps/api/src/users/dto/create-attorney-profile.dto.ts`
   - Fields: barNumber, specializations, education, experienceYears, hourlyRate
-- [x] **5.3.5**: Create `apps/api/src/users/dto/update-attorney-profile.dto.ts`
+- [X] **5.3.5**: Create `apps/api/src/users/dto/update-attorney-profile.dto.ts`
   - All fields optional
 
 ### Sub-task 5.4: Create Users Module
 
-- [x] **5.4.1**: Create `apps/api/src/users/users.module.ts`
+- [X] **5.4.1**: Create `apps/api/src/users/users.module.ts`
   - Register UsersService, UsersController
 
 ### Sub-task 5.5: Frontend Users & Profiles (web)
 
-- [x] **5.5.1**: Add users API client helpers in `apps/web/lib` (get profile, update profile, list users)
-- [x] **5.5.2**: Create profile page for authenticated users (client + attorney + staff) under dashboards
-- [x] **5.5.3**: Build profile edit form (full_name, phone_number, client/attorney fields)
-- [x] **5.5.4**: Create admin/staff users list page with pagination/search in admin dashboard
-- [x] **5.5.5**: Add loading, empty, and error states + toast feedback for profile updates
-- [x] **5.5.6**: Update dashboard sidebar navigation to include Profile and Users links
+- [X] **5.5.1**: Add users API client helpers in `apps/web/lib` (get profile, update profile, list users)
+- [X] **5.5.2**: Create profile page for authenticated users (client + attorney + staff) under dashboards
+- [X] **5.5.3**: Build profile edit form (full_name, phone_number, client/attorney fields)
+- [X] **5.5.4**: Create admin/staff users list page with pagination/search in admin dashboard
+- [X] **5.5.5**: Add loading, empty, and error states + toast feedback for profile updates
+- [X] **5.5.6**: Update dashboard sidebar navigation to include Profile and Users links
 
 ---
 
@@ -389,114 +389,114 @@ Complete database architecture with 20+ tables, Row-Level Security, comprehensiv
 
 ### Sub-task 6.1: Create Clients Service
 
-- [x] **6.1.1**: Create `apps/api/src/clients/clients.service.ts`
-- [x] **6.1.2**: Implement `createClient(createDto)` method
+- [X] **6.1.1**: Create `apps/api/src/clients/clients.service.ts`
+- [X] **6.1.2**: Implement `createClient(createDto)` method
   - Creates user_profile + client_profile in transaction
-- [x] **6.1.3**: Implement `getClients(paginationDto, filters)` method (staff only)
+- [X] **6.1.3**: Implement `getClients(paginationDto, filters)` method (staff only)
   - Support filtering by company_type, city, status
-- [x] **6.1.4**: Implement `getClientById(clientId)` method with RLS
-- [x] **6.1.5**: Implement `updateClient(clientId, updateDto)` method
-- [x] **6.1.6**: Implement `deleteClient(clientId)` method (admin only)
-- [x] **6.1.7**: Implement `getClientCases(clientId)` method
-- [x] **6.1.8**: Implement `getClientDocuments(clientId)` method
-- [x] **6.1.9**: Implement `getClientInvoices(clientId)` method
+- [X] **6.1.4**: Implement `getClientById(clientId)` method with RLS
+- [X] **6.1.5**: Implement `updateClient(clientId, updateDto)` method
+- [X] **6.1.6**: Implement `deleteClient(clientId)` method (admin only)
+- [X] **6.1.7**: Implement `getClientCases(clientId)` method
+- [X] **6.1.8**: Implement `getClientDocuments(clientId)` method
+- [X] **6.1.9**: Implement `getClientInvoices(clientId)` method
 
 ### Sub-task 6.2: Create Clients Controller
 
-- [x] **6.2.1**: Create `apps/api/src/clients/clients.controller.ts`
-- [x] **6.2.2**: Create endpoint: `GET /api/clients` (staff only)
-- [x] **6.2.3**: Create endpoint: `POST /api/clients` (staff only)
-- [x] **6.2.4**: Create endpoint: `GET /api/clients/:id`
-- [x] **6.2.5**: Create endpoint: `PATCH /api/clients/:id`
-- [x] **6.2.6**: Create endpoint: `DELETE /api/clients/:id` (admin only)
-- [x] **6.2.7**: Create endpoint: `GET /api/clients/:id/cases`
-- [x] **6.2.8**: Create endpoint: `GET /api/clients/:id/documents`
-- [x] **6.2.9**: Create endpoint: `GET /api/clients/:id/invoices`
+- [X] **6.2.1**: Create `apps/api/src/clients/clients.controller.ts`
+- [X] **6.2.2**: Create endpoint: `GET /api/clients` (staff only)
+- [X] **6.2.3**: Create endpoint: `POST /api/clients` (staff only)
+- [X] **6.2.4**: Create endpoint: `GET /api/clients/:id`
+- [X] **6.2.5**: Create endpoint: `PATCH /api/clients/:id`
+- [X] **6.2.6**: Create endpoint: `DELETE /api/clients/:id` (admin only)
+- [X] **6.2.7**: Create endpoint: `GET /api/clients/:id/cases`
+- [X] **6.2.8**: Create endpoint: `GET /api/clients/:id/documents`
+- [X] **6.2.9**: Create endpoint: `GET /api/clients/:id/invoices`
 
 ### Sub-task 6.3: Test RLS Enforcement
 
-- [x] **6.3.1**: Test that clients can only see their own profile
-- [x] **6.3.2**: Test that staff can see all client profiles
-- [x] **6.3.3**: Test that unauthorized users get 403 errors
+- [X] **6.3.1**: Test that clients can only see their own profile
+- [X] **6.3.2**: Test that staff can see all client profiles
+- [X] **6.3.3**: Test that unauthorized users get 403 errors
 
 ### Sub-task 6.4: Create Clients Module
 
-- [x] **6.4.1**: Create `apps/api/src/clients/clients.module.ts`
+- [X] **6.4.1**: Create `apps/api/src/clients/clients.module.ts`
 
 ### Sub-task 6.5: Subscriptions Database & Backend (Monthly Retainer - PKR 700/month)
 
 **Context:** Civic advocacy subscription. Clients pay PKR 700/month to submit complaints against government organizations. AR&CO holds government bodies accountable.
 
-- [x] **6.5.1**: Create `subscriptions` table via Supabase migration
+- [X] **6.5.1**: Create `subscriptions` table via Supabase migration
   - Columns: id (uuid, PK), client_profile_id (uuid, FK to client_profiles, UNIQUE), plan_name (text, default 'civic_retainer'), monthly_amount (decimal, default 700), currency (varchar(3), default 'PKR'), status (enum: pending, on_trial, active, paused, past_due, unpaid, cancelled, expired), lemonsqueezy_subscription_id (text), lemonsqueezy_customer_id (text), lemonsqueezy_order_id (text), current_period_start (timestamptz), current_period_end (timestamptz), cancelled_at (timestamptz), ends_at (timestamptz), cancellation_reason (text), card_brand (text), card_last_four (varchar(4)), created_at (timestamptz), updated_at (timestamptz)
-- [x] **6.5.2**: Enable RLS on subscriptions (clients read own, staff read all, staff update status)
-- [x] **6.5.3**: Apply updated_at trigger
-- [x] **6.5.4**: Create `apps/api/src/subscriptions/subscriptions.service.ts`
-- [x] **6.5.5**: Implement `createSubscription(userId)` method
+- [X] **6.5.2**: Enable RLS on subscriptions (clients read own, staff read all, staff update status)
+- [X] **6.5.3**: Apply updated_at trigger
+- [X] **6.5.4**: Create `apps/api/src/subscriptions/subscriptions.service.ts`
+- [X] **6.5.5**: Implement `createSubscription(userId)` method
   - Calls LemonSqueezyService.createSubscriptionCheckout() for PKR 700/month recurring
   - Creates subscriptions record with status = 'pending'
   - Returns Lemon Squeezy checkout URL
-- [x] **6.5.6**: Implement `getMySubscription(userId)` method
+- [X] **6.5.6**: Implement `getMySubscription(userId)` method
 - [ ] **6.5.7**: Implement `handleSubscriptionCreated(webhookPayload)` method (webhook) — _deferred to HEAD TASK 10D_
   - Sets status = 'active', stores lemonsqueezy_subscription_id, sets billing cycle dates
 - [ ] **6.5.8**: Implement `handleSubscriptionPaymentSuccess(webhookPayload)` method (webhook) — _deferred to HEAD TASK 10D_
   - Extends current_period_end to next renews_at
 - [ ] **6.5.9**: Implement `handleSubscriptionCancelled(webhookPayload)` / `handleSubscriptionExpired(webhookPayload)` methods — _deferred to HEAD TASK 10D_
-- [x] **6.5.10**: Implement `cancelSubscription(userId)` method
-- [x] **6.5.11**: Implement `isSubscriptionActive(userId)` method (used by complaints guard)
-- [x] **6.5.12**: Create `apps/api/src/subscriptions/subscriptions.controller.ts`
+- [X] **6.5.10**: Implement `cancelSubscription(userId)` method
+- [X] **6.5.11**: Implement `isSubscriptionActive(userId)` method (used by complaints guard)
+- [X] **6.5.12**: Create `apps/api/src/subscriptions/subscriptions.controller.ts`
   - `POST /api/subscriptions` - Create subscription + get Lemon Squeezy checkout URL
   - `GET /api/subscriptions/me` - Get my subscription
   - `POST /api/subscriptions/cancel` - Cancel subscription
   - `GET /api/subscriptions` (staff only) - List all subscriptions
-- [x] **6.5.13**: Create subscription DTOs and enums (subscription_status)
-- [x] **6.5.14**: Create `apps/api/src/subscriptions/subscriptions.module.ts`
+- [X] **6.5.13**: Create subscription DTOs and enums (subscription_status)
+- [X] **6.5.14**: Create `apps/api/src/subscriptions/subscriptions.module.ts`
   - Import PaymentsModule for LemonSqueezyService, export SubscriptionsService
 
 ### Sub-task 6.6: Complaints Database & Backend (Civic Complaints)
 
 **Context:** Subscribers submit complaints against government orgs (e.g., "CDA is not cleaning sector F8"). Complaints get reference numbers (CMP-YYYY-NNNN) and are tracked: submitted → under_review → escalated → resolved.
 
-- [x] **6.6.1**: Create `complaints` table via Supabase migration
+- [X] **6.6.1**: Create `complaints` table via Supabase migration
   - Columns: id (uuid, PK), complaint_number (text, unique, auto-gen: CMP-YYYY-NNNN), client_profile_id (uuid, FK), title (text), description (text), target_organization (text), location (text), category (text), evidence_urls (text[]), status (enum: submitted, under_review, escalated, resolved, closed), assigned_staff_id (uuid, FK, nullable), staff_notes (text), resolution_notes (text), resolved_at (timestamptz), created_at (timestamptz), updated_at (timestamptz)
-- [x] **6.6.2**: Create `generate_complaint_number()` trigger (CMP-YYYY-NNNN)
-- [x] **6.6.3**: Apply trigger + RLS (clients read/create own, staff read all + update status) + updated_at trigger
-- [x] **6.6.4**: Create `apps/api/src/complaints/complaints.service.ts`
-- [x] **6.6.5**: Implement `submitComplaint(userId, createDto)` method
+- [X] **6.6.2**: Create `generate_complaint_number()` trigger (CMP-YYYY-NNNN)
+- [X] **6.6.3**: Apply trigger + RLS (clients read/create own, staff read all + update status) + updated_at trigger
+- [X] **6.6.4**: Create `apps/api/src/complaints/complaints.service.ts`
+- [X] **6.6.5**: Implement `submitComplaint(userId, createDto)` method
   - Checks active subscription via SubscriptionsService.isSubscriptionActive()
   - Creates complaint record, auto-generates CMP-YYYY-NNNN
-- [x] **6.6.6**: Implement `getMyComplaints(userId, paginationDto)` method
-- [x] **6.6.7**: Implement `getComplaintById(complaintId, userId)` method
-- [x] **6.6.8**: Implement `getAllComplaints(paginationDto, filters)` method (staff only)
+- [X] **6.6.6**: Implement `getMyComplaints(userId, paginationDto)` method
+- [X] **6.6.7**: Implement `getComplaintById(complaintId, userId)` method
+- [X] **6.6.8**: Implement `getAllComplaints(paginationDto, filters)` method (staff only)
   - Filter by status, target_organization, date range
-- [x] **6.6.9**: Implement `updateComplaintStatus(complaintId, status, staffNotes)` method (staff only)
-- [x] **6.6.10**: Implement `assignComplaint(complaintId, staffId)` method (staff only)
-- [x] **6.6.11**: Create `apps/api/src/complaints/complaints.controller.ts`
+- [X] **6.6.9**: Implement `updateComplaintStatus(complaintId, status, staffNotes)` method (staff only)
+- [X] **6.6.10**: Implement `assignComplaint(complaintId, staffId)` method (staff only)
+- [X] **6.6.11**: Create `apps/api/src/complaints/complaints.controller.ts`
   - `POST /api/complaints` - Submit complaint (requires active subscription)
   - `GET /api/complaints` - List complaints (client: own, staff: all)
   - `GET /api/complaints/:id` - Complaint detail
   - `PATCH /api/complaints/:id/status` (staff only) - Update status
   - `PATCH /api/complaints/:id/assign` (staff only) - Assign to staff
-- [x] **6.6.12**: Create complaint DTOs (create, update-status) and enums (complaint_status, complaint_category)
-- [x] **6.6.13**: Create `apps/api/src/complaints/complaints.module.ts`
+- [X] **6.6.12**: Create complaint DTOs (create, update-status) and enums (complaint_status, complaint_category)
+- [X] **6.6.13**: Create `apps/api/src/complaints/complaints.module.ts`
   - Import SubscriptionsModule for active subscription check
 
 ### Sub-task 6.7: Service Registrations Database & Backend (Auto Account Creation)
 
 **Context:** Each facilitation service has 1 generic form (name, contact, CNIC, docs upload). Payment + registration auto-creates a user account. No account needed to start the form. Account required only after payment completes.
 
-- [x] **6.7.1**: Create `service_registrations` table via Supabase migration
+- [X] **6.7.1**: Create `service_registrations` table via Supabase migration
   - Columns: id (uuid, PK), reference_number (text, unique, auto-gen: SRV-YYYY-NNNN), service_id (uuid, FK to services), full_name (text), email (text), phone_number (text), cnic (text), address (text), description_of_need (text), payment_status (enum: pending, paid, failed, refunded), lemonsqueezy_checkout_id (text), lemonsqueezy_order_id (text), status (enum: pending_payment, paid, in_progress, completed, cancelled), client_profile_id (uuid, FK to client_profiles, nullable - set after auto account creation), assigned_staff_id (uuid, FK, nullable), staff_notes (text), created_at (timestamptz), updated_at (timestamptz)
-- [x] **6.7.2**: Add `registration_fee` column to existing `services` table (DECIMAL(10,2))
-- [x] **6.7.3**: Create `generate_service_registration_reference()` trigger (SRV-YYYY-NNNN)
-- [x] **6.7.4**: Apply trigger + RLS + updated_at trigger
+- [X] **6.7.2**: Add `registration_fee` column to existing `services` table (DECIMAL(10,2))
+- [X] **6.7.3**: Create `generate_service_registration_reference()` trigger (SRV-YYYY-NNNN)
+- [X] **6.7.4**: Apply trigger + RLS + updated_at trigger
   - Public can insert (guest submissions), public can read own by reference_number + email
   - Clients can read own registrations (after account creation), staff can read all + update
-- [x] **6.7.5**: Add `service_registration_id` nullable FK column to `documents` table
-- [x] **6.7.6**: Create `apps/api/src/service-registrations/service-registrations.service.ts`
-- [x] **6.7.7**: Implement `createRegistration(createDto)` method (@Public)
+- [X] **6.7.5**: Add `service_registration_id` nullable FK column to `documents` table
+- [X] **6.7.6**: Create `apps/api/src/service-registrations/service-registrations.service.ts`
+- [X] **6.7.7**: Implement `createRegistration(createDto)` method (@Public)
   - Validates service exists and is active, creates record with status = 'pending_payment'
-- [x] **6.7.8**: Implement `initiatePayment(registrationId)` method
+- [X] **6.7.8**: Implement `initiatePayment(registrationId)` method
   - Fetches service.registration_fee, calls LemonSqueezyService.createOneTimeCheckout()
 - [ ] **6.7.9**: Implement `handlePaymentConfirmed(registrationId)` method (webhook) — _deferred to HEAD TASK 10F_
   - Updates payment_status = 'paid', status = 'paid'
@@ -506,13 +506,13 @@ Complete database architecture with 20+ tables, Row-Level Security, comprehensiv
   - If no: create Supabase auth user (auto-generated password) + user_profile (client) + client_profile
   - Link service_registration.client_profile_id
   - Send credentials email via SendGrid
-- [x] **6.7.11**: Implement `uploadDocuments(registrationId, files)` method — _completed in HEAD TASK 9_
+- [X] **6.7.11**: Implement `uploadDocuments(registrationId, files)` method — _completed in HEAD TASK 9_
   - Uploads to Supabase Storage, creates documents records linked via service_registration_id
-- [x] **6.7.12**: Implement `getRegistrationStatus(referenceNumber, email)` method (@Public)
-- [x] **6.7.13**: Implement `getMyRegistrations(userId, paginationDto)` method
-- [x] **6.7.14**: Implement `getAllRegistrations(paginationDto, filters)` method (staff only)
-- [x] **6.7.15**: Implement `updateRegistrationStatus(registrationId, status, staffNotes)` method (staff only)
-- [x] **6.7.16**: Create `apps/api/src/service-registrations/service-registrations.controller.ts`
+- [X] **6.7.12**: Implement `getRegistrationStatus(referenceNumber, email)` method (@Public)
+- [X] **6.7.13**: Implement `getMyRegistrations(userId, paginationDto)` method
+- [X] **6.7.14**: Implement `getAllRegistrations(paginationDto, filters)` method (staff only)
+- [X] **6.7.15**: Implement `updateRegistrationStatus(registrationId, status, staffNotes)` method (staff only)
+- [X] **6.7.16**: Create `apps/api/src/service-registrations/service-registrations.controller.ts`
   - `POST /api/service-registrations` (@Public) - Submit registration
   - `POST /api/service-registrations/:id/pay` (@Public) - Initiate payment
   - `POST /api/service-registrations/:id/documents` (@Public) - Upload docs
@@ -521,43 +521,43 @@ Complete database architecture with 20+ tables, Row-Level Security, comprehensiv
   - `GET /api/service-registrations/:id` - Detail
   - `PATCH /api/service-registrations/:id/status` (staff only) - Update status
   - `GET /api/services` (@Public) - List available services with fees
-- [x] **6.7.17**: Create service registration DTOs (create, response, update-status) and enums
-- [x] **6.7.18**: Create `apps/api/src/service-registrations/service-registrations.module.ts`
+- [X] **6.7.17**: Create service registration DTOs (create, response, update-status) and enums
+- [X] **6.7.18**: Create `apps/api/src/service-registrations/service-registrations.module.ts`
   - Import PaymentsModule for LemonSqueezyService, AuthModule for account creation
 
 ### Sub-task 6.8: Frontend - Subscribe Page & Complaints Dashboard
 
-- [x] **6.8.1**: Create `/subscribe` landing page
+- [X] **6.8.1**: Create `/subscribe` landing page
   - Explains civic retainer program (PKR 700/month), "Subscribe Now" button
   - If not logged in → redirect to signup, then back to /subscribe
   - If logged in → initiate Lemon Squeezy subscription checkout
-- [x] **6.8.2**: Create subscription success/cancel return pages
-- [x] **6.8.3**: Create `/client/complaints` page - List complaints with status badges
-- [x] **6.8.4**: Create `/client/complaints/new` page - Complaint form (title, description, target org, location, category, evidence upload)
+- [X] **6.8.2**: Create subscription success/cancel return pages
+- [X] **6.8.3**: Create `/client/complaints` page - List complaints with status badges
+- [X] **6.8.4**: Create `/client/complaints/new` page - Complaint form (title, description, target org, location, category, evidence upload)
   - Gated: shows "Active subscription required" message if no subscription
-- [x] **6.8.5**: Create `/client/complaints/:id` page - Complaint detail + status timeline
-- [x] **6.8.6**: Create `/client/subscription` page - View subscription status, cancel button, payment history
-- [x] **6.8.7**: Create `apps/web/lib/api/subscriptions.ts` and `apps/web/lib/api/complaints.ts` API client helpers
+- [X] **6.8.5**: Create `/client/complaints/:id` page - Complaint detail + status timeline
+- [X] **6.8.6**: Create `/client/subscription` page - View subscription status, cancel button, payment history
+- [X] **6.8.7**: Create `apps/web/lib/api/subscriptions.ts` and `apps/web/lib/api/complaints.ts` API client helpers
 
 ### Sub-task 6.9: Frontend - Service Registration Pages
 
-- [x] **6.9.1**: Create `/services/[category]/[slug]` page - Service detail with overview, process, documents, FAQ tabs and "Register" CTA
+- [X] **6.9.1**: Create `/services/[category]/[slug]` page - Service detail with overview, process, documents, FAQ tabs and "Register" CTA
   - Implemented at `app/(public)/services/[category]/[slug]/page.tsx` with layout + sub-pages
-- [x] **6.9.2**: Create `/services/[category]/[slug]/form` multi-step form
+- [X] **6.9.2**: Create `/services/[category]/[slug]/form` multi-step form
   - Implemented at `app/(public)/services/[category]/[slug]/form/page.tsx`
   - Dynamic form fields per service category via `categoryDataMapper`
   - Country selector (countries-list), phone validation (react-phone-number-input), animated steps (framer-motion)
   - Dependencies added: `countries-list`, `react-phone-number-input`
 - [ ] **6.9.3**: Create registration success page ("Account created - check email for credentials") — _deferred_
-- [x] **6.9.4**: Create `/client/services` page - List my service registrations + status
-- [x] **6.9.5**: Create `/client/services/:id` page - Registration detail + status timeline + docs
+- [X] **6.9.4**: Create `/client/services` page - List my service registrations + status
+- [X] **6.9.5**: Create `/client/services/:id` page - Registration detail + status timeline + docs
 - [ ] **6.9.6**: Add "Register for Service" CTAs to practice area pages — _deferred_
-- [x] **6.9.7**: Create `apps/web/lib/api/service-registrations.ts` API client helpers
+- [X] **6.9.7**: Create `apps/web/lib/api/service-registrations.ts` API client helpers
 
 ### Sub-task 6.10: Frontend - Client Dashboard Enhancements
 
-- [x] **6.10.1**: Update client dashboard stats to include: Active Subscription badge, Open Complaints count, Service Registrations in_progress count
-- [x] **6.10.2**: Update client sidebar: add Complaints, My Services, Subscription, Payment History links
+- [X] **6.10.1**: Update client dashboard stats to include: Active Subscription badge, Open Complaints count, Service Registrations in_progress count
+- [X] **6.10.2**: Update client sidebar: add Complaints, My Services, Subscription, Payment History links
 - [ ] **6.10.3**: Create `/client/payments` page - Payment history across all sources — _deferred to HEAD TASK 10_
 
 ---
@@ -566,81 +566,81 @@ Complete database architecture with 20+ tables, Row-Level Security, comprehensiv
 
 ### Sub-task 7.1: Create Cases Service
 
-- [x] **7.1.1**: Create `apps/api/src/cases/cases.service.ts`
-- [x] **7.1.2**: Implement `createCase(createDto)` method
+- [X] **7.1.1**: Create `apps/api/src/cases/cases.service.ts`
+- [X] **7.1.2**: Implement `createCase(createDto)` method
   - Auto-generates case_number via DB trigger
-- [x] **7.1.3**: Implement `getCases(paginationDto, filters, currentUser)` method
+- [X] **7.1.3**: Implement `getCases(paginationDto, filters, currentUser)` method
   - RLS filtering based on user role
-- [x] **7.1.4**: Implement `getCaseById(caseId, currentUser)` method with RLS check
-- [x] **7.1.5**: Implement `updateCase(caseId, updateDto)` method
-- [x] **7.1.6**: Implement `deleteCase(caseId)` method (admin only)
-- [x] **7.1.7**: Implement `assign(caseId, assignedToId)` method (uses `assigned_to_id` -> `user_profiles.id`)
+- [X] **7.1.4**: Implement `getCaseById(caseId, currentUser)` method with RLS check
+- [X] **7.1.5**: Implement `updateCase(caseId, updateDto)` method
+- [X] **7.1.6**: Implement `deleteCase(caseId)` method (admin only)
+- [X] **7.1.7**: Implement `assign(caseId, assignedToId)` method (uses `assigned_to_id` -> `user_profiles.id`)
 
 ### Sub-task 7.2: Create Case Activities Service
 
-- [x] **7.2.1**: Implement `getCaseActivities(caseId)` method for timeline view
-- [x] **7.2.2**: Implement `addCaseActivity(caseId, activityDto)` method
-- [x] **7.2.3**: Implement auto-activity creation on case status change
+- [X] **7.2.1**: Implement `getCaseActivities(caseId)` method for timeline view
+- [X] **7.2.2**: Implement `addCaseActivity(caseId, activityDto)` method
+- [X] **7.2.3**: Implement auto-activity creation on case status change
 
 ### Sub-task 7.3: Create Cases Controller
 
-- [x] **7.3.1**: Create `apps/api/src/cases/cases.controller.ts`
-- [x] **7.3.2**: Create endpoint: `GET /api/cases`
-- [x] **7.3.3**: Create endpoint: `POST /api/cases` (staff only)
-- [x] **7.3.4**: Create endpoint: `GET /api/cases/:id`
-- [x] **7.3.5**: Create endpoint: `PATCH /api/cases/:id`
-- [x] **7.3.6**: Create endpoint: `DELETE /api/cases/:id` (admin only)
-- [x] **7.3.7**: Create endpoint: `GET /api/cases/:id/activities`
-- [x] **7.3.8**: Create endpoint: `POST /api/cases/:id/activities`
-- [x] **7.3.9**: Create endpoint: `PATCH /api/cases/:id/assign` (changed from POST to PATCH for consistency)
+- [X] **7.3.1**: Create `apps/api/src/cases/cases.controller.ts`
+- [X] **7.3.2**: Create endpoint: `GET /api/cases`
+- [X] **7.3.3**: Create endpoint: `POST /api/cases` (staff only)
+- [X] **7.3.4**: Create endpoint: `GET /api/cases/:id`
+- [X] **7.3.5**: Create endpoint: `PATCH /api/cases/:id`
+- [X] **7.3.6**: Create endpoint: `DELETE /api/cases/:id` (admin only)
+- [X] **7.3.7**: Create endpoint: `GET /api/cases/:id/activities`
+- [X] **7.3.8**: Create endpoint: `POST /api/cases/:id/activities`
+- [X] **7.3.9**: Create endpoint: `PATCH /api/cases/:id/assign` (changed from POST to PATCH for consistency)
 
 ### Sub-task 7.4: Create DTOs
 
 > **Note:** DTOs are implemented as Zod schemas in `packages/shared/src/schemas/cases.schemas.ts` with types in `packages/shared/src/types/cases.types.ts`, using shared `AssignToSchema` from `common.schemas.ts`.
 
-- [x] **7.4.1**: Create `packages/shared/src/schemas/cases.schemas.ts` (Zod schemas)
-- [x] **7.4.2**: Create `packages/shared/src/types/cases.types.ts` (inferred types)
-- [x] **7.4.3**: Create case activity schemas and types
-- [x] **7.4.4**: Add CaseStatus, CasePriority, CaseActivityType enums to `packages/shared/src/enums.ts`
+- [X] **7.4.1**: Create `packages/shared/src/schemas/cases.schemas.ts` (Zod schemas)
+- [X] **7.4.2**: Create `packages/shared/src/types/cases.types.ts` (inferred types)
+- [X] **7.4.3**: Create case activity schemas and types
+- [X] **7.4.4**: Add CaseStatus, CasePriority, CaseActivityType enums to `packages/shared/src/enums.ts`
 
 ### Sub-task 7.5: Create Cases Module
 
-- [x] **7.5.1**: Create `apps/api/src/cases/cases.module.ts`
+- [X] **7.5.1**: Create `apps/api/src/cases/cases.module.ts`
 
 ### Sub-task 7.6: Shared Package (Cases Schemas, Types & Enums)
 
-- [x] **7.6.1**: Add `CaseStatus`, `CasePriority`, `CaseActivityType` enums to `packages/shared/src/enums.ts`
-- [x] **7.6.2**: Create `packages/shared/src/schemas/cases.schemas.ts`
+- [X] **7.6.1**: Add `CaseStatus`, `CasePriority`, `CaseActivityType` enums to `packages/shared/src/enums.ts`
+- [X] **7.6.2**: Create `packages/shared/src/schemas/cases.schemas.ts`
   - CreateCaseSchema, UpdateCaseSchema, CaseFiltersSchema, CreateCaseActivitySchema
   - CaseResponseSchema, CaseActivityResponseSchema, PaginatedCasesResponseSchema, PaginatedCaseActivitiesResponseSchema
   - Assignment uses shared `AssignToSchema` from `common.schemas.ts` (replaces `AssignAttorneySchema`)
-- [x] **7.6.3**: Create `packages/shared/src/types/cases.types.ts`
+- [X] **7.6.3**: Create `packages/shared/src/types/cases.types.ts`
   - CreateCaseData, UpdateCaseData, CaseFilters, CreateCaseActivityData
   - CaseResponse, CaseActivityResponse, PaginatedCasesResponse, PaginatedCaseActivitiesResponse
   - Assignment uses shared `AssignToData` from `common.types.ts` (replaces `AssignAttorneyData`)
-- [x] **7.6.4**: Update barrel exports (`index.ts` files for enums, schemas, types)
+- [X] **7.6.4**: Update barrel exports (`index.ts` files for enums, schemas, types)
 
 ### Sub-task 7.7: Frontend - Cases API Client
 
-- [x] **7.7.1**: Create `apps/web/lib/api/cases.ts` API client helpers
+- [X] **7.7.1**: Create `apps/web/lib/api/cases.ts` API client helpers
   - getCases, getCaseById, createCase, updateCase, deleteCase, assignCase, getCaseActivities, addCaseActivity
 
 ### Sub-task 7.8: Frontend - Admin Cases Pages
 
-- [x] **7.8.1**: Create `/admin/cases` page - Case list with filters (status, priority, search), pagination, "New Case" button
-- [x] **7.8.2**: Create `/admin/cases/new` page - Create case form (client dropdown, practice area, title, description, priority, case type, filing date)
-- [x] **7.8.3**: Create `/admin/cases/:id` page - Case detail + activities timeline + status update + assign to staff/attorney + add activity form
+- [X] **7.8.1**: Create `/admin/cases` page - Case list with filters (status, priority, search), pagination, "New Case" button
+- [X] **7.8.2**: Create `/admin/cases/new` page - Create case form (client dropdown, practice area, title, description, priority, case type, filing date)
+- [X] **7.8.3**: Create `/admin/cases/:id` page - Case detail + activities timeline + status update + assign to staff/attorney + add activity form
 
 ### Sub-task 7.9: Frontend - Client Cases Pages
 
-- [x] **7.9.1**: Create `/client/cases` page - Client's cases list with status filter, pagination
-- [x] **7.9.2**: Create `/client/cases/:id` page - Case detail + activities timeline (read-only)
+- [X] **7.9.1**: Create `/client/cases` page - Client's cases list with status filter, pagination
+- [X] **7.9.2**: Create `/client/cases/:id` page - Case detail + activities timeline (read-only)
 
 ### Sub-task 7.10: Frontend - Navigation & Dashboard Updates
 
-- [x] **7.10.1**: Update admin sidebar: add Cases link (Briefcase icon) after Clients
-- [x] **7.10.2**: Update client sidebar: add My Cases link (Briefcase icon)
-- [x] **7.10.3**: Make dashboard stats cards clickable (cases count links to cases list)
+- [X] **7.10.1**: Update admin sidebar: add Cases link (Briefcase icon) after Clients
+- [X] **7.10.2**: Update client sidebar: add My Cases link (Briefcase icon)
+- [X] **7.10.3**: Make dashboard stats cards clickable (cases count links to cases list)
 
 ---
 
@@ -656,91 +656,91 @@ Complete database architecture with 20+ tables, Row-Level Security, comprehensiv
 
 **Context:** Guest consultation booking flow. No user account created. Client fills intake form → pays PKR 50,000 via Safepay → Cal.com embedded booking with Mr. Shoaib Razzaq (single event type). Cal.com only accessible after payment confirmed. Logged-in clients can also book from their dashboard with pre-filled info.
 
-- [x] **8.6.1**: Create `consultation_bookings` table via Supabase migration
+- [X] **8.6.1**: Create `consultation_bookings` table via Supabase migration
   - Columns: id (uuid, PK), reference_number (text, unique, auto-gen: CON-YYYY-NNNN), full_name (text), email (text), phone_number (text), practice_area (text), urgency (enum: low, medium, high, urgent), issue_summary (text), relevant_dates (text), opposing_party (text), additional_notes (text), consultation_fee (decimal, default 50000), payment_status (enum: pending, paid, failed, refunded), safepay_tracker_token (text), safepay_transaction_ref (text), calcom_booking_uid (text), calcom_booking_id (text), booking_date (date), booking_time (time), meeting_link (text), booking_status (enum: pending_payment, payment_confirmed, booked, completed, cancelled, no_show), created_at (timestamptz), updated_at (timestamptz)
-- [x] **8.6.2**: Create `generate_consultation_reference()` trigger (CON-YYYY-NNNN)
-- [x] **8.6.3**: Apply trigger + RLS + updated_at trigger
+- [X] **8.6.2**: Create `generate_consultation_reference()` trigger (CON-YYYY-NNNN)
+- [X] **8.6.3**: Apply trigger + RLS + updated_at trigger
   - Public can insert (guest submissions), public can read own by reference_number + email
   - Staff can read all bookings
 
 ### Sub-task 8.7: Consultation Bookings Backend ✅
 
-- [x] **8.7.1**: Create `apps/api/src/consultations/consultations.service.ts`
-- [x] **8.7.2**: Implement `createBooking(createDto)` method
+- [X] **8.7.1**: Create `apps/api/src/consultations/consultations.service.ts`
+- [X] **8.7.2**: Implement `createBooking(createDto)` method
   - Validates intake data, creates consultation_bookings record, returns reference_number
-- [x] **8.7.3**: Implement `initiatePayment(bookingId)` method
+- [X] **8.7.3**: Implement `initiatePayment(bookingId)` method
   - Calls SafepayService.createPaymentSession() + generateCheckoutUrl() for PKR 50,000
   - Stores safepay_tracker_token on booking record
-- [x] **8.7.4**: Implement `getBookingStatus(referenceNumber, email)` method (@Public)
+- [X] **8.7.4**: Implement `getBookingStatus(referenceNumber, email)` method (@Public)
   - Guest status polling, verified by email match
-- [x] **8.7.5**: Implement `confirmPayment(bookingId, trackerToken)` method
+- [X] **8.7.5**: Implement `confirmPayment(bookingId, trackerToken)` method
   - Verifies payment via Safepay Reporter API, updates payment_status = 'paid', booking_status = 'payment_confirmed'
-- [x] **8.7.6**: Implement `handleCalcomWebhook(payload)` method
+- [X] **8.7.6**: Implement `handleCalcomWebhook(payload)` method
   - Receives BOOKING_CREATED events from Cal.com
   - Matches by metadata.referenceNumber or fallback by email + payment_confirmed status
   - Stores calcom_booking_uid, calcom_booking_id, booking_date, booking_time, meeting_link
   - Updates booking_status = 'booked'
   - Idempotent: skips if already linked
-- [x] **8.7.7**: Implement `getBookings(paginationDto, filters)` method (staff only)
-- [x] **8.7.8**: Implement `cancelBooking(bookingId)` method (staff only)
+- [X] **8.7.7**: Implement `getBookings(paginationDto, filters)` method (staff only)
+- [X] **8.7.8**: Implement `cancelBooking(bookingId)` method (staff only)
 
 ### Sub-task 8.8: Consultation Bookings Controller ✅
 
-- [x] **8.8.1**: Create `apps/api/src/consultations/consultations.controller.ts`
-- [x] **8.8.2**: Create endpoint: `POST /api/consultations` (@Public) - Create booking with intake data
-- [x] **8.8.3**: Create endpoint: `POST /api/consultations/:id/pay` (@Public) - Initiate Safepay checkout
-- [x] **8.8.4**: Create endpoint: `GET /api/consultations/status?refNum=X&email=Y` (@Public) - Guest status
-- [x] **8.8.5**: Create endpoint: `POST /api/consultations/webhook/calcom` (@Public) - Cal.com webhook
-- [x] **8.8.6**: Create endpoint: `GET /api/consultations` (staff only) - List all bookings
-- [x] **8.8.7**: Create endpoint: `GET /api/consultations/:id` (staff only) - Booking detail
-- [x] **8.8.8**: Create endpoint: `PATCH /api/consultations/:id/cancel` (staff only) - Cancel booking
-- [x] **8.8.9**: Create endpoint: `POST /api/consultations/:id/confirm-payment` (@Public) - Verify Safepay payment
+- [X] **8.8.1**: Create `apps/api/src/consultations/consultations.controller.ts`
+- [X] **8.8.2**: Create endpoint: `POST /api/consultations` (@Public) - Create booking with intake data
+- [X] **8.8.3**: Create endpoint: `POST /api/consultations/:id/pay` (@Public) - Initiate Safepay checkout
+- [X] **8.8.4**: Create endpoint: `GET /api/consultations/status?refNum=X&email=Y` (@Public) - Guest status
+- [X] **8.8.5**: Create endpoint: `POST /api/consultations/webhook/calcom` (@Public) - Cal.com webhook
+- [X] **8.8.6**: Create endpoint: `GET /api/consultations` (staff only) - List all bookings
+- [X] **8.8.7**: Create endpoint: `GET /api/consultations/:id` (staff only) - Booking detail
+- [X] **8.8.8**: Create endpoint: `PATCH /api/consultations/:id/cancel` (staff only) - Cancel booking
+- [X] **8.8.9**: Create endpoint: `POST /api/consultations/:id/confirm-payment` (@Public) - Verify Safepay payment
 
 ### Sub-task 8.9: Consultation Schemas, Types & Module ✅
 
-- [x] **8.9.1**: Create `packages/shared/src/schemas/consultations.schemas.ts` (Zod schemas)
+- [X] **8.9.1**: Create `packages/shared/src/schemas/consultations.schemas.ts` (Zod schemas)
   - CreateConsultationSchema, ConfirmConsultationPaymentSchema, ConsultationStatusCheckSchema
   - ConsultationResponseSchema, ConsultationStatusResponseSchema, PaginatedConsultationsResponseSchema
   - ConsultationFiltersSchema, ConsultationPaymentInitResponseSchema
-- [x] **8.9.2**: Create `packages/shared/src/types/consultations.types.ts` (inferred types)
-- [x] **8.9.3**: Add enums: ConsultationBookingStatus, ConsultationUrgency, ConsultationPaymentStatus
-- [x] **8.9.4**: Create `apps/api/src/consultations/consultations.types.ts` (CalcomWebhookPayload, ConsultationRow interfaces)
-- [x] **8.9.5**: Create `apps/api/src/consultations/consultations.module.ts`
+- [X] **8.9.2**: Create `packages/shared/src/types/consultations.types.ts` (inferred types)
+- [X] **8.9.3**: Add enums: ConsultationBookingStatus, ConsultationUrgency, ConsultationPaymentStatus
+- [X] **8.9.4**: Create `apps/api/src/consultations/consultations.types.ts` (CalcomWebhookPayload, ConsultationRow interfaces)
+- [X] **8.9.5**: Create `apps/api/src/consultations/consultations.module.ts`
   - Import PaymentsModule for SafepayService
 
 ### Sub-task 8.10: Frontend - Consultation Booking Overlay ✅
 
-- [x] **8.10.1**: Install Cal.com embed SDK (`@calcom/embed-react`)
-- [x] **8.10.2**: Create consultation overlay component (modal with 4-step flow)
-- [x] **8.10.3**: Implement Step 1: Personal Info (full name, email, phone) with validation
-- [x] **8.10.4**: Implement Step 2: Case Details (practice area, urgency, issue summary, optional fields)
-- [x] **8.10.5**: Implement Step 3: Safepay Payment (popup checkout, postMessage callback, payment verification)
-- [x] **8.10.6**: Implement Step 4: Cal.com Embedded Booking (only renders after payment confirmed)
+- [X] **8.10.1**: Install Cal.com embed SDK (`@calcom/embed-react`)
+- [X] **8.10.2**: Create consultation overlay component (modal with 4-step flow)
+- [X] **8.10.3**: Implement Step 1: Personal Info (full name, email, phone) with validation
+- [X] **8.10.4**: Implement Step 2: Case Details (practice area, urgency, issue summary, optional fields)
+- [X] **8.10.5**: Implement Step 3: Safepay Payment (popup checkout, postMessage callback, payment verification)
+- [X] **8.10.6**: Implement Step 4: Cal.com Embedded Booking (only renders after payment confirmed)
   - Single event type: "Consultation with Mr. Shoaib Razzaq" (no attorney routing)
   - Pre-fills guest name, email, reference number
   - Subscribes to `bookingSuccessful` event
-- [x] **8.10.7**: Implement success confirmation screen
-- [x] **8.10.8**: Create `apps/web/lib/api/consultations.ts` API client helpers
-- [x] **8.10.9**: Create ConsultationContext + useConsultationOverlay hook for global access
-- [x] **8.10.10**: Create payment callback page at `/consultation/payment-callback`
+- [X] **8.10.7**: Implement success confirmation screen
+- [X] **8.10.8**: Create `apps/web/lib/api/consultations.ts` API client helpers
+- [X] **8.10.9**: Create ConsultationContext + useConsultationOverlay hook for global access
+- [X] **8.10.10**: Create payment callback page at `/consultation/payment-callback`
 
 ### Sub-task 8.11: Frontend - Dashboard Integration (remaining work)
 
-- [x] **8.11.1**: Create `ConsultationGuestsTable` admin component (filters, expandable details, pagination)
-- [x] **8.11.2**: Create `/admin/consultations/page.tsx` rendering ConsultationGuestsTable
-- [x] **8.11.3**: Add "Consultations" link to ADMIN_NAV in sidebar
-- [x] **8.11.4**: Create `/client/consultations/page.tsx` with:
+- [X] **8.11.1**: Create `ConsultationGuestsTable` admin component (filters, expandable details, pagination)
+- [X] **8.11.2**: Create `/admin/consultations/page.tsx` rendering ConsultationGuestsTable
+- [X] **8.11.3**: Add "Consultations" link to ADMIN_NAV in sidebar
+- [X] **8.11.4**: Create `/client/consultations/page.tsx` with:
   - "Book a Consultation" button that opens overlay (pre-filled with client profile data)
   - "My Consultations" list showing bookings matched by client email
-- [x] **8.11.5**: Add "Consultations" link to CLIENT_NAV in sidebar
-- [x] **8.11.6**: Update consultation overlay to accept optional `prefillData` prop for logged-in clients
-- [x] **8.11.7**: Add backend endpoint `GET /api/consultations/my` (authenticated, returns consultations by user email)
+- [X] **8.11.5**: Add "Consultations" link to CLIENT_NAV in sidebar
+- [X] **8.11.6**: Update consultation overlay to accept optional `prefillData` prop for logged-in clients
+- [X] **8.11.7**: Add backend endpoint `GET /api/consultations/my` (authenticated, returns consultations by user email)
 
 ### Sub-task 8.12: Database Cleanup
 
-- [x] **8.12.1**: Drop `appointments` table (replaced by Cal.com)
-- [x] **8.12.2**: Drop `availability_slots` table (replaced by Cal.com)
-- [x] **8.12.3**: Drop related RLS policies, triggers, and enum types
+- [X] **8.12.1**: Drop `appointments` table (replaced by Cal.com)
+- [X] **8.12.2**: Drop `availability_slots` table (replaced by Cal.com)
+- [X] **8.12.3**: Drop related RLS policies, triggers, and enum types
 
 ---
 
@@ -748,41 +748,41 @@ Complete database architecture with 20+ tables, Row-Level Security, comprehensiv
 
 ### Sub-task 9.1: Create Storage Service
 
-- [x] **9.1.1**: Create `apps/api/src/storage/storage.service.ts`
-- [x] **9.1.2**: Implement `uploadToStorage(file, bucket, path)` method
-- [x] **9.1.3**: Implement `downloadFromStorage(bucket, path)` method
-- [x] **9.1.4**: Implement `deleteFromStorage(bucket, path)` method
-- [x] **9.1.5**: Implement `getPublicUrl(bucket, path)` method
+- [X] **9.1.1**: Create `apps/api/src/storage/storage.service.ts`
+- [X] **9.1.2**: Implement `uploadToStorage(file, bucket, path)` method
+- [X] **9.1.3**: Implement `downloadFromStorage(bucket, path)` method
+- [X] **9.1.4**: Implement `deleteFromStorage(bucket, path)` method
+- [X] **9.1.5**: Implement `getPublicUrl(bucket, path)` method
 
 ### Sub-task 9.2: Create Documents Service
 
-- [x] **9.2.1**: Create `apps/api/src/documents/documents.service.ts`
-- [x] **9.2.2**: Implement `uploadDocument(file, metadata, currentUser)` method
-- [x] **9.2.3**: Implement `getDocuments(paginationDto, filters, currentUser)` method
-- [x] **9.2.4**: Implement `getDocumentById(documentId, currentUser)` method
-- [x] **9.2.5**: Implement `updateDocument(documentId, updateDto)` method
-- [x] **9.2.6**: Implement `deleteDocument(documentId, currentUser)` method
-- [x] **9.2.7**: Implement `downloadDocument(documentId, currentUser)` method
+- [X] **9.2.1**: Create `apps/api/src/documents/documents.service.ts`
+- [X] **9.2.2**: Implement `uploadDocument(file, metadata, currentUser)` method
+- [X] **9.2.3**: Implement `getDocuments(paginationDto, filters, currentUser)` method
+- [X] **9.2.4**: Implement `getDocumentById(documentId, currentUser)` method
+- [X] **9.2.5**: Implement `updateDocument(documentId, updateDto)` method
+- [X] **9.2.6**: Implement `deleteDocument(documentId, currentUser)` method
+- [X] **9.2.7**: Implement `downloadDocument(documentId, currentUser)` method
 
 ### Sub-task 9.3: Create Documents Controller
 
-- [x] **9.3.1**: Create `apps/api/src/documents/documents.controller.ts`
-- [x] **9.3.2**: Create endpoint: `POST /api/documents/upload`
-- [x] **9.3.3**: Create endpoint: `GET /api/documents`
-- [x] **9.3.4**: Create endpoint: `GET /api/documents/:id`
-- [x] **9.3.5**: Create endpoint: `PATCH /api/documents/:id`
-- [x] **9.3.6**: Create endpoint: `GET /api/documents/:id/download`
-- [x] **9.3.7**: Create endpoint: `DELETE /api/documents/:id`
+- [X] **9.3.1**: Create `apps/api/src/documents/documents.controller.ts`
+- [X] **9.3.2**: Create endpoint: `POST /api/documents/upload`
+- [X] **9.3.3**: Create endpoint: `GET /api/documents`
+- [X] **9.3.4**: Create endpoint: `GET /api/documents/:id`
+- [X] **9.3.5**: Create endpoint: `PATCH /api/documents/:id`
+- [X] **9.3.6**: Create endpoint: `GET /api/documents/:id/download`
+- [X] **9.3.7**: Create endpoint: `DELETE /api/documents/:id`
 
 ### Sub-task 9.4: Create DTOs
 
-- [x] **9.4.1**: Create `apps/api/src/documents/dto/upload-document.dto.ts`
-- [x] **9.4.2**: Create `apps/api/src/documents/dto/update-document.dto.ts`
-- [x] **9.4.3**: Create enum for document_type
+- [X] **9.4.1**: Create `apps/api/src/documents/dto/upload-document.dto.ts`
+- [X] **9.4.2**: Create `apps/api/src/documents/dto/update-document.dto.ts`
+- [X] **9.4.3**: Create enum for document_type
 
 ### Sub-task 9.5: Create Documents Module
 
-- [x] **9.5.1**: Create `apps/api/src/documents/documents.module.ts`
+- [X] **9.5.1**: Create `apps/api/src/documents/documents.module.ts`
 
 ---
 
@@ -1238,27 +1238,27 @@ Single atomic Supabase migration:
 
 ### Sub-task 11.1: Database Migration — Add Content Columns ✅
 
-- [x] **11.1.1**: Add `content_type` (text NOT NULL DEFAULT 'blog'), `metadata` (jsonb DEFAULT '{}') columns to `blog_posts`
-- [x] **11.1.2**: Add `meta_title` (text), `meta_description` (text), `read_time` (text) columns to `blog_posts`
-- [x] **11.1.3**: Add `is_featured` (boolean DEFAULT false), `google_doc_id` (text), `google_doc_url` (text) columns to `blog_posts`
+- [X] **11.1.1**: Add `content_type` (text NOT NULL DEFAULT 'blog'), `metadata` (jsonb DEFAULT '{}') columns to `blog_posts`
+- [X] **11.1.2**: Add `meta_title` (text), `meta_description` (text), `read_time` (text) columns to `blog_posts`
+- [X] **11.1.3**: Add `is_featured` (boolean DEFAULT false), `google_doc_id` (text), `google_doc_url` (text) columns to `blog_posts`
 
 ### Sub-task 11.2: Shared Package — Enums, Schemas & Types ✅
 
-- [x] **11.2.1**: Add enums to `packages/shared/src/enums.ts`: `ContentType` (BLOG, CASE_STUDY), `PostStatus` (DRAFT, PUBLISHED, ARCHIVED)
-- [x] **11.2.2**: Create `packages/shared/src/schemas/content.schemas.ts`
+- [X] **11.2.1**: Add enums to `packages/shared/src/enums.ts`: `ContentType` (BLOG, CASE_STUDY), `PostStatus` (DRAFT, PUBLISHED, ARCHIVED)
+- [X] **11.2.2**: Create `packages/shared/src/schemas/content.schemas.ts`
   - `CreateContentPostSchema` — googleDocUrl, contentType, categoryId, isFeatured, metadata
   - `UpdateContentPostSchema` — partial: title, slug, excerpt, metaTitle, metaDescription, status, featuredImage, metadata
   - `ContentPostResponseSchema`, `ContentFiltersSchema` (contentType, categoryId, status, search)
   - `CreateCategorySchema`, `UpdateCategorySchema`, `CategoryResponseSchema`
   - `CreateTestimonialSchema`, `TestimonialResponseSchema`
   - `CreateLegalNewsSchema`, `LegalNewsResponseSchema`
-- [x] **11.2.3**: Create `packages/shared/src/types/content.types.ts`
+- [X] **11.2.3**: Create `packages/shared/src/types/content.types.ts`
 
 ### Sub-task 11.3: Backend — Google Docs Service ✅
 
-- [x] **11.3.1**: Install `googleapis` package in `apps/api`
-- [x] **11.3.2**: Add `GOOGLE_SERVICE_ACCOUNT_KEY` to config module + `.env.example`
-- [x] **11.3.3**: Create `apps/api/src/content/google-docs.service.ts`
+- [X] **11.3.1**: Install `googleapis` package in `apps/api`
+- [X] **11.3.2**: Add `GOOGLE_SERVICE_ACCOUNT_KEY` to config module + `.env.example`
+- [X] **11.3.3**: Create `apps/api/src/content/google-docs.service.ts`
   - `extractDocId(url: string)` — parse Google Doc URL to document ID
   - `fetchDocument(docId: string)` — fetch via Docs API v1
   - `convertToHtml(document)` — convert Google Docs JSON to HTML (headings, paragraphs, lists, bold/italic, links, images, tables)
@@ -1266,7 +1266,7 @@ Single atomic Supabase migration:
 
 ### Sub-task 11.4: Backend — SEO Service ✅
 
-- [x] **11.4.1**: Create `apps/api/src/content/seo.service.ts`
+- [X] **11.4.1**: Create `apps/api/src/content/seo.service.ts`
   - `generateSlug(title: string)` — kebab-case, deduplicate with `-2`, `-3` suffix (uniqueness check against DB)
   - `generateMetaTitle(title: string)` — append " | AR&CO Law", truncate to 60 chars
   - `generateMetaDescription(excerpt: string)` — first 155 chars
@@ -1276,35 +1276,35 @@ Single atomic Supabase migration:
 
 ### Sub-task 11.5: Backend — Blog Service (Posts + Case Studies) ✅
 
-- [x] **11.5.1**: Create `apps/api/src/content/blog.service.ts` (626 lines)
-- [x] **11.5.2**: Implement `createPost(createDto, currentUser)` — fetch Google Doc, generate SEO, save to DB
-- [x] **11.5.3**: Implement `updatePost(postId, updateDto)` — update fields, re-generate SEO if title/content changed
-- [x] **11.5.4**: Implement `syncFromGoogleDoc(postId)` — re-fetch doc, update content + SEO
-- [x] **11.5.5**: Implement `deletePost(postId)` method
-- [x] **11.5.6**: Implement `getPublishedPosts(paginationDto, filters)` — filter by contentType, categoryId, search
-- [x] **11.5.7**: Implement `getPostBySlug(slug)` — single post with author + category joined
-- [x] **11.5.8**: Implement `getAllPosts(paginationDto)` — all statuses for admin
-- [x] **11.5.9**: Implement `incrementViewCount(postId)` method
-- [x] **11.5.10**: Implement category CRUD: `createCategory`, `updateCategory`, `deleteCategory`, `getCategories`
+- [X] **11.5.1**: Create `apps/api/src/content/blog.service.ts` (626 lines)
+- [X] **11.5.2**: Implement `createPost(createDto, currentUser)` — fetch Google Doc, generate SEO, save to DB
+- [X] **11.5.3**: Implement `updatePost(postId, updateDto)` — update fields, re-generate SEO if title/content changed
+- [X] **11.5.4**: Implement `syncFromGoogleDoc(postId)` — re-fetch doc, update content + SEO
+- [X] **11.5.5**: Implement `deletePost(postId)` method
+- [X] **11.5.6**: Implement `getPublishedPosts(paginationDto, filters)` — filter by contentType, categoryId, search
+- [X] **11.5.7**: Implement `getPostBySlug(slug)` — single post with author + category joined
+- [X] **11.5.8**: Implement `getAllPosts(paginationDto)` — all statuses for admin
+- [X] **11.5.9**: Implement `incrementViewCount(postId)` method
+- [X] **11.5.10**: Implement category CRUD: `createCategory`, `updateCategory`, `deleteCategory`, `getCategories`
 
 ### Sub-task 11.6: Backend — Testimonials Service ✅
 
-- [x] **11.6.1**: Create `apps/api/src/content/testimonials.service.ts`
-- [x] **11.6.2**: Implement `submitTestimonial(createDto, currentUser)` method
-- [x] **11.6.3**: Implement `getApprovedTestimonials(paginationDto)` method
-- [x] **11.6.4**: Implement `getAllTestimonials(paginationDto)` method (staff only)
-- [x] **11.6.5**: Implement `approveTestimonial(testimonialId, approverId)` method (admin only)
-- [x] **11.6.6**: Implement `rejectTestimonial(testimonialId)` method (admin only — deletes testimonial)
+- [X] **11.6.1**: Create `apps/api/src/content/testimonials.service.ts`
+- [X] **11.6.2**: Implement `submitTestimonial(createDto, currentUser)` method
+- [X] **11.6.3**: Implement `getApprovedTestimonials(paginationDto)` method
+- [X] **11.6.4**: Implement `getAllTestimonials(paginationDto)` method (staff only)
+- [X] **11.6.5**: Implement `approveTestimonial(testimonialId, approverId)` method (admin only)
+- [X] **11.6.6**: Implement `rejectTestimonial(testimonialId)` method (admin only — deletes testimonial)
 
 ### Sub-task 11.7: Backend — Legal News Service ✅
 
-- [x] **11.7.1**: Create `apps/api/src/content/legal-news.service.ts`
-- [x] **11.7.2**: Implement `createNewsItem(createDto)` method
-- [x] **11.7.3**: Implement `getLatestNews(limit)` method
+- [X] **11.7.1**: Create `apps/api/src/content/legal-news.service.ts`
+- [X] **11.7.2**: Implement `createNewsItem(createDto)` method
+- [X] **11.7.3**: Implement `getLatestNews(limit)` method
 
 ### Sub-task 11.8: Backend — Content Controllers ✅
 
-- [x] **11.8.1**: Create `apps/api/src/content/blog.controller.ts`
+- [X] **11.8.1**: Create `apps/api/src/content/blog.controller.ts`
   - `GET /api/content/posts` (@Public) — published posts, filter by contentType/category
   - `GET /api/content/posts/:slug` (@Public) — single post by slug
   - `POST /api/content/posts/:id/view` (@Public) — increment view count
@@ -1315,48 +1315,48 @@ Single atomic Supabase migration:
   - `DELETE /api/content/posts/:id` (admin) — delete post
   - `GET /api/content/categories` (@Public), `POST /api/content/categories` (staff)
   - `PATCH /api/content/categories/:id` (staff), `DELETE /api/content/categories/:id` (admin)
-- [x] **11.8.2**: Create `apps/api/src/content/testimonials.controller.ts`
+- [X] **11.8.2**: Create `apps/api/src/content/testimonials.controller.ts`
   - `GET /api/testimonials` (@Public — approved only), `POST /api/testimonials` (client)
   - `GET /api/testimonials/all` (staff), `POST /api/testimonials/:id/approve` (admin), `POST /api/testimonials/:id/reject` (admin)
-- [x] **11.8.3**: Create `apps/api/src/content/legal-news.controller.ts`
+- [X] **11.8.3**: Create `apps/api/src/content/legal-news.controller.ts`
   - `GET /api/legal-news` (@Public), `POST /api/legal-news` (staff)
 
 ### Sub-task 11.9: Backend — Content Module ✅
 
-- [x] **11.9.1**: Create `apps/api/src/content/content.module.ts`
+- [X] **11.9.1**: Create `apps/api/src/content/content.module.ts`
   - Register GoogleDocsService, SeoService, BlogService, TestimonialsService, LegalNewsService, all controllers
-- [x] **11.9.2**: Register ContentModule in `app.module.ts`
+- [X] **11.9.2**: Register ContentModule in `app.module.ts`
 
 ### Sub-task 11.10: Frontend — API Client & Types ✅
 
-- [x] **11.10.1**: Create `apps/web/lib/api/content.ts` (891 lines, fully documented with JSDoc)
+- [X] **11.10.1**: Create `apps/web/lib/api/content.ts` (891 lines, fully documented with JSDoc)
   - `getPublishedPosts(params)`, `getPostBySlug(slug)`, `getAdminPosts(params)`, `createPost(data)`, `updatePost(id, data)`, `syncPost(id)`, `deletePost(id)`, `incrementView(id)`
   - `getCategories()`, `createCategory(data)`, `updateCategory(id, data)`, `deleteCategory(id)`
   - `getApprovedTestimonials()`, `submitTestimonial()`, `getAllTestimonials()`, `approveTestimonial()`, `rejectTestimonial()`
   - `getLatestNews()`, `createNewsItem()`
-- [x] **11.10.2**: Testimonials API functions included in `content.ts` (no separate file needed)
-- [x] **11.10.3**: Legal news API functions included in `content.ts` (no separate file needed)
+- [X] **11.10.2**: Testimonials API functions included in `content.ts` (no separate file needed)
+- [X] **11.10.3**: Legal news API functions included in `content.ts` (no separate file needed)
 
 ### Sub-task 11.11: Frontend — Admin Content Pages ✅
 
-- [x] **11.11.1**: Create `/admin/content` page — Paginated table, filters by type/status/category/search, category management dialog, delete functionality
-- [x] **11.11.2**: Create `/admin/content/new` page — Google Doc URL input, content type selector, category picker, featured toggle, service account email with copy-to-clipboard
-- [x] **11.11.3**: Create `/admin/content/[id]` page — SEO field editing, status change, sync from Google Doc button, delete option, category management, featured toggle
-- [x] **11.11.4**: Update admin sidebar to add "Content" link (FileText icon)
+- [X] **11.11.1**: Create `/admin/content` page — Paginated table, filters by type/status/category/search, category management dialog, delete functionality
+- [X] **11.11.2**: Create `/admin/content/new` page — Google Doc URL input, content type selector, category picker, featured toggle, service account email with copy-to-clipboard
+- [X] **11.11.3**: Create `/admin/content/[id]` page — SEO field editing, status change, sync from Google Doc button, delete option, category management, featured toggle
+- [X] **11.11.4**: Update admin sidebar to add "Content" link (FileText icon)
 
 ### Sub-task 11.12: Frontend — Update Public Blog Pages ✅
 
-- [x] **11.12.1**: Convert `/blogs/page.tsx` to fetch from API (`GET /api/content/posts`) — tab navigation (Insights/Case Studies), featured posts carousel, category filtering, animated UI
-- [x] **11.12.2**: Convert `/blogs/[slug]/page.tsx` to server component with `generateMetadata()` for SSR SEO (SSG with 60s revalidation)
-- [x] **11.12.3**: Add JSON-LD structured data (Article schema) to `/blogs/[slug]/page.tsx`
-- [x] **11.12.4**: Add Open Graph + Twitter Card meta tags via `generateMetadata()`
-- [x] **11.12.5**: Remove static data files (`blogData.ts`, `caseStudyData.ts`) after API integration complete
+- [X] **11.12.1**: Convert `/blogs/page.tsx` to fetch from API (`GET /api/content/posts`) — tab navigation (Insights/Case Studies), featured posts carousel, category filtering, animated UI
+- [X] **11.12.2**: Convert `/blogs/[slug]/page.tsx` to server component with `generateMetadata()` for SSR SEO (SSG with 60s revalidation)
+- [X] **11.12.3**: Add JSON-LD structured data (Article schema) to `/blogs/[slug]/page.tsx`
+- [X] **11.12.4**: Add Open Graph + Twitter Card meta tags via `generateMetadata()`
+- [X] **11.12.5**: Remove static data files (`blogData.ts`, `caseStudyData.ts`) after API integration complete
 
 ### Sub-task 11.13: Google Doc Templates
 
 - [ ] **11.13.1**: Create Blog Post template Google Doc skeleton in shared Drive folder
 - [ ] **11.13.2**: Create Case Study template Google Doc skeleton in shared Drive folder
-- [x] **11.13.3**: Add template links to admin "New Post" page for reference (service account email displayed with copy button)
+- [X] **11.13.3**: Add template links to admin "New Post" page for reference (service account email displayed with copy button)
 
 ---
 
@@ -1364,46 +1364,47 @@ Single atomic Supabase migration:
 
 ### Sub-task 12.1: Create Dashboard Service ✅
 
-- [x] **12.1.1**: Create `apps/api/src/dashboard/dashboard.service.ts`
-- [x] **12.1.2**: Implement `getAdminDashboardStats()` method
+- [X] **12.1.1**: Create `apps/api/src/dashboard/dashboard.service.ts`
+- [X] **12.1.2**: Implement `getAdminDashboardStats()` method
   - Total clients, active cases, pending appointments
-- [x] **12.1.3**: Implement `getClientDashboardStats(clientProfileId)` method
+- [X] **12.1.3**: Implement `getClientDashboardStats(clientProfileId)` method
   - Open cases, upcoming appointments, pending invoices
-- [x] **12.1.4**: Implement `getRecentActivities(limit)` method
+- [X] **12.1.4**: Implement `getRecentActivities(limit)` method
   - Queries activity_logs with user_profiles join, returns camelCase mapped entries
-- [x] **12.1.5**: Implement `getRevenueAnalytics(dateRange)` method
+- [X] **12.1.5**: Implement `getRevenueAnalytics(dateRange)` method
   - Placeholder returning zeroed structure — TODO comments for Task 10 integration
-- [x] **12.1.6**: Implement `getCaseAnalytics()` method
+- [X] **12.1.6**: Implement `getCaseAnalytics()` method
   - byStatus, byPriority breakdowns, resolutionRate, avgResolutionDays
-- [x] **12.1.7**: Implement `getAnalyticsStats()` method
+- [X] **12.1.7**: Implement `getAnalyticsStats()` method
   - activeSubscribers, openComplaints, pendingRegistrations counts
 
 ### Sub-task 12.2: Create Client Interactions Service (CRM) ✅
 
-- [x] **12.2.1**: Create `apps/api/src/admin/client-interactions.service.ts`
-- [x] **12.2.2**: Implement `logInteraction(clientProfileId, createDto, currentUser)` method
-- [x] **12.2.3**: Implement `getClientInteractions(clientId, paginationDto)` method
-- [x] **12.2.4**: Implement `getUpcomingInteractions(paginationDto)` method
-- [x] **12.2.5**: Implement `updateInteraction(interactionId, updateDto)` method
-- [x] **12.2.6**: Implement `completeInteraction(interactionId)` method
+- [X] **12.2.1**: Create `apps/api/src/admin/client-interactions.service.ts`
+- [X] **12.2.2**: Implement `logInteraction(clientProfileId, createDto, currentUser)` method
+- [X] **12.2.3**: Implement `getClientInteractions(clientId, paginationDto)` method
+- [X] **12.2.4**: Implement `getUpcomingInteractions(paginationDto)` method
+- [X] **12.2.5**: Implement `updateInteraction(interactionId, updateDto)` method
+- [X] **12.2.6**: Implement `completeInteraction(interactionId)` method
 
 ### Sub-task 12.3: Create Activity Logs Service ✅
 
-- [x] **12.3.1**: Create `apps/api/src/admin/activity-logs.service.ts`
-- [x] **12.3.2**: Implement `createLog(dto, userId?)` method (fire-and-forget, non-blocking)
-- [x] **12.3.3**: Implement `getLogs(pagination, filters)` method (paginated, filterable)
+- [X] **12.3.1**: Create `apps/api/src/admin/activity-logs.service.ts`
+- [X] **12.3.2**: Implement `createLog(dto, userId?)` method (fire-and-forget, non-blocking)
+- [X] **12.3.3**: Implement `getLogs(pagination, filters)` method (paginated, filterable)
+
 > Note: HEAD TASK 15's AuditService provides the primary audit trail via global interceptor. This ActivityLogsService is a simpler complement for programmatic log creation.
 
 ### Sub-task 12.4: Create Admin Controllers ✅
 
-- [x] **12.4.1**: Create `apps/api/src/dashboard/dashboard.controller.ts`
+- [X] **12.4.1**: Create `apps/api/src/dashboard/dashboard.controller.ts`
   - `GET /api/dashboard/admin/stats` (admin/attorney/staff) — primary stats
   - `GET /api/dashboard/client/stats` (client) — client stats
   - `GET /api/dashboard/admin/analytics` — secondary analytics stats
   - `GET /api/dashboard/admin/recent-activities?limit=N` — recent activity feed
   - `GET /api/dashboard/admin/case-analytics` — case breakdown
   - `GET /api/dashboard/admin/revenue-analytics` — placeholder
-- [x] **12.4.2**: Create `apps/api/src/admin/admin.controller.ts`
+- [X] **12.4.2**: Create `apps/api/src/admin/admin.controller.ts`
   - `GET /api/admin/activity-logs` (admin/attorney/staff) — query with filters
   - `GET /api/admin/clients/:clientProfileId/interactions` — list
   - `POST /api/admin/clients/:clientProfileId/interactions` — create (Zod-validated)
@@ -1413,28 +1414,29 @@ Single atomic Supabase migration:
 
 ### Sub-task 12.5: Admin Schemas & Types ✅
 
-- [x] **12.5.1a**: Dashboard schemas (`AdminDashboardStatsSchema`, `ClientDashboardStatsSchema`)
-- [x] **12.5.1b**: Dashboard types exported
-- [x] **12.5.1c**: Create `packages/shared/src/schemas/admin.schemas.ts`
+- [X] **12.5.1a**: Dashboard schemas (`AdminDashboardStatsSchema`, `ClientDashboardStatsSchema`)
+- [X] **12.5.1b**: Dashboard types exported
+- [X] **12.5.1c**: Create `packages/shared/src/schemas/admin.schemas.ts`
   - Interaction: `CreateInteractionSchema`, `UpdateInteractionSchema`, `InteractionResponseSchema`, `PaginatedInteractionsResponseSchema`
   - Activity Logs: `CreateActivityLogSchema`, `ActivityLogResponseSchema`, `ActivityLogFiltersSchema`, `PaginatedActivityLogsResponseSchema`
   - Analytics: `AdminAnalyticsStatsSchema`, `CaseAnalyticsSchema`, `RevenueAnalyticsSchema`
-- [x] **12.5.2**: Create `packages/shared/src/types/admin.types.ts` (11 types inferred from schemas)
-- [x] **12.5.3**: Add `InteractionType` enum (CALL, EMAIL, MEETING, WHATSAPP, OTHER) — matches DB `interaction_type` enum
+- [X] **12.5.2**: Create `packages/shared/src/types/admin.types.ts` (11 types inferred from schemas)
+- [X] **12.5.3**: Add `InteractionType` enum (CALL, EMAIL, MEETING, WHATSAPP, OTHER) — matches DB `interaction_type` enum
 
 ### Sub-task 12.6: Admin Module ✅
 
-- [x] **12.6.1**: Create `apps/api/src/admin/admin.module.ts` (providers: ClientInteractionsService, ActivityLogsService; exports: ActivityLogsService)
-- [x] **12.6.2**: Create `apps/api/src/dashboard/dashboard.module.ts` (registered in `app.module.ts`)
+- [X] **12.6.1**: Create `apps/api/src/admin/admin.module.ts` (providers: ClientInteractionsService, ActivityLogsService; exports: ActivityLogsService)
+- [X] **12.6.2**: Create `apps/api/src/dashboard/dashboard.module.ts` (registered in `app.module.ts`)
 
 ### Sub-task 12.7: Frontend — Admin Management Views ✅
 
-- [x] **12.7.1**: Create `/admin/complaints` page — list with filters (status, category, search)
-- [x] **12.7.2**: Create `/admin/complaints/:id` page — detail + status update + assign to staff
-- [x] **12.7.3**: Create `/admin/subscriptions` page — list with status filters + cancel capability
-- [x] **12.7.4**: Update admin sidebar: all links present (Dashboard, Clients, Users, Cases, Complaints, Subscriptions, Service Registrations, Consultations, Documents, Content, Profile)
+- [X] **12.7.1**: Create `/admin/complaints` page — list with filters (status, category, search)
+- [X] **12.7.2**: Create `/admin/complaints/:id` page — detail + status update + assign to staff
+- [X] **12.7.3**: Create `/admin/subscriptions` page — list with status filters + cancel capability
+- [X] **12.7.4**: Update admin sidebar: all links present (Dashboard, Clients, Users, Cases, Complaints, Subscriptions, Service Registrations, Consultations, Documents, Content, Profile)
 
 > **Additional admin pages implemented beyond original scope:**
+>
 > - `/admin/clients` — Tabbed page (Registered Clients + Consultation Guests)
 > - `/admin/clients/[id]` — Client detail with Cases/Documents/Invoices tabs
 > - `/admin/users` — User management with invite dialog, delete, search, filters
@@ -1450,9 +1452,9 @@ Single atomic Supabase migration:
 
 ### Sub-task 12.8: Frontend — Dashboard Stats (Partial ✅)
 
-- [x] **12.8.1**: Create `apps/web/lib/api/dashboard.ts` API client helpers (`getAdminDashboardStats()`, `getClientDashboardStats()`)
-- [x] **12.8.2**: Update admin dashboard page to fetch real stats from `GET /api/dashboard/admin/stats`
-- [x] **12.8.3**: Update client dashboard page to fetch real stats from `GET /api/dashboard/client/stats`
+- [X] **12.8.1**: Create `apps/web/lib/api/dashboard.ts` API client helpers (`getAdminDashboardStats()`, `getClientDashboardStats()`)
+- [X] **12.8.2**: Update admin dashboard page to fetch real stats from `GET /api/dashboard/admin/stats`
+- [X] **12.8.3**: Update client dashboard page to fetch real stats from `GET /api/dashboard/client/stats`
 - [ ] **12.8.6**: Create `apps/web/lib/api/admin.ts` — frontend API client for analytics + CRM interactions
   - Analytics: `getAnalyticsStats()`, `getRecentActivities()`, `getCaseAnalytics()`
   - Interactions: `getClientInteractions()`, `createInteraction()`, `updateInteraction()`, `completeInteraction()`, `getUpcomingInteractions()`
@@ -1471,35 +1473,35 @@ Single atomic Supabase migration:
 
 ### Sub-task 13.1: Unit Tests
 
-- [ ] **13.1.1**: Write tests for `LemonSqueezyService` (checkout, webhook verification, subscription management)
-- [ ] **13.1.2**: Write tests for `ConsultationsService` (booking, payment webhook handler)
-- [ ] **13.1.3**: Write tests for `SubscriptionsService` (checkout, all webhook handlers)
-- [ ] **13.1.4**: Write tests for `ServiceRegistrationsService` (registration, payment, auto-account)
-- [ ] **13.1.5**: Write tests for `CasesService` (CRUD, assignment, from-registration)
-- [ ] **13.1.6**: Write tests for `InvoicesService` (CRUD, totals, send)
+- [X] **13.1.1**: Write tests for `LemonSqueezyService` (checkout, webhook verification, subscription management)
+- [X] **13.1.2**: Write tests for `ConsultationsService` (booking, payment webhook handler)
+- [X] **13.1.3**: Write tests for `SubscriptionsService` (checkout, all webhook handlers)
+- [X] **13.1.4**: Write tests for `ServiceRegistrationsService` (registration, payment, auto-account)
+- [X] **13.1.5**: Write tests for `CasesService` (CRUD, assignment, from-registration)
+- [X] **13.1.6**: Write tests for `InvoicesService` (CRUD, totals, send)
 
 ### Sub-task 13.2: Integration Tests
 
-- [ ] **13.2.1**: Test complete auth flow (signup → signin → refresh → signout)
-- [ ] **13.2.2**: Test consultation booking flow (guest intake → Lemon Squeezy checkout → webhook → Cal.com)
-- [ ] **13.2.3**: Test subscription flow (checkout → webhook → renewal → cancellation)
-- [ ] **13.2.4**: Test service registration flow (register → pay → webhook → auto-account)
-- [ ] **13.2.5**: Test case management flow (create → assign → activities → close)
+- [X] **13.2.1**: Test complete auth flow (signup → signin → refresh → signout)
+- [X] **13.2.2**: Test consultation booking flow (guest intake → Lemon Squeezy checkout → webhook → Cal.com)
+- [X] **13.2.3**: Test subscription flow (checkout → webhook → renewal → cancellation)
+- [X] **13.2.4**: Test service registration flow (register → pay → webhook → auto-account)
+- [X] **13.2.5**: Test case management flow (create → assign → activities → close)
 
 ### Sub-task 13.3: Test RLS Policies
 
-- [ ] **13.3.1**: Verify clients can only access their own data
-- [ ] **13.3.2**: Verify staff can access all client data
-- [ ] **13.3.3**: Verify admin has full access
-- [ ] **13.3.4**: Verify unauthorized users get 403 errors
-- [ ] **13.3.5**: Verify @Public endpoints don't leak data
+- [X] **13.3.1**: Verify clients can only access their own data
+- [X] **13.3.2**: Verify staff can access all client data
+- [X] **13.3.3**: Verify admin has full access
+- [X] **13.3.4**: Verify unauthorized users get 403 errors
+- [X] **13.3.5**: Verify @Public endpoints don't leak data
 
 ### Sub-task 13.4: Test API Endpoints
 
-- [ ] **13.4.1**: Test all auth endpoints
-- [ ] **13.4.2**: Test all CRUD endpoints with pagination and filtering
-- [ ] **13.4.3**: Test validation errors (bad input, missing required fields)
-- [ ] **13.4.4**: Test error handling (not found, unauthorized, forbidden)
+- [X] **13.4.1**: Test all auth endpoints
+- [X] **13.4.2**: Test all CRUD endpoints with pagination and filtering
+- [X] **13.4.3**: Test validation errors (bad input, missing required fields)
+- [X] **13.4.4**: Test error handling (not found, unauthorized, forbidden)
 
 ---
 
@@ -1539,23 +1541,23 @@ Single atomic Supabase migration:
 
 ### Sub-task 15.1: Shared Package (Enums, Schemas, Types)
 
-- [x] **15.1.1**: Add `AuditAction` and `AuditEntityType` enums to `packages/shared/src/enums.ts`
-- [x] **15.1.2**: Create `packages/shared/src/schemas/audit.schemas.ts` (AuditLogResponseSchema, AuditLogFiltersSchema, PaginatedAuditLogsResponseSchema, AuditLogUserSchema)
-- [x] **15.1.3**: Create `packages/shared/src/types/audit.types.ts` (inferred from schemas)
-- [x] **15.1.4**: Add barrel exports in `schemas/index.ts` and `types/index.ts`
+- [X] **15.1.1**: Add `AuditAction` and `AuditEntityType` enums to `packages/shared/src/enums.ts`
+- [X] **15.1.2**: Create `packages/shared/src/schemas/audit.schemas.ts` (AuditLogResponseSchema, AuditLogFiltersSchema, PaginatedAuditLogsResponseSchema, AuditLogUserSchema)
+- [X] **15.1.3**: Create `packages/shared/src/types/audit.types.ts` (inferred from schemas)
+- [X] **15.1.4**: Add barrel exports in `schemas/index.ts` and `types/index.ts`
 
 ### Sub-task 15.2: Database Indexes
 
-- [x] **15.2.1**: Add indexes on `activity_logs` table (created_at DESC, user_id, entity_type, action)
+- [X] **15.2.1**: Add indexes on `activity_logs` table (created_at DESC, user_id, entity_type, action)
 
 ### Sub-task 15.3: Backend — AuditService
 
-- [x] **15.3.1**: Create `apps/api/src/audit/audit.service.ts` with `log()`, `findAll()`, `getDistinctUsers()` methods
-- [x] **15.3.2**: Create `@SkipAudit()` decorator at `apps/api/src/common/decorators/skip-audit.decorator.ts`
+- [X] **15.3.1**: Create `apps/api/src/audit/audit.service.ts` with `log()`, `findAll()`, `getDistinctUsers()` methods
+- [X] **15.3.2**: Create `@SkipAudit()` decorator at `apps/api/src/common/decorators/skip-audit.decorator.ts`
 
 ### Sub-task 15.4: Backend — AuditInterceptor
 
-- [x] **15.4.1**: Create `apps/api/src/audit/audit.interceptor.ts` — global interceptor for POST/PATCH/DELETE
+- [X] **15.4.1**: Create `apps/api/src/audit/audit.interceptor.ts` — global interceptor for POST/PATCH/DELETE
   - Route-to-action mapping for ~25 admin routes
   - Sensitive field redaction (passwords, tokens)
   - IP address and user agent extraction
@@ -1563,25 +1565,25 @@ Single atomic Supabase migration:
 
 ### Sub-task 15.5: Backend — AuditController
 
-- [x] **15.5.1**: Create `apps/api/src/audit/audit.controller.ts`
+- [X] **15.5.1**: Create `apps/api/src/audit/audit.controller.ts`
   - `GET /api/audit-logs` — paginated list with filters (`@Roles(ADMIN, ATTORNEY)`)
   - `GET /api/audit-logs/users` — distinct users for filter dropdown
 
 ### Sub-task 15.6: Backend — AuditModule + Registration
 
-- [x] **15.6.1**: Create `apps/api/src/audit/audit.module.ts` (`@Global()`, exports AuditService)
-- [x] **15.6.2**: Register AuditModule in `app.module.ts`
-- [x] **15.6.3**: Register AuditInterceptor globally in `main.ts`
+- [X] **15.6.1**: Create `apps/api/src/audit/audit.module.ts` (`@Global()`, exports AuditService)
+- [X] **15.6.2**: Register AuditModule in `app.module.ts`
+- [X] **15.6.3**: Register AuditInterceptor globally in `main.ts`
 
 ### Sub-task 15.7: Backend — Auth Event Migration
 
-- [x] **15.7.1**: Inject AuditService into AuthService, replace `logAuthEvent()` with `auditService.log()`
-- [x] **15.7.2**: Remove `ActivityLogMetadata` interface (replaced by `Record<string, unknown>`)
+- [X] **15.7.1**: Inject AuditService into AuthService, replace `logAuthEvent()` with `auditService.log()`
+- [X] **15.7.2**: Remove `ActivityLogMetadata` interface (replaced by `Record<string, unknown>`)
 
 ### Sub-task 15.8: Frontend — API Client & Page
 
-- [x] **15.8.1**: Create `apps/web/lib/api/audit-logs.ts` (getAuditLogs, getAuditLogUsers)
-- [x] **15.8.2**: Create `/admin/audit-logs` page with filterable table
+- [X] **15.8.1**: Create `apps/web/lib/api/audit-logs.ts` (getAuditLogs, getAuditLogUsers)
+- [X] **15.8.2**: Create `/admin/audit-logs` page with filterable table
   - Filters: user, action, entity type, date range
   - Color-coded action badges
   - Expandable rows with metadata JSON
@@ -1590,7 +1592,7 @@ Single atomic Supabase migration:
 
 ### Sub-task 15.9: Frontend — Sidebar Update
 
-- [x] **15.9.1**: Add "Audit Logs" link to admin sidebar (visible to Admin + Attorney only)
+- [X] **15.9.1**: Add "Audit Logs" link to admin sidebar (visible to Admin + Attorney only)
 
 ---
 
@@ -1598,37 +1600,37 @@ Single atomic Supabase migration:
 
 ### Phase 1: Environment & Database ✅
 
-- [x] All dependencies installed
-- [x] Backend starts without errors
-- [x] Supabase connection working
-- [x] All tables exist (consultation_bookings, subscriptions, complaints, service_registrations)
-- [x] RLS enabled on all tables
-- [x] Triggers and functions created (CON-YYYY-NNNN, CMP-YYYY-NNNN, SRV-YYYY-NNNN)
+- [X] All dependencies installed
+- [X] Backend starts without errors
+- [X] Supabase connection working
+- [X] All tables exist (consultation_bookings, subscriptions, complaints, service_registrations)
+- [X] RLS enabled on all tables
+- [X] Triggers and functions created (CON-YYYY-NNNN, CMP-YYYY-NNNN, SRV-YYYY-NNNN)
 
 ### Phase 2: Authentication ✅
 
-- [x] Signup creates user and returns JWT (now returns `SignupPendingResponse` — email confirmation required before profile creation)
-- [x] Signin returns valid JWT (enhanced: checks email confirmation status)
-- [x] OAuth callback creates profile on first login (reads phone_number from user_metadata)
-- [x] Get current user works
-- [x] Invalid token returns 401
+- [X] Signup creates user and returns JWT (now returns `SignupPendingResponse` — email confirmation required before profile creation)
+- [X] Signin returns valid JWT (enhanced: checks email confirmation status)
+- [X] OAuth callback creates profile on first login (reads phone_number from user_metadata)
+- [X] Get current user works
+- [X] Invalid token returns 401
 
 ### Phase 3: Core Features (Partial)
 
-- [x] Create client works
-- [x] Create case works (case_number generated)
-- [x] Upload document works (HEAD TASK 9)
+- [X] Create client works
+- [X] Create case works (case_number generated)
+- [X] Upload document works (HEAD TASK 9)
 - [ ] Create invoice works (HEAD TASK 10G)
 
 ### Phase 4: Client-Facing Features (Partial)
 
-- [x] Consultation booking form + Cal.com scheduling works
+- [X] Consultation booking form + Cal.com scheduling works
 - [ ] Consultation payment flow end-to-end (HEAD TASK 10E + 10H)
-- [x] Logged-in clients can book consultations from dashboard (pre-filled overlay)
+- [X] Logged-in clients can book consultations from dashboard (pre-filled overlay)
 - [ ] Subscription checkout works end-to-end (HEAD TASK 10D + 10H)
-- [x] Complaint submission gated behind active subscription
-- [x] Complaint status tracking works
-- [x] Service registration form works (guest → details)
+- [X] Complaint submission gated behind active subscription
+- [X] Complaint status tracking works
+- [X] Service registration form works (guest → details)
 - [ ] Service registration payment end-to-end (HEAD TASK 10F + 10H)
 - [ ] Auto account creation on service registration payment (HEAD TASK 10F)
 
@@ -1646,19 +1648,19 @@ Single atomic Supabase migration:
 
 ### Phase 5b: Cal.com Integration ✅
 
-- [x] Cal.com webhook receives BOOKING_CREATED events
-- [x] Webhook matches booking by metadata.referenceNumber (or fallback by email)
-- [x] Meeting link, date, time stored in consultation_bookings
-- [x] Booking status updated to 'booked' after Cal.com scheduling
+- [X] Cal.com webhook receives BOOKING_CREATED events
+- [X] Webhook matches booking by metadata.referenceNumber (or fallback by email)
+- [X] Meeting link, date, time stored in consultation_bookings
+- [X] Booking status updated to 'booked' after Cal.com scheduling
 
 ### Phase 6: RLS & Security
 
-- [x] Clients see only own data
-- [x] Attorneys see assigned data
-- [x] Admin sees all data
-- [x] Access control enforced
-- [x] Guest endpoints (@Public) don't leak data
-- [x] Subscription check prevents unauthorized complaint submission
+- [X] Clients see only own data
+- [X] Attorneys see assigned data
+- [X] Admin sees all data
+- [X] Access control enforced
+- [X] Guest endpoints (@Public) don't leak data
+- [X] Subscription check prevents unauthorized complaint submission
 - [ ] Database RLS optimized (HEAD TASK 14)
 
 ### Phase 7: Testing

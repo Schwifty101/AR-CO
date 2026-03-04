@@ -75,7 +75,8 @@
       "Bash(kill 34164:*)",
       "Bash(echo === Filter by action=SIGNOUT ===:*)",
       "Bash(npm view:*)",
-      "Bash(true:*)"
+      "Bash(true:*)",
+      "WebFetch(domain:docs.nestjs.com)"
     ],
     "env": {
       "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"

@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import Hero from "@/components/home/hero/HeroV2"
-import QuoteSection from "@/components/home/quote/QuoteSection"
+import LegalServices from "@/components/home/LegalServices/LegalServices"
 import AboutSection from "@/components/home/about/AboutSection"
 import Testimonials from "@/components/home/testimonials/Testimonials"
 import ClientLogosCarousel from "@/components/home/ClientLogosCarousel"
@@ -170,7 +170,7 @@ export default function Home() {
           onReady={handleVideoReady}
           playing={videoReady}
         />
-        <QuoteSection />
+        <LegalServices />
         <AboutSection />
         <ClientLogosCarousel />
         <Testimonials />
