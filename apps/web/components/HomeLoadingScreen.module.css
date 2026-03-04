@@ -48,7 +48,7 @@
 
 .textCenter {
   position: absolute;
-  top: 48%;
+  top: 52%;
   left: 50%;
   transform: translateX(-50%);
   display: flex;

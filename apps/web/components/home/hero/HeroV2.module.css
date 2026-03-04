@@ -140,7 +140,7 @@
 /* ── Centre wrapper — AR&CO + tagline, scroll-parallaxed as one unit ──── */
 .centerWrapper {
   position: absolute;
-  top: 48%;
+  top: 52%;
   left: 50%;
   transform: translateX(-50%) translateY(calc(var(--global-sy, 0) * 0.15 * -1px));
   z-index: 3;
