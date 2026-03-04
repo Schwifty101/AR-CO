@@ -46,6 +46,11 @@
   margin-bottom: 3rem;
 }
 
+/* Match spacing when header follows a divider inside a section */
+.fullRule + .sectionHeader {
+  margin-top: 4rem;
+}
+
 .sectionTitle {
   font-family: 'Lora', Georgia, serif;
   font-size: clamp(2.2rem, 5vw, 4rem);
