@@ -56,8 +56,7 @@ export default function RootLayout({
         {/* Preload hero video so download starts immediately with the HTML,
             in parallel with JS chunk downloads. The HeroV2 fetch() will hit
             the browser's preload cache instead of waiting for React to mount. */}
-        {/* <link rel="preload" href="/banner/hero-bg.mp4" as="fetch" crossOrigin="anonymous" /> */}
-        <link rel="preload" href="/banner/hero-bg.webm" as="fetch" crossOrigin="anonymous" />
+        <link rel="preload" href="/banner/hero-bg.mp4" as="fetch" crossOrigin="anonymous" />
         <link
           rel="preload"
           href="/fonts/lora/Lora-VariableItalic.woff2"
