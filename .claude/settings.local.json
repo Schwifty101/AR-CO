@@ -79,7 +79,8 @@
       "WebFetch(domain:docs.nestjs.com)",
       "Bash(ffmpeg:*)",
       "Bash(brew install:*)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Bash(du:*)"
     ],
     "env": {
       "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"

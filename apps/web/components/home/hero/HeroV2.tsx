@@ -158,13 +158,13 @@ export default function HeroV2({ onProgress, onReady, playing = false }: HeroV2P
           onProgressRef.current?.(100)
           onReadyRef.current?.()
         } else {
-          // Brief fallback — video is fully downloaded, element just needs to parse
+          // Brief fallback — blob is in memory, element just needs to parse headers
           const parseFallback = setTimeout(() => {
             if (!cancelled) {
               onProgressRef.current?.(100)
               onReadyRef.current?.()
             }
-          }, 3000)
+          }, 500)
 
           video.addEventListener('canplaythrough', () => {
             clearTimeout(parseFallback)
@@ -200,12 +200,12 @@ export default function HeroV2({ onProgress, onReady, playing = false }: HeroV2P
     <section className={styles.hero} data-hero-section="true">
 
       {/* ── Background video — plays once, holds last frame ─────────────── */}
+      {/* src is set programmatically after fetch completes — no preload needed */}
       <video
         ref={videoRef}
         className={`${styles.videoBg} ${playing ? styles.videoBgVisible : ''}`}
         muted
         playsInline
-        preload="auto"
         aria-hidden="true"
       />
       <div className={styles.videoOverlay} aria-hidden="true" />

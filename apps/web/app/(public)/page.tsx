@@ -1,15 +1,21 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
+import dynamic from 'next/dynamic'
 import Hero from "@/components/home/hero/HeroV2"
-import LegalServices from "@/components/home/LegalServices/LegalServices"
-import AboutSection from "@/components/home/about/AboutSection"
-import Testimonials from "@/components/home/testimonials/Testimonials"
-import ClientLogosCarousel from "@/components/home/ClientLogosCarousel"
 import HomeLoadingScreen from "@/components/HomeLoadingScreen"
 import { getSmoother } from '@/components/SmoothScroll'
 
 import styles from "./page.module.css"
+
+// ─── Lazy-load below-fold sections ──────────────────────────────────────────
+// These import GSAP / Framer Motion and are not visible until after the loading
+// screen dismisses.  Code-splitting them keeps the initial bundle small so the
+// hero video fetch starts sooner.
+const LegalServices     = dynamic(() => import("@/components/home/LegalServices/LegalServices"), { ssr: false })
+const AboutSection      = dynamic(() => import("@/components/home/about/AboutSection"),          { ssr: false })
+const ClientLogosCarousel = dynamic(() => import("@/components/home/ClientLogosCarousel"),        { ssr: false })
+const Testimonials      = dynamic(() => import("@/components/home/testimonials/Testimonials"),    { ssr: false })
 
 // ─── Page-level background text ───────────────────────────────────────────────
 // Quotes and headlines scattered through non-hero sections.
