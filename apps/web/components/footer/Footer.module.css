@@ -642,24 +642,35 @@ button.navLink:focus-visible {
   }
 
   .bottomRow {
-    flex-direction: column;
-    gap: 1.5rem;
-    align-items: flex-start;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem 1rem;
+    align-items: start;
   }
 
-  .bottomLeft,
-  .bottomCenter,
-  .bottomRight {
-    width: 100%;
+  .bottomLeft {
+    width: auto;
+    grid-column: 1;
+    grid-row: 1;
   }
 
   .bottomCenter {
-    flex-direction: row;
-    gap: 1.5rem;
+    width: auto;
+    grid-column: 2;
+    grid-row: 1;
+    align-items: flex-end;
+    flex-direction: column;
+    gap: 0.25rem;
   }
 
   .bottomRight {
-    justify-content: flex-start;
+    grid-column: 1 / -1;
+    grid-row: 2;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(250, 248, 244, 0.08);
   }
   .scrollTopContainer{
     display: none;

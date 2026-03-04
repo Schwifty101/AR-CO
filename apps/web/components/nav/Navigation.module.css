@@ -811,8 +811,14 @@
         padding: 1rem;
     }
 
+    /* Mega menu: single column, vertically centered on mobile */
     .menuContent {
         padding: 0 1rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        grid-template-columns: unset;
+        gap: 0;
     }
 
     .menuFooter {
@@ -831,6 +837,44 @@
 
     .menuLink {
         font-size: clamp(2rem, 8vw, 3rem);
+    }
+
+    .menuNav {
+        justify-content: center;
+        align-items: flex-start;
+    }
+
+    /* Bottom row: 2-column grid matching footer layout */
+    .bottomRow {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.25rem 1rem;
+        align-items: start;
+        padding: 1rem;
+        flex-wrap: unset;
+    }
+
+    .bottomLeft {
+        grid-column: 1;
+        grid-row: 1;
+    }
+
+    .bottomCenter {
+        grid-column: 2;
+        grid-row: 1;
+        align-items: flex-end;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .bottomRight {
+        grid-column: 1 / -1;
+        grid-row: 2;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 1rem;
+        border-top: 1px solid rgba(250, 248, 244, 0.08);
     }
 
     .menuFooterRow {

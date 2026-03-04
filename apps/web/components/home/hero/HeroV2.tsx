@@ -184,6 +184,7 @@ export default function HeroV2({ onProgress, onReady, playing = false }: HeroV2P
         aria-hidden="true"
       >
         <source src="/banner/hero-bg.webm" type="video/webm" />
+        <source src="/banner/hero-bg.mp4" type="video/mp4" />
       </video>
       <div className={styles.videoOverlay} aria-hidden="true" />
 
