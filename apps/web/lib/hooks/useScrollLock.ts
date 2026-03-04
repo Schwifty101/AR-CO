@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef } from "react"
-import { getSmoother } from "@/components/SmoothScroll"
+import { getSmoother } from "@/components/smoothScrollInstance"
 
 /**
  * Ref-counted scroll lock manager.

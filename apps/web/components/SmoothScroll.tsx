@@ -1,56 +1,69 @@
 "use client"
 
 import { useEffect, ReactNode } from "react"
-import Lenis from "lenis"
-import gsap from "gsap"
-import { ScrollTrigger } from "gsap/ScrollTrigger"
+import { setSmootherInstance } from "./smoothScrollInstance"
 
-// Register GSAP plugins
-if (typeof window !== "undefined") {
-  gsap.registerPlugin(ScrollTrigger)
-}
-
-// Global Lenis instance
-let lenisInstance: Lenis | null = null
-
-// Export function to get the Lenis instance (drop-in for getSmoother)
-export const getSmoother = () => lenisInstance
+// Re-export getSmoother so existing imports keep working
+export { getSmoother } from "./smoothScrollInstance"
 
 interface SmoothScrollProps {
   children: ReactNode
 }
 
+/**
+ * Initialises Lenis smooth scrolling connected to GSAP ScrollTrigger.
+ * GSAP, Lenis, and ScrollTrigger are loaded lazily via dynamic import()
+ * so they stay out of the initial JS bundle and don't block first paint.
+ */
 export default function SmoothScroll({ children }: SmoothScrollProps) {
   useEffect(() => {
-    const lenis = new Lenis({
-      lerp: 0.08,
-      smoothWheel: true,
-      // syncTouch disabled: let the browser handle touch scroll natively.
-      // Native touch uses the GPU compositor thread (hardware-accelerated) and
-      // does not block the main thread. Enabling syncTouch routes every touchmove
-      // through JS at 60 fps which, combined with canvas frame drawing on home,
-      // saturates the main thread and causes severe lag on mobile.
-      syncTouch: false,
-    })
+    let cancelled = false
+    let teardown: (() => void) | null = null
 
-    lenisInstance = lenis
+    const init = async () => {
+      const [{ default: Lenis }, { default: gsap }, { ScrollTrigger }] =
+        await Promise.all([
+          import("lenis"),
+          import("gsap"),
+          import("gsap/ScrollTrigger"),
+        ])
 
-    // Connect Lenis scroll events to GSAP ScrollTrigger
-    lenis.on("scroll", ScrollTrigger.update)
+      if (cancelled) return
 
-    // Use GSAP ticker as the single animation heartbeat
-    const tickerCallback = (time: number) => {
-      lenis.raf(time * 1000) // GSAP ticker uses seconds, Lenis expects ms
+      gsap.registerPlugin(ScrollTrigger)
+
+      const lenis = new Lenis({
+        lerp: 0.08,
+        smoothWheel: true,
+        syncTouch: false,
+      })
+
+      setSmootherInstance(lenis)
+
+      lenis.on("scroll", ScrollTrigger.update)
+
+      const tickerCallback = (time: number) => {
+        lenis.raf(time * 1000)
+      }
+      gsap.ticker.add(tickerCallback)
+      gsap.ticker.lagSmoothing(0)
+
+      window.dispatchEvent(
+        new CustomEvent("scroll-smoother-ready", { detail: lenis }),
+      )
+
+      teardown = () => {
+        gsap.ticker.remove(tickerCallback)
+        lenis.destroy()
+        setSmootherInstance(null)
+      }
     }
-    gsap.ticker.add(tickerCallback)
-    gsap.ticker.lagSmoothing(0)
 
-    window.dispatchEvent(new CustomEvent("scroll-smoother-ready", { detail: lenis }))
+    init()
 
     return () => {
-      gsap.ticker.remove(tickerCallback)
-      lenis.destroy()
-      lenisInstance = null
+      cancelled = true
+      teardown?.()
     }
   }, [])
 

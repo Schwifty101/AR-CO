@@ -2,7 +2,7 @@
 
 import { useEffect } from "react"
 import { usePathname } from "next/navigation"
-import { getSmoother } from "./SmoothScroll"
+import { getSmoother } from "./smoothScrollInstance"
 
 /**
  * ScrollRestoration Component

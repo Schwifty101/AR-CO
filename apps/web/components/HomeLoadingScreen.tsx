@@ -11,7 +11,7 @@ interface HomeLoadingScreenProps {
   isComplete: boolean
 }
 
-const FADE_DURATION = 0.85 // seconds
+const FADE_DURATION = 0.4 // seconds
 
 /**
  * HomeLoadingScreen

@@ -5,7 +5,7 @@ import { motion } from 'framer-motion'
 import Image from 'next/image'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { getSmoother } from '../SmoothScroll'
+import { getSmoother } from '../smoothScrollInstance'
 import { ITeamPhilosophyProps } from './types/teamInterfaces'
 
 gsap.registerPlugin(ScrollTrigger)

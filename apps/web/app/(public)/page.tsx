@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from 'react'
 import dynamic from 'next/dynamic'
 import Hero from "@/components/home/hero/HeroV2"
 import HomeLoadingScreen from "@/components/HomeLoadingScreen"
-import { getSmoother } from '@/components/SmoothScroll'
+import { getSmoother } from '@/components/smoothScrollInstance'
 
 import styles from "./page.module.css"
 

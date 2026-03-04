@@ -5,7 +5,7 @@ import { motion, useInView } from 'framer-motion'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import type { ITeamClosingStatementProps } from './types/teamInterfaces'
-import { getSmoother } from '../SmoothScroll'
+import { getSmoother } from '../smoothScrollInstance'
 
 gsap.registerPlugin(ScrollTrigger)
 
