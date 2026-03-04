@@ -450,9 +450,12 @@ const FullScreenMenu: React.FC<IFullScreenMenuProps> = ({ onClose, navItems, onO
                         </Link>
                         <CtaButton variant="outline" onClick={openConsultationOverlay} />
                     </div>
-                    {/* Mobile: Only Consultation button in header, Upgrade is in menu list */}
-                    <div className="md:hidden">
-                        <CtaButton variant="outline" onClick={openConsultationOverlay} />
+                    {/* Mobile: signin/signup + Consultation in header */}
+                    <div className="md:hidden flex" style={{ gap: '0.5rem', alignItems: 'center' }}>
+                        <Link href="/auth/signin" className={`${styles.ctaButton} ${styles.ctaButtonOutline} ${styles.mobileSignin}`} onClick={onClose}>
+                            signin / signup
+                        </Link>
+                        <CtaButton variant="outline" onClick={openConsultationOverlay} className={styles.mobileHeaderCta} />
                     </div>
                     <button
                         onClick={onClose}
@@ -523,18 +526,7 @@ const FullScreenMenu: React.FC<IFullScreenMenuProps> = ({ onClose, navItems, onO
                         </div>
                     ))}
 
-                    {/* Mobile Only: Sign In & Upgrade Button as last menu items */}
-                    <div className={`${styles.menuLinkWrapper} md:hidden`} style={{ marginTop: '0.5rem' }}>
-                        <motion.div variants={linkVariants}>
-                            <Link
-                                href="/auth/signin"
-                                className={`${styles.ctaButton} ${styles.ctaButtonOutline}`}
-                                onClick={onClose}
-                            >
-                                signin / signup
-                            </Link>
-                        </motion.div>
-                    </div>
+                    {/* Mobile Only: Upgrade Button as last menu item */}
                     <div className={`${styles.menuLinkWrapper} md:hidden`}>
                         <motion.div variants={linkVariants}>
                             <Link
