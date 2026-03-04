@@ -170,7 +170,7 @@ export default function TeamClosingStatement({
           className="inline-block mb-12 text-xs md:text-sm tracking-[0.3em] uppercase text-[var(--heritage-gold)] font-medium"
           style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}
         >
-          Our Philosophy
+          Closing Statement
         </motion.span>
 
         {/* 3. Main Statement - "Cinematic Typography" */}

@@ -290,6 +290,7 @@ button.navLink:focus-visible {
   color: rgba(250, 248, 244, 0.8);
   margin: 0;
   display: flex;
+  align-items: baseline;
   gap: 0.75rem;
   text-align: left;
 }
@@ -303,7 +304,7 @@ button.navLink:focus-visible {
   font-weight: 800;
   font-size: 1.25rem;
   color: var(--heritage-gold);
-  min-width: 2rem;
+  min-width: 2.5rem;
   flex-shrink: 0;
 }
 
