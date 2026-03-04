@@ -10,6 +10,7 @@ import { SafepayService } from '../payments/safepay.service';
 import {
   ConsultationBookingStatus,
   ConsultationPaymentStatus,
+  ConsultationUrgency,
 } from '@repo/shared';
 import { CONSULTATION_FEE_PKR } from './consultations.types';
 import type { ConsultationRow, CalcomWebhookPayload } from './consultations.types';
@@ -90,7 +91,7 @@ describe('ConsultationsService', () => {
       email: 'jane@example.com',
       phoneNumber: '+923001234567',
       practiceArea: 'Corporate Law',
-      urgency: 'high' as const,
+      urgency: ConsultationUrgency.HIGH,
       issueSummary: 'Need legal advice on partnership agreement',
       relevantDates: '2026-04-01',
       opposingParty: 'XYZ Corp',
@@ -243,6 +244,8 @@ describe('ConsultationsService', () => {
       const result = await service.getMyConsultations('jane@example.com', {
         page: 1,
         limit: 10,
+        sort: 'created_at',
+        order: 'desc',
       });
 
       expect(result.data).toHaveLength(2);
@@ -271,7 +274,7 @@ describe('ConsultationsService', () => {
         }),
       });
 
-      const result = await service.getBookings({ page: 1, limit: 20 });
+      const result = await service.getBookings({ page: 1, limit: 20, sort: 'created_at', order: 'desc' });
 
       expect(mockAdminClient.from).toHaveBeenCalledWith(
         'consultation_bookings',
@@ -304,7 +307,7 @@ describe('ConsultationsService', () => {
       });
 
       const result = await service.getBookings(
-        { page: 1, limit: 20 },
+        { page: 1, limit: 20, sort: 'created_at', order: 'desc' },
         {
           bookingStatus: ConsultationBookingStatus.BOOKED,
           paymentStatus: ConsultationPaymentStatus.PAID,
