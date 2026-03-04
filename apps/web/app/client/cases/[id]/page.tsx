@@ -193,7 +193,7 @@ export default function ClientCaseDetailPage() {
           ) : (
             <>
               <div className="flex items-center gap-3">
-                <h1 className="text-3xl font-bold tracking-tight">
+                <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
                   {caseData?.caseNumber}
                 </h1>
                 <Badge className={STATUS_COLORS[caseData?.status || CaseStatus.PENDING]}>

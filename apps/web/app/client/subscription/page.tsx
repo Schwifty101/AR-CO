@@ -313,7 +313,7 @@ export default function ClientSubscriptionPage() {
     <div className="space-y-6">
       {/* Page Header */}
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">My Subscription</h1>
+        <h1 className="text-2xl md:text-3xl font-bold tracking-tight">My Subscription</h1>
         <p className="text-muted-foreground">
           Manage your subscription plan and billing
         </p>
@@ -518,8 +518,8 @@ function EventHistoryCard({
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="rounded-md border">
-          <Table>
+        <div className="rounded-md border overflow-x-auto">
+          <Table className="min-w-[600px]">
             <TableHeader>
               <TableRow>
                 <TableHead>Event</TableHead>

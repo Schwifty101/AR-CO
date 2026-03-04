@@ -132,7 +132,7 @@ export default function NewComplaintPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Submit New Complaint</h1>
+        <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Submit New Complaint</h1>
         <p className="text-muted-foreground">
           File a complaint against a government organization
         </p>

@@ -160,7 +160,7 @@ export default function ClientCasesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">My Cases</h1>
+        <h1 className="text-2xl md:text-3xl font-bold tracking-tight">My Cases</h1>
         <p className="text-muted-foreground">
           View and track your legal cases
         </p>
@@ -181,7 +181,7 @@ export default function ClientCasesPage() {
               value={statusFilter}
               onValueChange={handleStatusFilterChange}
             >
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-full sm:w-[180px]">
                 <SelectValue placeholder="Filter by status" />
               </SelectTrigger>
               <SelectContent>
@@ -202,8 +202,8 @@ export default function ClientCasesPage() {
             </div>
           ) : (
             <>
-              <div className="rounded-md border">
-                <Table>
+              <div className="rounded-md border overflow-x-auto">
+                <Table className="min-w-[700px]">
                   <TableHeader>
                     <TableRow>
                       <TableHead>Case #</TableHead>
@@ -289,7 +289,7 @@ export default function ClientCasesPage() {
 
               {/* Pagination Controls */}
               {!isLoading && cases.length > 0 && (
-                <div className="flex items-center justify-between mt-4">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mt-4">
                   <p className="text-sm text-muted-foreground">
                     Page {currentPage} of {totalPages}
                   </p>

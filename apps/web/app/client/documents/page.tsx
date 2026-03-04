@@ -263,9 +263,9 @@ export default function ClientDocumentsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">My Documents</h1>
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">My Documents</h1>
           <p className="text-muted-foreground">
             Upload and manage your documents
           </p>
@@ -399,8 +399,8 @@ export default function ClientDocumentsPage() {
             </div>
           ) : (
             <>
-              <div className="rounded-md border">
-                <Table>
+              <div className="rounded-md border overflow-x-auto">
+                <Table className="min-w-[700px]">
                   <TableHeader>
                     <TableRow>
                       <TableHead>Name</TableHead>
@@ -473,7 +473,7 @@ export default function ClientDocumentsPage() {
 
               {/* Pagination */}
               {!isLoading && documents.length > 0 && (
-                <div className="flex items-center justify-between mt-4">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mt-4">
                   <p className="text-sm text-muted-foreground">
                     Page {currentPage} of {totalPages}
                   </p>
