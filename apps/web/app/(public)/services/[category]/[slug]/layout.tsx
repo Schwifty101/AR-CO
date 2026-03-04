@@ -9,7 +9,6 @@ import {
   isValidCategory,
   findServiceBySlug,
   getCategoryDocuments,
-  IP_SERVICE_IDS,
   type CategoryType,
 } from '@/lib/categoryDataMapper'
 import styles from './services.module.css'
@@ -43,8 +42,7 @@ export default function ServiceLayout({ children, params }: LayoutProps) {
   const showVideo =
     isOverviewPage &&
     (category === 'regulatory' ||
-      (category === 'facilitation' &&
-        (IP_SERVICE_IDS.has(slug) || DUE_DILIGENCE_SERVICE_IDS.has(slug))))
+      (category === 'facilitation' && DUE_DILIGENCE_SERVICE_IDS.has(slug)))
 
   // Build dynamic steps based on whether documents exist
   const STEPS = useMemo(() => {

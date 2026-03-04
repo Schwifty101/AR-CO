@@ -39,21 +39,27 @@ const OVERLAY_CATEGORIES: OverlayCategory[] = [
     id: 'facilitation',
     title: 'Facilitation Centre',
     tagline: 'Business Registration, Licensing & Compliance',
-    services: facilitationServices
-      .filter((s) => s.id !== 'immovable-property-due-diligence' && s.id !== 'movable-property-due-diligence')
-      .map((s) => {
-        if (s.id === 'property-transfer') {
-          return {
-            label: s.title,
-            href: `/services/facilitation/${toSlug(s.id)}`,
-            subServices: [
-              { label: 'Immovable Property Due Diligence', href: '/services/facilitation/immovable-property-due-diligence' },
-              { label: 'Movable Property Due Diligence', href: '/services/facilitation/movable-property-due-diligence' },
-            ],
+    services: [
+      ...facilitationServices
+        .filter((s) => s.id !== 'immovable-property-due-diligence' && s.id !== 'movable-property-due-diligence')
+        .map((s) => {
+          if (s.id === 'property-transfer') {
+            return {
+              label: s.title,
+              href: `/services/facilitation/${toSlug(s.id)}`,
+              subServices: [
+                { label: 'Immovable Property Due Diligence', href: '/services/facilitation/immovable-property-due-diligence' },
+                { label: 'Movable Property Due Diligence', href: '/services/facilitation/movable-property-due-diligence' },
+              ],
+            }
           }
-        }
-        return { label: s.title, href: `/services/facilitation/${toSlug(s.id)}` }
-      }),
+          return { label: s.title, href: `/services/facilitation/${toSlug(s.id)}` }
+        }),
+      {
+        label: 'IP Services',
+        href: '/services/facilitation/ip-services',
+      },
+    ],
   },
   {
     id: 'overseas',
