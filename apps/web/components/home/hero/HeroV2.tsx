@@ -103,65 +103,90 @@ export default function HeroV2({ onProgress, onReady, playing = false }: HeroV2P
     return () => observer.disconnect()
   }, [])
 
-  // ── Video buffering progress → drives loading screen ──────────────────
+  // ── Fetch entire video as blob → accurate progress, zero buffering ───
   useEffect(() => {
     const video = videoRef.current
     if (!video) return
 
-    const called    = { current: false }
-    const maxReported = { current: 0 }
+    let cancelled = false
 
-    const report = (pct: number) => {
-      if (pct > maxReported.current) {
-        maxReported.current = pct
-        onProgressRef.current?.(pct)
+    const fetchVideo = async () => {
+      try {
+        onProgressRef.current?.(2)
+
+        const response = await fetch('/banner/hero-bg.mp4')
+        const contentLength = response.headers.get('Content-Length')
+        const total = contentLength ? parseInt(contentLength, 10) : 0
+
+        if (!response.body) {
+          // Fallback: no streaming support — just await the blob
+          const blob = await response.blob()
+          if (cancelled) return
+          const url = URL.createObjectURL(blob)
+          video.src = url
+          onProgressRef.current?.(100)
+          video.addEventListener('loadeddata', () => onReadyRef.current?.(), { once: true })
+          return
+        }
+
+        const reader = response.body.getReader()
+        const chunks: Uint8Array[] = []
+        let loaded = 0
+
+        for (;;) {
+          const { done, value } = await reader.read()
+          if (cancelled) return
+          if (done) break
+          chunks.push(value)
+          loaded += value.length
+          if (total > 0) {
+            // Reserve 5–95 range for download, 95–100 for video element init
+            const pct = Math.min(Math.floor((loaded / total) * 90) + 5, 95)
+            onProgressRef.current?.(pct)
+          }
+        }
+
+        if (cancelled) return
+
+        const blob = new Blob(chunks as BlobPart[], { type: 'video/mp4' })
+        const url = URL.createObjectURL(blob)
+        video.src = url
+        onProgressRef.current?.(98)
+
+        // Wait for the video element to be ready to play
+        if (video.readyState >= 4) {
+          onProgressRef.current?.(100)
+          onReadyRef.current?.()
+        } else {
+          // Brief fallback — video is fully downloaded, element just needs to parse
+          const parseFallback = setTimeout(() => {
+            if (!cancelled) {
+              onProgressRef.current?.(100)
+              onReadyRef.current?.()
+            }
+          }, 3000)
+
+          video.addEventListener('canplaythrough', () => {
+            clearTimeout(parseFallback)
+            if (!cancelled) {
+              onProgressRef.current?.(100)
+              onReadyRef.current?.()
+            }
+          }, { once: true })
+        }
+      } catch {
+        // Network error fallback — let native video element try on its own
+        if (!cancelled && video) {
+          video.src = '/banner/hero-bg.mp4'
+          onProgressRef.current?.(100)
+          onReadyRef.current?.()
+        }
       }
     }
 
-    const callReady = () => {
-      if (called.current) return
-      called.current = true
-      report(100)
-      onReadyRef.current?.()
-    }
+    fetchVideo()
 
-    const onLoadStart      = () => report(5)
-    const onLoadedMetadata = () => report(20)
-    const onLoadedData     = () => report(45)
-    const onProgressEvt    = () => {
-      if (!video.duration || video.buffered.length === 0) return
-      const pct = Math.min(
-        Math.floor((video.buffered.end(video.buffered.length - 1) / video.duration) * 95),
-        95,
-      )
-      report(pct)
-    }
-    const onCanPlay        = () => report(85)
-    const onCanPlayThrough = () => callReady()
-
-    video.addEventListener('loadstart',       onLoadStart)
-    video.addEventListener('loadedmetadata',  onLoadedMetadata)
-    video.addEventListener('loadeddata',      onLoadedData)
-    video.addEventListener('progress',        onProgressEvt)
-    video.addEventListener('canplay',         onCanPlay)
-    video.addEventListener('canplaythrough',  onCanPlayThrough)
-
-    // Fallback: complete after 6 s on very slow connections
-    const fallback = setTimeout(callReady, 6000)
-
-    // Handle cached video — already fully buffered on mount
-    if (video.readyState >= 4) callReady()
-    else if (video.readyState >= 3) report(85)
-
-    return () => {
-      video.removeEventListener('loadstart',       onLoadStart)
-      video.removeEventListener('loadedmetadata',  onLoadedMetadata)
-      video.removeEventListener('loadeddata',      onLoadedData)
-      video.removeEventListener('progress',        onProgressEvt)
-      video.removeEventListener('canplay',         onCanPlay)
-      video.removeEventListener('canplaythrough',  onCanPlayThrough)
-      clearTimeout(fallback)
-    }
+    return () => { cancelled = true }
   }, [])
 
   // ── Start playback when loading screen exits ───────────────────────────
@@ -182,10 +207,7 @@ export default function HeroV2({ onProgress, onReady, playing = false }: HeroV2P
         playsInline
         preload="auto"
         aria-hidden="true"
-      >
-        <source src="/banner/hero-bg.webm" type="video/webm" />
-        <source src="/banner/hero-bg.mp4" type="video/mp4" />
-      </video>
+      />
       <div className={styles.videoOverlay} aria-hidden="true" />
 
       {/* ── Legal maxims — italic serif ────────────────────────────────────── */}
