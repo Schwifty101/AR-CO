@@ -76,7 +76,10 @@
       "Bash(echo === Filter by action=SIGNOUT ===:*)",
       "Bash(npm view:*)",
       "Bash(true:*)",
-      "WebFetch(domain:docs.nestjs.com)"
+      "WebFetch(domain:docs.nestjs.com)",
+      "Bash(ffmpeg:*)",
+      "Bash(brew install:*)",
+      "Bash(rm:*)"
     ],
     "env": {
       "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
