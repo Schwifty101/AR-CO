@@ -78,19 +78,15 @@ export const validationSchema = Joi.object({
         'JWT_REFRESH_TOKEN_EXPIRATION must be in format: 15m, 1h, 7d, etc.',
     }),
 
-  // Email Configuration (Optional for development, required for production)
-  SENDGRID_API_KEY: Joi.string().when('NODE_ENV', {
-    is: 'production',
-    then: Joi.required(),
-    otherwise: Joi.optional(),
-  }),
-  SENDGRID_FROM_EMAIL: Joi.string()
+  // Email Configuration (Optional until Resend is fully integrated)
+  RESEND_API_KEY: Joi.string().optional(),
+  RESEND_FROM_EMAIL: Joi.string()
     .email()
     .default('noreply@example.com')
     .messages({
-      'string.email': 'SENDGRID_FROM_EMAIL must be a valid email address',
+      'string.email': 'RESEND_FROM_EMAIL must be a valid email address',
     }),
-  SENDGRID_FROM_NAME: Joi.string().default('AR&CO Law Firm'),
+  RESEND_FROM_NAME: Joi.string().default('AR&CO Law Firm'),
 
   // File Upload Configuration
   MAX_FILE_SIZE: Joi.number().integer().positive().default(10485760).messages({

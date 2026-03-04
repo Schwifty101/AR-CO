@@ -48,7 +48,7 @@ export interface JwtConfig {
  * Email configuration interface
  */
 export interface EmailConfig {
-  sendgridApiKey: string;
+  resendApiKey: string;
   fromEmail: string;
   fromName: string;
 }
@@ -146,9 +146,9 @@ export default (): Configuration => ({
     refreshTokenExpiration: process.env.JWT_REFRESH_TOKEN_EXPIRATION || '7d',
   },
   email: {
-    sendgridApiKey: process.env.SENDGRID_API_KEY || '',
-    fromEmail: process.env.SENDGRID_FROM_EMAIL || 'noreply@example.com',
-    fromName: process.env.SENDGRID_FROM_NAME || 'AR&CO Law Firm',
+    resendApiKey: process.env.RESEND_API_KEY || '',
+    fromEmail: process.env.RESEND_FROM_EMAIL || 'noreply@example.com',
+    fromName: process.env.RESEND_FROM_NAME || 'AR&CO Law Firm',
   },
   fileUpload: {
     maxFileSize: parseInt(process.env.MAX_FILE_SIZE || '10485760', 10), // 10MB default
