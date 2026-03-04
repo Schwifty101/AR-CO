@@ -108,9 +108,9 @@ function LogoRow({
   return (
     <motion.div
       className={`${styles.rowTrack} ${reverse ? styles.reverseRow : ''}`}
-      // On desktop: pre-shift the track left by half the travel range so a
-      // positive x translation never reveals empty space on the left.
-      style={isMobile ? { x: translateX } : { x: translateX, marginLeft: -(ROW_TRAVEL_PX / 2) }}
+      // Desktop: scroll-driven x translation with pre-shift.
+      // Mobile: CSS marquee handles animation, no JS transform needed.
+      style={isMobile ? undefined : { x: translateX, marginLeft: -(ROW_TRAVEL_PX / 2) }}
       aria-hidden='true'
     >
       {repeated.map((logo, idx) => (

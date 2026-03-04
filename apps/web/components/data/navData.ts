@@ -25,12 +25,12 @@ function svcLink(category: string, serviceId: string, services: { id: string; ti
  */
 export const NAV_ITEMS: INavItem[] = [
     { id: 'home', label: 'Home', href: '/', hasSubmenu: false },
-    { id: 'team', label: 'Our Team', href: '/team', hasSubmenu: false },
-    { id: 'practice-areas', label: 'Practice Areas', href: '', hasSubmenu: true },
     { id: 'facilitation', label: 'Services', href: '', hasSubmenu: true },
-    { id: 'complaint-section', label: 'Complaints', href: '/complaint-section', hasSubmenu: false },
-    { id: 'blogs', label: 'Blogs', href: '/blogs', hasSubmenu: false },
+    { id: 'practice-areas', label: 'Practice Areas', href: '', hasSubmenu: true },
+    { id: 'team', label: 'Our Team', href: '/team', hasSubmenu: false },
     { id: 'about', label: 'About Us', href: '/#about', hasSubmenu: false },
+    { id: 'blogs', label: 'Insights', href: '/blogs', hasSubmenu: false },
+    { id: 'complaint-section', label: 'Complaints', href: '/complaint-section', hasSubmenu: false },
 ]
 
 /**
@@ -39,12 +39,12 @@ export const NAV_ITEMS: INavItem[] = [
  */
 export const SIDEPANEL_FOOTER_NAV_ITEMS: INavItem[] = [
     { id: 'home', label: 'Home', href: '/', hasSubmenu: false },
-    { id: 'team', label: 'Our Team', href: '/team', hasSubmenu: false },
-    { id: 'practice-areas', label: 'Practice Areas', href: '', hasSubmenu: true },
     { id: 'facilitation', label: 'Services', href: '', hasSubmenu: true },
-    { id: 'complaint-section', label: 'Complaints', href: '/complaint-section', hasSubmenu: false },
-    { id: 'blogs', label: 'Blogs', href: '/blogs', hasSubmenu: false },
+    { id: 'practice-areas', label: 'Practice Areas', href: '', hasSubmenu: true },
+    { id: 'team', label: 'Our Team', href: '/team', hasSubmenu: false },
     { id: 'about', label: 'About Us', href: '/#about', hasSubmenu: false },
+    { id: 'blogs', label: 'Insights', href: '/blogs', hasSubmenu: false },
+    { id: 'complaint-section', label: 'Complaints', href: '/complaint-section', hasSubmenu: false },
 ]
 
 /**

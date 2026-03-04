@@ -175,7 +175,19 @@
       #0d0906 100%);
 }
 
-/* ─── Mobile: scroll-driven motion, no sticky pinning ─── */
+/* ─── Mobile: auto-marquee animation ───
+   Row 1: 7 logos × (110px + 1.5rem) = 938px per copy
+   Row 2: 6 logos × (110px + 1.5rem) = 804px per copy */
+@keyframes marquee-left {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(calc(-7 * (110px + 1.5rem))); }
+}
+
+@keyframes marquee-right {
+  0% { transform: translateX(calc(-6 * (110px + 1.5rem))); }
+  100% { transform: translateX(0); }
+}
+
 @media (max-width: 767px) {
   .section {
     height: auto;
@@ -194,6 +206,21 @@
   .logoImageWrapper {
     width: 110px;
     height: 50px;
+  }
+
+  /* Replace flex gap with per-item margin so -25% translates
+     exactly one copy's width (gap breaks % math) */
+  .rowTrack {
+    gap: 0;
+    animation: marquee-left 25s linear infinite;
+  }
+
+  .logoCard {
+    margin-right: 1.5rem;
+  }
+
+  .reverseRow {
+    animation: marquee-right 25s linear infinite;
   }
 
   .progressBar {
