@@ -1,6 +1,5 @@
 import type React from "react"
 import type { Metadata } from "next"
-import { Analytics } from "@vercel/analytics/next"
 import { AuthProvider } from "@/lib/auth/auth-context"
 import { PracticeAreasProvider } from "@/components/practice-areas"
 import PracticeAreasOverlayWrapper from "@/components/practice-areas/PracticeAreasOverlayWrapper"
@@ -89,7 +88,6 @@ export default function RootLayout({
             </FacilitationProvider>
           </PracticeAreasProvider>
         </AuthProvider>
-        <Analytics />
         <Toaster />
       </body>
     </html>
