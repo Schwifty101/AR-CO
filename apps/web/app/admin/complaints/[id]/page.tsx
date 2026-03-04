@@ -226,7 +226,7 @@ export default function AdminComplaintDetailPage() {
           Back to Complaints
         </Button>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
             {complaint.complaintNumber}
           </h1>
           <p className="text-muted-foreground">{complaint.title}</p>

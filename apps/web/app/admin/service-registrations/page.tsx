@@ -83,7 +83,7 @@ function RegistrationsPageSkeleton() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
             Service Registrations
           </h1>
           <p className="text-muted-foreground">
@@ -195,7 +195,7 @@ function AdminServiceRegistrationsContent() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
             Service Registrations
           </h1>
           <p className="text-muted-foreground">
@@ -307,8 +307,8 @@ function AdminServiceRegistrationsContent() {
             </div>
           ) : (
             <>
-              <div className="rounded-md border">
-                <Table>
+              <div className="rounded-md border overflow-x-auto">
+                <Table className="min-w-[900px]">
                   <TableHeader>
                     <TableRow>
                       <TableHead>Reference #</TableHead>
@@ -432,7 +432,7 @@ function AdminServiceRegistrationsContent() {
 
               {/* Pagination Controls */}
               {!isLoading && filteredRegistrations.length > 0 && (
-                <div className="flex items-center justify-between mt-4">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mt-4">
                   <p className="text-sm text-muted-foreground">
                     Page {currentPage} of {totalPages}
                   </p>

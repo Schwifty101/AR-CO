@@ -336,7 +336,7 @@ export default function ConsultationGuestsTable() {
         {/* Filter Bar */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center mb-6">
           <Select value={bookingStatusFilter} onValueChange={setBookingStatusFilter}>
-            <SelectTrigger className="w-[200px]">
+            <SelectTrigger className="w-full sm:w-[200px]">
               <SelectValue placeholder="Booking status" />
             </SelectTrigger>
             <SelectContent>
@@ -351,7 +351,7 @@ export default function ConsultationGuestsTable() {
           </Select>
 
           <Select value={paymentStatusFilter} onValueChange={setPaymentStatusFilter}>
-            <SelectTrigger className="w-[200px]">
+            <SelectTrigger className="w-full sm:w-[200px]">
               <SelectValue placeholder="Payment status" />
             </SelectTrigger>
             <SelectContent>
@@ -368,8 +368,8 @@ export default function ConsultationGuestsTable() {
           <div className="rounded-md bg-destructive/15 p-4 text-destructive">{error}</div>
         ) : (
           <>
-            <div className="rounded-md border">
-              <Table>
+            <div className="rounded-md border overflow-x-auto">
+              <Table className="min-w-[900px]">
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-[30px]" />
@@ -420,7 +420,7 @@ export default function ConsultationGuestsTable() {
 
             {/* Pagination Controls */}
             {!isLoading && consultations.length > 0 && (
-              <div className="flex items-center justify-between mt-4">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mt-4">
                 <p className="text-sm text-muted-foreground">
                   Page {currentPage} of {totalPages}
                 </p>

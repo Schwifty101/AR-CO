@@ -255,7 +255,7 @@ export default function AdminCaseDetailPage() {
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Cases
           </Button>
-          <h1 className="text-3xl font-bold tracking-tight">{caseData.caseNumber}</h1>
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">{caseData.caseNumber}</h1>
           <p className="text-xl text-muted-foreground">{caseData.title}</p>
         </div>
         <div className="flex gap-2">
@@ -381,7 +381,7 @@ export default function AdminCaseDetailPage() {
             <h3 className="font-semibold">Update Status</h3>
             <div className="flex gap-2">
               <Select value={statusValue} onValueChange={(v) => setStatusValue(v as CaseStatus)}>
-                <SelectTrigger className="w-[200px]">
+                <SelectTrigger className="w-full sm:w-[200px]">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>

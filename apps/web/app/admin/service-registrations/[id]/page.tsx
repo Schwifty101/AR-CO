@@ -287,7 +287,7 @@ export default function AdminServiceRegistrationDetailPage() {
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Registrations
           </Button>
-          <h1 className="text-3xl font-bold tracking-tight">
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
             {registration.referenceNumber}
           </h1>
           <p className="text-xl text-muted-foreground">{registration.fullName}</p>

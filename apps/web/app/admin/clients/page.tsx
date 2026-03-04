@@ -62,7 +62,7 @@ export default function AdminClientsPage() {
     <div className="space-y-6">
       {/* Page Header */}
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Clients</h1>
+        <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Clients</h1>
         <p className="text-muted-foreground">
           {TAB_SUBTITLES[activeTab] ?? TAB_SUBTITLES.registered}
         </p>

@@ -260,9 +260,9 @@ export default function AdminContentPage() {
   return (
     <div className="space-y-6">
       {/* Page header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Content</h1>
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Content</h1>
           <p className="text-muted-foreground">
             Manage blog posts and case studies
           </p>
@@ -474,8 +474,8 @@ export default function AdminContentPage() {
             </div>
           ) : (
             <>
-              <div className="rounded-md border">
-                <Table>
+              <div className="rounded-md border overflow-x-auto">
+                <Table className="min-w-[800px]">
                   <TableHeader>
                     <TableRow>
                       <TableHead>Title</TableHead>
@@ -569,7 +569,7 @@ export default function AdminContentPage() {
 
               {/* Pagination controls */}
               {!isLoading && posts.length > 0 && (
-                <div className="flex items-center justify-between mt-4">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mt-4">
                   <p className="text-sm text-muted-foreground">
                     Page {currentPage} of {totalPages}
                   </p>
