@@ -114,7 +114,8 @@ export default function HeroV2({ onProgress, onReady, playing = false }: HeroV2P
       try {
         onProgressRef.current?.(2)
 
-        const response = await fetch('/banner/hero-bg.mp4')
+        const response = await fetch('/banner/hero-bg.webm')
+        // const response = await fetch('/banner/hero-bg.mp4')
         const contentLength = response.headers.get('Content-Length')
         const total = contentLength ? parseInt(contentLength, 10) : 0
 
@@ -177,7 +178,8 @@ export default function HeroV2({ onProgress, onReady, playing = false }: HeroV2P
       } catch {
         // Network error fallback — let native video element try on its own
         if (!cancelled && video) {
-          video.src = '/banner/hero-bg.mp4'
+          // video.src = '/banner/hero-bg.mp4'
+          video.src = '/banner/hero-bg.webm'
           onProgressRef.current?.(100)
           onReadyRef.current?.()
         }
