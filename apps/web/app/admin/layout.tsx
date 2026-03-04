@@ -11,12 +11,12 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="dark bg-background text-foreground min-h-screen">
+    <div className="dark bg-background text-foreground min-h-screen overflow-x-hidden">
       <div className="flex min-h-screen flex-col">
         <DashboardHeader userType="admin" />
         <div className="flex flex-1">
           <DashboardSidebar userType="admin" />
-          <main className="flex-1 p-3 md:p-6">{children}</main>
+          <main className="flex-1 min-w-0 p-3 md:p-6">{children}</main>
         </div>
       </div>
     </div>
