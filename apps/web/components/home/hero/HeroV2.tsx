@@ -103,13 +103,85 @@ export default function HeroV2({ onProgress, onReady, playing = false }: HeroV2P
     return () => observer.disconnect()
   }, [])
 
-  // ── Fetch entire video as blob → accurate progress, zero buffering ───
+  // ── Load hero video ────────────────────────────────────────────────────
+  // Desktop: fetch as blob for accurate progress bar.
+  // Mobile:  use native <video src> — mobile browsers stream video natively
+  //          and blob URLs often fail to play (memory pressure, codec issues).
   useEffect(() => {
     const video = videoRef.current
     if (!video) return
 
-    let cancelled = false
+    // Ensure muted is set as a DOM property — React's muted JSX attribute
+    // is unreliable on initial render, causing mobile autoplay to be blocked.
+    video.muted = true
 
+    let cancelled = false
+    const isMobile = window.matchMedia('(max-width: 768px)').matches
+
+    if (isMobile) {
+      // ── Mobile: native video loading with 1080p mobile-optimized file ──
+      // Do NOT call video.play() here — playback must wait until the loading
+      // screen dismisses (the `playing` prop effect handles it).
+      video.src = '/banner/hero-bg-mobile.mp4'
+      video.load()
+
+      let ready = false
+      // Minimum delay between progress steps so the bar animation is visible.
+      // Events often fire within the same frame on fast connections.
+      let step = 0
+      const STEP_DELAY = 400 // ms per progress step
+
+      const scheduleProgress = (pct: number, onDone?: () => void) => {
+        const delay = step * STEP_DELAY
+        step++
+        setTimeout(() => {
+          if (!cancelled) {
+            onProgressRef.current?.(pct)
+            onDone?.()
+          }
+        }, delay)
+      }
+
+      const signalReady = () => {
+        if (ready || cancelled) return
+        ready = true
+        onProgressRef.current?.(100)
+        onReadyRef.current?.()
+      }
+
+      // Kick off the staggered progress: 20 → 40 → 65 → 87 → 100
+      scheduleProgress(20)
+
+      video.addEventListener('loadedmetadata', () => {
+        if (!cancelled) scheduleProgress(40)
+      }, { once: true })
+
+      video.addEventListener('loadeddata', () => {
+        if (!cancelled) scheduleProgress(65)
+      }, { once: true })
+
+      video.addEventListener('canplay', () => {
+        if (!cancelled) scheduleProgress(87, () => {
+          // After the 87% step renders, signal ready on next step
+          setTimeout(() => signalReady(), STEP_DELAY)
+        })
+      }, { once: true })
+
+      video.addEventListener('error', () => {
+        // Even on error, dismiss loading screen so the site is usable
+        if (!cancelled) signalReady()
+      }, { once: true })
+
+      // Hard fallback — if nothing fires within 8s, dismiss anyway
+      const fallbackTimer = setTimeout(() => signalReady(), 8000)
+
+      return () => {
+        cancelled = true
+        clearTimeout(fallbackTimer)
+      }
+    }
+
+    // ── Desktop: fetch as blob for accurate progress ────────────────────
     const fetchVideo = async () => {
       try {
         onProgressRef.current?.(2)
@@ -119,11 +191,11 @@ export default function HeroV2({ onProgress, onReady, playing = false }: HeroV2P
         const total = contentLength ? parseInt(contentLength, 10) : 0
 
         if (!response.body) {
-          // Fallback: no streaming support — just await the blob
           const blob = await response.blob()
           if (cancelled) return
           const url = URL.createObjectURL(blob)
           video.src = url
+          video.load()
           onProgressRef.current?.(100)
           video.addEventListener('loadeddata', () => onReadyRef.current?.(), { once: true })
           return
@@ -140,7 +212,6 @@ export default function HeroV2({ onProgress, onReady, playing = false }: HeroV2P
           chunks.push(value)
           loaded += value.length
           if (total > 0) {
-            // Reserve 5–95 range for download, 95–100 for video element init
             const pct = Math.min(Math.floor((loaded / total) * 90) + 5, 95)
             onProgressRef.current?.(pct)
           }
@@ -151,14 +222,13 @@ export default function HeroV2({ onProgress, onReady, playing = false }: HeroV2P
         const blob = new Blob(chunks as BlobPart[], { type: 'video/mp4' })
         const url = URL.createObjectURL(blob)
         video.src = url
+        video.load()
         onProgressRef.current?.(98)
 
-        // Wait for the video element to be ready to play
         if (video.readyState >= 4) {
           onProgressRef.current?.(100)
           onReadyRef.current?.()
         } else {
-          // Brief fallback — blob is in memory, element just needs to parse headers
           const parseFallback = setTimeout(() => {
             if (!cancelled) {
               onProgressRef.current?.(100)
@@ -175,9 +245,9 @@ export default function HeroV2({ onProgress, onReady, playing = false }: HeroV2P
           }, { once: true })
         }
       } catch {
-        // Network error fallback — let native video element try on its own
         if (!cancelled && video) {
           video.src = '/banner/hero-bg.mp4'
+          video.load()
           onProgressRef.current?.(100)
           onReadyRef.current?.()
         }
@@ -191,8 +261,15 @@ export default function HeroV2({ onProgress, onReady, playing = false }: HeroV2P
 
   // ── Start playback when loading screen exits ───────────────────────────
   useEffect(() => {
-    if (playing && videoRef.current) {
-      videoRef.current.play().catch(() => {})
+    const video = videoRef.current
+    if (!playing || !video) return
+
+    const tryPlay = () => { video.play().catch(() => {}) }
+
+    if (video.readyState >= 2) {
+      tryPlay()
+    } else {
+      video.addEventListener('loadeddata', tryPlay, { once: true })
     }
   }, [playing])
 
@@ -200,12 +277,14 @@ export default function HeroV2({ onProgress, onReady, playing = false }: HeroV2P
     <section className={styles.hero} data-hero-section="true">
 
       {/* ── Background video — plays once, holds last frame ─────────────── */}
-      {/* src is set programmatically after fetch completes — no preload needed */}
+      {/* src is set programmatically — muted + playsInline required for mobile autoplay */}
+      {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
       <video
         ref={videoRef}
         className={`${styles.videoBg} ${playing ? styles.videoBgVisible : ''}`}
         muted
         playsInline
+        preload="auto"
         aria-hidden="true"
       />
       <div className={styles.videoOverlay} aria-hidden="true" />

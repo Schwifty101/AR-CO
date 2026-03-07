@@ -53,9 +53,10 @@ export default function RootLayout({
     <html lang="en">
       <head>
         {/* Preload hero video so download starts immediately with the HTML,
-            in parallel with JS chunk downloads. The HeroV2 fetch() will hit
-            the browser's preload cache instead of waiting for React to mount. */}
-        <link rel="preload" href="/banner/hero-bg.mp4" as="fetch" crossOrigin="anonymous" />
+            in parallel with JS chunk downloads. Mobile uses a smaller 1080p file.
+            media attr ensures each device only preloads the file it will use. */}
+        <link rel="preload" href="/banner/hero-bg.mp4" as="fetch" crossOrigin="anonymous" media="(min-width: 769px)" />
+        <link rel="preload" href="/banner/hero-bg-mobile.mp4" as="video" media="(max-width: 768px)" />
         <link
           rel="preload"
           href="/fonts/lora/Lora-VariableItalic.woff2"
