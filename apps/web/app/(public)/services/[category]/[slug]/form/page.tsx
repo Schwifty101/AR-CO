@@ -8,6 +8,7 @@ import { getEmojiFlag, getCountryDataList } from 'countries-list'
 import { isValidPhoneNumber } from 'react-phone-number-input'
 import { Command } from 'cmdk'
 import * as Popover from '@radix-ui/react-popover'
+import { toast } from 'sonner'
 import {
   isValidCategory,
   findServiceBySlug,
@@ -18,6 +19,9 @@ import {
 } from '@/lib/categoryDataMapper'
 import { IP_FEES } from '@/components/data/facilitationCenterData'
 import type { FormField } from '@/components/data/facilitationCenterData'
+import { createRegistration, uploadRegistrationDocument } from '@/lib/api/service-registrations'
+import { getPendingDocuments, clearPendingDocuments } from '@/lib/serviceDocumentStore'
+import { getServices } from '@/lib/api/services'
 
 interface PageProps {
   params: Promise<{ category: string; slug: string }>
@@ -305,6 +309,10 @@ export default function ServiceForm({ params }: PageProps) {
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
   const [submitted, setSubmitted] = useState(false)
   const [referenceNumber, setReferenceNumber] = useState('')
+  /** UUID of the matching backend service record, fetched on mount */
+  const [serviceId, setServiceId] = useState<string | null>(null)
+  /** True while the API submission request is in-flight */
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const formWrapperRef = useRef<HTMLDivElement>(null)
@@ -313,7 +321,10 @@ export default function ServiceForm({ params }: PageProps) {
   const categoryValid = isValidCategory(category)
   const service = categoryValid ? findServiceBySlug(category as CategoryType, slug) : null
   const isIpService = IP_SERVICE_IDS.has(slug)
-  const formSections = categoryValid ? getFormForService(category as CategoryType, slug) : []
+  // TODO: Re-enable FEES & PAYMENT step once payment integration is ready
+  const formSections = categoryValid
+    ? getFormForService(category as CategoryType, slug).filter((s) => s.title !== 'FEES & PAYMENT')
+    : []
   const total = formSections.length
 
   const currentSection = total > 0 ? formSections[currentIndex] : null
@@ -472,6 +483,12 @@ export default function ServiceForm({ params }: PageProps) {
   // Guard: redirect to /documents if required docs haven't been uploaded yet
   useEffect(() => {
     if (!categoryValid) return
+    // If already submitted, block re-entry and redirect to FAQ
+    const submittedFlag = sessionStorage.getItem(`submitted_${category}_${slug}`)
+    if (submittedFlag) {
+      router.replace(`/services/${category}/${slug}/faq`)
+      return
+    }
     const docs = getCategoryDocuments(category as CategoryType)
     const hasRequired = docs.some((d) => d.required)
     if (!hasRequired) return
@@ -481,6 +498,37 @@ export default function ServiceForm({ params }: PageProps) {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  /**
+   * Fetches the matching backend service record by slug on mount.
+   * The services table has a `slug` column that matches the URL param directly.
+   * Fetches up to 100 services to cover the full catalog in one request.
+   * Sets `serviceId` state with the matched UUID for use at form submission.
+   *
+   * Edge cases:
+   * - Service not found: serviceId remains null; submission will show an error toast
+   * - API failure: serviceId remains null; submission will show an error toast
+   */
+  useEffect(() => {
+    let cancelled = false
+
+    async function fetchServiceId() {
+      try {
+        const result = await getServices({ page: 1, limit: 100 })
+        if (cancelled) return
+        const match = result.services.find((s) => s.slug === slug)
+        if (match) {
+          setServiceId(match.id)
+        }
+      } catch {
+        // Non-fatal on mount; missing serviceId will be caught at submit time
+      }
+    }
+
+    void fetchServiceId()
+    return () => { cancelled = true }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [slug])
 
   /**
    * Clears the validation error for a single field.
@@ -548,17 +596,179 @@ export default function ServiceForm({ params }: PageProps) {
     return errors
   }
 
-  const handleIpSubmit = () => {
+  /**
+   * Handles form submission for IP services (trademark, copyright, patent, etc.).
+   * Validates the current (final) section, builds the API payload, calls
+   * `createRegistration()`, and transitions to the acknowledgment screen on success.
+   *
+   * The `serviceId` is fetched on mount from `GET /api/services`.
+   * Phone number is combined from ISO2 country code + local number.
+   * `descriptionOfNeed` aggregates IP-specific fields into a single string.
+   *
+   * Edge cases:
+   * - Missing serviceId: shows error toast and aborts
+   * - API error: shows error toast with the server message
+   * - Validation errors: scrolls to top and displays field errors
+   */
+  const handleIpSubmit = async () => {
     if (!currentSection) return
+
     const errors = validateSection(currentSection.fields, formData)
     if (Object.keys(errors).length > 0) {
       setValidationErrors(errors)
       if (scrollContainerRef.current) scrollContainerRef.current.scrollTop = 0
       return
     }
-    const refNum = `IP-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`
-    setReferenceNumber(refNum)
-    setSubmitted(true)
+
+    if (!serviceId) {
+      toast.error('Service not found. Please refresh the page and try again.')
+      return
+    }
+
+    const iso2 = (formData['contactNumber__cc'] as string) || 'PK'
+    const dialCode = getDialCode(iso2).replace('+', '')
+    const localNumber = (formData['contactNumber'] as string) || ''
+    const phoneNumber = `+${dialCode}${localNumber.replace(/^0+/, '')}`
+
+    const brandProductName = (formData['brandProductName'] as string) || ''
+    const applicantType = (formData['applicantType'] as string) || ''
+    const ipDescription = (formData['ipDescription'] as string) || ''
+    const govtHandling = (formData['govtChargesHandling'] as string) || ''
+
+    const descriptionParts = [
+      brandProductName ? `Brand/Product: ${brandProductName}` : null,
+      applicantType ? `Applicant Type: ${applicantType}` : null,
+      ipDescription ? `Description: ${ipDescription}` : null,
+      govtHandling ? `Govt Charges Handling: ${govtHandling}` : null,
+    ].filter(Boolean)
+
+    const descriptionOfNeed = descriptionParts.length > 0
+      ? descriptionParts.join('\n')
+      : undefined
+
+    setIsSubmitting(true)
+    try {
+      const registration = await createRegistration({
+        serviceId,
+        fullName: (formData['fullName'] as string) || '',
+        email: (formData['email'] as string) || '',
+        phoneNumber,
+        descriptionOfNeed,
+      })
+
+      // Upload any pending documents (best-effort — failure does not block success)
+      const pendingDocs = getPendingDocuments()
+      if (pendingDocs.length > 0) {
+        const uploadResults = await Promise.allSettled(
+          pendingDocs.map((doc) =>
+            uploadRegistrationDocument(registration.id, doc.file, doc.documentTypeId, doc.documentTypeName)
+          )
+        )
+        const failedUploads = uploadResults.filter((r) => r.status === 'rejected')
+        if (failedUploads.length > 0) {
+          toast.error(`Registration submitted but ${failedUploads.length} document(s) failed to upload. You can contact us to resubmit.`)
+        }
+        clearPendingDocuments()
+      }
+
+      // Mark as submitted so form/documents pages redirect to FAQ if revisited
+      sessionStorage.setItem(`submitted_${category}_${slug}`, registration.referenceNumber)
+      sessionStorage.removeItem(`docs_completed_${category}_${slug}`)
+      setReferenceNumber(registration.referenceNumber)
+      setSubmitted(true)
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Submission failed. Please try again.'
+      toast.error(message)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  /**
+   * Handles form submission for non-IP facilitation services (SECP, NTN, etc.),
+   * as well as overseas, women-desk, and regulatory category services.
+   * Validates the current (final) section, builds the API payload, calls
+   * `createRegistration()`, and transitions to the success screen on success.
+   *
+   * The `serviceId` is fetched on mount from `GET /api/services`.
+   * Phone number is combined from ISO2 country code + local number.
+   * `descriptionOfNeed` aggregates case-description fields into a single string.
+   *
+   * Edge cases:
+   * - Missing serviceId: shows error toast and aborts
+   * - API error: shows error toast with the server message
+   * - Validation errors: scrolls to top and displays field errors
+   */
+  const handleNonIpSubmit = async () => {
+    if (!currentSection) return
+
+    const errors = validateSection(currentSection.fields, formData)
+    if (Object.keys(errors).length > 0) {
+      setValidationErrors(errors)
+      if (scrollContainerRef.current) scrollContainerRef.current.scrollTop = 0
+      return
+    }
+
+    if (!serviceId) {
+      toast.error('Service not found. Please refresh the page and try again.')
+      return
+    }
+
+    const iso2 = (formData['contactNumber__cc'] as string) || 'PK'
+    const dialCode = getDialCode(iso2).replace('+', '')
+    const localNumber = (formData['contactNumber'] as string) || ''
+    const phoneNumber = `+${dialCode}${localNumber.replace(/^0+/, '')}`
+
+    const caseDescription = formData['caseDescription'] as string | undefined
+    const cityLocation = formData['cityLocation'] as string | undefined
+    const relevantAuthority = formData['relevantAuthority'] as string | undefined
+
+    const descriptionParts = [
+      caseDescription || null,
+      cityLocation ? `City: ${cityLocation}` : null,
+      relevantAuthority ? `Relevant Authority: ${relevantAuthority}` : null,
+    ].filter(Boolean)
+
+    const descriptionOfNeed = descriptionParts.length > 0
+      ? descriptionParts.join('\n')
+      : undefined
+
+    setIsSubmitting(true)
+    try {
+      const registration = await createRegistration({
+        serviceId,
+        fullName: (formData['fullName'] as string) || '',
+        email: (formData['email'] as string) || '',
+        phoneNumber,
+        descriptionOfNeed,
+      })
+
+      // Upload any pending documents (best-effort — failure does not block success)
+      const pendingDocs = getPendingDocuments()
+      if (pendingDocs.length > 0) {
+        const uploadResults = await Promise.allSettled(
+          pendingDocs.map((doc) =>
+            uploadRegistrationDocument(registration.id, doc.file, doc.documentTypeId, doc.documentTypeName)
+          )
+        )
+        const failedUploads = uploadResults.filter((r) => r.status === 'rejected')
+        if (failedUploads.length > 0) {
+          toast.error(`Registration submitted but ${failedUploads.length} document(s) failed to upload. You can contact us to resubmit.`)
+        }
+        clearPendingDocuments()
+      }
+
+      // Mark as submitted so form/documents pages redirect to FAQ if revisited
+      sessionStorage.setItem(`submitted_${category}_${slug}`, registration.referenceNumber)
+      sessionStorage.removeItem(`docs_completed_${category}_${slug}`)
+      setReferenceNumber(registration.referenceNumber)
+      setSubmitted(true)
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Submission failed. Please try again.'
+      toast.error(message)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const goNext = () => {
@@ -1124,6 +1334,137 @@ export default function ServiceForm({ params }: PageProps) {
           </>
         )}
       </div>
+    )
+  }
+
+  // Non-IP acknowledgment screen — shown after successful submission for non-IP services
+  if (submitted && !isIpService) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        className="flex flex-col items-center justify-center px-6 md:px-16"
+        style={{ minHeight: '600px', paddingTop: '3rem', paddingBottom: '3rem' }}
+      >
+        {/* Gold check icon */}
+        <div
+          style={{
+            width: '56px',
+            height: '56px',
+            borderRadius: '50%',
+            border: '1px solid rgba(212, 175, 55, 0.4)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginBottom: '1.5rem',
+          }}
+        >
+          <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="var(--heritage-gold)" strokeWidth={1.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+
+        {/* Acknowledgment heading */}
+        <h2
+          style={{
+            fontFamily: "'Lora', Georgia, serif",
+            fontSize: 'clamp(1.6rem, 4vw, 2.4rem)',
+            fontWeight: 300,
+            fontStyle: 'italic',
+            lineHeight: 1.2,
+            letterSpacing: '-0.03em',
+            color: 'var(--heritage-cream)',
+            textAlign: 'center',
+            marginBottom: '0.75rem',
+          }}
+        >
+          Application Received
+        </h2>
+
+        <p
+          style={{
+            fontFamily: "'Georgia', 'Times New Roman', serif",
+            fontSize: '0.9rem',
+            color: 'rgba(249, 248, 246, 0.55)',
+            textAlign: 'center',
+            lineHeight: 1.7,
+            maxWidth: '480px',
+            marginBottom: '2rem',
+          }}
+        >
+          Your registration has been submitted. A member of our team will be in touch with you shortly. Please use the reference number below for all future correspondence.
+        </p>
+
+        {/* Reference number box */}
+        <div
+          style={{
+            padding: '1rem 2rem',
+            border: '1px solid rgba(212, 175, 55, 0.3)',
+            borderRadius: '0.75rem',
+            background: 'rgba(212, 175, 55, 0.04)',
+            marginBottom: '2.5rem',
+            textAlign: 'center',
+          }}
+        >
+          <span
+            style={{
+              display: 'block',
+              fontFamily: "'Georgia', 'Times New Roman', serif",
+              fontSize: '0.7rem',
+              letterSpacing: '0.12em',
+              textTransform: 'uppercase',
+              color: 'rgba(249, 248, 246, 0.35)',
+              marginBottom: '0.4rem',
+            }}
+          >
+            Reference Number
+          </span>
+          <span
+            style={{
+              fontFamily: "'Lora', Georgia, serif",
+              fontSize: '1.5rem',
+              fontWeight: 500,
+              letterSpacing: '0.06em',
+              color: 'var(--heritage-gold)',
+            }}
+          >
+            {referenceNumber}
+          </span>
+        </div>
+
+        {/* Continue to FAQ */}
+        <button
+          onClick={() => router.push(`/services/${category}/${slug}/faq`)}
+          className="inline-flex items-center gap-2 transition-all duration-300"
+          style={{
+            padding: '0.7rem 1.75rem',
+            background: 'var(--heritage-gold)',
+            border: 'none',
+            borderRadius: '100px',
+            color: 'var(--wood-espresso)',
+            fontFamily: "'Georgia', 'Times New Roman', serif",
+            fontSize: '0.85rem',
+            fontStyle: 'italic',
+            fontWeight: 600,
+            letterSpacing: '0.04em',
+            cursor: 'pointer',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = '#c9a430'
+            e.currentTarget.style.boxShadow = '0 4px 20px rgba(212, 175, 55, 0.25)'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'var(--heritage-gold)'
+            e.currentTarget.style.boxShadow = 'none'
+          }}
+        >
+          <span>Continue</span>
+          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+          </svg>
+        </button>
+      </motion.div>
     )
   }
 
@@ -1747,15 +2088,18 @@ export default function ServiceForm({ params }: PageProps) {
                 </div>
 
                 <button
+                  disabled={isSubmitting}
                   onClick={
                     isLast
-                      ? (isIpService ? handleIpSubmit : () => router.push(`/services/${category}/${slug}/faq`))
+                      ? (isIpService
+                          ? () => { void handleIpSubmit() }
+                          : () => { void handleNonIpSubmit() })
                       : goNext
                   }
                   className="inline-flex items-center gap-2 transition-all duration-300"
                   style={{
                     padding: '0.7rem 1.5rem',
-                    background: 'var(--heritage-gold)',
+                    background: isSubmitting ? 'rgba(212, 175, 55, 0.6)' : 'var(--heritage-gold)',
                     border: 'none',
                     borderRadius: '100px',
                     color: 'var(--wood-espresso)',
@@ -1764,31 +2108,57 @@ export default function ServiceForm({ params }: PageProps) {
                     fontStyle: 'italic',
                     fontWeight: 600,
                     letterSpacing: '0.04em',
-                    cursor: 'pointer',
+                    cursor: isSubmitting ? 'not-allowed' : 'pointer',
+                    opacity: isSubmitting ? 0.7 : 1,
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.background = '#c9a430'
-                    e.currentTarget.style.boxShadow = '0 4px 20px rgba(212, 175, 55, 0.25)'
+                    if (!isSubmitting) {
+                      e.currentTarget.style.background = '#c9a430'
+                      e.currentTarget.style.boxShadow = '0 4px 20px rgba(212, 175, 55, 0.25)'
+                    }
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'var(--heritage-gold)'
-                    e.currentTarget.style.boxShadow = 'none'
+                    if (!isSubmitting) {
+                      e.currentTarget.style.background = 'var(--heritage-gold)'
+                      e.currentTarget.style.boxShadow = 'none'
+                    }
                   }}
                 >
-                  <span>{isLast ? 'Submit' : 'Continue'}</span>
-                  <svg
-                    className="w-3.5 h-3.5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2.5}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M17 8l4 4m0 0l-4 4m4-4H3"
-                    />
-                  </svg>
+                  {isSubmitting ? (
+                    <>
+                      <svg
+                        className="w-3.5 h-3.5 animate-spin"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2.5}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        />
+                      </svg>
+                      <span>Submitting…</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>{isLast ? 'Submit' : 'Continue'}</span>
+                      <svg
+                        className="w-3.5 h-3.5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2.5}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M17 8l4 4m0 0l-4 4m4-4H3"
+                        />
+                      </svg>
+                    </>
+                  )}
                 </button>
               </div>
             </motion.div>

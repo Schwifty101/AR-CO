@@ -1,6 +1,6 @@
 'use client'
 
-import { use, useState, useRef, useCallback, useMemo } from 'react'
+import { use, useState, useRef, useCallback, useMemo, useEffect } from 'react'
 import { notFound, useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -9,6 +9,7 @@ import {
   getCategoryDocuments,
   type CategoryType,
 } from '@/lib/categoryDataMapper'
+import { storePendingDocuments, type PendingDocument } from '@/lib/serviceDocumentStore'
 
 interface PageProps {
   params: Promise<{ category: string; slug: string }>
@@ -53,6 +54,15 @@ export default function ServiceDocuments({ params }: PageProps) {
   const [uploadError, setUploadError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  // Guard: redirect to FAQ if this service was already submitted
+  useEffect(() => {
+    const submittedFlag = sessionStorage.getItem(`submitted_${category}_${slug}`)
+    if (submittedFlag) {
+      router.replace(`/services/${category}/${slug}/faq`)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   // Validate category
   const categoryValid = isValidCategory(category)
   const service = categoryValid ? findServiceBySlug(category as CategoryType, slug) : null
@@ -83,16 +93,35 @@ export default function ServiceDocuments({ params }: PageProps) {
     setCurrentIndex((i) => i - 1)
   }, [isFirst])
 
-  /** Validates all required docs are uploaded, sets sessionStorage flag, navigates to form. */
+  /**
+   * Validates all required docs are uploaded, saves files to the module-level
+   * store for upload after registration creation, sets sessionStorage flag,
+   * then navigates to the form page.
+   */
   const handleContinueToForm = useCallback(() => {
     if (currentDoc?.required && currentFiles.length === 0) {
       setUploadError('This document is required — please upload at least one file to continue.')
       return
     }
     setUploadError(null)
+
+    // Build flat list of pending documents for upload after registration
+    const pending: PendingDocument[] = []
+    for (const doc of documents) {
+      const files = uploadedFiles[doc.id] ?? []
+      for (const uploaded of files) {
+        pending.push({
+          file: uploaded.file,
+          documentTypeId: doc.id,
+          documentTypeName: doc.name,
+        })
+      }
+    }
+    storePendingDocuments(pending)
+
     sessionStorage.setItem(`docs_completed_${category}_${slug}`, 'true')
     router.push(`/services/${category}/${slug}/form`)
-  }, [currentDoc, currentFiles, category, slug, router])
+  }, [currentDoc, currentFiles, uploadedFiles, documents, category, slug, router])
 
   const addFiles = useCallback(
     (files: FileList | File[]) => {

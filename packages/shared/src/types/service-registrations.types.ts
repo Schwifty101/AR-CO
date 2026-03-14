@@ -6,6 +6,7 @@ import type {
   ServiceRegistrationResponseSchema,
   GuestStatusResponseSchema,
   PaginatedServiceRegistrationsResponseSchema,
+  ServiceRegistrationDocumentResponseSchema,
 } from '../schemas/service-registrations.schemas';
 
 export type CreateServiceRegistrationData = z.infer<typeof CreateServiceRegistrationSchema>;
@@ -14,3 +15,4 @@ export type UpdateRegistrationStatusData = z.infer<typeof UpdateRegistrationStat
 export type ServiceRegistrationResponse = z.infer<typeof ServiceRegistrationResponseSchema>;
 export type GuestStatusResponse = z.infer<typeof GuestStatusResponseSchema>;
 export type PaginatedServiceRegistrationsResponse = z.infer<typeof PaginatedServiceRegistrationsResponseSchema>;
+export type ServiceRegistrationDocumentResponse = z.infer<typeof ServiceRegistrationDocumentResponseSchema>;

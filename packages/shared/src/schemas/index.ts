@@ -55,6 +55,7 @@ export {
   ServiceRegistrationResponseSchema,
   GuestStatusResponseSchema,
   PaginatedServiceRegistrationsResponseSchema,
+  ServiceRegistrationDocumentResponseSchema,
 } from './service-registrations.schemas';
 
 export {

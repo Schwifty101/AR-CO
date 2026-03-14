@@ -56,12 +56,13 @@ export default function ClientDashboardPage() {
   }, [authLoading]);
 
   // Redirect to signin when session is lost
-  if (!authLoading && !user) {
-    router.push('/auth/signin');
-    return null;
-  }
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push('/auth/signin');
+    }
+  }, [authLoading, user, router]);
 
-  if (authLoading) {
+  if (authLoading || !user) {
     return (
       <div className="flex items-center justify-center py-12">
         <div className="animate-pulse text-muted-foreground">Loading...</div>

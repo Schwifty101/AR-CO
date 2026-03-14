@@ -65,3 +65,16 @@ export const PaginatedServiceRegistrationsResponseSchema = z.object({
     totalPages: z.number(),
   }),
 });
+
+/** Response schema for a single uploaded document */
+export const ServiceRegistrationDocumentResponseSchema = z.object({
+  id: z.string().uuid(),
+  registrationId: z.string().uuid(),
+  documentTypeId: z.string(),
+  documentTypeName: z.string(),
+  fileName: z.string(),
+  fileSize: z.number(),
+  mimeType: z.string(),
+  storagePath: z.string(),
+  uploadedAt: z.string(),
+});

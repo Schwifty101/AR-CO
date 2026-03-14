@@ -29,7 +29,10 @@ import {
   getRegistrationById,
   updateRegistrationStatus,
   assignRegistration,
+  listRegistrationDocuments,
+  getDocumentDownloadUrl,
   type ServiceRegistrationResponse,
+  type ServiceRegistrationDocument,
 } from '@/lib/api/service-registrations';
 import { createCaseFromRegistration } from '@/lib/api/cases';
 import { getUsers } from '@/lib/api/users';
@@ -49,6 +52,8 @@ import {
   ServiceDetailsCard,
   StaffActionsCard,
   LinkedCaseCard,
+  DocumentsCard,
+  type RegistrationDocument,
 } from './detail-cards';
 import { CreateCaseDialog } from './create-case-dialog';
 
@@ -78,6 +83,11 @@ export default function AdminServiceRegistrationDetailPage() {
   const [assignedToId, setAssignedToId] = useState('');
   const [assignees, setAssignees] = useState<{ id: string; name: string }[]>([]);
   const [isLoadingAssignees, setIsLoadingAssignees] = useState(true);
+
+  // Documents state
+  const [documents, setDocuments] = useState<RegistrationDocument[]>([]);
+  const [isLoadingDocs, setIsLoadingDocs] = useState(true);
+  const [isDownloading, setIsDownloading] = useState<string | null>(null);
 
   // Create Case dialog state
   const [isCreateCaseOpen, setIsCreateCaseOpen] = useState(false);
@@ -133,6 +143,34 @@ export default function AdminServiceRegistrationDetailPage() {
 
     loadAssignees();
   }, []);
+
+  // Load documents for this registration
+  useEffect(() => {
+    async function loadDocuments() {
+      try {
+        setIsLoadingDocs(true);
+        const docs = await listRegistrationDocuments(registrationId);
+        setDocuments(
+          docs.map((d: ServiceRegistrationDocument): RegistrationDocument => ({
+            id: d.id,
+            documentTypeId: d.documentTypeId,
+            documentTypeName: d.documentTypeName,
+            fileName: d.fileName,
+            fileSize: d.fileSize,
+            mimeType: d.mimeType,
+            uploadedAt: d.uploadedAt,
+          }))
+        );
+      } catch {
+        // Non-critical — don't show error toast for documents
+        setDocuments([]);
+      } finally {
+        setIsLoadingDocs(false);
+      }
+    }
+
+    loadDocuments();
+  }, [registrationId]);
 
   /** Handle status update */
   const handleUpdateStatus = async () => {
@@ -221,6 +259,26 @@ export default function AdminServiceRegistrationDetailPage() {
       toast.error(err instanceof Error ? err.message : 'Failed to create case');
     } finally {
       setIsCreatingCase(false);
+    }
+  };
+
+  /** Download a document by opening its signed URL in a new tab */
+  const handleDownload = async (docId: string, fileName: string) => {
+    try {
+      setIsDownloading(docId);
+      const { url } = await getDocumentDownloadUrl(registrationId, docId);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to download document');
+    } finally {
+      setIsDownloading(null);
     }
   };
 
@@ -330,6 +388,14 @@ export default function AdminServiceRegistrationDetailPage() {
         canCreateCase={!!canCreateCase}
         showDisabledCreateCase={!!showDisabledCreateCase}
         onCreateCase={openCreateCaseDialog}
+      />
+
+      {/* Documents Card */}
+      <DocumentsCard
+        documents={documents}
+        isLoading={isLoadingDocs}
+        onDownload={handleDownload}
+        isDownloading={isDownloading}
       />
 
       {/* Create Case Dialog */}

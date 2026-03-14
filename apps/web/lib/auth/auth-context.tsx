@@ -29,6 +29,7 @@ import {
   type ReactNode,
 } from 'react';
 import { createBrowserClient } from '@/lib/supabase/client';
+import { claimRegistrations } from '@/lib/api/service-registrations';
 import type { AuthState, AuthUser } from './types';
 
 /** Context value shape with state and actions */
@@ -134,6 +135,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
           }
           const userData = await fetchUserFromBackend(session.access_token);
           setUserState(userData);
+          // Silently claim any guest registrations submitted before login
+          if (event === 'SIGNED_IN') {
+            void claimRegistrations();
+          }
         } else {
           setUserState(null);
         }

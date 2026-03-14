@@ -18,6 +18,7 @@ import {
   type UpdateRegistrationStatusData,
   type AssignToData,
   type ServiceRegistrationResponse,
+  type ServiceRegistrationDocumentResponse,
   type GuestStatusResponse,
   type PaginatedServiceRegistrationsResponse,
   type PaginationParams,
@@ -57,6 +58,19 @@ interface ServiceRow {
   name: string;
   registration_fee: number;
   is_active: boolean;
+}
+
+/** DB row for service_registration_documents */
+interface ServiceRegistrationDocumentRow {
+  id: string;
+  registration_id: string;
+  document_type_id: string;
+  document_type_name: string;
+  file_name: string;
+  file_size: number;
+  mime_type: string;
+  storage_path: string;
+  uploaded_at: string;
 }
 
 /**
@@ -393,6 +407,197 @@ export class ServiceRegistrationsService {
     return this.mapRegistrationRow(data);
   }
 
+  /**
+   * Uploads a document file to Supabase Storage and saves metadata to DB.
+   * The endpoint is public — UUID registrationId acts as the access token.
+   */
+  async uploadDocument(
+    registrationId: string,
+    file: Express.Multer.File,
+    documentTypeId: string,
+    documentTypeName: string,
+  ): Promise<ServiceRegistrationDocumentResponse> {
+    this.logger.log(`Uploading document for registration ${registrationId}`);
+
+    const adminClient = this.supabaseService.getAdminClient();
+
+    // Verify registration exists
+    const { data: reg, error: regError } = (await adminClient
+      .from('service_registrations')
+      .select('id')
+      .eq('id', registrationId)
+      .single()) as DbResult<{ id: string }>;
+
+    if (regError || !reg) {
+      throw new NotFoundException('Registration not found');
+    }
+
+    // Build storage path: registrationId/documentTypeId/timestamp-filename
+    const safeFileName = file.originalname.replace(/[^a-zA-Z0-9._-]/g, '_');
+    const storagePath = `${registrationId}/${documentTypeId}/${Date.now()}-${safeFileName}`;
+
+    const { error: uploadError } = await adminClient.storage
+      .from('service-registration-documents')
+      .upload(storagePath, file.buffer, {
+        contentType: file.mimetype,
+        upsert: false,
+      });
+
+    if (uploadError) {
+      this.logger.error(
+        `Storage upload failed for registration ${registrationId}`,
+        uploadError,
+      );
+      throw new InternalServerErrorException('Failed to upload document');
+    }
+
+    const { data, error } = (await adminClient
+      .from('service_registration_documents')
+      .insert({
+        registration_id: registrationId,
+        document_type_id: documentTypeId,
+        document_type_name: documentTypeName,
+        file_name: file.originalname,
+        file_size: file.size,
+        mime_type: file.mimetype,
+        storage_path: storagePath,
+      })
+      .select()
+      .single()) as DbResult<ServiceRegistrationDocumentRow>;
+
+    if (error || !data) {
+      this.logger.error(
+        `Failed to save document metadata for registration ${registrationId}`,
+        error,
+      );
+      throw new InternalServerErrorException('Failed to save document metadata');
+    }
+
+    this.logger.log(
+      `Document uploaded for registration ${registrationId}: ${data.id}`,
+    );
+    return this.mapDocumentRow(data);
+  }
+
+  /** Lists all documents for a service registration (staff/admin only) */
+  async listDocuments(
+    registrationId: string,
+  ): Promise<ServiceRegistrationDocumentResponse[]> {
+    this.logger.log(`Listing documents for registration ${registrationId}`);
+
+    const adminClient = this.supabaseService.getAdminClient();
+
+    const { data, error } = (await adminClient
+      .from('service_registration_documents')
+      .select('*')
+      .eq('registration_id', registrationId)
+      .order('uploaded_at', {
+        ascending: true,
+      })) as DbListResult<ServiceRegistrationDocumentRow>;
+
+    if (error) {
+      this.logger.error(
+        `Failed to list documents for registration ${registrationId}`,
+        error,
+      );
+      throw new InternalServerErrorException('Failed to fetch documents');
+    }
+
+    return (data ?? []).map((row) => this.mapDocumentRow(row));
+  }
+
+  /** Generates a signed download URL for a document (staff/admin only, 1hr expiry) */
+  async getDocumentDownloadUrl(
+    registrationId: string,
+    docId: string,
+  ): Promise<{ url: string; fileName: string }> {
+    this.logger.log(`Generating download URL for document ${docId}`);
+
+    const adminClient = this.supabaseService.getAdminClient();
+
+    const { data: doc, error: docError } = (await adminClient
+      .from('service_registration_documents')
+      .select('storage_path, file_name')
+      .eq('id', docId)
+      .eq('registration_id', registrationId)
+      .single()) as DbResult<{ storage_path: string; file_name: string }>;
+
+    if (docError || !doc) {
+      throw new NotFoundException('Document not found');
+    }
+
+    const { data, error } = await adminClient.storage
+      .from('service-registration-documents')
+      .createSignedUrl(doc.storage_path, 3600);
+
+    if (error || !data?.signedUrl) {
+      this.logger.error(
+        `Failed to generate signed URL for doc ${docId}`,
+        error,
+      );
+      throw new InternalServerErrorException('Failed to generate download URL');
+    }
+
+    return { url: data.signedUrl, fileName: doc.file_name };
+  }
+
+  /**
+   * Links all guest registrations matching the authenticated user's email
+   * to their client profile. Safe to call on every login — already-linked
+   * registrations are ignored by the WHERE clause.
+   *
+   * @param user - The authenticated user
+   * @returns Number of registrations claimed
+   *
+   * @example
+   * ```typescript
+   * const result = await service.claimRegistrations(user);
+   * // result.claimed === 2 means two guest registrations were linked
+   * ```
+   */
+  async claimRegistrations(user: AuthUser): Promise<{ claimed: number }> {
+    this.logger.log(
+      `Claiming guest registrations for user ${user.id} (${user.email})`,
+    );
+
+    if (!user.email) {
+      return { claimed: 0 };
+    }
+
+    if (!user.clientProfileId) {
+      this.logger.warn(
+        `User ${user.id} has no clientProfileId — skipping claim`,
+      );
+      return { claimed: 0 };
+    }
+
+    const adminClient = this.supabaseService.getAdminClient();
+
+    const { data, error } = await adminClient
+      .from('service_registrations')
+      .update({ client_profile_id: user.clientProfileId })
+      .eq('email', user.email)
+      .is('client_profile_id', null)
+      .select('id');
+
+    if (error) {
+      this.logger.error(
+        `Failed to claim registrations for user ${user.id}`,
+        error,
+      );
+      // Non-fatal — don't throw, just return 0
+      return { claimed: 0 };
+    }
+
+    const claimed = data?.length ?? 0;
+    if (claimed > 0) {
+      this.logger.log(
+        `Claimed ${claimed} guest registration(s) for user ${user.id}`,
+      );
+    }
+    return { claimed };
+  }
+
   /** Maps a database row (snake_case) to ServiceRegistrationResponse (camelCase) */
   private mapRegistrationRow(
     row: ServiceRegistrationRow,
@@ -417,6 +622,23 @@ export class ServiceRegistrationsService {
       staffNotes: row.staff_notes ?? null,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
+    };
+  }
+
+  /** Maps a DB document row to ServiceRegistrationDocumentResponse */
+  private mapDocumentRow(
+    row: ServiceRegistrationDocumentRow,
+  ): ServiceRegistrationDocumentResponse {
+    return {
+      id: row.id,
+      registrationId: row.registration_id,
+      documentTypeId: row.document_type_id,
+      documentTypeName: row.document_type_name,
+      fileName: row.file_name,
+      fileSize: row.file_size,
+      mimeType: row.mime_type,
+      storagePath: row.storage_path,
+      uploadedAt: row.uploaded_at,
     };
   }
 }
