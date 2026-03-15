@@ -54,6 +54,7 @@ export type {
   ServiceRegistrationResponse,
   GuestStatusResponse,
   PaginatedServiceRegistrationsResponse,
+  ServiceRegistrationDocumentResponse,
 } from './service-registrations.types';
 
 export type {

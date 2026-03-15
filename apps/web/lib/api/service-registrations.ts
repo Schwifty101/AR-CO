@@ -355,3 +355,164 @@ export async function assignRegistration(
 
   return (await response.json()) as ServiceRegistrationResponse;
 }
+
+// ==================== DOCUMENT ENDPOINTS ====================
+
+/** Inline type for document response (until shared package export is available) */
+export interface ServiceRegistrationDocument {
+  id: string;
+  registrationId: string;
+  documentTypeId: string;
+  documentTypeName: string;
+  fileName: string;
+  fileSize: number;
+  mimeType: string;
+  storagePath: string;
+  uploadedAt: string;
+}
+
+/**
+ * Upload a document for a service registration (PUBLIC - no auth required)
+ *
+ * @param registrationId - UUID of the registration
+ * @param file - The file to upload
+ * @param documentTypeId - Document type identifier (e.g., "cnic")
+ * @param documentTypeName - Human-readable name (e.g., "CNIC Copy")
+ * @returns Uploaded document metadata
+ * @throws Error if upload fails
+ *
+ * @example
+ * ```typescript
+ * const doc = await uploadRegistrationDocument(
+ *   'reg-uuid',
+ *   file,
+ *   'cnic',
+ *   'CNIC Copy'
+ * );
+ * ```
+ */
+export async function uploadRegistrationDocument(
+  registrationId: string,
+  file: File,
+  documentTypeId: string,
+  documentTypeName: string,
+): Promise<ServiceRegistrationDocument> {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('documentTypeId', documentTypeId);
+  formData.append('documentTypeName', documentTypeName);
+
+  const response = await fetch(`/api/service-registrations/${registrationId}/documents`, {
+    method: 'POST',
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
+    throw new Error(error.message || `Failed to upload document: ${file.name}`);
+  }
+
+  return (await response.json()) as ServiceRegistrationDocument;
+}
+
+/**
+ * List all documents for a service registration (staff/admin only)
+ *
+ * @param registrationId - UUID of the registration
+ * @returns Array of document metadata
+ * @throws Error if request fails
+ *
+ * @example
+ * ```typescript
+ * const docs = await listRegistrationDocuments('reg-uuid');
+ * ```
+ */
+export async function listRegistrationDocuments(
+  registrationId: string,
+): Promise<ServiceRegistrationDocument[]> {
+  const token = await getSessionToken();
+
+  const response = await fetch(`/api/service-registrations/${registrationId}/documents`, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
+    throw new Error(error.message || 'Failed to fetch documents');
+  }
+
+  return (await response.json()) as ServiceRegistrationDocument[];
+}
+
+/**
+ * Get a signed download URL for a document (staff/admin only, 1-hour expiry)
+ *
+ * @param registrationId - UUID of the registration
+ * @param docId - UUID of the document
+ * @returns Signed URL and original file name
+ * @throws Error if request fails
+ *
+ * @example
+ * ```typescript
+ * const { url, fileName } = await getDocumentDownloadUrl('reg-uuid', 'doc-uuid');
+ * window.open(url, '_blank');
+ * ```
+ */
+export async function getDocumentDownloadUrl(
+  registrationId: string,
+  docId: string,
+): Promise<{ url: string; fileName: string }> {
+  const token = await getSessionToken();
+
+  const response = await fetch(
+    `/api/service-registrations/${registrationId}/documents/${docId}/url`,
+    {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    },
+  );
+
+  if (!response.ok) {
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
+    throw new Error(error.message || 'Failed to get download URL');
+  }
+
+  return (await response.json()) as { url: string; fileName: string };
+}
+
+/**
+ * Claim all guest registrations matching the authenticated user's email (silent)
+ *
+ * Called automatically on login to link any guest-submitted registrations
+ * to the user's account. Safe to call multiple times.
+ *
+ * @returns Number of registrations claimed
+ *
+ * @example
+ * ```typescript
+ * const { claimed } = await claimRegistrations();
+ * // claimed = 2 means 2 guest registrations were linked to this account
+ * ```
+ */
+export async function claimRegistrations(): Promise<{ claimed: number }> {
+  const token = await getSessionToken();
+
+  const response = await fetch('/api/service-registrations/claim', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    // Non-fatal — silently return 0 on failure
+    return { claimed: 0 };
+  }
+
+  return (await response.json()) as { claimed: number };
+}

@@ -9,7 +9,11 @@ import {
   HttpCode,
   HttpStatus,
   UseGuards,
+  UseInterceptors,
+  UploadedFile,
+  BadRequestException,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { ThrottlerGuard, Throttle } from '@nestjs/throttler';
 import { Public } from '../common/decorators/public.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
@@ -29,6 +33,7 @@ import {
   type UpdateRegistrationStatusData,
   type AssignToData,
   type ServiceRegistrationResponse,
+  type ServiceRegistrationDocumentResponse,
   type GuestStatusResponse,
   type PaginatedServiceRegistrationsResponse,
   type PaginationParams,
@@ -146,6 +151,30 @@ export class ServiceRegistrationsController {
   }
 
   /**
+   * Claim all guest registrations matching the authenticated user's email.
+   * Should be called silently on every login from the frontend.
+   * Safe to call multiple times — already-linked registrations are skipped.
+   *
+   * @param user - The authenticated user
+   * @returns Number of registrations claimed
+   *
+   * @example
+   * ```typescript
+   * POST /api/service-registrations/claim
+   * Authorization: Bearer <token>
+   *
+   * Response: { claimed: 2 }
+   * ```
+   */
+  @Post('claim')
+  @HttpCode(HttpStatus.OK)
+  async claimRegistrations(
+    @CurrentUser() user: AuthUser,
+  ): Promise<{ claimed: number }> {
+    return this.serviceRegistrationsService.claimRegistrations(user);
+  }
+
+  /**
    * Get all service registrations with pagination
    * Clients see only their own registrations, staff see all registrations
    *
@@ -258,5 +287,97 @@ export class ServiceRegistrationsController {
     dto: AssignToData,
   ): Promise<ServiceRegistrationResponse> {
     return this.serviceRegistrationsService.assignRegistration(id, dto);
+  }
+
+  /**
+   * Upload a document for a service registration (PUBLIC - no auth required)
+   * Accepts multipart/form-data with fields: file, documentTypeId, documentTypeName
+   * Security: registrationId UUID acts as access token (unguessable)
+   *
+   * @param id - The registration UUID
+   * @param file - The uploaded file (max 10MB)
+   * @param documentTypeId - Identifier for the document type (e.g., "cnic")
+   * @param documentTypeName - Human-readable name (e.g., "CNIC Copy")
+   * @returns The saved document metadata
+   */
+  @Post(':id/documents')
+  @Public()
+  @UseGuards(ThrottlerGuard)
+  @Throttle({ default: { limit: 20, ttl: 60000 } })
+  @HttpCode(HttpStatus.CREATED)
+  @UseInterceptors(
+    FileInterceptor('file', {
+      limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+      fileFilter: (_req, file, cb) => {
+        const allowed = [
+          'application/pdf',
+          'image/jpeg',
+          'image/png',
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        ];
+        if (allowed.includes(file.mimetype)) {
+          cb(null, true);
+        } else {
+          cb(
+            new BadRequestException(
+              'Only PDF, JPG, PNG, and DOCX files are allowed',
+            ),
+            false,
+          );
+        }
+      },
+    }),
+  )
+  async uploadDocument(
+    @Param('id') id: string,
+    @UploadedFile() file: Express.Multer.File,
+    @Body('documentTypeId') documentTypeId: string,
+    @Body('documentTypeName') documentTypeName: string,
+  ): Promise<ServiceRegistrationDocumentResponse> {
+    if (!file) {
+      throw new BadRequestException('File is required');
+    }
+    if (!documentTypeId?.trim()) {
+      throw new BadRequestException('documentTypeId is required');
+    }
+    if (!documentTypeName?.trim()) {
+      throw new BadRequestException('documentTypeName is required');
+    }
+    return this.serviceRegistrationsService.uploadDocument(
+      id,
+      file,
+      documentTypeId,
+      documentTypeName,
+    );
+  }
+
+  /**
+   * List all documents for a service registration (staff/admin only)
+   *
+   * @param id - The registration UUID
+   * @returns Array of document metadata
+   */
+  @Get(':id/documents')
+  @Roles(UserType.ADMIN, UserType.STAFF)
+  async listDocuments(
+    @Param('id') id: string,
+  ): Promise<ServiceRegistrationDocumentResponse[]> {
+    return this.serviceRegistrationsService.listDocuments(id);
+  }
+
+  /**
+   * Get a signed download URL for a document (staff/admin only, 1-hour expiry)
+   *
+   * @param id - The registration UUID
+   * @param docId - The document UUID
+   * @returns Signed URL and original file name
+   */
+  @Get(':id/documents/:docId/url')
+  @Roles(UserType.ADMIN, UserType.STAFF)
+  async getDocumentDownloadUrl(
+    @Param('id') id: string,
+    @Param('docId') docId: string,
+  ): Promise<{ url: string; fileName: string }> {
+    return this.serviceRegistrationsService.getDocumentDownloadUrl(id, docId);
   }
 }

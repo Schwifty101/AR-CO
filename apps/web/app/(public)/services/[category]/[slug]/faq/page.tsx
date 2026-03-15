@@ -1,13 +1,15 @@
 'use client'
 
-import { use, useState } from 'react'
+import { use, useState, useEffect } from 'react'
 import { notFound } from 'next/navigation'
+import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   isValidCategory,
   findServiceBySlug,
   type CategoryType,
 } from '@/lib/categoryDataMapper'
+import { useAuth } from '@/lib/auth/use-auth'
 import styles from '../services.module.css'
 
 interface PageProps {
@@ -20,6 +22,13 @@ export default function ServiceFAQ({ params }: PageProps) {
 
   // All hooks must be called before any conditional returns
   const [openIndex, setOpenIndex] = useState<number | null>(null)
+  const { isAuthenticated } = useAuth()
+  const [submittedRef, setSubmittedRef] = useState<string | null>(null)
+
+  useEffect(() => {
+    const flag = sessionStorage.getItem(`submitted_${category}_${slug}`)
+    setSubmittedRef(flag)
+  }, [category, slug])
 
   // Validate category
   const categoryValid = isValidCategory(category)
@@ -137,6 +146,113 @@ export default function ServiceFAQ({ params }: PageProps) {
           </motion.div>
         ))}
       </div>
+
+      {/* Track Progress CTA — shown only after form submission */}
+      {submittedRef && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+          style={{
+            marginTop: '4rem',
+            padding: '2rem',
+            border: '1px solid rgba(212, 175, 55, 0.25)',
+            borderRadius: '0.75rem',
+            background: 'rgba(212, 175, 55, 0.04)',
+            textAlign: 'center',
+          }}
+        >
+          <p
+            style={{
+              fontFamily: "'Georgia', 'Times New Roman', serif",
+              fontSize: '0.75rem',
+              letterSpacing: '0.25em',
+              textTransform: 'uppercase',
+              color: 'var(--heritage-gold)',
+              opacity: 0.7,
+              marginBottom: '0.75rem',
+            }}
+          >
+            Application Submitted
+          </p>
+          <p
+            style={{
+              fontFamily: "'Lora', Georgia, serif",
+              fontSize: 'clamp(1.1rem, 2.5vw, 1.5rem)',
+              fontWeight: 300,
+              fontStyle: 'italic',
+              color: 'var(--heritage-cream)',
+              marginBottom: '0.5rem',
+              lineHeight: 1.3,
+            }}
+          >
+            Your reference: <span style={{ color: 'var(--heritage-gold)' }}>{submittedRef}</span>
+          </p>
+          <p
+            style={{
+              fontFamily: "'Georgia', 'Times New Roman', serif",
+              fontSize: '0.82rem',
+              color: 'rgba(249, 248, 246, 0.45)',
+              marginBottom: '1.75rem',
+              lineHeight: 1.6,
+            }}
+          >
+            {isAuthenticated
+              ? 'View the status of your application in your client portal.'
+              : 'Create an account or log in to track the progress of your application in your client portal.'}
+          </p>
+
+          {isAuthenticated ? (
+            <Link
+              href="/client/services"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                padding: '0.7rem 1.75rem',
+                background: 'var(--heritage-gold)',
+                borderRadius: '100px',
+                color: 'var(--wood-espresso)',
+                fontFamily: "'Georgia', 'Times New Roman', serif",
+                fontSize: '0.88rem',
+                fontStyle: 'italic',
+                fontWeight: 600,
+                letterSpacing: '0.04em',
+                textDecoration: 'none',
+              }}
+            >
+              Track your application
+              <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+              </svg>
+            </Link>
+          ) : (
+            <Link
+              href={`/auth/signin?redirect=/client/services`}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                padding: '0.7rem 1.75rem',
+                background: 'var(--heritage-gold)',
+                borderRadius: '100px',
+                color: 'var(--wood-espresso)',
+                fontFamily: "'Georgia', 'Times New Roman', serif",
+                fontSize: '0.88rem',
+                fontStyle: 'italic',
+                fontWeight: 600,
+                letterSpacing: '0.04em',
+                textDecoration: 'none',
+              }}
+            >
+              Log in to track progress
+              <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+              </svg>
+            </Link>
+          )}
+        </motion.div>
+      )}
     </div>
   )
 }

@@ -40,6 +40,8 @@ import {
   Clock,
   LinkIcon,
   Plus,
+  Download,
+  FileArchive,
 } from 'lucide-react';
 import { formatDateTime, formatEnumLabel } from '../service-registrations.utils';
 
@@ -417,3 +419,125 @@ export function LinkedCaseCard({
   );
 }
 
+// ─── Documents Card ──────────────────────────────────────────────────────────
+
+/** Format bytes to human-readable size string */
+function formatBytes(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+/** Format ISO timestamp to locale date/time string (en-PK) */
+function formatUploadedAt(iso: string): string {
+  return new Date(iso).toLocaleString('en-PK', {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  });
+}
+
+/** Document shape for DocumentsCard */
+export interface RegistrationDocument {
+  id: string;
+  documentTypeId: string;
+  documentTypeName: string;
+  fileName: string;
+  fileSize: number;
+  mimeType: string;
+  uploadedAt: string;
+}
+
+/** Props for DocumentsCard */
+interface DocumentsCardProps {
+  /** Array of uploaded documents for this registration */
+  documents: RegistrationDocument[];
+  /** Whether the documents list is still being fetched */
+  isLoading: boolean;
+  /** Callback invoked when the user clicks Download on a document */
+  onDownload: (docId: string, fileName: string) => void;
+  /** The docId currently being downloaded; disables that row's button */
+  isDownloading: string | null;
+}
+
+/**
+ * Displays uploaded documents for a service registration with download buttons.
+ * Staff/admin only. Shows skeleton loading state while fetching and an empty
+ * state message when no documents were uploaded.
+ *
+ * @example
+ * ```tsx
+ * <DocumentsCard
+ *   documents={docs}
+ *   isLoading={isLoadingDocs}
+ *   onDownload={handleDownload}
+ *   isDownloading={downloadingDocId}
+ * />
+ * ```
+ */
+export function DocumentsCard({
+  documents,
+  isLoading,
+  onDownload,
+  isDownloading,
+}: DocumentsCardProps) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <FileArchive className="h-5 w-5" />
+          Submitted Documents
+        </CardTitle>
+        <CardDescription>
+          Documents uploaded by the registrant during submission
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        {isLoading ? (
+          <div className="space-y-2">
+            <div className="h-10 bg-muted animate-pulse rounded" />
+            <div className="h-10 bg-muted animate-pulse rounded" />
+          </div>
+        ) : documents.length === 0 ? (
+          <p className="text-sm text-muted-foreground italic">
+            No documents were uploaded with this registration.
+          </p>
+        ) : (
+          <div className="space-y-2">
+            {documents.map((doc) => (
+              <div
+                key={doc.id}
+                className="flex items-center justify-between gap-3 p-3 border rounded-md hover:bg-muted/30 transition-colors"
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
+                  <div className="min-w-0">
+                    <p className="font-medium text-sm truncate">{doc.fileName}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {doc.documentTypeName} · {formatBytes(doc.fileSize)} · {formatUploadedAt(doc.uploadedAt)}
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onDownload(doc.id, doc.fileName)}
+                  disabled={isDownloading === doc.id}
+                  className="shrink-0"
+                >
+                  {isDownloading === doc.id ? (
+                    <span className="text-xs">Downloading…</span>
+                  ) : (
+                    <>
+                      <Download className="h-3.5 w-3.5 mr-1.5" />
+                      Download
+                    </>
+                  )}
+                </Button>
+              </div>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}

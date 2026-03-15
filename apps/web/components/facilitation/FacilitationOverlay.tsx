@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Plus } from 'lucide-react'
 import { Lock } from 'lucide-react'
-import { facilitationServices } from '@/components/data/facilitationCenterData'
+import { facilitationServices, IP_SERVICE_IDS } from '@/components/data/facilitationCenterData'
 import { regulatoryServices } from '@/components/data/regulatoryServiceData'
 import { overseasServices } from '@/components/data/overseasServicesData'
 import { womenDeskServices } from '@/components/data/womenDeskData'
@@ -41,7 +41,11 @@ const OVERLAY_CATEGORIES: OverlayCategory[] = [
     tagline: 'Business Registration, Licensing & Compliance',
     services: [
       ...facilitationServices
-        .filter((s) => s.id !== 'immovable-property-due-diligence' && s.id !== 'movable-property-due-diligence')
+        .filter((s) =>
+          s.id !== 'immovable-property-due-diligence' &&
+          s.id !== 'movable-property-due-diligence' &&
+          !IP_SERVICE_IDS.has(s.id)
+        )
         .map((s) => {
           if (s.id === 'property-transfer') {
             return {

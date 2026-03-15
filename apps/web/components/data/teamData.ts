@@ -72,7 +72,7 @@ export const teamMembers: ITeamMemberExtended[] = [
         name: "Komal Zahra",
         role: "Advocate",
         bio: "Miss Komal Zahra is a dedicated legal professional with a strong academic background, holding an LLB degree from Bahria University. She possesses proven skills in legal drafting and research. With a keen interest in litigation and a sharp eye for detail, she plays an active role in preparing cases, representing clients across various forums with dedication and professionalism. Her practice primarily focuses on civil and family law matters. Having begun her career with the firm as an intern, her commitment, competence, and professional growth led to her promotion as a Legal Associate.",
-        image: "/our_team/komal_zahra.webp",
+        image: "/our_team/komal.webp",
         expertise: ["Civil Law", "Family Law", "Legal Research", "Drafting"],
         education: ["Bahria University"]
     },
