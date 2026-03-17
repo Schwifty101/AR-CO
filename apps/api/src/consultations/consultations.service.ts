@@ -33,8 +33,10 @@ import {
   BadRequestException,
   ConflictException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { SupabaseService } from '../database/supabase.service';
 import { LemonSqueezyService } from '../payments/lemonsqueezy.service';
+import type { Configuration } from '../config/configuration';
 import type { DbResult, DbListResult } from '../database/db-result.types';
 import {
   validateSortColumn,
@@ -60,7 +62,7 @@ import {
   mapConsultationRow,
   type CalcomWebhookPayload,
 } from './consultations.types';
-import type { LemonSqueezyWebhookPayload } from '../payments/types/webhook.types';
+import type { LemonSqueezyWebhookPayload, LemonSqueezyOrderData } from '../payments/types/webhook.types';
 
 /**
  * Allowed columns for sorting consultation list queries.
@@ -81,6 +83,7 @@ export class ConsultationsService {
   constructor(
     private readonly supabaseService: SupabaseService,
     private readonly lemonsqueezyService: LemonSqueezyService,
+    private readonly configService: ConfigService<Configuration>,
   ) {}
 
   /**
@@ -186,10 +189,19 @@ export class ConsultationsService {
       throw new BadRequestException('Payment already completed');
     }
 
-    // Create LemonSqueezy checkout (stub — real implementation in Task 10E)
+    const consultationVariantId = Number(
+      this.configService.get<string>('lemonsqueezy.consultationVariantId', {
+        infer: true,
+      }),
+    );
+    const frontendUrl = this.configService.get<string>(
+      'lemonsqueezy.frontendUrl',
+      { infer: true },
+    );
+
     const { checkoutUrl, checkoutId } =
       await this.lemonsqueezyService.createOneTimeCheckout({
-        variantId: 0, // placeholder — replaced with real variantId in Task 10E
+        variantId: consultationVariantId,
         customPrice: CONSULTATION_FEE_PKR * 100, // PKR 50,000 in cents
         email: booking.email,
         name: booking.full_name,
@@ -198,7 +210,7 @@ export class ConsultationsService {
           reference_id: booking.reference_number,
           booking_id: booking.id,
         },
-        redirectUrl: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/payment/success?type=consultation&ref=${booking.reference_number}`,
+        redirectUrl: `${frontendUrl}/payment/success?type=consultation&ref=${booking.reference_number}`,
         productName: 'Legal Consultation Fee',
       });
 
@@ -523,25 +535,99 @@ export class ConsultationsService {
   }
 
   /**
-   * Handle LemonSqueezy order_created webhook for consultation payments.
+   * Handles LemonSqueezy `order_created` webhook for consultation payments.
    *
-   * Stub — implemented in Task 10E.
+   * Extracts `booking_id` from custom_data, marks the booking as paid,
+   * stores the LemonSqueezy order ID, and advances booking_status to
+   * `payment_confirmed` so the guest can proceed to schedule via Cal.com.
    *
-   * @param payload - LemonSqueezy webhook payload
+   * @param payload - LemonSqueezy webhook payload (order_created event)
+   *
+   * @example
+   * ```typescript
+   * await consultationsService.handlePaymentConfirmed(webhookPayload);
+   * // booking.payment_status → 'paid'
+   * // booking.booking_status → 'payment_confirmed'
+   * ```
    */
-  async handlePaymentConfirmed(_payload: LemonSqueezyWebhookPayload): Promise<void> {
-    this.logger.log('handlePaymentConfirmed: stub (Task 10E)');
+  async handlePaymentConfirmed(payload: LemonSqueezyWebhookPayload): Promise<void> {
+    const bookingId = payload.meta.custom_data?.booking_id;
+    if (!bookingId) {
+      this.logger.warn('handlePaymentConfirmed: missing booking_id in custom_data');
+      return;
+    }
+
+    const orderData = payload.data as LemonSqueezyOrderData;
+    const lemonsqueezyOrderId = orderData.id;
+
+    this.logger.log(
+      `Payment confirmed for booking ${bookingId}, order: ${lemonsqueezyOrderId}`,
+    );
+
+    const adminClient = this.supabaseService.getAdminClient();
+    const { error } = await adminClient
+      .from('consultation_bookings')
+      .update({
+        payment_status: ConsultationPaymentStatus.PAID,
+        booking_status: ConsultationBookingStatus.PAYMENT_CONFIRMED,
+        lemonsqueezy_order_id: lemonsqueezyOrderId,
+      })
+      .eq('id', bookingId);
+
+    if (error) {
+      this.logger.error(
+        `Failed to confirm payment for booking ${bookingId}: ${error.message}`,
+      );
+      throw new BadRequestException(
+        `Failed to confirm consultation payment: ${error.message}`,
+      );
+    }
+
+    this.logger.log(`Booking ${bookingId} payment confirmed successfully`);
   }
 
   /**
-   * Handle LemonSqueezy order_refunded webhook for consultation payments.
+   * Handles LemonSqueezy `order_refunded` webhook for consultation payments.
    *
-   * Stub — implemented in Task 10E.
+   * Marks the booking as refunded and cancelled when a refund is processed.
    *
-   * @param payload - LemonSqueezy webhook payload
+   * @param payload - LemonSqueezy webhook payload (order_refunded event)
+   *
+   * @example
+   * ```typescript
+   * await consultationsService.handlePaymentRefunded(webhookPayload);
+   * // booking.payment_status → 'refunded'
+   * // booking.booking_status → 'cancelled'
+   * ```
    */
-  async handlePaymentRefunded(_payload: LemonSqueezyWebhookPayload): Promise<void> {
-    this.logger.log('handlePaymentRefunded: stub (Task 10E)');
+  async handlePaymentRefunded(payload: LemonSqueezyWebhookPayload): Promise<void> {
+    const bookingId = payload.meta.custom_data?.booking_id;
+    if (!bookingId) {
+      this.logger.warn('handlePaymentRefunded: missing booking_id in custom_data');
+      return;
+    }
+
+    this.logger.log(`Payment refunded for booking ${bookingId}`);
+
+    const adminClient = this.supabaseService.getAdminClient();
+    const { error } = await adminClient
+      .from('consultation_bookings')
+      .update({
+        payment_status: ConsultationPaymentStatus.REFUNDED,
+        booking_status: ConsultationBookingStatus.CANCELLED,
+      })
+      .eq('id', bookingId);
+
+    if (error) {
+      this.logger.error(
+        `Failed to process refund for booking ${bookingId}: ${error.message}`,
+      );
+      throw new BadRequestException(
+        `Failed to process consultation refund: ${error.message}`,
+      );
+    }
+
+    this.logger.log(`Booking ${bookingId} marked as refunded`);
   }
 
   /**

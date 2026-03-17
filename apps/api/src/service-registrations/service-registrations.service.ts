@@ -6,14 +6,18 @@ import {
   InternalServerErrorException,
   BadRequestException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import * as sgMail from '@sendgrid/mail';
 import { SupabaseService } from '../database/supabase.service';
 import { LemonSqueezyService } from '../payments/lemonsqueezy.service';
 import { STAFF_ROLES } from '../common/constants/roles';
 import { validateSortColumn } from '../common/utils/query-helpers';
 import type { AuthUser } from '../common/interfaces/auth-user.interface';
+import type { Configuration } from '../config/configuration';
 import {
   ServiceRegistrationStatus,
   ServiceRegistrationPaymentStatus,
+  UserType,
   type CreateServiceRegistrationData,
   type GuestStatusCheckData,
   type UpdateRegistrationStatusData,
@@ -25,7 +29,7 @@ import {
   type PaginationParams,
 } from '@repo/shared';
 import type { DbResult, DbListResult } from '../database/db-result.types';
-import type { LemonSqueezyWebhookPayload } from '../payments/types/webhook.types';
+import type { LemonSqueezyWebhookPayload, LemonSqueezyOrderData } from '../payments/types/webhook.types';
 
 /** Database row shape for the service_registrations table with joined assigned user */
 interface ServiceRegistrationRow {
@@ -104,6 +108,7 @@ export class ServiceRegistrationsService {
   constructor(
     private readonly supabaseService: SupabaseService,
     private readonly lemonsqueezyService: LemonSqueezyService,
+    private readonly configService: ConfigService<Configuration>,
   ) {}
 
   /** Creates a new service registration (guest/unauthenticated access) */
@@ -640,9 +645,19 @@ export class ServiceRegistrationsService {
     const serviceFee: number = reg.services?.registration_fee ?? 0;
     const serviceName: string = reg.services?.name ?? 'Service Registration';
 
+    const serviceVariantId = Number(
+      this.configService.get<string>('lemonsqueezy.serviceVariantId', {
+        infer: true,
+      }),
+    );
+    const frontendUrl = this.configService.get<string>(
+      'lemonsqueezy.frontendUrl',
+      { infer: true },
+    );
+
     const { checkoutUrl, checkoutId } =
       await this.lemonsqueezyService.createOneTimeCheckout({
-        variantId: 0, // placeholder — replaced with real variantId in Task 10F
+        variantId: serviceVariantId,
         customPrice: serviceFee * 100, // convert PKR to cents
         email: reg.email,
         name: reg.full_name,
@@ -651,7 +666,7 @@ export class ServiceRegistrationsService {
           reference_id: reg.reference_number,
           registration_id: reg.id,
         },
-        redirectUrl: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/payment/success?type=service&ref=${reg.reference_number}`,
+        redirectUrl: `${frontendUrl}/payment/success?type=service&ref=${reg.reference_number}`,
         productName: `${serviceName} - Registration Fee`,
       });
 
@@ -668,25 +683,266 @@ export class ServiceRegistrationsService {
   }
 
   /**
-   * Handle LemonSqueezy order_created webhook for service registration payments.
+   * Handles LemonSqueezy `order_created` webhook for service registration payments.
    *
-   * Stub — implemented in Task 10F.
+   * Marks the registration as paid, stores the LemonSqueezy order ID, and
+   * triggers auto account creation so the guest becomes a registered client.
    *
-   * @param payload - LemonSqueezy webhook payload
+   * @param payload - LemonSqueezy webhook payload (order_created event)
+   *
+   * @example
+   * ```typescript
+   * await service.handlePaymentConfirmed(webhookPayload);
+   * // registration.payment_status → 'paid', registration.status → 'paid'
+   * ```
    */
-  async handlePaymentConfirmed(_payload: LemonSqueezyWebhookPayload): Promise<void> {
-    this.logger.log('handlePaymentConfirmed: stub (Task 10F)');
+  async handlePaymentConfirmed(payload: LemonSqueezyWebhookPayload): Promise<void> {
+    const registrationId = payload.meta.custom_data?.registration_id;
+    if (!registrationId) {
+      this.logger.warn('handlePaymentConfirmed: missing registration_id in custom_data');
+      return;
+    }
+
+    const orderData = payload.data as LemonSqueezyOrderData;
+    const lemonsqueezyOrderId = orderData.id;
+
+    this.logger.log(
+      `Payment confirmed for registration ${registrationId}, order: ${lemonsqueezyOrderId}`,
+    );
+
+    const adminClient = this.supabaseService.getAdminClient();
+
+    // Fetch the full registration for account creation
+    const { data: registration, error: fetchError } = (await adminClient
+      .from('service_registrations')
+      .select('*')
+      .eq('id', registrationId)
+      .single()) as DbResult<ServiceRegistrationRow>;
+
+    if (fetchError || !registration) {
+      this.logger.error(`Registration ${registrationId} not found during payment confirmation`);
+      return;
+    }
+
+    // Mark as paid
+    const { error: updateError } = await adminClient
+      .from('service_registrations')
+      .update({
+        payment_status: ServiceRegistrationPaymentStatus.PAID,
+        status: ServiceRegistrationStatus.PAID,
+        lemonsqueezy_order_id: lemonsqueezyOrderId,
+      })
+      .eq('id', registrationId);
+
+    if (updateError) {
+      this.logger.error(
+        `Failed to confirm payment for registration ${registrationId}: ${updateError.message}`,
+      );
+      throw new BadRequestException(
+        `Failed to confirm service registration payment: ${updateError.message}`,
+      );
+    }
+
+    // Auto-create user account if not already linked
+    if (!registration.client_profile_id) {
+      await this.createUserAccount(registration);
+    }
+
+    this.logger.log(`Registration ${registrationId} payment confirmed successfully`);
   }
 
   /**
-   * Handle LemonSqueezy order_refunded webhook for service registration payments.
+   * Handles LemonSqueezy `order_refunded` webhook for service registration payments.
    *
-   * Stub — implemented in Task 10F.
+   * Reverts the registration back to pending_payment status when a refund occurs.
    *
-   * @param payload - LemonSqueezy webhook payload
+   * @param payload - LemonSqueezy webhook payload (order_refunded event)
+   *
+   * @example
+   * ```typescript
+   * await service.handlePaymentRefunded(webhookPayload);
+   * // registration.payment_status → 'refunded'
+   * ```
    */
-  async handlePaymentRefunded(_payload: LemonSqueezyWebhookPayload): Promise<void> {
-    this.logger.log('handlePaymentRefunded: stub (Task 10F)');
+  async handlePaymentRefunded(payload: LemonSqueezyWebhookPayload): Promise<void> {
+    const registrationId = payload.meta.custom_data?.registration_id;
+    if (!registrationId) {
+      this.logger.warn('handlePaymentRefunded: missing registration_id in custom_data');
+      return;
+    }
+
+    this.logger.log(`Payment refunded for registration ${registrationId}`);
+
+    const adminClient = this.supabaseService.getAdminClient();
+    const { error } = await adminClient
+      .from('service_registrations')
+      .update({
+        payment_status: ServiceRegistrationPaymentStatus.REFUNDED,
+        status: ServiceRegistrationStatus.PENDING_PAYMENT,
+      })
+      .eq('id', registrationId);
+
+    if (error) {
+      this.logger.error(
+        `Failed to process refund for registration ${registrationId}: ${error.message}`,
+      );
+      throw new BadRequestException(
+        `Failed to process service registration refund: ${error.message}`,
+      );
+    }
+
+    this.logger.log(`Registration ${registrationId} marked as refunded`);
+  }
+
+  /**
+   * Auto-creates a Supabase auth user + client profile for a paid service registrant.
+   *
+   * Flow:
+   * 1. Check if user already exists in user_profiles by email
+   * 2. If not: create Supabase auth user (admin), create user_profile (CLIENT), create client_profile
+   * 3. Link service_registration.client_profile_id to new client profile
+   * 4. Send welcome email with portal access instructions via SendGrid
+   *
+   * @param registration - The paid service registration row
+   */
+  private async createUserAccount(registration: ServiceRegistrationRow): Promise<void> {
+    const adminClient = this.supabaseService.getAdminClient();
+
+    // Check if an auth user with this email already exists
+    const { data: authUsersData } = await adminClient.auth.admin.listUsers();
+    const existingAuthUser = (authUsersData?.users ?? []).find(
+      (u: { email?: string; id: string }) => u.email === registration.email,
+    );
+
+    let userId: string;
+
+    if (existingAuthUser) {
+      userId = existingAuthUser.id;
+      this.logger.log(`Auth user already exists for ${registration.email}: ${userId}`);
+    } else {
+      // Generate a temporary password — user will reset on first login
+      const tempPassword = `Arco${Math.random().toString(36).slice(2, 10)}!`;
+
+      const { data: newAuthUser, error: authError } =
+        await adminClient.auth.admin.createUser({
+          email: registration.email,
+          password: tempPassword,
+          email_confirm: true,
+        });
+
+      if (authError || !newAuthUser?.user) {
+        this.logger.error(
+          `Failed to create auth user for ${registration.email}: ${authError?.message ?? 'no user'}`,
+        );
+        return; // Non-fatal — registration is already marked paid
+      }
+
+      userId = newAuthUser.user.id;
+
+      // Send welcome email with temporary credentials
+      await this.sendWelcomeEmail(
+        registration.email,
+        registration.full_name,
+        tempPassword,
+      );
+    }
+
+    // Check if user_profile already exists (e.g. OAuth signup race)
+    const { data: existingUserProfile } = (await adminClient
+      .from('user_profiles')
+      .select('id')
+      .eq('id', userId)
+      .maybeSingle()) as DbResult<{ id: string } | null>;
+
+    if (!existingUserProfile) {
+      const { error: profileError } = await adminClient
+        .from('user_profiles')
+        .insert({
+          id: userId,
+          full_name: registration.full_name,
+          user_type: UserType.CLIENT,
+          phone_number: registration.phone_number ?? null,
+        });
+
+      if (profileError) {
+        this.logger.error(
+          `Failed to create user_profile for ${userId}: ${profileError.message}`,
+        );
+        return;
+      }
+    }
+
+    // Create or fetch client_profile
+    const { data: clientProfile, error: clientProfileError } = (await adminClient
+      .from('client_profiles')
+      .upsert({ user_profile_id: userId }, { onConflict: 'user_profile_id' })
+      .select('id')
+      .single()) as DbResult<{ id: string }>;
+
+    if (clientProfileError || !clientProfile) {
+      this.logger.error(
+        `Failed to create client_profile for ${userId}: ${clientProfileError?.message ?? 'no data'}`,
+      );
+      return;
+    }
+
+    // Link registration to the new client profile
+    await adminClient
+      .from('service_registrations')
+      .update({ client_profile_id: clientProfile.id })
+      .eq('id', registration.id);
+
+    this.logger.log(
+      `Auto-created client account for ${registration.email} (userId: ${userId}, clientProfileId: ${clientProfile.id})`,
+    );
+  }
+
+  /**
+   * Sends a welcome email with portal access instructions via SendGrid.
+   *
+   * @param email - Recipient email address
+   * @param fullName - Recipient full name
+   * @param tempPassword - Temporary password for first login
+   */
+  private async sendWelcomeEmail(
+    email: string,
+    fullName: string,
+    tempPassword: string,
+  ): Promise<void> {
+    const sendgridApiKey = this.configService.get<string>('email.resendApiKey', {
+      infer: true,
+    });
+    if (!sendgridApiKey) {
+      this.logger.warn('SendGrid API key not configured — skipping welcome email');
+      return;
+    }
+
+    const frontendUrl = this.configService.get<string>('lemonsqueezy.frontendUrl', {
+      infer: true,
+    });
+
+    sgMail.setApiKey(sendgridApiKey);
+
+    try {
+      await sgMail.send({
+        to: email,
+        from: 'noreply@arco.pk',
+        subject: 'Welcome to AR&CO — Your Client Portal Access',
+        html: `
+          <h2>Welcome to AR&CO, ${fullName}!</h2>
+          <p>Your service registration payment has been confirmed. We have created a client portal account for you.</p>
+          <p><strong>Login Email:</strong> ${email}</p>
+          <p><strong>Temporary Password:</strong> ${tempPassword}</p>
+          <p>Please <a href="${frontendUrl}/auth/signin">sign in</a> and change your password on first login.</p>
+          <p>Our team will be in touch shortly to process your registration.</p>
+          <p>Best regards,<br/>AR&CO Team</p>
+        `,
+      });
+      this.logger.log(`Welcome email sent to ${email}`);
+    } catch (err) {
+      this.logger.error(`Failed to send welcome email to ${email}`, err);
+      // Non-fatal — account is created, email failure shouldn't block payment confirmation
+    }
   }
 
   /** Maps a database row (snake_case) to ServiceRegistrationResponse (camelCase) */
