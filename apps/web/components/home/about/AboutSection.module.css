@@ -18,7 +18,7 @@
   position: relative;
   z-index: 2;
   width: 100%;
-  max-width: 1500px;
+  max-width: 1400px;
   margin: 0 auto;
   padding: 0 clamp(1.5rem, 5vw, 4rem);
 }
@@ -28,7 +28,7 @@
   display: flex;
   align-items: center;
   gap: 2rem;
-  margin-bottom: 2rem;
+  margin-bottom: 2.5rem;
 }
 
 .sectionEyebrow {
@@ -52,83 +52,42 @@
 /* ── Grid Layout ─────────────────────────────────────────────────────────── */
 .gridContainer {
   display: grid;
-  grid-template-columns: 1.1fr 1.3fr 1fr;
-  grid-template-areas: "bio pic insights";
-  gap: clamp(3rem, 5vw, 6rem);
+  grid-template-columns: 1.3fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr auto;
+  grid-template-areas: 
+    "pic blog1 blog3"
+    "pic blog2 blog3"
+    "bio bio bio";
+  gap: clamp(1rem, 2vw, 2rem);
   width: 100%;
-  align-items: start;
+  align-items: stretch;
 }
 
-/* ── Box 1: Editorial Bio (Left) ─────────────────────────────────────────── */
-.bioContainer {
-  grid-area: bio;
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  padding-top: 0;
-  gap: 1.5rem;
-}
-
-.statement {
-  font-family: 'Cabinet Grotesk', sans-serif;
-  font-size: clamp(3rem, 5vw, 4.5rem);
-  font-weight: 800;
-  line-height: 1.05;
-  color: #fff;
-  margin: 0;
-  letter-spacing: -0.03em;
-  text-transform: uppercase;
-}
-
-.highlight {
-  display: block;
-  font-family: 'Lora', Georgia, serif;
-  font-size: clamp(3.5rem, 6vw, 5.5rem);
-  font-style: italic;
-  font-weight: 400;
-  color: var(--heritage-gold, #D4AF37);
-  letter-spacing: -0.02em;
-  text-transform: none;
-  margin-top: 0.5rem;
-}
-
-.subStatement {
-  font-family: 'Cabinet Grotesk', sans-serif;
-  font-size: 1.15rem;
-  font-weight: 400;
-  line-height: 1.6;
-  color: rgba(255, 255, 255, 0.65);
-  margin: 0;
-  max-width: 95%;
-  border-left: 1px solid var(--heritage-gold, #D4AF37);
-  padding-left: 1.5rem;
-}
-
-/* ── Box 2: Cinematic Portrait (Center) ──────────────────────────────────── */
+/* ── Box 1: Cinematic Portrait (Left) ────────────────────────────────────── */
 .pictureFrame {
   grid-area: pic;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  height: 100%;
 }
 
 .imageWrapper {
   position: relative;
   width: 100%;
-  aspect-ratio: 3/4.2;
-  /* Slightly taller for cinematic feel */
+  flex-grow: 1;
+  min-height: 480px;
   overflow: hidden;
   background: #111;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 4px;
-  /* subtle softening */
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 4px; /* subtle softening */
 }
 
 .profileImage {
   object-fit: cover;
   object-position: top center;
   /* Intense, editorial color grading via CSS */
-  filter: grayscale(20%) contrast(1.1) brightness(0.9);
+  filter: grayscale(15%) contrast(1.1) brightness(0.9);
   transition: filter 1.2s cubic-bezier(0.16, 1, 0.3, 1), transform 1.5s cubic-bezier(0.16, 1, 0.3, 1);
   will-change: transform, filter;
 }
@@ -166,77 +125,66 @@
   margin: 0;
 }
 
-/* ── Box 3: Insights Feed (Right) ────────────────────────────────────────── */
-.insightsContainer {
-  grid-area: insights;
-  display: flex;
-  flex-direction: column;
-  gap: 2.5rem;
-  padding-top: 1rem;
-}
-
-.insightsHeader {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  padding-bottom: 1rem;
-}
-
-.insightsTitle {
-  font-family: 'Cabinet Grotesk', sans-serif;
-  font-size: 0.8rem;
-  font-weight: 500;
-  color: #fff;
-  text-transform: uppercase;
-  letter-spacing: 0.15em;
-  margin: 0;
-}
-
-.viewAllLink {
-  font-family: 'Cabinet Grotesk', sans-serif;
-  font-size: 0.7rem;
-  color: var(--heritage-gold, #D4AF37);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
+/* ── Blogs List & Grid Slots ─────────────────────────────────────────────── */
+.loadingPlaceholder {
+  grid-column: 2 / -1;
+  font-family: 'Lora', Georgia, serif;
+  font-style: italic;
+  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.3);
+  padding: 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.05);
   display: flex;
   align-items: center;
-  gap: 0.25rem;
-  text-decoration: none;
-  transition: opacity 0.3s ease;
+  justify-content: center;
 }
 
-.viewAllLink:hover {
-  opacity: 0.7;
-}
-
-.linkIcon {
-  width: 14px;
-  height: 14px;
-}
-
-.blogsList {
-  display: flex;
-  flex-direction: column;
-}
-
-.blogItem {
-  text-decoration: none;
-  display: block;
+.blogCard {
   position: relative;
-  padding: 1.5rem 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  background: rgba(255, 255, 255, 0);
+  border: 1px solid rgba(255, 255, 255, 0.05); /* very soft border */
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  height: 100%;
+  overflow: hidden;
 }
 
-.blogItem:last-child {
-  border-bottom: none;
+.blogCard:hover {
+  background: rgba(255, 255, 255, 0.02);
+  border-color: rgba(212, 175, 55, 0.4); /* heritage gold softened */
 }
 
-.blogArticle {
+.blog1 {
+  grid-area: blog1;
+  min-height: 280px;
+}
+
+.blog2 {
+  grid-area: blog2;
+  min-height: 280px;
+}
+
+.blog3 {
+  grid-area: blog3;
+  height: 100%;
+}
+
+.blogLink {
+  padding: 2rem 1.75rem;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  justify-content: space-between;
+  width: 100%;
+  height: 100%;
+  text-decoration: none;
+}
+
+.blogMeta {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+  width: 100%;
 }
 
 .blogDate {
@@ -248,59 +196,166 @@
   letter-spacing: 0.15em;
 }
 
+.blogIcon {
+  width: 18px;
+  height: 18px;
+  color: rgba(255, 255, 255, 0.3);
+  transition: color 0.4s ease, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.blogCard:hover .blogIcon {
+  color: var(--heritage-gold);
+  transform: translate(2px, -2px);
+}
+
+.blogContentBottom {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.blogEyebrow {
+  font-family: 'Cabinet Grotesk', sans-serif;
+  font-size: 0.65rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  margin: 0;
+}
+
 .blogTitle {
   font-family: 'Lora', Georgia, serif;
-  font-size: 1.65rem;
+  font-size: 1.55rem;
   font-weight: 500;
-  line-height: 1.25;
+  line-height: 1.35;
   color: #fff;
   margin: 0;
-  transition: color 0.3s ease;
   display: -webkit-box;
-  line-clamp: 3;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  transition: color 0.3s ease;
+}
+
+.blogCard:hover .blogTitle {
+  color: var(--heritage-gold, #D4AF37);
+}
+
+.blogTitleTall {
+  font-family: 'Lora', Georgia, serif;
+  font-size: 2.25rem;
+  font-weight: 400;
+  line-height: 1.25;
+  color: #fff;
+  margin: 0;
+  margin-bottom: 1.5rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 5;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  transition: color 0.3s ease;
+}
+
+.blogCard:hover .blogTitleTall {
+  color: var(--heritage-gold, #D4AF37);
+}
+
+.blogAbstract {
+  font-family: 'Cabinet Grotesk', sans-serif;
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.5);
+  line-height: 1.6;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 1.5rem;
+  margin-top: auto;
 }
 
 .blogHoverLine {
   position: absolute;
-  bottom: -1px;
+  bottom: 0;
   left: 0;
   width: 0;
-  height: 1px;
+  height: 2px;
   background: var(--heritage-gold, #D4AF37);
   transition: width 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.blogItem:hover {
-  transform: translateX(10px);
+.blogCard:hover .blogHoverLine {
+  width: 25%;
 }
 
-.blogItem:hover .blogTitle {
-  color: var(--heritage-gold, #D4AF37);
+/* ── Box 4: Editorial Bio (Bottom) ───────────────────────────────────────── */
+.bioContainer {
+  grid-area: bio;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: clamp(2rem, 5vw, 4rem);
+  padding-top: 4rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  margin-top: 2rem;
 }
 
-.blogItem:hover .blogHoverLine {
-  width: 50px;
+.bioLeft {
+  display: flex;
+  flex-direction: column;
 }
 
-.loadingPlaceholder {
+.statement {
+  font-family: 'Cabinet Grotesk', sans-serif;
+  font-size: clamp(2.5rem, 4vw, 3.5rem);
+  font-weight: 800;
+  line-height: 1.05;
+  color: #fff;
+  margin: 0;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+}
+
+.highlight {
+  display: block;
   font-family: 'Lora', Georgia, serif;
+  font-size: clamp(3rem, 5vw, 4.5rem);
   font-style: italic;
-  font-size: 1.1rem;
-  color: rgba(255, 255, 255, 0.3);
-  padding: 2rem 0;
+  font-weight: 400;
+  color: var(--heritage-gold, #D4AF37);
+  letter-spacing: -0.02em;
+  text-transform: none;
+  margin-top: 0.5rem;
+}
+
+.bioRight {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.subStatement {
+  font-family: 'Cabinet Grotesk', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 400;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.65);
+  margin: 0;
+  border-left: 1px solid var(--heritage-gold, #D4AF37);
+  padding-left: 1.5rem;
 }
 
 /* ── Responsive Architecture ─────────────────────────────────────────────── */
-@media (max-width: 1300px) {
+@media (max-width: 1200px) {
   .gridContainer {
-    grid-template-columns: 1.2fr 1.3fr;
+    grid-template-columns: 1.5fr 1fr;
+    grid-template-rows: auto auto auto auto;
     grid-template-areas:
-      "bio pic"
-      "insights pic";
-    gap: 4rem;
+      "pic pic"
+      "blog1 blog2"
+      "blog3 blog3"
+      "bio bio";
+  }
+
+  .imageWrapper {
+    min-height: 600px;
   }
 }
 
@@ -317,9 +372,36 @@
     grid-template-columns: 1fr;
     grid-template-areas:
       "pic"
-      "bio"
-      "insights";
-    gap: 4rem;
+      "blog1"
+      "blog2"
+      "blog3"
+      "bio";
+    gap: 3rem;
+  }
+
+  .pictureFrame {
+    gap: 1rem;
+  }
+
+  .imageWrapper {
+    aspect-ratio: 4/4.5;
+    min-height: 0;
+    max-width: 500px;
+    margin: 0 auto;
+  }
+
+  .pictureCaption {
+    max-width: 500px;
+    margin: 0 auto;
+    width: 100%;
+    padding-left: 1rem;
+  }
+
+  .bioContainer {
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+    padding-top: 3rem;
+    margin-top: 1rem;
   }
 
   .statement {
@@ -331,35 +413,21 @@
     margin-top: 0.25rem;
   }
 
-  .imageWrapper {
-    max-width: 500px;
-    margin: 0 auto;
-    aspect-ratio: 4/4.5;
-  }
-
-  .pictureCaption {
-    max-width: 500px;
-    margin: 0 auto;
-    width: 100%;
+  .subStatement {
+    padding-left: 1rem;
   }
 }
 
 @media (max-width: 600px) {
-  .quoteMark {
-    top: -1.5rem;
-    font-size: 6rem;
-    left: -0.5rem;
-  }
-
   .imageWrapper {
-    aspect-ratio: 1/1;
+    aspect-ratio: 1/1.1;
   }
 
-  .blogItem {
-    padding: 1.25rem 0;
+  .blogLink {
+    padding: 1.5rem 1.25rem;
   }
 
-  .blogTitle {
-    font-size: 1.25rem;
+  .blogTitle, .blogTitleTall {
+    font-size: 1.35rem;
   }
 }

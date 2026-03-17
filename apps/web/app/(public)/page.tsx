@@ -176,8 +176,8 @@ export default function Home() {
           onReady={handleVideoReady}
           playing={videoReady}
         />
-        <LegalServices />
         <AboutSection />
+        <LegalServices />
         <ClientLogosCarousel />
         <Testimonials />
       </main>

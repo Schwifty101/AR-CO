@@ -60,7 +60,7 @@ export default function AboutSection() {
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
             className={styles.sectionEyebrow}
           >
-            Principal Attorney
+            Who is Barrister Shaoib Razzaq
           </motion.h2>
           <motion.div
             initial={{ scaleX: 0 }}
@@ -72,38 +72,12 @@ export default function AboutSection() {
         </div>
 
         <div className={styles.gridContainer}>
-          {/* Box 1: Editorial Bio */}
-          <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, amount: 0.2 }}
-            transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1] }}
-            className={styles.bioContainer}
-          >
-            <TextReveal duration={1.2} delay={150}>
-              <h3 className={styles.statement}>
-                Relentless Advocacy.<br />
-                Masterful Strategy.
-                <span className={styles.highlight}>Barrister Shaoib Razzaq.</span>
-              </h3>
-            </TextReveal>
-            <motion.p
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 1, delay: 0.8 }}
-              className={styles.subStatement}
-            >
-              As the lead visionary, Barrister Shaoib Razzaq brings a commanding presence and uncompromising precision to high-stakes litigation, corporate advisory, and complex regulatory matters. His fearless approach secures decisive victories across multiple jurisdictions.
-            </motion.p>
-          </motion.div>
-
-          {/* Box 2: Cinematic Portrait */}
+          {/* Picture Box */}
           <motion.div
             initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.2 }}
-            transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
+            transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
             className={styles.pictureFrame}
           >
             <div className={styles.imageWrapper}>
@@ -122,37 +96,100 @@ export default function AboutSection() {
             </div>
           </motion.div>
 
-          {/* Box 3: Insights Feed */}
-          <motion.div
-            initial={{ opacity: 0, x: 30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, amount: 0.2 }}
-            transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1], delay: 0.4 }}
-            className={styles.insightsContainer}
-          >
-            <div className={styles.insightsHeader}>
-              <h3 className={styles.insightsTitle}>Recent Insights</h3>
-              <Link href="/blogs" className={styles.viewAllLink}>
-                View Journal <ArrowUpRight className={styles.linkIcon} />
-              </Link>
-            </div>
-
-            <div className={styles.blogsList}>
-              {loading ? (
-                <div className={styles.loadingPlaceholder}>Curating insights...</div>
-              ) : blogs.length > 0 ? (
-                blogs.map((post) => (
-                  <Link key={post.id} href={`/blogs/${post.slug}`} className={styles.blogItem}>
-                    <article className={styles.blogArticle}>
-                      <span className={styles.blogDate}>{formatDate(post.publishedAt || post.createdAt)}</span>
-                      <h4 className={styles.blogTitle}>{post.title}</h4>
-                    </article>
-                    <div className={styles.blogHoverLine} />
+          {/* Blogs */}
+          {!loading ? (
+            <>
+              {blogs[0] && (
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true, amount: 0.2 }}
+                  transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
+                  className={`${styles.blogCard} ${styles.blog1}`}
+                >
+                  <Link href={`/blogs/${blogs[0].slug}`} className={styles.blogLink}>
+                    <div className={styles.blogMeta}>
+                      <span className={styles.blogDate}>{formatDate(blogs[0].publishedAt || blogs[0].createdAt)}</span>
+                      <ArrowUpRight className={styles.blogIcon} />
+                    </div>
+                    <div className={styles.blogContentBottom}>
+                      <span className={styles.blogEyebrow}>Recent Insights</span>
+                      <h4 className={styles.blogTitle}>{blogs[0].title}</h4>
+                    </div>
                   </Link>
-                ))
-              ) : (
-                <div className={styles.loadingPlaceholder}>No recent insights available.</div>
+                  <div className={styles.blogHoverLine} />
+                </motion.div>
               )}
+
+              {blogs[1] && (
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true, amount: 0.2 }}
+                  transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
+                  className={`${styles.blogCard} ${styles.blog2}`}
+                >
+                  <Link href={`/blogs/${blogs[1].slug}`} className={styles.blogLink}>
+                    <div className={styles.blogMeta}>
+                      <span className={styles.blogDate}>{formatDate(blogs[1].publishedAt || blogs[1].createdAt)}</span>
+                      <ArrowUpRight className={styles.blogIcon} />
+                    </div>
+                    <div className={styles.blogContentBottom}>
+                      <span className={styles.blogEyebrow}>Recent Insights</span>
+                      <h4 className={styles.blogTitle}>{blogs[1].title}</h4>
+                    </div>
+                  </Link>
+                  <div className={styles.blogHoverLine} />
+                </motion.div>
+              )}
+
+              {blogs[2] && (
+                <motion.div
+                  initial={{ opacity: 0, x: 20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true, amount: 0.2 }}
+                  transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1], delay: 0.4 }}
+                  className={`${styles.blogCard} ${styles.blog3}`}
+                >
+                  <Link href={`/blogs/${blogs[2].slug}`} className={styles.blogLink}>
+                    <div className={styles.blogMeta}>
+                      <span className={styles.blogDate}>{formatDate(blogs[2].publishedAt || blogs[2].createdAt)}</span>
+                      <ArrowUpRight className={styles.blogIcon} />
+                    </div>
+                    <div className={styles.blogContentBottom}>
+                      <h4 className={styles.blogTitleTall}>{blogs[2].title}</h4>
+                      <div className={styles.blogAbstract}>Read full insight to discover more about our approach and legal victories.</div>
+                    </div>
+                  </Link>
+                  <div className={styles.blogHoverLine} />
+                </motion.div>
+              )}
+            </>
+          ) : (
+            <div className={styles.loadingPlaceholder}>Curating insights...</div>
+          )}
+
+          {/* Written Bio Box at Bottom */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.2 }}
+            transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1], delay: 0.5 }}
+            className={styles.bioContainer}
+          >
+            <div className={styles.bioLeft}>
+              <TextReveal duration={1.2} delay={150}>
+                <h3 className={styles.statement}>
+                  Relentless Advocacy.<br />
+                  Masterful Strategy.
+                  <span className={styles.highlight}>Barrister Shaoib Razzaq.</span>
+                </h3>
+              </TextReveal>
+            </div>
+            <div className={styles.bioRight}>
+              <p className={styles.subStatement}>
+                As the lead visionary, Barrister Shaoib Razzaq brings a commanding presence and uncompromising precision to high-stakes litigation, corporate advisory, and complex regulatory matters. His fearless approach secures decisive victories across multiple jurisdictions.
+              </p>
             </div>
           </motion.div>
         </div>
