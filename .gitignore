@@ -160,3 +160,5 @@ business-cards
 
 # Google Service Account details
 ar-co.json
+.vercel
+.env*.local

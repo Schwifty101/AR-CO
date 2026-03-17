@@ -1,8 +1,7 @@
 import { ContentType } from '@repo/shared'
 import type { ContentPostResponse, CategoryResponse, PaginatedContentPostsResponse } from '@repo/shared'
 import BlogsClient from './blogs-client'
-
-const API_BASE = process.env.API_BACKEND_URL || 'http://localhost:4000'
+import { buildInternalApiUrl } from '@/lib/server-api-url'
 
 /**
  * Server-side fetch for published content posts.
@@ -15,13 +14,23 @@ const API_BASE = process.env.API_BACKEND_URL || 'http://localhost:4000'
 async function fetchPublishedPosts(contentType: string): Promise<ContentPostResponse[]> {
   try {
     const params = new URLSearchParams({ contentType, limit: '50' })
-    const res = await fetch(`${API_BASE}/api/content/posts?${params.toString()}`, {
+    const res = await fetch(buildInternalApiUrl(`/api/content/posts?${params.toString()}`), {
       next: { revalidate: 60 },
     })
-    if (!res.ok) return []
+    if (!res.ok) {
+      console.error('Failed to fetch published content posts', {
+        contentType,
+        status: res.status,
+      })
+      return []
+    }
     const data = (await res.json()) as PaginatedContentPostsResponse
     return data.data
-  } catch {
+  } catch (error) {
+    console.error('Error fetching published content posts', {
+      contentType,
+      error,
+    })
     return []
   }
 }
@@ -36,12 +45,18 @@ async function fetchPublishedPosts(contentType: string): Promise<ContentPostResp
  */
 async function fetchCategories(): Promise<CategoryResponse[]> {
   try {
-    const res = await fetch(`${API_BASE}/api/content/categories`, {
+    const res = await fetch(buildInternalApiUrl('/api/content/categories'), {
       next: { revalidate: 60 },
     })
-    if (!res.ok) return []
+    if (!res.ok) {
+      console.error('Failed to fetch content categories', {
+        status: res.status,
+      })
+      return []
+    }
     return (await res.json()) as CategoryResponse[]
-  } catch {
+  } catch (error) {
+    console.error('Error fetching content categories', { error })
     return []
   }
 }

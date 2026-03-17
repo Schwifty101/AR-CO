@@ -1,12 +1,11 @@
 import type { Metadata } from 'next'
 import type { ContentPostResponse } from '@repo/shared'
 import BlogPostContent from './blog-post-content'
+import { buildInternalApiUrl } from '@/lib/server-api-url'
 
 interface BlogPostPageProps {
   params: Promise<{ slug: string }>
 }
-
-const API_BASE = process.env.API_BACKEND_URL || 'http://localhost:4000'
 
 /**
  * Server-side fetch for blog post metadata.
@@ -14,12 +13,22 @@ const API_BASE = process.env.API_BACKEND_URL || 'http://localhost:4000'
  */
 async function fetchPostBySlug(slug: string): Promise<ContentPostResponse | null> {
   try {
-    const res = await fetch(`${API_BASE}/api/content/posts/${slug}`, {
+    const res = await fetch(buildInternalApiUrl(`/api/content/posts/${slug}`), {
       next: { revalidate: 60 },
     })
-    if (!res.ok) return null
+    if (!res.ok) {
+      console.error('Failed to fetch post by slug', {
+        slug,
+        status: res.status,
+      })
+      return null
+    }
     return (await res.json()) as ContentPostResponse
-  } catch {
+  } catch (error) {
+    console.error('Error fetching post by slug', {
+      slug,
+      error,
+    })
     return null
   }
 }
