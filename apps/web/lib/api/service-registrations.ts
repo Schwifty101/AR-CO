@@ -120,12 +120,18 @@ export async function createRegistration(
  */
 export async function initiatePayment(
   registrationId: string,
+  amountPkr?: number,
+  faqPath?: string,
 ): Promise<{ checkoutUrl: string }> {
   const response = await fetch(`/api/service-registrations/${registrationId}/pay`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
+    body: JSON.stringify({
+      ...(amountPkr !== undefined && { amount: amountPkr }),
+      ...(faqPath !== undefined && { faqPath }),
+    }),
   });
 
   if (!response.ok) {

@@ -119,7 +119,7 @@ export class PaymentsController {
   ): Promise<PaymentHistoryEntry[]> {
     let query = adminClient
       .from('service_registrations')
-      .select('reference_number, updated_at, services!inner(name, registration_fee)')
+      .select('reference_number, paid_amount, updated_at, services!inner(name)')
       .eq('payment_status', 'paid');
 
     if (!isStaff && user.clientProfileId) {
@@ -135,7 +135,7 @@ export class PaymentsController {
         type: 'service' as const,
         referenceNumber: row.reference_number,
         description: `${row.services?.name ?? 'Service'} - Registration Fee`,
-        amount: row.services?.registration_fee ?? 0,
+        amount: Number(row.paid_amount ?? 0),
         currency: 'PKR',
         status: 'paid',
         paidAt: row.updated_at,

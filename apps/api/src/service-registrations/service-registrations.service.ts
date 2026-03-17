@@ -625,7 +625,7 @@ export class ServiceRegistrationsService {
    * // Redirect user to checkoutUrl
    * ```
    */
-  async initiatePayment(registrationId: string): Promise<{ checkoutUrl: string }> {
+  async initiatePayment(registrationId: string, amountPkr?: number, faqPath?: string): Promise<{ checkoutUrl: string }> {
     this.logger.log(`Initiating LemonSqueezy payment for registration: ${registrationId}`);
 
     const adminClient = this.supabaseService.getAdminClient();
@@ -642,23 +642,42 @@ export class ServiceRegistrationsService {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const reg = registration as any;
-    const serviceFee: number = reg.services?.registration_fee ?? 0;
+    // Prefer the amount passed from the frontend (calculated from IP_FEES constants),
+    // fall back to DB registration_fee if available, else 0
+    const serviceFee: number = amountPkr ?? Number(reg.services?.registration_fee ?? 0);
     const serviceName: string = reg.services?.name ?? 'Service Registration';
 
-    const serviceVariantId = Number(
-      this.configService.get<string>('lemonsqueezy.serviceVariantId', {
-        infer: true,
-      }),
+    this.logger.log(
+      `initiatePayment: registrationId=${registrationId} amountPkr=${amountPkr} serviceFee=${serviceFee} customPrice(paisa)=${serviceFee * 100}`,
     );
+
+    // Pick the variant based on the fee amount:
+    // standard (PKR 5,400) → serviceVariantId
+    // with govt charges (PKR 8,400) → serviceGovtVariantId (falls back to standard if not configured)
+    const IP_FEES_STANDARD = 5400;
+    const stdVariantId = Number(
+      this.configService.get<string>('lemonsqueezy.serviceVariantId', { infer: true }),
+    );
+    const govtVariantId = Number(
+      this.configService.get<string>('lemonsqueezy.serviceGovtVariantId', { infer: true }),
+    );
+    const serviceVariantId = (serviceFee > IP_FEES_STANDARD && govtVariantId)
+      ? govtVariantId
+      : stdVariantId;
+
     const frontendUrl = this.configService.get<string>(
       'lemonsqueezy.frontendUrl',
       { infer: true },
     );
 
+    this.logger.log(
+      `Using variantId=${serviceVariantId} (serviceFee=${serviceFee}, stdVariant=${stdVariantId}, govtVariant=${govtVariantId})`,
+    );
+
     const { checkoutUrl, checkoutId } =
       await this.lemonsqueezyService.createOneTimeCheckout({
         variantId: serviceVariantId,
-        customPrice: serviceFee * 100, // convert PKR to cents
+        customPrice: serviceFee * 100, // PKR to paisa (LS uses 2 decimal places for PKR)
         email: reg.email,
         name: reg.full_name,
         customData: {
@@ -666,7 +685,9 @@ export class ServiceRegistrationsService {
           reference_id: reg.reference_number,
           registration_id: reg.id,
         },
-        redirectUrl: `${frontendUrl}/payment/success?type=service&ref=${reg.reference_number}`,
+        redirectUrl: faqPath
+          ? `${frontendUrl}${faqPath}`
+          : `${frontendUrl}/payment/success?type=service&ref=${reg.reference_number}`,
         productName: `${serviceName} - Registration Fee`,
       });
 
@@ -705,9 +726,11 @@ export class ServiceRegistrationsService {
 
     const orderData = payload.data as LemonSqueezyOrderData;
     const lemonsqueezyOrderId = orderData.id;
+    // total is in paisa — convert to PKR
+    const paidAmountPkr = (orderData.attributes.total ?? 0) / 100;
 
     this.logger.log(
-      `Payment confirmed for registration ${registrationId}, order: ${lemonsqueezyOrderId}`,
+      `Payment confirmed for registration ${registrationId}, order: ${lemonsqueezyOrderId}, amount: PKR ${paidAmountPkr}`,
     );
 
     const adminClient = this.supabaseService.getAdminClient();
@@ -724,13 +747,14 @@ export class ServiceRegistrationsService {
       return;
     }
 
-    // Mark as paid
+    // Mark as paid and store the actual amount charged
     const { error: updateError } = await adminClient
       .from('service_registrations')
       .update({
         payment_status: ServiceRegistrationPaymentStatus.PAID,
         status: ServiceRegistrationStatus.PAID,
         lemonsqueezy_order_id: lemonsqueezyOrderId,
+        paid_amount: paidAmountPkr,
       })
       .eq('id', registrationId);
 

@@ -19,7 +19,7 @@ import {
 } from '@/lib/categoryDataMapper'
 import { IP_FEES } from '@/components/data/facilitationCenterData'
 import type { FormField } from '@/components/data/facilitationCenterData'
-import { createRegistration, uploadRegistrationDocument } from '@/lib/api/service-registrations'
+import { createRegistration, uploadRegistrationDocument, initiatePayment } from '@/lib/api/service-registrations'
 import { getPendingDocuments, clearPendingDocuments } from '@/lib/serviceDocumentStore'
 import { getServices } from '@/lib/api/services'
 
@@ -321,9 +321,8 @@ export default function ServiceForm({ params }: PageProps) {
   const categoryValid = isValidCategory(category)
   const service = categoryValid ? findServiceBySlug(category as CategoryType, slug) : null
   const isIpService = IP_SERVICE_IDS.has(slug)
-  // TODO: Re-enable FEES & PAYMENT step once payment integration is ready
   const formSections = categoryValid
-    ? getFormForService(category as CategoryType, slug).filter((s) => s.title !== 'FEES & PAYMENT')
+    ? getFormForService(category as CategoryType, slug)
     : []
   const total = formSections.length
 
@@ -671,15 +670,16 @@ export default function ServiceForm({ params }: PageProps) {
         clearPendingDocuments()
       }
 
-      // Mark as submitted so form/documents pages redirect to FAQ if revisited
+      // Store reference in session so success/cancel pages can reference it
       sessionStorage.setItem(`submitted_${category}_${slug}`, registration.referenceNumber)
       sessionStorage.removeItem(`docs_completed_${category}_${slug}`)
-      setReferenceNumber(registration.referenceNumber)
-      setSubmitted(true)
+
+      // Redirect to LemonSqueezy checkout — on success LS sends user directly to FAQ
+      const { checkoutUrl } = await initiatePayment(registration.id, ipTotal, `/services/${category}/${slug}/faq`)
+      window.location.href = checkoutUrl
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Submission failed. Please try again.'
       toast.error(message)
-    } finally {
       setIsSubmitting(false)
     }
   }
@@ -758,15 +758,17 @@ export default function ServiceForm({ params }: PageProps) {
         clearPendingDocuments()
       }
 
-      // Mark as submitted so form/documents pages redirect to FAQ if revisited
+      // Store reference in session so success/cancel pages can reference it
       sessionStorage.setItem(`submitted_${category}_${slug}`, registration.referenceNumber)
       sessionStorage.removeItem(`docs_completed_${category}_${slug}`)
-      setReferenceNumber(registration.referenceNumber)
-      setSubmitted(true)
+
+      // Redirect to LemonSqueezy checkout — on success LS sends user directly to FAQ
+      const nonIpTotal = IP_FEES.serviceCharges + IP_FEES.registrationFee
+      const { checkoutUrl } = await initiatePayment(registration.id, nonIpTotal, `/services/${category}/${slug}/faq`)
+      window.location.href = checkoutUrl
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Submission failed. Please try again.'
       toast.error(message)
-    } finally {
       setIsSubmitting(false)
     }
   }
@@ -2139,11 +2141,11 @@ export default function ServiceForm({ params }: PageProps) {
                           d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                         />
                       </svg>
-                      <span>Submitting…</span>
+                      <span>Redirecting to payment…</span>
                     </>
                   ) : (
                     <>
-                      <span>{isLast ? 'Submit' : 'Continue'}</span>
+                      <span>{isLast ? 'Pay Now' : 'Continue'}</span>
                       <svg
                         className="w-3.5 h-3.5"
                         fill="none"

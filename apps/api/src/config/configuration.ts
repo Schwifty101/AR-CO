@@ -82,8 +82,10 @@ export interface LemonSqueezyConfig {
   subscriptionVariantId: string;
   /** Variant ID for Legal Consultation one-time fee (PKR 50,000) */
   consultationVariantId: string;
-  /** Variant ID for Facilitation Service one-time fee (variable custom_price) */
+  /** Variant ID for Facilitation Service standard fee (PKR 5,400) */
   serviceVariantId: string;
+  /** Variant ID for Facilitation Service with government charges (PKR 8,400) */
+  serviceGovtVariantId: string;
   /** Frontend URL for payment redirect callbacks */
   frontendUrl: string;
 }
@@ -172,6 +174,7 @@ export default (): Configuration => ({
     subscriptionVariantId: process.env.LEMONSQUEEZY_SUBSCRIPTION_VARIANT_ID ?? '',
     consultationVariantId: process.env.LEMONSQUEEZY_CONSULTATION_VARIANT_ID ?? '',
     serviceVariantId: process.env.LEMONSQUEEZY_SERVICE_VARIANT_ID ?? '',
+    serviceGovtVariantId: process.env.LEMONSQUEEZY_SERVICE_GOVT_VARIANT_ID ?? '',
     frontendUrl: process.env.FRONTEND_URL ?? 'http://localhost:3000',
   },
   google: {

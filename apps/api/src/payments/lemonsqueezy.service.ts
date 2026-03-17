@@ -138,8 +138,12 @@ export class LemonSqueezyService implements OnModuleInit {
       this.configService.get<string>('lemonsqueezy.storeId', { infer: true }),
     );
 
+    this.logger.log(
+      `createOneTimeCheckout → storeId=${storeId} variantId=${params.variantId} customPrice=${params.customPrice ?? 'not set'}`,
+    );
+
     const { data, error } = await createCheckout(storeId, params.variantId, {
-      ...(params.customPrice !== undefined && {
+      ...(params.customPrice !== undefined && params.customPrice > 0 && {
         customPrice: params.customPrice,
       }),
       productOptions: {
@@ -150,6 +154,7 @@ export class LemonSqueezyService implements OnModuleInit {
           this.configService.get<string>('lemonsqueezy.frontendUrl', {
             infer: true,
           }) ?? 'http://localhost:3000',
+        enabledVariants: [params.variantId],
       },
       checkoutOptions: {
         embed: false,
