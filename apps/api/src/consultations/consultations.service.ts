@@ -202,7 +202,7 @@ export class ConsultationsService {
     const { checkoutUrl, checkoutId } =
       await this.lemonsqueezyService.createOneTimeCheckout({
         variantId: consultationVariantId,
-        customPrice: CONSULTATION_FEE_PKR * 100, // PKR 50,000 in cents
+        // No customPrice — fee is fixed at PKR 50,000 on the LS product itself
         email: booking.email,
         name: booking.full_name,
         customData: {
