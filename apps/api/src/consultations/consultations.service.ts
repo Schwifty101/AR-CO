@@ -34,7 +34,7 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { SupabaseService } from '../database/supabase.service';
-import { SafepayService } from '../payments/safepay.service';
+import { LemonSqueezyService } from '../payments/lemonsqueezy.service';
 import type { DbResult, DbListResult } from '../database/db-result.types';
 import {
   validateSortColumn,
@@ -49,7 +49,6 @@ import type {
   ConsultationFilters,
   PaginationParams,
   ConsultationPaymentInitResponse,
-  ConfirmConsultationPaymentData,
 } from '@repo/shared';
 import {
   ConsultationBookingStatus,
@@ -80,7 +79,7 @@ export class ConsultationsService {
 
   constructor(
     private readonly supabaseService: SupabaseService,
-    private readonly safepayService: SafepayService,
+    private readonly lemonsqueezyService: LemonSqueezyService,
   ) {}
 
   /**
@@ -145,29 +144,26 @@ export class ConsultationsService {
   }
 
   /**
-   * Initiates Safepay payment session for a consultation booking (Step 2: Payment)
+   * Initiates LemonSqueezy payment checkout for a consultation booking (Step 2: Payment)
    *
-   * Creates a Safepay checkout session and returns the URL for guest payment.
-   * Stores the tracker token in the database for later verification.
+   * Creates a LemonSqueezy checkout URL for the guest to complete payment.
+   * Stores the checkout ID in the database for webhook correlation.
    *
    * @param bookingId - UUID of the consultation booking
-   * @returns Safepay checkout URL, amount, currency, and order ID
+   * @returns LemonSqueezy checkout URL
    * @throws {NotFoundException} If booking not found
    * @throws {BadRequestException} If payment already completed
    *
    * @example
    * ```typescript
    * const payment = await consultationsService.initiatePayment('booking-uuid');
-   * // payment.checkoutUrl → 'https://sandbox.api.getsafepay.com/checkout/...'
-   * // payment.amount → 50000000 (500 PKR in paisa)
-   * // payment.currency → 'PKR'
-   * // payment.orderId → 'CON-2026-0042'
+   * // payment.checkoutUrl → 'https://checkout.lemonsqueezy.com/checkout/...'
    * ```
    */
   async initiatePayment(
     bookingId: string,
   ): Promise<ConsultationPaymentInitResponse> {
-    this.logger.log(`Initiating payment for booking: ${bookingId}`);
+    this.logger.log(`Initiating LemonSqueezy payment for booking: ${bookingId}`);
 
     const adminClient = this.supabaseService.getAdminClient();
 
@@ -182,7 +178,6 @@ export class ConsultationsService {
       throw new NotFoundException('Booking not found');
     }
 
-    // Check if already paid
     if (
       (booking.payment_status as unknown as ConsultationPaymentStatus) ===
       ConsultationPaymentStatus.PAID
@@ -190,132 +185,33 @@ export class ConsultationsService {
       throw new BadRequestException('Payment already completed');
     }
 
-    // Calculate amount in paisa (Safepay requires smallest currency unit)
-    const amountInPaisa = CONSULTATION_FEE_PKR * 100;
+    // Create LemonSqueezy checkout (stub — real implementation in Task 10E)
+    const { checkoutUrl, checkoutId } =
+      await this.lemonsqueezyService.createOneTimeCheckout({
+        variantId: 0, // placeholder — replaced with real variantId in Task 10E
+        customPrice: CONSULTATION_FEE_PKR * 100, // PKR 50,000 in cents
+        email: booking.email,
+        name: booking.full_name,
+        customData: {
+          payment_type: 'consultation',
+          reference_id: booking.reference_number,
+          booking_id: booking.id,
+        },
+        redirectUrl: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/payment/success?type=consultation&ref=${booking.reference_number}`,
+        productName: 'Legal Consultation Fee',
+      });
 
-    // Step 1: Create Safepay payment session (tracker)
-    const session = await this.safepayService.createPaymentSession({
-      amount: amountInPaisa,
-      currency: 'PKR',
-      orderId: booking.reference_number,
-    });
-
-    // Step 2: Generate checkout URL with TBT auth token
-    const checkoutUrl = await this.safepayService.generateCheckoutUrl(
-      session.trackerToken,
-    );
-
-    // Store tracker token in database
-    const { error: updateError } = await adminClient
+    // Store checkout ID in database
+    await adminClient
       .from('consultation_bookings')
-      .update({ safepay_tracker_token: session.trackerToken })
+      .update({ lemonsqueezy_checkout_id: checkoutId })
       .eq('id', bookingId);
 
-    if (updateError) {
-      this.logger.error('Failed to store tracker token', updateError);
-      throw new BadRequestException('Failed to initiate payment session');
-    }
-
     this.logger.log(
-      `Payment session created for ${booking.reference_number}: ${session.trackerToken}`,
+      `LemonSqueezy checkout created for ${booking.reference_number}: ${checkoutId}`,
     );
 
-    return {
-      checkoutUrl,
-      amount: session.amount,
-      currency: session.currency,
-      orderId: session.orderId,
-    };
-  }
-
-  /**
-   * Confirms Safepay payment and updates booking status (Step 3: Verify Payment)
-   *
-   * Verifies payment via Safepay Reporter API and updates booking to 'payment_confirmed' status.
-   * This gating step must complete before guest can access Cal.com scheduling (Step 4).
-   *
-   * Idempotent: Returns existing booking if already paid (safe to call multiple times).
-   *
-   * @param bookingId - UUID of the consultation booking
-   * @param dto - Contains trackerToken from payment redirect callback
-   * @returns Updated booking with payment_confirmed status
-   * @throws {NotFoundException} If booking not found
-   * @throws {BadRequestException} If payment verification fails
-   *
-   * @example
-   * ```typescript
-   * const confirmed = await consultationsService.confirmPayment('booking-uuid', {
-   *   trackerToken: 'track_xxx',
-   * });
-   * // confirmed.paymentStatus → 'paid'
-   * // confirmed.bookingStatus → 'payment_confirmed'
-   * // confirmed.safepayTransactionRef → 'ch_xxx' (charge token)
-   * ```
-   */
-  async confirmPayment(
-    bookingId: string,
-    dto: ConfirmConsultationPaymentData,
-  ): Promise<ConsultationResponse> {
-    this.logger.log(`Confirming payment for booking: ${bookingId}`);
-
-    const adminClient = this.supabaseService.getAdminClient();
-
-    // Fetch booking
-    const { data: booking, error } = (await adminClient
-      .from('consultation_bookings')
-      .select('*')
-      .eq('id', bookingId)
-      .single()) as DbResult<ConsultationRow>;
-
-    if (error || !booking) {
-      throw new NotFoundException('Booking not found');
-    }
-
-    // Idempotency: if already paid, return existing booking
-    if (
-      (booking.payment_status as unknown as ConsultationPaymentStatus) ===
-      ConsultationPaymentStatus.PAID
-    ) {
-      this.logger.log(
-        `Booking ${booking.reference_number} already paid, returning existing data`,
-      );
-      return mapConsultationRow(booking);
-    }
-
-    // Verify payment via Safepay Reporter API
-    const verification = await this.safepayService.verifyPayment(
-      dto.trackerToken,
-    );
-
-    if (!verification.isPaid) {
-      throw new BadRequestException(
-        `Payment not confirmed. Status: ${verification.state}`,
-      );
-    }
-
-    // Update booking with payment confirmation
-    const { data: updated, error: updateError } = (await adminClient
-      .from('consultation_bookings')
-      .update({
-        payment_status: ConsultationPaymentStatus.PAID,
-        booking_status: ConsultationBookingStatus.PAYMENT_CONFIRMED,
-        safepay_transaction_ref: verification.reference,
-        safepay_tracker_token: dto.trackerToken,
-      })
-      .eq('id', bookingId)
-      .select()
-      .single()) as DbResult<ConsultationRow>;
-
-    if (updateError || !updated) {
-      this.logger.error('Failed to update booking after payment', updateError);
-      throw new BadRequestException('Failed to confirm payment');
-    }
-
-    this.logger.log(
-      `Payment confirmed for ${updated.reference_number}: ${verification.reference}`,
-    );
-
-    return mapConsultationRow(updated);
+    return { checkoutUrl };
   }
 
   /**
@@ -623,6 +519,28 @@ export class ConsultationsService {
 
     this.logger.log(`Booking ${id} cancelled successfully`);
     return mapConsultationRow(updated);
+  }
+
+  /**
+   * Handle LemonSqueezy order_created webhook for consultation payments.
+   *
+   * Stub — implemented in Task 10E.
+   *
+   * @param payload - LemonSqueezy webhook payload
+   */
+  async handlePaymentConfirmed(_payload: unknown): Promise<void> {
+    this.logger.log('handlePaymentConfirmed: stub (Task 10E)');
+  }
+
+  /**
+   * Handle LemonSqueezy order_refunded webhook for consultation payments.
+   *
+   * Stub — implemented in Task 10E.
+   *
+   * @param payload - LemonSqueezy webhook payload
+   */
+  async handlePaymentRefunded(_payload: unknown): Promise<void> {
+    this.logger.log('handlePaymentRefunded: stub (Task 10E)');
   }
 
   /**

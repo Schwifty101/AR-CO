@@ -4,8 +4,7 @@
  * Exposes REST endpoints for subscription management:
  * - Public: List plans
  * - Client: Subscribe, view my subscription, cancel
- * - Admin/Staff: List all subscriptions, view detail, sync plans, cancel
- * - Webhook: Safepay subscription lifecycle events
+ * - Admin/Staff: List all subscriptions, view detail, cancel
  *
  * @module SubscriptionsModule
  *
@@ -22,12 +21,6 @@
  *
  * // Admin - list all subscriptions
  * GET /api/subscriptions?status=active&page=1&limit=20
- *
- * // Admin - sync plan to Safepay
- * POST /api/subscriptions/plans/:id/sync
- *
- * // Safepay webhook
- * POST /api/subscriptions/webhook/safepay
  * ```
  */
 
@@ -39,9 +32,6 @@ import {
   Param,
   Body,
   Query,
-  Headers,
-  HttpCode,
-  HttpStatus,
 } from '@nestjs/common';
 import { Public } from '../common/decorators/public.decorator';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -50,7 +40,6 @@ import { UserType } from '../common/enums/user-type.enum';
 import { SubscriptionStatus } from '@repo/shared';
 import type { AuthUser } from '../common/interfaces/auth-user.interface';
 import { SubscriptionsService } from './subscriptions.service';
-import type { SafepaySubscriptionWebhookPayload } from './subscriptions.types';
 
 /**
  * Subscriptions REST API controller.
@@ -117,33 +106,6 @@ export class SubscriptionsController {
   @Get('my-subscription')
   async getMySubscription(@CurrentUser() user: AuthUser) {
     return this.subscriptionsService.getMySubscription(user.id);
-  }
-
-  /**
-   * Safepay subscription webhook handler (public, verified by signature).
-   *
-   * @param body - Safepay webhook payload
-   * @param headers - HTTP headers containing X-SFPY-SIGNATURE
-   * @returns Acknowledgment
-   *
-   * @example
-   * ```bash
-   * # Safepay sends this automatically
-   * POST /api/subscriptions/webhook/safepay
-   * ```
-   */
-  @Public()
-  @Post('webhook/safepay')
-  @HttpCode(HttpStatus.OK)
-  async handleWebhook(
-    @Body() body: unknown,
-    @Headers() headers: Record<string, string>,
-  ) {
-    await this.subscriptionsService.handleWebhook(
-      body as SafepaySubscriptionWebhookPayload,
-      headers,
-    );
-    return { received: true };
   }
 
   /**
@@ -220,25 +182,4 @@ export class SubscriptionsController {
     return { success: true };
   }
 
-  /**
-   * Sync a local plan to Safepay (admin only, one-time operation).
-   *
-   * Creates the plan on Safepay and stores the returned plan token.
-   * Idempotent - returns existing token if already synced.
-   *
-   * @param id - UUID of the subscription_plans record
-   * @returns Safepay plan token
-   *
-   * @example
-   * ```bash
-   * curl -X POST -H "Authorization: Bearer <token>" \
-   *   http://localhost:4000/api/subscriptions/plans/plan-uuid/sync
-   * ```
-   */
-  @Roles(UserType.ADMIN)
-  @Post('plans/:id/sync')
-  async syncPlan(@Param('id') id: string) {
-    const planToken = await this.subscriptionsService.syncPlanToSafepay(id);
-    return { planToken };
-  }
 }

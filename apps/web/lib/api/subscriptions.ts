@@ -17,14 +17,14 @@
  *   cancelSubscription,
  *   getSubscriptions,
  *   getSubscriptionDetail,
- *   syncPlanToSafepay,
  * } from '@/lib/api/subscriptions';
  *
  * // Public: Fetch available plans
  * const plans = await getSubscriptionPlans();
  *
- * // Authenticated: Start subscription checkout
+ * // Authenticated: Start subscription checkout (returns LemonSqueezy checkout URL)
  * const { checkoutUrl } = await initiateSubscription('civic-retainer');
+ * window.location.href = checkoutUrl;
  *
  * // Authenticated: Get my subscription
  * const subscription = await getMySubscription();
@@ -77,17 +77,17 @@ export async function getSubscriptionPlans(): Promise<SubscriptionPlan[]> {
 /**
  * Initiate subscription checkout (requires auth)
  *
- * Creates a Safepay subscription checkout session for the given plan.
- * Returns a checkout URL to redirect the user to Safepay payment.
+ * Creates a LemonSqueezy checkout session for the given plan.
+ * Returns a hosted checkout URL to redirect the user to payment.
  *
  * @param planSlug - URL slug of the subscription plan
- * @returns Checkout URL, subscription ID, and payment reference
+ * @returns LemonSqueezy hosted checkout URL
  * @throws Error if request fails, plan not found, or user already subscribed
  *
  * @example
  * ```typescript
- * const { checkoutUrl, subscriptionId } = await initiateSubscription('civic-retainer');
- * // Open checkoutUrl in popup via usePaymentPopup hook
+ * const { checkoutUrl } = await initiateSubscription('civic-retainer');
+ * window.location.href = checkoutUrl;
  * ```
  */
 export async function initiateSubscription(
@@ -240,33 +240,3 @@ export async function getSubscriptionDetail(
   return (await response.json()) as SubscriptionDetail;
 }
 
-/**
- * Admin: sync plan to Safepay
- *
- * Triggers synchronization of a subscription plan with Safepay's billing system.
- * Creates or updates the corresponding plan in Safepay. Requires admin authentication.
- *
- * @param planId - UUID of the subscription plan to sync
- * @returns Object containing the Safepay plan token
- * @throws Error if request fails, plan not found, or user lacks admin permissions
- *
- * @example
- * ```typescript
- * const { planToken } = await syncPlanToSafepay('550e8400-e29b-41d4-a716-446655440000');
- * console.log('Safepay plan token:', planToken);
- * ```
- */
-export async function syncPlanToSafepay(
-  planId: string,
-): Promise<{ planToken: string }> {
-  const token = await getSessionToken();
-  const response = await fetch(`/api/subscriptions/plans/${planId}/sync`, {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  if (!response.ok) {
-    const error = (await response.json().catch(() => ({}))) as { message?: string };
-    throw new Error(error.message || 'Failed to sync plan');
-  }
-  return (await response.json()) as { planToken: string };
-}

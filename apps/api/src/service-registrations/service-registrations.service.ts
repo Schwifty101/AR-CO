@@ -7,6 +7,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { SupabaseService } from '../database/supabase.service';
+import { LemonSqueezyService } from '../payments/lemonsqueezy.service';
 import { STAFF_ROLES } from '../common/constants/roles';
 import { validateSortColumn } from '../common/utils/query-helpers';
 import type { AuthUser } from '../common/interfaces/auth-user.interface';
@@ -37,8 +38,8 @@ interface ServiceRegistrationRow {
   address: string | null;
   description_of_need: string | null;
   payment_status: ServiceRegistrationPaymentStatus;
-  safepay_tracker_id: string | null;
-  safepay_transaction_id: string | null;
+  lemonsqueezy_checkout_id: string | null;
+  lemonsqueezy_order_id: string | null;
   status: ServiceRegistrationStatus;
   client_profile_id: string | null;
   assigned_to_id: string | null;
@@ -99,7 +100,10 @@ const ALLOWED_REGISTRATION_SORT_COLUMNS = [
 export class ServiceRegistrationsService {
   private readonly logger = new Logger(ServiceRegistrationsService.name);
 
-  constructor(private readonly supabaseService: SupabaseService) {}
+  constructor(
+    private readonly supabaseService: SupabaseService,
+    private readonly lemonsqueezyService: LemonSqueezyService,
+  ) {}
 
   /** Creates a new service registration (guest/unauthenticated access) */
   async createRegistration(
@@ -596,6 +600,92 @@ export class ServiceRegistrationsService {
       );
     }
     return { claimed };
+  }
+
+  /**
+   * Initiates a LemonSqueezy checkout for a service registration fee.
+   *
+   * Fetches the registration and its associated service fee, creates a
+   * one-time checkout via LemonSqueezy, persists the checkout ID, and
+   * returns the hosted checkout URL for the client to complete payment.
+   *
+   * @param registrationId - The service registration UUID
+   * @returns Hosted checkout URL to redirect the user to
+   * @throws {NotFoundException} If the registration does not exist
+   *
+   * @example
+   * ```typescript
+   * const { checkoutUrl } = await service.initiatePayment('reg-uuid');
+   * // Redirect user to checkoutUrl
+   * ```
+   */
+  async initiatePayment(registrationId: string): Promise<{ checkoutUrl: string }> {
+    this.logger.log(`Initiating LemonSqueezy payment for registration: ${registrationId}`);
+
+    const adminClient = this.supabaseService.getAdminClient();
+
+    const { data: registration, error } = await adminClient
+      .from('service_registrations')
+      .select('*, services!inner(registration_fee, name)')
+      .eq('id', registrationId)
+      .single();
+
+    if (error || !registration) {
+      throw new NotFoundException('Registration not found');
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const reg = registration as any;
+    const serviceFee: number = reg.services?.registration_fee ?? 0;
+    const serviceName: string = reg.services?.name ?? 'Service Registration';
+
+    const { checkoutUrl, checkoutId } =
+      await this.lemonsqueezyService.createOneTimeCheckout({
+        variantId: 0, // placeholder — replaced with real variantId in Task 10F
+        customPrice: serviceFee * 100, // convert PKR to cents
+        email: reg.email,
+        name: reg.full_name,
+        customData: {
+          payment_type: 'service',
+          reference_id: reg.reference_number,
+          registration_id: reg.id,
+        },
+        redirectUrl: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/payment/success?type=service&ref=${reg.reference_number}`,
+        productName: `${serviceName} - Registration Fee`,
+      });
+
+    await adminClient
+      .from('service_registrations')
+      .update({ lemonsqueezy_checkout_id: checkoutId })
+      .eq('id', registrationId);
+
+    this.logger.log(
+      `LemonSqueezy checkout created for registration ${reg.reference_number}: ${checkoutId}`,
+    );
+
+    return { checkoutUrl };
+  }
+
+  /**
+   * Handle LemonSqueezy order_created webhook for service registration payments.
+   *
+   * Stub — implemented in Task 10F.
+   *
+   * @param payload - LemonSqueezy webhook payload
+   */
+  async handlePaymentConfirmed(_payload: unknown): Promise<void> {
+    this.logger.log('handlePaymentConfirmed: stub (Task 10F)');
+  }
+
+  /**
+   * Handle LemonSqueezy order_refunded webhook for service registration payments.
+   *
+   * Stub — implemented in Task 10F.
+   *
+   * @param payload - LemonSqueezy webhook payload
+   */
+  async handlePaymentRefunded(_payload: unknown): Promise<void> {
+    this.logger.log('handlePaymentRefunded: stub (Task 10F)');
   }
 
   /** Maps a database row (snake_case) to ServiceRegistrationResponse (camelCase) */

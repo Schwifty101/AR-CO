@@ -79,7 +79,6 @@ export {
 export {
   CreateConsultationSchema,
   ConsultationPaymentInitResponseSchema,
-  ConfirmConsultationPaymentSchema,
   ConsultationStatusCheckSchema,
   ConsultationResponseSchema,
   ConsultationStatusResponseSchema,

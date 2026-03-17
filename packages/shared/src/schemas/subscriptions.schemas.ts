@@ -28,6 +28,12 @@ export const UserSubscriptionSchema = z.object({
   cancelledAt: z.string().nullable(),
   pausedAt: z.string().nullable(),
   createdAt: z.string(),
+  lemonsqueezySubscriptionId: z.string().nullable().optional(),
+  lemonsqueezyCustomerId: z.string().nullable().optional(),
+  lemonsqueezyOrderId: z.string().nullable().optional(),
+  cardBrand: z.string().nullable().optional(),
+  cardLastFour: z.string().nullable().optional(),
+  endsAt: z.string().nullable().optional(),
 });
 
 /** Schema for subscription event in history */
@@ -48,8 +54,6 @@ export const InitiateSubscriptionSchema = z.object({
 /** Schema for subscription checkout response */
 export const SubscriptionCheckoutResponseSchema = z.object({
   checkoutUrl: z.string().url(),
-  subscriptionId: z.string().uuid(),
-  reference: z.string(),
 });
 
 /** Schema for cancelling a subscription */

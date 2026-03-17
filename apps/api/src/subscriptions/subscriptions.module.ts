@@ -2,7 +2,7 @@
  * Subscriptions Module
  *
  * Provides subscription plan listing, checkout initiation, lifecycle management,
- * and Safepay webhook handling. Imports PaymentsModule for SafepaySubscriptionService.
+ * and LemonSqueezy webhook handling. Imports PaymentsModule for LemonSqueezyService.
  *
  * @module SubscriptionsModule
  *

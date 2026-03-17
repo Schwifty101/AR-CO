@@ -13,7 +13,6 @@
  * import {
  *   createConsultation,
  *   initiatePayment,
- *   confirmPayment,
  *   checkBookingStatus,
  *   getConsultations,
  * } from '@/lib/api/consultations';
@@ -28,11 +27,9 @@
  *   issueSummary: 'Need advice on company registration',
  * });
  *
- * // Guest: Initiate payment flow
- * const payment = await initiatePayment(booking.id);
- *
- * // Guest: Confirm payment after Safepay redirect
- * const confirmed = await confirmPayment(booking.id, 'tracker-token-from-safepay');
+ * // Guest: Initiate payment — redirect to LemonSqueezy hosted checkout
+ * const { checkoutUrl } = await initiatePayment(booking.id);
+ * window.location.href = checkoutUrl;
  *
  * // Guest: Check booking status
  * const status = await checkBookingStatus({
@@ -50,7 +47,6 @@ import type {
   CreateConsultationData,
   ConsultationResponse,
   ConsultationPaymentInitResponse,
-  ConfirmConsultationPaymentData,
   ConsultationStatusResponse,
   ConsultationStatusCheckData,
   PaginatedConsultationsResponse,
@@ -62,7 +58,6 @@ export type {
   CreateConsultationData,
   ConsultationResponse,
   ConsultationPaymentInitResponse,
-  ConfirmConsultationPaymentData,
   ConsultationStatusResponse,
   ConsultationStatusCheckData,
   ConsultationFilters,
@@ -123,17 +118,17 @@ export async function createConsultation(
 /**
  * Initiate payment for a consultation booking (guest endpoint)
  *
- * Initiates a Safepay payment session for the consultation fee. Returns Safepay
- * tracker token and environment credentials for embedding the payment UI.
+ * Creates a LemonSqueezy hosted checkout session for the consultation fee (PKR 50,000).
+ * Returns a checkout URL to redirect the user to payment.
  *
  * @param bookingId - UUID of the consultation booking
- * @returns Payment initialization data (tracker token, environment, client ID)
+ * @returns LemonSqueezy hosted checkout URL
  * @throws Error if request fails or booking not found
  *
  * @example
  * ```typescript
- * const payment = await initiatePayment('550e8400-e29b-41d4-a716-446655440000');
- * // Use payment.tracker, payment.environment, payment.clientId for Safepay embed
+ * const { checkoutUrl } = await initiatePayment('550e8400-e29b-41d4-a716-446655440000');
+ * window.location.href = checkoutUrl;
  * ```
  */
 export async function initiatePayment(
@@ -152,47 +147,6 @@ export async function initiatePayment(
   }
 
   return (await response.json()) as ConsultationPaymentInitResponse;
-}
-
-/**
- * Confirm payment for a consultation booking (guest endpoint)
- *
- * Confirms a payment after Safepay redirect. Verifies the payment status with Safepay
- * and updates booking status to 'payment_confirmed'. Unlocks Cal.com scheduling link.
- *
- * @param bookingId - UUID of the consultation booking
- * @param trackerToken - Safepay tracker token from payment redirect
- * @returns Updated consultation booking with payment_confirmed status
- * @throws Error if request fails, payment invalid, or booking not found
- *
- * @example
- * ```typescript
- * // After Safepay redirect: ?tracker=tok_123abc
- * const confirmed = await confirmPayment(
- *   '550e8400-e29b-41d4-a716-446655440000',
- *   'tok_123abc'
- * );
- * console.log('Status:', confirmed.bookingStatus); // 'payment_confirmed'
- * ```
- */
-export async function confirmPayment(
-  bookingId: string,
-  trackerToken: string,
-): Promise<ConsultationResponse> {
-  const response = await fetch(`/api/consultations/${bookingId}/confirm-payment`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ trackerToken } satisfies ConfirmConsultationPaymentData),
-  });
-
-  if (!response.ok) {
-    const error = (await response.json().catch(() => ({}))) as { message?: string };
-    throw new Error(error.message || 'Failed to confirm payment');
-  }
-
-  return (await response.json()) as ConsultationResponse;
 }
 
 /**

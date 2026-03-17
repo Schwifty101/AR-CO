@@ -78,7 +78,6 @@ export type {
 export type {
   CreateConsultationData,
   ConsultationPaymentInitResponse,
-  ConfirmConsultationPaymentData,
   ConsultationStatusCheckData,
   ConsultationResponse,
   ConsultationStatusResponse,

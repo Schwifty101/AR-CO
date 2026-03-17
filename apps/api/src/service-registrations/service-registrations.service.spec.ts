@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { ServiceRegistrationsService } from './service-registrations.service';
 import { SupabaseService } from '../database/supabase.service';
+import { LemonSqueezyService } from '../payments/lemonsqueezy.service';
 import { UserType } from '../common/enums/user-type.enum';
 import type { AuthUser } from '../common/interfaces/auth-user.interface';
 import {
@@ -68,8 +69,8 @@ describe('ServiceRegistrationsService', () => {
     address: 'Block 5, Gulshan-e-Iqbal, Karachi',
     description_of_need: 'Need SECP company registration',
     payment_status: ServiceRegistrationPaymentStatus.PENDING,
-    safepay_tracker_id: null,
-    safepay_transaction_id: null,
+    lemonsqueezy_checkout_id: null,
+    lemonsqueezy_order_id: null,
     status: ServiceRegistrationStatus.PENDING_PAYMENT,
     client_profile_id: null,
     assigned_to_id: null,
@@ -86,6 +87,12 @@ describe('ServiceRegistrationsService', () => {
           provide: SupabaseService,
           useValue: {
             getAdminClient: jest.fn().mockReturnValue(mockAdminClient),
+          },
+        },
+        {
+          provide: LemonSqueezyService,
+          useValue: {
+            createOneTimeCheckout: jest.fn(),
           },
         },
       ],
