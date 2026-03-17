@@ -94,22 +94,22 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
   const jsonLd = post
     ? {
-        '@context': 'https://schema.org',
-        '@type': 'Article',
-        headline: post.title,
-        description: post.metaDescription || post.excerpt || '',
-        author: {
-          '@type': 'Person',
-          name: post.authorName || 'AR&CO',
-        },
-        publisher: {
-          '@type': 'Organization',
-          name: 'AR&CO Law',
-        },
-        datePublished: post.publishedAt || post.createdAt,
-        dateModified: post.updatedAt || post.createdAt,
-        ...(post.featuredImage && { image: post.featuredImage }),
-      }
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline: post.title,
+      description: post.metaDescription || post.excerpt || '',
+      author: {
+        '@type': 'Person',
+        name: post.authorName || 'AR&CO',
+      },
+      publisher: {
+        '@type': 'Organization',
+        name: 'AR&CO Law',
+      },
+      datePublished: post.publishedAt || post.createdAt,
+      dateModified: post.updatedAt || post.createdAt,
+      ...(post.featuredImage && { image: post.featuredImage }),
+    }
     : null
 
   return (
