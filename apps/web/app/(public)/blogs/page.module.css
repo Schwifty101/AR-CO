@@ -169,6 +169,17 @@
   padding: 3rem 4rem 6rem;
 }
 
+.fetchWarning {
+  margin-bottom: 1.25rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  background: rgba(212, 175, 55, 0.08);
+  color: rgba(249, 248, 246, 0.85);
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 0.82rem;
+  letter-spacing: 0.02em;
+}
+
 .sectionWrap {
   width: 100%;
 }

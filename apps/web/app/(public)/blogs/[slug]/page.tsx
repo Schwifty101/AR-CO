@@ -7,26 +7,38 @@ interface BlogPostPageProps {
   params: Promise<{ slug: string }>
 }
 
+function createRequestId(prefix: string): string {
+  return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`
+}
+
 /**
  * Server-side fetch for blog post metadata.
  * Returns null if post not found.
  */
 async function fetchPostBySlug(slug: string): Promise<ContentPostResponse | null> {
+  const requestId = createRequestId('blogs-slug')
+  const url = buildInternalApiUrl(`/api/content/posts/${slug}`)
+
   try {
-    const res = await fetch(buildInternalApiUrl(`/api/content/posts/${slug}`), {
+    const res = await fetch(url, {
       next: { revalidate: 60 },
     })
     if (!res.ok) {
       console.error('Failed to fetch post by slug', {
+        requestId,
         slug,
+        url,
         status: res.status,
       })
       return null
     }
+
     return (await res.json()) as ContentPostResponse
   } catch (error) {
     console.error('Error fetching post by slug', {
+      requestId,
       slug,
+      url,
       error,
     })
     return null

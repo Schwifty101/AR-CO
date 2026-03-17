@@ -39,6 +39,7 @@ interface BlogsClientProps {
   blogPosts: ContentPostResponse[]
   caseStudies: ContentPostResponse[]
   categories: CategoryResponse[]
+  hasFetchError?: boolean
 }
 
 /**
@@ -50,7 +51,12 @@ interface BlogsClientProps {
  * <BlogsClient blogPosts={blogs} caseStudies={cases} categories={cats} />
  * ```
  */
-export default function BlogsClient({ blogPosts, caseStudies, categories }: BlogsClientProps) {
+export default function BlogsClient({
+  blogPosts,
+  caseStudies,
+  categories,
+  hasFetchError = false,
+}: BlogsClientProps) {
   const [activeTab, setActiveTab] = useState<ActiveTab>('insights')
   const [blogFilter, setBlogFilter] = useState<string>('All')
   const [caseFilter, setCaseFilter] = useState<string>('All')
@@ -150,6 +156,12 @@ export default function BlogsClient({ blogPosts, caseStudies, categories }: Blog
           Content Area
           ═══════════════════════════════════════════ */}
       <section className={styles.content}>
+        {hasFetchError && (
+          <div className={styles.fetchWarning} role="status" aria-live="polite">
+            Some content could not be loaded right now. Please refresh in a moment.
+          </div>
+        )}
+
         <AnimatePresence mode="wait">
           {activeTab === 'insights' ? (
             <InsightsSection

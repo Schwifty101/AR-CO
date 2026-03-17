@@ -3,6 +3,15 @@ import type { ContentPostResponse, CategoryResponse, PaginatedContentPostsRespon
 import BlogsClient from './blogs-client'
 import { buildInternalApiUrl } from '@/lib/server-api-url'
 
+interface FetchResult<T> {
+  data: T
+  hasError: boolean
+}
+
+function createRequestId(prefix: string): string {
+  return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`
+}
+
 /**
  * Server-side fetch for published content posts.
  *
@@ -11,27 +20,34 @@ import { buildInternalApiUrl } from '@/lib/server-api-url'
  * const blogs = await fetchPublishedPosts(ContentType.BLOG)
  * ```
  */
-async function fetchPublishedPosts(contentType: string): Promise<ContentPostResponse[]> {
+async function fetchPublishedPosts(contentType: string): Promise<FetchResult<ContentPostResponse[]>> {
+  const requestId = createRequestId('blogs-list')
+  const url = buildInternalApiUrl(`/api/content/posts?${new URLSearchParams({ contentType, limit: '50' }).toString()}`)
+
   try {
-    const params = new URLSearchParams({ contentType, limit: '50' })
-    const res = await fetch(buildInternalApiUrl(`/api/content/posts?${params.toString()}`), {
+    const res = await fetch(url, {
       next: { revalidate: 60 },
     })
     if (!res.ok) {
       console.error('Failed to fetch published content posts', {
+        requestId,
         contentType,
+        url,
         status: res.status,
       })
-      return []
+      return { data: [], hasError: true }
     }
+
     const data = (await res.json()) as PaginatedContentPostsResponse
-    return data.data
+    return { data: data.data, hasError: false }
   } catch (error) {
     console.error('Error fetching published content posts', {
+      requestId,
       contentType,
+      url,
       error,
     })
-    return []
+    return { data: [], hasError: true }
   }
 }
 
@@ -43,21 +59,34 @@ async function fetchPublishedPosts(contentType: string): Promise<ContentPostResp
  * const categories = await fetchCategories()
  * ```
  */
-async function fetchCategories(): Promise<CategoryResponse[]> {
+async function fetchCategories(): Promise<FetchResult<CategoryResponse[]>> {
+  const requestId = createRequestId('blogs-categories')
+  const url = buildInternalApiUrl('/api/content/categories')
+
   try {
-    const res = await fetch(buildInternalApiUrl('/api/content/categories'), {
+    const res = await fetch(url, {
       next: { revalidate: 60 },
     })
     if (!res.ok) {
       console.error('Failed to fetch content categories', {
+        requestId,
+        url,
         status: res.status,
       })
-      return []
+      return { data: [], hasError: true }
     }
-    return (await res.json()) as CategoryResponse[]
+
+    return {
+      data: (await res.json()) as CategoryResponse[],
+      hasError: false,
+    }
   } catch (error) {
-    console.error('Error fetching content categories', { error })
-    return []
+    console.error('Error fetching content categories', {
+      requestId,
+      url,
+      error,
+    })
+    return { data: [], hasError: true }
   }
 }
 
@@ -72,17 +101,23 @@ async function fetchCategories(): Promise<CategoryResponse[]> {
  * ```
  */
 export default async function BlogsPage() {
-  const [blogPosts, caseStudies, categories] = await Promise.all([
+  const [blogPostsResult, caseStudiesResult, categoriesResult] = await Promise.all([
     fetchPublishedPosts(ContentType.BLOG),
     fetchPublishedPosts(ContentType.CASE_STUDY),
     fetchCategories(),
   ])
 
+  const hasFetchError =
+    blogPostsResult.hasError ||
+    caseStudiesResult.hasError ||
+    categoriesResult.hasError
+
   return (
     <BlogsClient
-      blogPosts={blogPosts}
-      caseStudies={caseStudies}
-      categories={categories}
+      blogPosts={blogPostsResult.data}
+      caseStudies={caseStudiesResult.data}
+      categories={categoriesResult.data}
+      hasFetchError={hasFetchError}
     />
   )
 }
