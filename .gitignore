@@ -148,10 +148,10 @@ vite.config.ts.timestamp-*
 #files
 business-cards
 
+/docs/*
+!docs/lemonsqueezy
 
 /scripts
-
-/docs
 
 /supabase
 
