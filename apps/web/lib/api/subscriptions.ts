@@ -172,6 +172,35 @@ export async function cancelSubscription(subscriptionId: string): Promise<void> 
 }
 
 /**
+ * Resume a paused or cancelled subscription (requires auth)
+ *
+ * Resumes a subscription that was previously paused or cancelled via LemonSqueezy.
+ * The subscription billing will restart at the next scheduled date.
+ *
+ * @param subscriptionId - UUID of the subscription to resume
+ * @throws Error if request fails, subscription not found, or already active
+ *
+ * @example
+ * ```typescript
+ * await resumeSubscription('550e8400-e29b-41d4-a716-446655440000');
+ * ```
+ */
+export async function resumeSubscription(subscriptionId: string): Promise<void> {
+  const token = await getSessionToken();
+  const response = await fetch(
+    `/api/subscriptions/${subscriptionId}/resume`,
+    {
+      method: 'PATCH',
+      headers: { Authorization: `Bearer ${token}` },
+    },
+  );
+  if (!response.ok) {
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
+    throw new Error(error.message || 'Failed to resume subscription');
+  }
+}
+
+/**
  * Admin: list all subscriptions with filters
  *
  * Fetches a paginated list of all subscriptions. Requires admin authentication.

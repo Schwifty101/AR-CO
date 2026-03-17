@@ -10,11 +10,10 @@
  * @module SubscribePage
  */
 
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth/use-auth';
-import { usePaymentPopup } from '@/components/payment/usePaymentPopup';
 import {
   getSubscriptionPlans,
   initiateSubscription,
@@ -113,27 +112,6 @@ export default function SubscribePage() {
   const [loading, setLoading] = useState(true);
   const [subscribing, setSubscribing] = useState(false);
 
-  /** Handle successful payment from popup */
-  const handlePaymentSuccess = useCallback(() => {
-    toast.success('Subscription activated! Redirecting to your dashboard...');
-    setTimeout(() => {
-      router.push('/client/dashboard');
-    }, 2000);
-  }, [router]);
-
-  const { openPopup, isOpen: popupIsOpen } = usePaymentPopup({
-    source: 'subscription',
-    onSuccess: handlePaymentSuccess,
-    onCancel: () => {
-      toast.error('Payment was cancelled. You can try again anytime.');
-      setSubscribing(false);
-    },
-    onError: (message) => {
-      toast.error(message);
-      setSubscribing(false);
-    },
-  });
-
   /** Fetch plans (public) and subscription (if authenticated) on mount */
   useEffect(() => {
     let cancelled = false;
@@ -214,7 +192,7 @@ export default function SubscribePage() {
   const hasEndedSub =
     mySubscription !== null && canResubscribe(mySubscription.status);
 
-  /** Handle subscribe button click */
+  /** Handle subscribe button click — redirects to LemonSqueezy hosted checkout */
   const handleSubscribe = async () => {
     if (!isAuthenticated) {
       router.push('/auth/signin?redirect=/subscribe');
@@ -232,7 +210,8 @@ export default function SubscribePage() {
 
     try {
       const { checkoutUrl } = await initiateSubscription(planSlug);
-      openPopup(checkoutUrl);
+      // Full-page redirect to LemonSqueezy hosted checkout
+      window.location.href = checkoutUrl;
     } catch (error) {
       const message =
         error instanceof Error ? error.message : 'Failed to initiate subscription';
@@ -243,7 +222,7 @@ export default function SubscribePage() {
 
   /** Determine CTA button text */
   const getButtonText = (): string => {
-    if (subscribing || popupIsOpen) return 'Processing...';
+    if (subscribing) return 'Redirecting to checkout...';
     if (!isAuthenticated) return 'Sign In to Subscribe';
     if (hasEndedSub) return 'Resubscribe';
     return 'Subscribe Now';
@@ -471,7 +450,7 @@ export default function SubscribePage() {
               <button
                 className={styles.ctaButton}
                 onClick={handleSubscribe}
-                disabled={subscribing || popupIsOpen}
+                disabled={subscribing}
               >
                 <span className={styles.buttonText}>{getButtonText()}</span>
               </button>

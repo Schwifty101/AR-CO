@@ -19,6 +19,8 @@ export {
   InteractionType,
   AuditAction,
   AuditEntityType,
+  InvoiceStatus,
+  PaymentMethod,
 } from './enums';
 export * from './schemas';
 export * from './types';

@@ -124,6 +124,17 @@ export {
   LegalNewsResponseSchema,
 } from './content.schemas';
 
+// Payments / Invoices
+export {
+  InvoiceItemSchema,
+  InvoiceResponseSchema,
+  CreateInvoiceSchema,
+  UpdateInvoiceSchema,
+  AddInvoiceItemSchema,
+  InvoiceFiltersSchema,
+  PaginatedInvoicesResponseSchema,
+} from './payments.schemas';
+
 // Audit
 export {
   AuditLogResponseSchema,

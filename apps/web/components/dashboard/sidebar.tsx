@@ -70,6 +70,7 @@ export const CLIENT_NAV: NavItem[] = [
   { label: 'Dashboard', href: '/client/dashboard', icon: LayoutDashboard },
   { label: 'Profile', href: '/client/profile', icon: User },
   { label: 'Subscription', href: '/client/subscription', icon: CreditCard },
+  { label: 'Payment History', href: '/client/payments', icon: ScrollText },
   { label: 'Complaints', href: '/client/complaints', icon: MessageSquareWarning },
   { label: 'My Cases', href: '/client/cases', icon: Scale },
   { label: 'Documents', href: '/client/documents', icon: FileText },
