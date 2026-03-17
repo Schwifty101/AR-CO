@@ -54,6 +54,8 @@ export const InitiateSubscriptionSchema = z.object({
 /** Schema for subscription checkout response */
 export const SubscriptionCheckoutResponseSchema = z.object({
   checkoutUrl: z.string().url(),
+  subscriptionId: z.string().uuid(),
+  reference: z.string(),
 });
 
 /** Schema for cancelling a subscription */

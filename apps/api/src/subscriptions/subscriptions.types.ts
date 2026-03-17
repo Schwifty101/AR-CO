@@ -97,83 +97,14 @@ export interface SubscriptionEventRow {
 }
 
 /**
- * LemonSqueezy webhook payload structure.
- *
- * All LemonSqueezy webhooks share this top-level shape:
- * - meta: event metadata + custom_data passed during checkout
- * - data: JSON:API resource object (order or subscription)
- *
- * @example
- * ```typescript
- * const payload: LemonSqueezyWebhookPayload = JSON.parse(req.rawBody.toString());
- * const eventName = payload.meta.event_name; // 'subscription_created'
- * const userId = payload.meta.custom_data?.user_id;
- * ```
+ * Re-export canonical webhook payload types from the payments module.
+ * Single source of truth — defined in payments/types/webhook.types.ts.
  */
-export interface LemonSqueezyWebhookPayload {
-  /** Webhook metadata */
-  meta: {
-    /** Event name (e.g., 'subscription_created', 'order_created') */
-    event_name: string;
-    /** Webhook endpoint UUID */
-    webhook_id: string;
-    /** Custom data passed during checkout creation */
-    custom_data?: Record<string, string>;
-  };
-  /** JSON:API resource data (order or subscription) */
-  data: {
-    /** Resource type ('orders' | 'subscriptions') */
-    type: string;
-    /** LemonSqueezy resource ID */
-    id: string;
-    /** Resource attributes */
-    attributes: LemonSqueezySubscriptionAttributes | LemonSqueezyOrderAttributes;
-  };
-}
-
-/**
- * Attributes for a LemonSqueezy subscription resource.
- */
-export interface LemonSqueezySubscriptionAttributes {
-  store_id: number;
-  customer_id: number;
-  order_id: number;
-  product_id: number;
-  variant_id: number;
-  product_name: string;
-  variant_name: string;
-  user_name: string;
-  user_email: string;
-  status: string;
-  card_brand: string | null;
-  card_last_four: string | null;
-  renews_at: string | null;
-  ends_at: string | null;
-  trial_ends_at: string | null;
-  created_at: string;
-  updated_at: string;
-  [key: string]: unknown;
-}
-
-/**
- * Attributes for a LemonSqueezy order resource.
- */
-export interface LemonSqueezyOrderAttributes {
-  store_id: number;
-  customer_id: number;
-  identifier: string;
-  order_number: number;
-  user_name: string;
-  user_email: string;
-  currency: string;
-  subtotal: number;
-  tax: number;
-  total: number;
-  total_formatted: string;
-  status: string;
-  created_at: string;
-  [key: string]: unknown;
-}
+export type {
+  LemonSqueezyWebhookPayload,
+  LemonSqueezySubscriptionAttributes,
+  LemonSqueezyOrderAttributes,
+} from '../payments/types/webhook.types';
 
 /**
  * Maps a subscription_plans DB row to the API response shape.

@@ -60,6 +60,7 @@ import {
   mapConsultationRow,
   type CalcomWebhookPayload,
 } from './consultations.types';
+import type { LemonSqueezyWebhookPayload } from '../payments/types/webhook.types';
 
 /**
  * Allowed columns for sorting consultation list queries.
@@ -528,7 +529,7 @@ export class ConsultationsService {
    *
    * @param payload - LemonSqueezy webhook payload
    */
-  async handlePaymentConfirmed(_payload: unknown): Promise<void> {
+  async handlePaymentConfirmed(_payload: LemonSqueezyWebhookPayload): Promise<void> {
     this.logger.log('handlePaymentConfirmed: stub (Task 10E)');
   }
 
@@ -539,7 +540,7 @@ export class ConsultationsService {
    *
    * @param payload - LemonSqueezy webhook payload
    */
-  async handlePaymentRefunded(_payload: unknown): Promise<void> {
+  async handlePaymentRefunded(_payload: LemonSqueezyWebhookPayload): Promise<void> {
     this.logger.log('handlePaymentRefunded: stub (Task 10E)');
   }
 

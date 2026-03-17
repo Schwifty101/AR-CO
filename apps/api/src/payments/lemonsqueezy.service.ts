@@ -1,8 +1,9 @@
 /**
  * LemonSqueezy Payment Service
  *
- * Stub implementation. All methods throw NotImplementedException until
- * Task 10B replaces them with real SDK calls.
+ * Real implementation using @lemonsqueezy/lemonsqueezy.js SDK.
+ * Handles checkout creation, webhook signature verification,
+ * and subscription lifecycle management.
  *
  * LemonSqueezy is used as Merchant of Record for:
  * - Civic Retainer subscription (PKR 700/month)
@@ -22,8 +23,23 @@
  * ```
  */
 
-import { Injectable, Logger, NotImplementedException } from '@nestjs/common';
+import { createHmac } from 'crypto';
+import {
+  BadGatewayException,
+  Injectable,
+  Logger,
+  OnModuleInit,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import {
+  lemonSqueezySetup,
+  createCheckout,
+  cancelSubscription as lsCancelSubscription,
+  updateSubscription,
+  getSubscription as lsGetSubscription,
+  getOrder as lsGetOrder,
+} from '@lemonsqueezy/lemonsqueezy.js';
+import type { Configuration } from '../config/configuration';
 
 /** Parameters for creating a one-time checkout (consultation or service fee) */
 export interface CreateOneTimeCheckoutParams {
@@ -67,9 +83,6 @@ export interface CheckoutResult {
  * LemonSqueezy payment service — handles checkout creation, webhook
  * signature verification, and subscription lifecycle management.
  *
- * **Stub stage (Task 10A):** All methods throw NotImplementedException.
- * **Real implementation:** Task 10B will replace stubs with SDK calls.
- *
  * @example
  * ```typescript
  * @Module({ imports: [PaymentsModule] })
@@ -77,17 +90,34 @@ export interface CheckoutResult {
  * ```
  */
 @Injectable()
-export class LemonSqueezyService {
+export class LemonSqueezyService implements OnModuleInit {
   private readonly logger = new Logger(LemonSqueezyService.name);
 
-  constructor(private readonly configService: ConfigService) {}
+  constructor(private readonly configService: ConfigService<Configuration>) {}
+
+  /**
+   * Initialize the LemonSqueezy SDK on module startup.
+   * Called automatically by NestJS before any request is handled.
+   */
+  onModuleInit() {
+    const apiKey = this.configService.get<string>('lemonsqueezy.apiKey', {
+      infer: true,
+    });
+    lemonSqueezySetup({
+      apiKey,
+      onError: (error) => {
+        this.logger.error('LemonSqueezy SDK error', error);
+      },
+    });
+    this.logger.log('LemonSqueezy SDK initialized');
+  }
 
   /**
    * Create a one-time checkout session (consultation fee or service registration fee).
    *
    * @param params - Checkout parameters including variant ID, price, email, custom data
    * @returns Checkout URL and checkout ID
-   * @throws {NotImplementedException} Until Task 10B implementation
+   * @throws {BadGatewayException} If LemonSqueezy API returns an error
    *
    * @example
    * ```typescript
@@ -102,12 +132,48 @@ export class LemonSqueezyService {
    * ```
    */
   async createOneTimeCheckout(
-    _params: CreateOneTimeCheckoutParams,
+    params: CreateOneTimeCheckoutParams,
   ): Promise<CheckoutResult> {
-    this.logger.warn('createOneTimeCheckout called on stub — not yet implemented');
-    throw new NotImplementedException(
-      'LemonSqueezy integration not yet configured',
+    const storeId = Number(
+      this.configService.get<string>('lemonsqueezy.storeId', { infer: true }),
     );
+
+    const { data, error } = await createCheckout(storeId, params.variantId, {
+      ...(params.customPrice !== undefined && {
+        customPrice: params.customPrice,
+      }),
+      productOptions: {
+        ...(params.productName && { name: params.productName }),
+        redirectUrl: params.redirectUrl,
+        receiptButtonText: 'Return to AR&CO',
+        receiptLinkUrl:
+          this.configService.get<string>('lemonsqueezy.frontendUrl', {
+            infer: true,
+          }) ?? 'http://localhost:3000',
+      },
+      checkoutOptions: {
+        embed: false,
+        discount: false,
+      },
+      checkoutData: {
+        email: params.email,
+        name: params.name,
+        billingAddress: { country: 'PK' },
+        custom: params.customData,
+      },
+    });
+
+    if (error) {
+      this.logger.error('createOneTimeCheckout failed', error.message);
+      throw new BadGatewayException(
+        `Payment session creation failed: ${error.message}`,
+      );
+    }
+
+    return {
+      checkoutUrl: data.data.attributes.url,
+      checkoutId: data.data.id,
+    };
   }
 
   /**
@@ -115,7 +181,7 @@ export class LemonSqueezyService {
    *
    * @param params - Checkout parameters including email, name, custom data
    * @returns Checkout URL and checkout ID
-   * @throws {NotImplementedException} Until Task 10B implementation
+   * @throws {BadGatewayException} If LemonSqueezy API returns an error
    *
    * @example
    * ```typescript
@@ -128,99 +194,177 @@ export class LemonSqueezyService {
    * ```
    */
   async createSubscriptionCheckout(
-    _params: CreateSubscriptionCheckoutParams,
+    params: CreateSubscriptionCheckoutParams,
   ): Promise<CheckoutResult> {
-    this.logger.warn('createSubscriptionCheckout called on stub — not yet implemented');
-    throw new NotImplementedException(
-      'LemonSqueezy integration not yet configured',
+    const storeId = Number(
+      this.configService.get<string>('lemonsqueezy.storeId', { infer: true }),
     );
+    const variantId = Number(
+      this.configService.get<string>(
+        'lemonsqueezy.subscriptionVariantId',
+        { infer: true },
+      ),
+    );
+
+    const { data, error } = await createCheckout(storeId, variantId, {
+      productOptions: {
+        redirectUrl: params.redirectUrl,
+        receiptButtonText: 'Return to AR&CO',
+        receiptLinkUrl:
+          this.configService.get<string>('lemonsqueezy.frontendUrl', {
+            infer: true,
+          }) ?? 'http://localhost:3000',
+      },
+      checkoutOptions: {
+        embed: false,
+        discount: false,
+      },
+      checkoutData: {
+        email: params.email,
+        name: params.name,
+        billingAddress: { country: 'PK' },
+        custom: params.customData,
+      },
+    });
+
+    if (error) {
+      this.logger.error('createSubscriptionCheckout failed', error.message);
+      throw new BadGatewayException(
+        `Subscription checkout creation failed: ${error.message}`,
+      );
+    }
+
+    return {
+      checkoutUrl: data.data.attributes.url,
+      checkoutId: data.data.id,
+    };
   }
 
   /**
    * Verify LemonSqueezy webhook signature (HMAC-SHA256).
    *
+   * Computes HMAC-SHA256 of the raw request body using the webhook secret
+   * and compares it to the X-Signature header value.
+   *
    * @param rawBody - Raw request body as Buffer
    * @param signature - X-Signature header value
-   * @returns true if valid, false otherwise
-   * @throws {NotImplementedException} Until Task 10B implementation
+   * @returns true if the signature is valid, false otherwise
    *
    * @example
    * ```typescript
-   * const isValid = lemonsqueezyService.verifyWebhookSignature(req.rawBody, req.headers['x-signature']);
+   * const isValid = lemonsqueezyService.verifyWebhookSignature(
+   *   req.rawBody,
+   *   req.headers['x-signature'] as string,
+   * );
+   * if (!isValid) throw new UnauthorizedException('Invalid signature');
    * ```
    */
-  verifyWebhookSignature(_rawBody: Buffer, _signature: string): boolean {
-    this.logger.warn('verifyWebhookSignature called on stub — not yet implemented');
-    throw new NotImplementedException(
-      'LemonSqueezy integration not yet configured',
+  verifyWebhookSignature(rawBody: Buffer, signature: string): boolean {
+    const secret = this.configService.get<string>(
+      'lemonsqueezy.webhookSecret',
+      { infer: true },
     );
+    if (!secret) {
+      this.logger.warn(
+        'LEMONSQUEEZY_WEBHOOK_SECRET not configured — rejecting all webhooks',
+      );
+      return false;
+    }
+    const digest = createHmac('sha256', secret)
+      .update(rawBody)
+      .digest('hex');
+    return digest === signature;
   }
 
   /**
    * Retrieve a subscription by LemonSqueezy subscription ID.
    *
-   * @param subscriptionId - LemonSqueezy subscription ID
-   * @throws {NotImplementedException} Until Task 10B implementation
+   * @param subscriptionId - LemonSqueezy subscription ID (numeric string)
+   * @returns Raw LemonSqueezy subscription data
+   * @throws {BadGatewayException} If LemonSqueezy API returns an error
    *
    * @example
    * ```typescript
    * const sub = await lemonsqueezyService.getSubscription('123');
    * ```
    */
-  async getSubscription(_subscriptionId: string): Promise<unknown> {
-    throw new NotImplementedException(
-      'LemonSqueezy integration not yet configured',
-    );
+  async getSubscription(subscriptionId: string): Promise<unknown> {
+    const { data, error } = await lsGetSubscription(subscriptionId);
+    if (error) {
+      this.logger.error('getSubscription failed', error.message);
+      throw new BadGatewayException(
+        `Failed to retrieve subscription: ${error.message}`,
+      );
+    }
+    return data;
   }
 
   /**
    * Cancel a subscription via LemonSqueezy API.
+   * The subscription remains active until the end of the current billing period.
    *
-   * @param subscriptionId - LemonSqueezy subscription ID
-   * @throws {NotImplementedException} Until Task 10B implementation
+   * @param subscriptionId - LemonSqueezy subscription ID (numeric string)
+   * @throws {BadGatewayException} If LemonSqueezy API returns an error
    *
    * @example
    * ```typescript
    * await lemonsqueezyService.cancelSubscription('123');
    * ```
    */
-  async cancelSubscription(_subscriptionId: string): Promise<void> {
-    throw new NotImplementedException(
-      'LemonSqueezy integration not yet configured',
-    );
+  async cancelSubscription(subscriptionId: string): Promise<void> {
+    const { error } = await lsCancelSubscription(subscriptionId);
+    if (error) {
+      this.logger.error('cancelSubscription failed', error.message);
+      throw new BadGatewayException(
+        `Failed to cancel subscription: ${error.message}`,
+      );
+    }
   }
 
   /**
-   * Resume a paused or cancelled subscription via LemonSqueezy API.
+   * Resume a cancelled subscription via LemonSqueezy API.
+   * Clears the pause by setting `pause: null`.
    *
-   * @param subscriptionId - LemonSqueezy subscription ID
-   * @throws {NotImplementedException} Until Task 10B implementation
+   * @param subscriptionId - LemonSqueezy subscription ID (numeric string)
+   * @throws {BadGatewayException} If LemonSqueezy API returns an error
    *
    * @example
    * ```typescript
    * await lemonsqueezyService.resumeSubscription('123');
    * ```
    */
-  async resumeSubscription(_subscriptionId: string): Promise<void> {
-    throw new NotImplementedException(
-      'LemonSqueezy integration not yet configured',
-    );
+  async resumeSubscription(subscriptionId: string): Promise<void> {
+    const { error } = await updateSubscription(subscriptionId, {
+      pause: null,
+    });
+    if (error) {
+      this.logger.error('resumeSubscription failed', error.message);
+      throw new BadGatewayException(
+        `Failed to resume subscription: ${error.message}`,
+      );
+    }
   }
 
   /**
    * Retrieve an order by LemonSqueezy order ID.
    *
-   * @param orderId - LemonSqueezy order ID
-   * @throws {NotImplementedException} Until Task 10B implementation
+   * @param orderId - LemonSqueezy order ID (numeric string)
+   * @returns Raw LemonSqueezy order data
+   * @throws {BadGatewayException} If LemonSqueezy API returns an error
    *
    * @example
    * ```typescript
    * const order = await lemonsqueezyService.getOrder('456');
    * ```
    */
-  async getOrder(_orderId: string): Promise<unknown> {
-    throw new NotImplementedException(
-      'LemonSqueezy integration not yet configured',
-    );
+  async getOrder(orderId: string): Promise<unknown> {
+    const { data, error } = await lsGetOrder(orderId);
+    if (error) {
+      this.logger.error('getOrder failed', error.message);
+      throw new BadGatewayException(
+        `Failed to retrieve order: ${error.message}`,
+      );
+    }
+    return data;
   }
 }

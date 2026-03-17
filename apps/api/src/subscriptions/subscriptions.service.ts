@@ -1,22 +1,11 @@
 /**
- * Subscriptions Service
+ * Subscriptions Service — plan listing, checkout initiation, subscription retrieval,
+ * cancellation/resumption, real-time status, and webhook delegation.
  *
- * Core business logic for subscription management:
- * - Plan listing (public)
- * - Subscription initiation with LemonSqueezy checkout
- * - Current subscription retrieval (client)
- * - LemonSqueezy webhook processing for lifecycle events (Task 10D)
- * - Subscription cancellation (client or admin)
- * - Admin listing with filters and pagination
+ * Admin queries delegate to {@link SubscriptionsAdminService}.
+ * Webhook processing delegates to {@link SubscriptionsWebhookService}.
  *
  * @module SubscriptionsModule
- *
- * @example
- * ```typescript
- * const plans = await subscriptionsService.getPlans();
- * const checkout = await subscriptionsService.initiateSubscription(user, 'premium-monthly');
- * const mySub = await subscriptionsService.getMySubscription(userId);
- * ```
  */
 
 import { Injectable, Logger, HttpException, HttpStatus } from '@nestjs/common';
@@ -40,23 +29,15 @@ import {
   mapSubscriptionRow,
   mapEventRow,
 } from './subscriptions.types';
+import { SubscriptionsWebhookService } from './subscriptions-webhook.service';
+import { SubscriptionsAdminService } from './subscriptions-admin.service';
 import { randomUUID } from 'crypto';
 
 /**
- * Service managing subscription plans, user subscriptions, and LemonSqueezy integration.
- *
- * Uses SupabaseService for database operations and LemonSqueezyService
- * for payment gateway interactions. All DB queries use getAdminClient() since
- * subscriptions require cross-user access for webhook processing.
- *
- * @example
- * ```typescript
- * @Module({
- *   imports: [PaymentsModule],
- *   providers: [SubscriptionsService],
- * })
- * export class SubscriptionsModule {}
- * ```
+ * Facade service for subscription management. Delegates admin queries to
+ * {@link SubscriptionsAdminService} and webhook handling to
+ * {@link SubscriptionsWebhookService}. Core client flows (initiate, cancel,
+ * resume, status check) are implemented here.
  */
 @Injectable()
 export class SubscriptionsService {
@@ -65,6 +46,8 @@ export class SubscriptionsService {
   constructor(
     private readonly supabaseService: SupabaseService,
     private readonly lemonsqueezyService: LemonSqueezyService,
+    private readonly webhookService: SubscriptionsWebhookService,
+    private readonly adminService: SubscriptionsAdminService,
   ) {}
 
   /**
@@ -179,7 +162,6 @@ export class SubscriptionsService {
     const client = this.supabaseService.getAdminClient();
 
     // 1. Check no active/pending subscription
-
     const { data: rawExisting } = await client
       .from('user_subscriptions')
       .select('id, status')
@@ -324,7 +306,7 @@ export class SubscriptionsService {
       .eq('id', subscriptionId);
 
     // Log event
-    await this.logEvent(subscriptionId, 'subscription.cancelled_by_user', {
+    await this.webhookService.logEvent(subscriptionId, 'subscription.cancelled_by_user', {
       cancelled_by: cancelledBy.id,
     });
 
@@ -334,197 +316,185 @@ export class SubscriptionsService {
   }
 
   /**
-   * List all subscriptions with filters and pagination (admin/staff).
+   * Resume a cancelled subscription (client only).
    *
-   * Joins user_profiles for email and name display. Supports filtering by status.
+   * Verifies ownership, checks the subscription is in CANCELLED state,
+   * calls LemonSqueezy to lift the cancellation, and restores ACTIVE status.
    *
-   * @param filters - Pagination and optional status filter
-   * @returns Paginated subscriptions with user info
+   * @param subscriptionId - UUID of the user_subscriptions record
+   * @param user - Authenticated client user
+   * @throws {HttpException} NOT_FOUND, FORBIDDEN, or BAD_REQUEST
    *
    * @example
    * ```typescript
-   * const result = await subscriptionsService.getSubscriptions({
-   *   page: 1, limit: 20, status: SubscriptionStatus.ACTIVE,
-   * });
-   * // result.data[0].userName, result.total, result.page
+   * await subscriptionsService.resumeSubscription('sub-uuid', currentUser);
    * ```
    */
-  async getSubscriptions(
-    filters: SubscriptionFilters,
-  ): Promise<PaginatedSubscriptionsResponse> {
+  async resumeSubscription(subscriptionId: string, user: AuthUser): Promise<void> {
     const client = this.supabaseService.getAdminClient();
-    const page = filters.page || 1;
-    const limit = filters.limit || 20;
-    const offset = (page - 1) * limit;
 
-    let query = client
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const { data: rawSub, error } = await client
       .from('user_subscriptions')
-      .select('*, subscription_plans(*), user_profiles!inner(full_name)', {
-        count: 'exact',
-      });
+      .select('*')
+      .eq('id', subscriptionId)
+      .single();
 
-    if (filters.status) {
-      query = query.eq('status', filters.status);
+    if (error || !rawSub) {
+      throw new HttpException('Subscription not found', HttpStatus.NOT_FOUND);
     }
 
-    const { data, error, count } = await query
+    const sub = rawSub as unknown as UserSubscriptionRow;
+
+    if (user.userType === UserType.CLIENT && sub.user_id !== user.id) {
+      throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
+    }
+
+    if (sub.status !== (SubscriptionStatus.CANCELLED as string)) {
+      throw new HttpException(
+        'Only cancelled subscriptions can be resumed',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    if (sub.lemonsqueezy_subscription_id) {
+      await this.lemonsqueezyService.resumeSubscription(sub.lemonsqueezy_subscription_id);
+    }
+
+    await client.from('user_subscriptions').update({
+      status: SubscriptionStatus.ACTIVE,
+      cancelled_at: null,
+      ends_at: null,
+      updated_at: new Date().toISOString(),
+    }).eq('id', subscriptionId);
+
+    await this.webhookService.logEvent(subscriptionId, 'subscription.resumed', {
+      resumed_by: user.id,
+    });
+    this.logger.log(`Subscription ${subscriptionId} resumed by user ${user.id}`);
+  }
+
+  /**
+   * Get real-time subscription status for the current user.
+   *
+   * Fetches the local DB record and, when a LemonSqueezy subscription ID exists,
+   * calls the LS API for a live status comparison.
+   *
+   * @param userId - Supabase auth user UUID
+   * @returns Object with local and live status fields
+   *
+   * @example
+   * ```typescript
+   * const status = await subscriptionsService.getMySubscriptionStatus(user.id);
+   * // { status: 'active', liveStatus: 'active', currentPeriodEnd: '...', endsAt: null }
+   * ```
+   */
+  async getMySubscriptionStatus(userId: string): Promise<{
+    status: string;
+    liveStatus: string | null;
+    currentPeriodEnd: string | null;
+    endsAt: string | null;
+  }> {
+    const client = this.supabaseService.getAdminClient();
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const { data: rawSub, error } = await client
+      .from('user_subscriptions')
+      .select('*')
+      .eq('user_id', userId)
+      .in('status', [
+        SubscriptionStatus.ACTIVE,
+        SubscriptionStatus.PENDING,
+        SubscriptionStatus.PAUSED,
+        SubscriptionStatus.UNPAID,
+        SubscriptionStatus.CANCELLED,
+      ])
       .order('created_at', { ascending: false })
-      .range(offset, offset + limit - 1);
+      .limit(1)
+      .maybeSingle();
 
     if (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
 
-    const rows = (data || []) as Array<
-      UserSubscriptionRow & {
-        subscription_plans: SubscriptionPlanRow;
-        user_profiles: { full_name: string };
-      }
-    >;
+    if (!rawSub) {
+      return { status: 'none', liveStatus: null, currentPeriodEnd: null, endsAt: null };
+    }
 
-    // Fetch emails from auth.users for each unique user
-    const userIds = [...new Set(rows.map((r) => r.user_id))];
-    const emailMap = new Map<string, string>();
-    await Promise.all(
-      userIds.map(async (uid) => {
-        const { data: authData } = await client.auth.admin.getUserById(uid);
-        if (authData?.user?.email) {
-          emailMap.set(uid, authData.user.email);
-        }
-      }),
-    );
+    const sub = rawSub as unknown as UserSubscriptionRow;
+
+    let liveStatus: string | null = null;
+    if (sub.lemonsqueezy_subscription_id) {
+      try {
+        const lsData = await this.lemonsqueezyService.getSubscription(
+          sub.lemonsqueezy_subscription_id,
+        ) as { data?: { attributes?: { status?: string } } } | null;
+        liveStatus = lsData?.data?.attributes?.status ?? null;
+      } catch (err) {
+        this.logger.warn(
+          `getMySubscriptionStatus: could not fetch LS status — ${String(err)}`,
+        );
+      }
+    }
 
     return {
-      data: rows.map((row) => ({
-        ...mapSubscriptionRow(row, row.subscription_plans),
-        userId: row.user_id,
-        userEmail: emailMap.get(row.user_id) || '',
-        userName: row.user_profiles?.full_name || '',
-      })),
-      total: count || 0,
-      page,
-      limit,
+      status: sub.status,
+      liveStatus,
+      currentPeriodEnd: sub.current_period_end,
+      endsAt: sub.ends_at,
     };
+  }
+
+  /**
+   * List all subscriptions with filters and pagination (admin/staff).
+   * @see SubscriptionsAdminService.getSubscriptions
+   */
+  async getSubscriptions(filters: SubscriptionFilters): Promise<PaginatedSubscriptionsResponse> {
+    return this.adminService.getSubscriptions(filters);
   }
 
   /**
    * Get a single subscription by ID with event history (admin/staff).
-   *
-   * @param id - UUID of the user_subscriptions record
-   * @returns Subscription detail with events array
-   * @throws {HttpException} NOT_FOUND if subscription does not exist
-   *
-   * @example
-   * ```typescript
-   * const detail = await subscriptionsService.getSubscriptionById('sub-uuid');
-   * console.log(detail.events.length);
-   * ```
+   * @see SubscriptionsAdminService.getSubscriptionById
    */
   async getSubscriptionById(id: string): Promise<SubscriptionDetail> {
-    const client = this.supabaseService.getAdminClient();
-
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const { data: rawSubById, error } = await client
-      .from('user_subscriptions')
-      .select('*, subscription_plans(*)')
-      .eq('id', id)
-      .single();
-
-    if (error || !rawSubById) {
-      throw new HttpException('Subscription not found', HttpStatus.NOT_FOUND);
-    }
-
-    const subRow = rawSubById as unknown as UserSubscriptionRow & {
-      subscription_plans: SubscriptionPlanRow;
-    };
-    const plan = subRow.subscription_plans;
-
-    const { data: events } = await client
-      .from('subscription_events')
-      .select('*')
-      .eq('subscription_id', id)
-      .order('created_at', { ascending: false });
-
-    return {
-      ...mapSubscriptionRow(subRow, plan),
-      events: ((events || []) as SubscriptionEventRow[]).map(mapEventRow),
-    };
+    return this.adminService.getSubscriptionById(id);
   }
 
-  // ─── Webhook handlers (implemented in Task 10D) ──────────────────
+  // ─── Webhook handler delegates (implementation in SubscriptionsWebhookService) ──
 
-  /**
-   * Handle subscription_created webhook (stub — implemented in Task 10D).
-   */
-  async handleSubscriptionCreated(_payload: LemonSqueezyWebhookPayload): Promise<void> {
-    this.logger.log('handleSubscriptionCreated: stub (Task 10D)');
+  /** @see SubscriptionsWebhookService.handleSubscriptionCreated */
+  async handleSubscriptionCreated(p: LemonSqueezyWebhookPayload): Promise<void> {
+    return this.webhookService.handleSubscriptionCreated(p);
   }
 
-  /**
-   * Handle subscription_updated webhook (stub — implemented in Task 10D).
-   */
-  async handleSubscriptionUpdated(_payload: LemonSqueezyWebhookPayload): Promise<void> {
-    this.logger.log('handleSubscriptionUpdated: stub (Task 10D)');
+  /** @see SubscriptionsWebhookService.handleSubscriptionUpdated */
+  async handleSubscriptionUpdated(p: LemonSqueezyWebhookPayload): Promise<void> {
+    return this.webhookService.handleSubscriptionUpdated(p);
   }
 
-  /**
-   * Handle subscription_payment_success webhook (stub — implemented in Task 10D).
-   */
-  async handlePaymentSuccess(_payload: LemonSqueezyWebhookPayload): Promise<void> {
-    this.logger.log('handlePaymentSuccess: stub (Task 10D)');
+  /** @see SubscriptionsWebhookService.handlePaymentSuccess */
+  async handlePaymentSuccess(p: LemonSqueezyWebhookPayload): Promise<void> {
+    return this.webhookService.handlePaymentSuccess(p);
   }
 
-  /**
-   * Handle subscription_payment_failed webhook (stub — implemented in Task 10D).
-   */
-  async handlePaymentFailed(_payload: LemonSqueezyWebhookPayload): Promise<void> {
-    this.logger.log('handlePaymentFailed: stub (Task 10D)');
+  /** @see SubscriptionsWebhookService.handlePaymentFailed */
+  async handlePaymentFailed(p: LemonSqueezyWebhookPayload): Promise<void> {
+    return this.webhookService.handlePaymentFailed(p);
   }
 
-  /**
-   * Handle subscription_payment_recovered webhook (stub — implemented in Task 10D).
-   */
-  async handlePaymentRecovered(_payload: LemonSqueezyWebhookPayload): Promise<void> {
-    this.logger.log('handlePaymentRecovered: stub (Task 10D)');
+  /** @see SubscriptionsWebhookService.handlePaymentRecovered */
+  async handlePaymentRecovered(p: LemonSqueezyWebhookPayload): Promise<void> {
+    return this.webhookService.handlePaymentRecovered(p);
   }
 
-  /**
-   * Handle subscription_cancelled webhook (stub — implemented in Task 10D).
-   */
-  async handleSubscriptionCancelled(_payload: LemonSqueezyWebhookPayload): Promise<void> {
-    this.logger.log('handleSubscriptionCancelled: stub (Task 10D)');
+  /** @see SubscriptionsWebhookService.handleSubscriptionCancelled */
+  async handleSubscriptionCancelled(p: LemonSqueezyWebhookPayload): Promise<void> {
+    return this.webhookService.handleSubscriptionCancelled(p);
   }
 
-  /**
-   * Handle subscription_expired webhook (stub — implemented in Task 10D).
-   */
-  async handleSubscriptionExpired(_payload: LemonSqueezyWebhookPayload): Promise<void> {
-    this.logger.log('handleSubscriptionExpired: stub (Task 10D)');
-  }
-
-  /**
-   * Log a subscription lifecycle event to the subscription_events table.
-   *
-   * @param subscriptionId - UUID of the user_subscriptions record
-   * @param eventType - Event type string
-   * @param eventData - Raw webhook event data for debugging
-   * @param extra - Optional billing cycle and amount overrides
-   */
-  private async logEvent(
-    subscriptionId: string,
-    eventType: string,
-    eventData: unknown,
-    extra?: { billingCycle?: number; amount?: number },
-  ): Promise<void> {
-    const client = this.supabaseService.getAdminClient();
-    await client.from('subscription_events').insert({
-      subscription_id: subscriptionId,
-      event_type: eventType,
-      webhook_event_data: eventData as Record<string, unknown>,
-      billing_cycle: extra?.billingCycle ?? null,
-      amount: extra?.amount ?? null,
-      status:
-        ((eventData as Record<string, unknown>)?.status as string) ?? null,
-    });
+  /** @see SubscriptionsWebhookService.handleSubscriptionExpired */
+  async handleSubscriptionExpired(p: LemonSqueezyWebhookPayload): Promise<void> {
+    return this.webhookService.handleSubscriptionExpired(p);
   }
 }

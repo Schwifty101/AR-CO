@@ -25,6 +25,7 @@ import {
   type PaginationParams,
 } from '@repo/shared';
 import type { DbResult, DbListResult } from '../database/db-result.types';
+import type { LemonSqueezyWebhookPayload } from '../payments/types/webhook.types';
 
 /** Database row shape for the service_registrations table with joined assigned user */
 interface ServiceRegistrationRow {
@@ -673,7 +674,7 @@ export class ServiceRegistrationsService {
    *
    * @param payload - LemonSqueezy webhook payload
    */
-  async handlePaymentConfirmed(_payload: unknown): Promise<void> {
+  async handlePaymentConfirmed(_payload: LemonSqueezyWebhookPayload): Promise<void> {
     this.logger.log('handlePaymentConfirmed: stub (Task 10F)');
   }
 
@@ -684,7 +685,7 @@ export class ServiceRegistrationsService {
    *
    * @param payload - LemonSqueezy webhook payload
    */
-  async handlePaymentRefunded(_payload: unknown): Promise<void> {
+  async handlePaymentRefunded(_payload: LemonSqueezyWebhookPayload): Promise<void> {
     this.logger.log('handlePaymentRefunded: stub (Task 10F)');
   }
 

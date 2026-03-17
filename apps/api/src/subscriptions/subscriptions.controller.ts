@@ -182,4 +182,51 @@ export class SubscriptionsController {
     return { success: true };
   }
 
+  /**
+   * Resume a cancelled subscription (client only).
+   *
+   * Lifts the cancellation on LemonSqueezy and restores ACTIVE status locally.
+   * Only subscriptions in CANCELLED state can be resumed (not ENDED).
+   *
+   * @param id - UUID of the user_subscriptions record
+   * @param user - Authenticated client user
+   * @returns Success confirmation
+   *
+   * @example
+   * ```bash
+   * curl -X PATCH -H "Authorization: Bearer <token>" \
+   *   http://localhost:4000/api/subscriptions/sub-uuid/resume
+   * ```
+   */
+  @Roles(UserType.CLIENT)
+  @Patch(':id/resume')
+  async resumeSubscription(
+    @Param('id') id: string,
+    @CurrentUser() user: AuthUser,
+  ) {
+    await this.subscriptionsService.resumeSubscription(id, user);
+    return { success: true };
+  }
+
+  /**
+   * Get real-time subscription status for the current user (client only).
+   *
+   * Checks local DB status and, when available, fetches live status from
+   * LemonSqueezy for an up-to-date comparison.
+   *
+   * @param user - Authenticated client user
+   * @returns Local status, live LS status, period end, and ends_at
+   *
+   * @example
+   * ```bash
+   * curl -H "Authorization: Bearer <token>" \
+   *   http://localhost:4000/api/subscriptions/me/status
+   * ```
+   */
+  @Roles(UserType.CLIENT)
+  @Get('me/status')
+  async getMySubscriptionStatus(@CurrentUser() user: AuthUser) {
+    return this.subscriptionsService.getMySubscriptionStatus(user.id);
+  }
+
 }
