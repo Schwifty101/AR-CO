@@ -35,19 +35,19 @@ interface LogoEntry {
 
 const LOGOS_ROW_1: LogoEntry[] = [
   { id: 'l1', name: 'ARY Communications', imageSrc: '/client-logos/ary-logo.png' },
-  { id: 'l2', name: 'Askari Bank',        imageSrc: '/client-logos/askariBank-logo.png' },
-  { id: 'l3', name: 'Audi',               imageSrc: '/client-logos/audi-logo.png' },
-  { id: 'l4', name: 'DHA Islamabad',      imageSrc: '/client-logos/DHA-Logo.png' },
-  { id: 'l5', name: 'MCB Bank',           imageSrc: '/client-logos/mcb-logo.png' },
-  { id: 'l6', name: 'NITB',               imageSrc: '/client-logos/nitb-logo.png' },
-  { id: 'l7', name: 'PTCL',               imageSrc: '/client-logos/ptcl-logo.png' },
+  { id: 'l2', name: 'Askari Bank', imageSrc: '/client-logos/askariBank-logo.png' },
+  { id: 'l3', name: 'Audi', imageSrc: '/client-logos/audi-logo.png' },
+  { id: 'l4', name: 'DHA Islamabad', imageSrc: '/client-logos/DHA-Logo.png' },
+  { id: 'l5', name: 'MCB Bank', imageSrc: '/client-logos/mcb-logo.png' },
+  { id: 'l6', name: 'NITB', imageSrc: '/client-logos/nitb-logo.png' },
+  { id: 'l7', name: 'PTCL', imageSrc: '/client-logos/ptcl-logo.png' },
 ]
 
 const LOGOS_ROW_2: LogoEntry[] = [
-  { id: 'l8',  name: 'QAU',         imageSrc: '/client-logos/QAU-Logo.png' },
-  { id: 'l9',  name: 'Ten Sports',  imageSrc: '/client-logos/TenSports-logo.png' },
-  { id: 'l10', name: 'Tullow Oil',  imageSrc: '/client-logos/Tullow-logo.png' },
-  { id: 'l11', name: 'Ufone',       imageSrc: '/client-logos/ufone-logo.png' },
+  { id: 'l8', name: 'QAU', imageSrc: '/client-logos/QAU-Logo.png' },
+  { id: 'l9', name: 'Ten Sports', imageSrc: '/client-logos/TenSports-logo.png' },
+  { id: 'l10', name: 'Tullow Oil', imageSrc: '/client-logos/Tullow-logo.png' },
+  { id: 'l11', name: 'Ufone', imageSrc: '/client-logos/ufone-logo.png' },
   { id: 'l12', name: 'Westminster', imageSrc: '/client-logos/westminister-logo.png' },
   { id: 'l13', name: 'BOL Network', imageSrc: '/client-logos/bol-logo.png' },
 ]
@@ -187,34 +187,56 @@ export default function ClientLogosCarousel() {
         <div className={styles.carouselContainer}>
 
           {/* Row 1 — enters from left, slides left→right on scroll */}
-          <motion.div
-            initial={{ opacity: 0, x: -80 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, amount: 0.3 }}
-            transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
-          >
-            <LogoRow
-              logos={LOGOS_ROW_1}
-              reverse={false}
-              translateX={row1X}
-              isMobile={isMobile}
-            />
-          </motion.div>
+          {isMobile ? (
+            <div>
+              <LogoRow
+                logos={LOGOS_ROW_1}
+                reverse={false}
+                translateX={row1X}
+                isMobile={isMobile}
+              />
+            </div>
+          ) : (
+            <motion.div
+              initial={{ opacity: 0, x: -80 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true, amount: 0.3 }}
+              transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <LogoRow
+                logos={LOGOS_ROW_1}
+                reverse={false}
+                translateX={row1X}
+                isMobile={isMobile}
+              />
+            </motion.div>
+          )}
 
           {/* Row 2 — enters from right, slides right→left on scroll */}
-          <motion.div
-            initial={{ opacity: 0, x: 80 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, amount: 0.3 }}
-            transition={{ duration: 0.9, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-          >
-            <LogoRow
-              logos={LOGOS_ROW_2}
-              reverse={true}
-              translateX={row2X}
-              isMobile={isMobile}
-            />
-          </motion.div>
+          {isMobile ? (
+            <div>
+              <LogoRow
+                logos={LOGOS_ROW_2}
+                reverse={true}
+                translateX={row2X}
+                isMobile={isMobile}
+              />
+            </div>
+          ) : (
+            <motion.div
+              initial={{ opacity: 0, x: 80 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true, amount: 0.3 }}
+              transition={{ duration: 0.9, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <LogoRow
+                logos={LOGOS_ROW_2}
+                reverse={true}
+                translateX={row2X}
+                isMobile={isMobile}
+              />
+            </motion.div>
+          )}
         </div>
 
         {/* Edge vignette — masks row ends */}

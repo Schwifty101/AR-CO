@@ -23,10 +23,12 @@ export default function AboutSection() {
           contentType: ContentType.BLOG,
         })
 
-        // Filter blogs by Barrister Shoaib Razzaq
+        // Filter blogs by Barrister Shaoib Razzaq
         const shoaibBlogs = res.posts.filter((post) =>
           post.authorName?.toLowerCase().includes('shoaib razzaq') ||
-          post.authorName?.toLowerCase().includes('shoaib')
+          post.authorName?.toLowerCase().includes('shoaib') ||
+          post.authorName?.toLowerCase().includes('shaoib razzaq') ||
+          post.authorName?.toLowerCase().includes('shaoib')
         )
 
         setBlogs(shoaibBlogs.slice(0, 3))
@@ -82,7 +84,7 @@ export default function AboutSection() {
               <h3 className={styles.statement}>
                 Relentless Advocacy.<br />
                 Masterful Strategy.
-                <span className={styles.highlight}>Shoaib Razzaq.</span>
+                <span className={styles.highlight}>Barrister Shaoib Razzaq.</span>
               </h3>
             </TextReveal>
             <motion.p
@@ -92,7 +94,7 @@ export default function AboutSection() {
               transition={{ duration: 1, delay: 0.8 }}
               className={styles.subStatement}
             >
-              As the lead visionary, Barrister Shoaib Razzaq brings a commanding presence and uncompromising precision to high-stakes litigation, corporate advisory, and complex regulatory matters. His fearless approach secures decisive victories across multiple jurisdictions.
+              As the lead visionary, Barrister Shaoib Razzaq brings a commanding presence and uncompromising precision to high-stakes litigation, corporate advisory, and complex regulatory matters. His fearless approach secures decisive victories across multiple jurisdictions.
             </motion.p>
           </motion.div>
 
@@ -107,7 +109,7 @@ export default function AboutSection() {
             <div className={styles.imageWrapper}>
               <Image
                 src="/our_team/Shoaib_Razaq.webp"
-                alt="Barrister Shoaib Razzaq"
+                alt="Barrister Shaoib Razzaq"
                 fill
                 className={styles.profileImage}
                 sizes="(max-width: 1024px) 100vw, 40vw"
@@ -115,7 +117,7 @@ export default function AboutSection() {
               />
             </div>
             <div className={styles.pictureCaption}>
-              <h3 className={styles.pictureName}>Shoaib Razzaq</h3>
+              <h3 className={styles.pictureName}>Barrister Shaoib Razzaq</h3>
               <p className={styles.pictureTitle}>Principal Attorney</p>
             </div>
           </motion.div>
