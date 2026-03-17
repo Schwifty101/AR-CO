@@ -138,7 +138,7 @@ export async function getInvoices(params?: {
   if (params?.status) searchParams.set('status', params.status);
 
   const response = await fetch(
-    `/api/payments/invoices?${searchParams.toString()}`,
+    `/api/invoices?${searchParams.toString()}`,
     { headers: { Authorization: `Bearer ${token}` } },
   );
 
@@ -172,13 +172,42 @@ export async function getInvoices(params?: {
  */
 export async function getInvoiceById(id: string): Promise<InvoiceResponse> {
   const token = await getSessionToken();
-  const response = await fetch(`/api/payments/invoices/${id}`, {
+  const response = await fetch(`/api/invoices/${id}`, {
     headers: { Authorization: `Bearer ${token}` },
   });
 
   if (!response.ok) {
     const error = (await response.json().catch(() => ({}))) as { message?: string };
     throw new Error(error.message || 'Failed to fetch invoice');
+  }
+
+  return (await response.json()) as InvoiceResponse;
+}
+
+/**
+ * Send an invoice to the client via email.
+ *
+ * Marks the invoice as SENT and dispatches it via SendGrid.
+ * Requires STAFF, ATTORNEY, or ADMIN role.
+ *
+ * @param id - UUID of the invoice to send
+ * @throws Error if the invoice cannot be sent or the user lacks permission
+ *
+ * @example
+ * ```typescript
+ * await sendInvoice('550e8400-e29b-41d4-a716-446655440000');
+ * ```
+ */
+export async function sendInvoice(id: string): Promise<InvoiceResponse> {
+  const token = await getSessionToken();
+  const response = await fetch(`/api/invoices/${id}/send`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  if (!response.ok) {
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
+    throw new Error(error.message || 'Failed to send invoice');
   }
 
   return (await response.json()) as InvoiceResponse;

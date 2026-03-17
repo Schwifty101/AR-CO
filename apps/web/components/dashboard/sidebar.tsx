@@ -32,6 +32,7 @@ import {
   Calendar,
   FileText,
   ScrollText,
+  Receipt,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -59,6 +60,7 @@ export const ADMIN_NAV: NavItem[] = [
   { label: 'Complaints', href: '/admin/complaints', icon: MessageSquareWarning },
   { label: 'Subscriptions', href: '/admin/subscriptions', icon: CreditCard },
   { label: 'Service Registrations', href: '/admin/service-registrations', icon: ClipboardList },
+  { label: 'Invoices', href: '/admin/invoices', icon: Receipt },
   { label: 'Documents', href: '/admin/documents', icon: FileText },
   { label: 'Consultations', href: '/admin/consultations', icon: Calendar },
   { label: 'Content', href: '/admin/content', icon: FileText },
@@ -71,6 +73,7 @@ export const CLIENT_NAV: NavItem[] = [
   { label: 'Profile', href: '/client/profile', icon: User },
   { label: 'Subscription', href: '/client/subscription', icon: CreditCard },
   { label: 'Payment History', href: '/client/payments', icon: ScrollText },
+  { label: 'Invoices', href: '/client/invoices', icon: Receipt },
   { label: 'Complaints', href: '/client/complaints', icon: MessageSquareWarning },
   { label: 'My Cases', href: '/client/cases', icon: Scale },
   { label: 'Documents', href: '/client/documents', icon: FileText },
@@ -88,7 +91,7 @@ interface DashboardSidebarProps {
  * Dashboard sidebar navigation
  */
 /** Sidebar items visible only to admin users */
-const ADMIN_ONLY_PATHS = new Set(['/admin/subscriptions']);
+const ADMIN_ONLY_PATHS = new Set(['/admin/subscriptions', '/admin/invoices']);
 
 /** Sidebar items visible to admin and attorney users (hidden from staff) */
 const ADMIN_ATTORNEY_PATHS = new Set(['/admin/audit-logs']);
