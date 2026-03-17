@@ -46,6 +46,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { updatePost, syncPost, deletePost, getCategories } from '@/lib/api/content';
+import { getUsers, type UserProfile } from '@/lib/api/users';
 import { getSessionToken } from '@/lib/api/auth-helpers';
 import { ContentType, PostStatus } from '@repo/shared';
 import type { ContentPostResponse, CategoryResponse } from '@repo/shared';
@@ -109,8 +110,10 @@ export default function EditContentPage({ params }: EditContentPageProps) {
   // Data state
   const [post, setPost] = useState<ContentPostResponse | null>(null);
   const [categories, setCategories] = useState<CategoryResponse[]>([]);
+  const [authors, setAuthors] = useState<UserProfile[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isLoadingAuthors, setIsLoadingAuthors] = useState(false);
 
   // Action states
   const [isSaving, setIsSaving] = useState(false);
@@ -121,6 +124,7 @@ export default function EditContentPage({ params }: EditContentPageProps) {
   const [slug, setSlug] = useState('');
   const [excerpt, setExcerpt] = useState('');
   const [featuredImage, setFeaturedImage] = useState('');
+  const [authorId, setAuthorId] = useState('');
   const [categoryId, setCategoryId] = useState(NO_CATEGORY);
   const [contentType, setContentType] = useState<ContentType>(ContentType.BLOG);
   const [status, setStatus] = useState<PostStatus>(PostStatus.DRAFT);
@@ -136,6 +140,7 @@ export default function EditContentPage({ params }: EditContentPageProps) {
     setSlug(p.slug);
     setExcerpt(p.excerpt ?? '');
     setFeaturedImage(p.featuredImage ?? '');
+    setAuthorId(p.authorId);
     setCategoryId(p.categoryId ?? NO_CATEGORY);
     setContentType(p.contentType);
     setStatus(p.status);
@@ -150,9 +155,18 @@ export default function EditContentPage({ params }: EditContentPageProps) {
       try {
         setIsLoading(true);
         setError(null);
-        const [fetchedPost, fetchedCategories] = await Promise.all([
+        setIsLoadingAuthors(isAdmin);
+
+        const [fetchedPost, fetchedCategories, fetchedUsers] = await Promise.all([
           fetchPostById(id),
           getCategories(),
+          isAdmin
+            ? getUsers({
+              page: 1,
+              limit: 100,
+              userTypes: ['admin', 'staff'],
+            })
+            : Promise.resolve(null),
         ]);
 
         if (!fetchedPost) {
@@ -162,16 +176,20 @@ export default function EditContentPage({ params }: EditContentPageProps) {
 
         setPost(fetchedPost);
         setCategories(fetchedCategories);
+        if (fetchedUsers) {
+          setAuthors(fetchedUsers.users);
+        }
         populateForm(fetchedPost);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load post');
       } finally {
+        setIsLoadingAuthors(false);
         setIsLoading(false);
       }
     }
 
     load();
-  }, [id]);
+  }, [id, isAdmin]);
 
   /**
    * Save all editable fields to the backend
@@ -184,6 +202,7 @@ export default function EditContentPage({ params }: EditContentPageProps) {
         slug,
         excerpt: excerpt || undefined,
         featuredImage: featuredImage || null,
+        authorId: authorId && authorId !== post?.authorId ? authorId : undefined,
         categoryId: categoryId === NO_CATEGORY ? null : categoryId,
         contentType,
         status,
@@ -283,6 +302,9 @@ export default function EditContentPage({ params }: EditContentPageProps) {
     );
   }
 
+  const selectedAuthorMissing =
+    !!authorId && !authors.some((candidate) => candidate.id === authorId);
+
   return (
     <div className="space-y-6">
       {/* ── Header ── */}
@@ -376,7 +398,35 @@ export default function EditContentPage({ params }: EditContentPageProps) {
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Author */}
+            <div className="space-y-2">
+              <Label htmlFor="editAuthor">Author</Label>
+              <Select
+                value={authorId}
+                onValueChange={setAuthorId}
+                disabled={!isAdmin || isLoadingAuthors}
+              >
+                <SelectTrigger id="editAuthor">
+                  <SelectValue
+                    placeholder={isLoadingAuthors ? 'Loading authors...' : 'Select an author'}
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  {selectedAuthorMissing && post.authorId && (
+                    <SelectItem value={post.authorId}>
+                      {post.authorName || 'Current author'}
+                    </SelectItem>
+                  )}
+                  {authors.map((author) => (
+                    <SelectItem key={author.id} value={author.id}>
+                      {author.fullName} ({author.userType})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
             {/* Category */}
             <div className="space-y-2">
               <Label htmlFor="editCategory">Category</Label>

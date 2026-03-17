@@ -238,8 +238,9 @@ export class BlogController {
     @Param('id') id: string,
     @Body(new ZodValidationPipe(UpdateContentPostSchema))
     dto: UpdateContentPostData,
+    @CurrentUser() user: AuthUser,
   ): Promise<ContentPostResponse> {
-    return this.blogService.updatePost(id, dto);
+    return this.blogService.updatePost(id, dto, user);
   }
 
   /**

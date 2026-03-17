@@ -2,11 +2,14 @@ import {
   Injectable,
   Logger,
   NotFoundException,
+  ForbiddenException,
+  BadRequestException,
   InternalServerErrorException,
 } from '@nestjs/common';
 import { SupabaseService } from '../database/supabase.service';
 import { GoogleDocsService } from './google-docs.service';
 import { SeoService } from './seo.service';
+import { AuditService } from '../audit/audit.service';
 import {
   validateSortColumn,
   sanitizePostgrestFilter,
@@ -14,6 +17,7 @@ import {
 import type { AuthUser } from '../common/interfaces/auth-user.interface';
 import {
   PostStatus,
+  UserType,
   type CreateContentPostData,
   type UpdateContentPostData,
   type ContentFilters,
@@ -45,6 +49,8 @@ interface BlogPostRow {
   google_doc_id: string | null;
   google_doc_url: string | null;
   metadata: Record<string, unknown>;
+  author_changed_by: string | null;
+  author_changed_at: string | null;
   published_at: string | null;
   view_count: number;
   created_at: string;
@@ -96,6 +102,7 @@ export class BlogService {
     private readonly supabaseService: SupabaseService,
     private readonly googleDocsService: GoogleDocsService,
     private readonly seoService: SeoService,
+    private readonly auditService: AuditService,
   ) {}
 
   /**
@@ -170,10 +177,20 @@ export class BlogService {
   async updatePost(
     postId: string,
     dto: UpdateContentPostData,
+    user: AuthUser,
   ): Promise<ContentPostResponse> {
     this.logger.log(`Updating post ${postId}`);
 
     const adminClient = this.supabaseService.getAdminClient();
+    const { data: existingPost, error: existingPostError } = (await adminClient
+      .from('blog_posts')
+      .select('author_id')
+      .eq('id', postId)
+      .single()) as DbResult<{ author_id: string }>;
+
+    if (existingPostError || !existingPost) {
+      throw new NotFoundException('Post not found');
+    }
 
     const updateData: Record<string, unknown> = {};
 
@@ -181,6 +198,31 @@ export class BlogService {
     if (dto.slug !== undefined) updateData.slug = dto.slug;
     if (dto.excerpt !== undefined) updateData.excerpt = dto.excerpt;
     if (dto.content !== undefined) updateData.content = dto.content;
+    if (dto.authorId !== undefined) {
+      if (user.userType !== UserType.ADMIN) {
+        throw new ForbiddenException('Only admins can change post author');
+      }
+
+      if (dto.authorId !== existingPost.author_id) {
+        const { data: targetAuthor, error: targetAuthorError } =
+          (await adminClient
+            .from('user_profiles')
+            .select('id')
+            .eq('id', dto.authorId)
+            .in('user_type', [UserType.ADMIN, UserType.STAFF])
+            .single()) as DbResult<{ id: string }>;
+
+        if (targetAuthorError || !targetAuthor) {
+          throw new BadRequestException(
+            'Author must be an existing admin or staff user',
+          );
+        }
+
+        updateData.author_id = dto.authorId;
+        updateData.author_changed_by = user.id;
+        updateData.author_changed_at = new Date().toISOString();
+      }
+    }
     if (dto.featuredImage !== undefined)
       updateData.featured_image = dto.featuredImage;
     if (dto.categoryId !== undefined) updateData.category_id = dto.categoryId;
@@ -209,6 +251,23 @@ export class BlogService {
     if (error || !data) {
       this.logger.error(`Failed to update post ${postId}`, error);
       throw new NotFoundException('Post not found');
+    }
+
+    if (
+      dto.authorId !== undefined &&
+      dto.authorId !== existingPost.author_id &&
+      data.author_id === dto.authorId
+    ) {
+      await this.auditService.log({
+        userId: user.id,
+        action: 'CHANGE_AUTHOR',
+        entityType: 'blog_post',
+        entityId: postId,
+        metadata: {
+          oldAuthorId: existingPost.author_id,
+          newAuthorId: dto.authorId,
+        },
+      });
     }
 
     return this.mapPostRow(data);
@@ -605,6 +664,8 @@ export class BlogService {
       googleDocId: row.google_doc_id,
       googleDocUrl: row.google_doc_url,
       metadata: row.metadata || {},
+      authorChangedBy: row.author_changed_by ?? null,
+      authorChangedAt: row.author_changed_at ?? null,
       publishedAt: row.published_at,
       viewCount: row.view_count,
       createdAt: row.created_at,

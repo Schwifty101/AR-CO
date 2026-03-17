@@ -1,5 +1,5 @@
 /* ── About Section ───────────────────────────────────────────────────────────
-   Single centered editorial statement — no heading, no columns.
+   Luxury Editorial Design
    ─────────────────────────────────────────────────────────────────────────── */
 
 .aboutSection {
@@ -7,114 +7,359 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 10rem 0;
-  min-height: 55vh;
+  padding: 10rem 0 8rem;
+  min-height: 100vh;
   overflow: hidden;
   background: transparent;
+  /* Must remain transparent per requirements */
 }
 
-/* ── Background decorative elements ─────────────────────────────────────── */
-.backgroundDecor {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  overflow: hidden;
-}
-
-
-
-.decorLine {
-  position: absolute;
-  top: 50%;
-  left: 0;
-  width: 100%;
-  height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(201, 169, 106, 0.2) 50%,
-    transparent 100%
-  );
-  transform: translateY(-50%) rotate(-2deg);
-}
-
-.decorDots {
-  position: absolute;
-  bottom: 20%;
-  left: 5%;
-  width: 200px;
-  height: 200px;
-  background-image: radial-gradient(
-    circle,
-    rgba(201, 169, 106, 0.15) 1px,
-    transparent 1px
-  );
-  background-size: 20px 20px;
-  opacity: 0.3;
-  animation: float 15s ease-in-out infinite reverse;
-}
-
-@keyframes float {
-  0%,  100% { transform: translate(0, 0) rotate(0deg); }
-  25%        { transform: translate(20px, -20px) rotate(5deg); }
-  50%        { transform: translate(0, -40px) rotate(0deg); }
-  75%        { transform: translate(-20px, -20px) rotate(-5deg); }
-}
-
-/* ── Content wrapper — centered column ───────────────────────────────────── */
 .contentWrapper {
   position: relative;
   z-index: 2;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2.5rem;
-  max-width: 860px;
+  width: 100%;
+  max-width: 1500px;
   margin: 0 auto;
   padding: 0 clamp(1.5rem, 5vw, 4rem);
-  text-align: center;
 }
 
-/* ── Thin gold rule above and below the statement ────────────────────────── */
-.rule {
-  width: 60px;
-  height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    var(--heritage-gold, #D4AF37) 50%,
-    transparent 100%
-  );
-  opacity: 0.45;
+/* ── Typography & Header ─────────────────────────────────────────────────── */
+.headerBlock {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  margin-bottom: 5rem;
 }
 
-/* ── Editorial statement ─────────────────────────────────────────────────── */
-.statement {
-  font-family: 'Lora', Georgia, serif;
-  font-style: italic;
-  font-weight: 300;
-  /* clamp: 1.05rem on small mobile → scales with vw → caps at 2.3rem desktop */
-  font-size: clamp(1.05rem, 3.5vw, 2.3rem);
-  line-height: 1.65;
-  letter-spacing: -0.01em;
-  color: rgba(249, 248, 246, 0.88);
+.sectionEyebrow {
+  font-family: 'Cabinet Grotesk', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--heritage-gold, #D4AF37);
+  text-transform: uppercase;
+  letter-spacing: 0.25em;
+  white-space: nowrap;
   margin: 0;
 }
 
-.highlight {
-  color: var(--heritage-gold, #D4AF37);
-  font-style: italic;
+.headerDivider {
+  height: 1px;
+  flex-grow: 1;
+  background: rgba(212, 175, 55, 0.2);
+  transform-origin: left center;
 }
 
-/* ── Responsive ──────────────────────────────────────────────────────────── */
-@media (max-width: 768px) {
-  .aboutSection {
-    padding: 7rem 0;
+/* ── Grid Layout ─────────────────────────────────────────────────────────── */
+.gridContainer {
+  display: grid;
+  grid-template-columns: 1.1fr 1.3fr 1fr;
+  grid-template-areas: "bio pic insights";
+  gap: clamp(3rem, 5vw, 6rem);
+  width: 100%;
+  align-items: start;
+}
+
+/* ── Box 1: Editorial Bio (Left) ─────────────────────────────────────────── */
+.bioContainer {
+  grid-area: bio;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  padding-top: 0;
+  gap: 1.5rem;
+}
+
+.statement {
+  font-family: 'Cabinet Grotesk', sans-serif;
+  font-size: clamp(3rem, 5vw, 4.5rem);
+  font-weight: 800;
+  line-height: 1.05;
+  color: #fff;
+  margin: 0;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+}
+
+.highlight {
+  display: block;
+  font-family: 'Lora', Georgia, serif;
+  font-size: clamp(3.5rem, 6vw, 5.5rem);
+  font-style: italic;
+  font-weight: 400;
+  color: var(--heritage-gold, #D4AF37);
+  letter-spacing: -0.02em;
+  text-transform: none;
+  margin-top: 0.5rem;
+}
+
+.subStatement {
+  font-family: 'Cabinet Grotesk', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 400;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.65);
+  margin: 0;
+  max-width: 95%;
+  border-left: 1px solid var(--heritage-gold, #D4AF37);
+  padding-left: 1.5rem;
+}
+
+/* ── Box 2: Cinematic Portrait (Center) ──────────────────────────────────── */
+.pictureFrame {
+  grid-area: pic;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.imageWrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3/4.2;
+  /* Slightly taller for cinematic feel */
+  overflow: hidden;
+  background: #111;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  /* subtle softening */
+}
+
+.profileImage {
+  object-fit: cover;
+  object-position: top center;
+  /* Intense, editorial color grading via CSS */
+  filter: grayscale(20%) contrast(1.1) brightness(0.9);
+  transition: filter 1.2s cubic-bezier(0.16, 1, 0.3, 1), transform 1.5s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, filter;
+}
+
+.imageWrapper:hover .profileImage {
+  filter: grayscale(0%) contrast(1.15) brightness(1.05) saturate(1.1);
+  transform: scale(1.04);
+}
+
+.pictureCaption {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  border-left: 1px solid rgba(212, 175, 55, 0.4);
+  padding-left: 1.25rem;
+}
+
+.pictureName {
+  font-family: 'Lora', Georgia, serif;
+  font-size: 2rem;
+  font-weight: 400;
+  font-style: italic;
+  color: #fff;
+  margin: 0;
+  letter-spacing: 0.01em;
+}
+
+.pictureTitle {
+  font-family: 'Cabinet Grotesk', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.4);
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  margin: 0;
+}
+
+/* ── Box 3: Insights Feed (Right) ────────────────────────────────────────── */
+.insightsContainer {
+  grid-area: insights;
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+  padding-top: 1rem;
+}
+
+.insightsHeader {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 1rem;
+}
+
+.insightsTitle {
+  font-family: 'Cabinet Grotesk', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  margin: 0;
+}
+
+.viewAllLink {
+  font-family: 'Cabinet Grotesk', sans-serif;
+  font-size: 0.7rem;
+  color: var(--heritage-gold, #D4AF37);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  text-decoration: none;
+  transition: opacity 0.3s ease;
+}
+
+.viewAllLink:hover {
+  opacity: 0.7;
+}
+
+.linkIcon {
+  width: 14px;
+  height: 14px;
+}
+
+.blogsList {
+  display: flex;
+  flex-direction: column;
+}
+
+.blogItem {
+  text-decoration: none;
+  display: block;
+  position: relative;
+  padding: 1.5rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.blogItem:last-child {
+  border-bottom: none;
+}
+
+.blogArticle {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.blogDate {
+  font-family: 'Cabinet Grotesk', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--heritage-gold, #D4AF37);
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+}
+
+.blogTitle {
+  font-family: 'Lora', Georgia, serif;
+  font-size: 1.65rem;
+  font-weight: 500;
+  line-height: 1.25;
+  color: #fff;
+  margin: 0;
+  transition: color 0.3s ease;
+  display: -webkit-box;
+  line-clamp: 3;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.blogHoverLine {
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background: var(--heritage-gold, #D4AF37);
+  transition: width 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.blogItem:hover {
+  transform: translateX(10px);
+}
+
+.blogItem:hover .blogTitle {
+  color: var(--heritage-gold, #D4AF37);
+}
+
+.blogItem:hover .blogHoverLine {
+  width: 50px;
+}
+
+.loadingPlaceholder {
+  font-family: 'Lora', Georgia, serif;
+  font-style: italic;
+  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.3);
+  padding: 2rem 0;
+}
+
+/* ── Responsive Architecture ─────────────────────────────────────────────── */
+@media (max-width: 1300px) {
+  .gridContainer {
+    grid-template-columns: 1.2fr 1.3fr;
+    grid-template-areas:
+      "bio pic"
+      "insights pic";
+    gap: 4rem;
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 900px) {
   .aboutSection {
-    padding: 5rem 0;
+    padding: 7rem 0 5rem;
+  }
+
+  .headerBlock {
+    margin-bottom: 3rem;
+  }
+
+  .gridContainer {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "pic"
+      "bio"
+      "insights";
+    gap: 4rem;
+  }
+
+  .statement {
+    font-size: clamp(2.5rem, 7vw, 3rem);
+  }
+
+  .highlight {
+    font-size: clamp(3rem, 9vw, 3.5rem);
+    margin-top: 0.25rem;
+  }
+
+  .imageWrapper {
+    max-width: 500px;
+    margin: 0 auto;
+    aspect-ratio: 4/4.5;
+  }
+
+  .pictureCaption {
+    max-width: 500px;
+    margin: 0 auto;
+    width: 100%;
+  }
+}
+
+@media (max-width: 600px) {
+  .quoteMark {
+    top: -1.5rem;
+    font-size: 6rem;
+    left: -0.5rem;
+  }
+
+  .imageWrapper {
+    aspect-ratio: 1/1;
+  }
+
+  .blogItem {
+    padding: 1.25rem 0;
+  }
+
+  .blogTitle {
+    font-size: 1.25rem;
   }
 }
