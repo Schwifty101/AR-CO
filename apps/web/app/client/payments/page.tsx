@@ -66,11 +66,10 @@ function formatDate(dateString: string | null): string {
  * @returns Formatted string like "Rs. 700"
  */
 function formatAmount(amount: number, currency: string): string {
-  const major = amount / 100;
   if (currency === 'PKR') {
-    return `Rs. ${major.toLocaleString('en-PK')}`;
+    return `Rs. ${amount.toLocaleString('en-US')}`;
   }
-  return `${currency} ${major.toLocaleString()}`;
+  return `${currency} ${amount.toLocaleString('en-US')}`;
 }
 
 /**

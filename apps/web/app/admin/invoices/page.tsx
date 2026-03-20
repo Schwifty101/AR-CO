@@ -229,7 +229,7 @@ export default function AdminInvoicesPage() {
                             {inv.invoiceNumber ?? '—'}
                           </TableCell>
                           <TableCell className="text-muted-foreground">
-                            {inv.clientProfileId}
+                            {inv.email ?? inv.clientProfileId ?? '—'}
                           </TableCell>
                           <TableCell>{formatDate(inv.issueDate)}</TableCell>
                           <TableCell>{formatDate(inv.dueDate)}</TableCell>

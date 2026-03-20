@@ -916,6 +916,16 @@ export class ServiceRegistrationsService {
       .update({ client_profile_id: clientProfile.id })
       .eq('id', registration.id);
 
+    // Link any guest invoices stored by email to this new client profile
+    const { error: invoiceLinkError } = await adminClient
+      .from('invoices')
+      .update({ client_profile_id: clientProfile.id })
+      .eq('email', registration.email)
+      .is('client_profile_id', null);
+    if (invoiceLinkError) {
+      this.logger.warn(`Failed to link guest invoices for ${registration.email}: ${invoiceLinkError.message}`);
+    }
+
     this.logger.log(
       `Auto-created client account for ${registration.email} (userId: ${userId}, clientProfileId: ${clientProfile.id})`,
     );

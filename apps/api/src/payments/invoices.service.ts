@@ -46,7 +46,8 @@ import type { DbResult, DbListResult } from '../database/db-result.types';
 interface InvoiceRow {
   id: string;
   invoice_number: string | null;
-  client_profile_id: string;
+  client_profile_id: string | null;
+  email: string | null;
   case_id: string | null;
   issue_date: string;
   due_date: string;
@@ -117,7 +118,8 @@ export class InvoicesService {
     const { data: invoice, error: invoiceError } = (await adminClient
       .from('invoices')
       .insert({
-        client_profile_id: dto.clientProfileId,
+        client_profile_id: dto.clientProfileId ?? null,
+        email: dto.email ?? null,
         case_id: dto.caseId ?? null,
         due_date: dto.dueDate,
         tax_amount: dto.taxAmount ?? 0,
@@ -182,12 +184,17 @@ export class InvoicesService {
       .from('invoices')
       .select('*', { count: 'exact' });
 
-    // Clients see only their invoices
+    // Clients see their own invoices: linked by clientProfileId OR unlinked by email
     if (!STAFF_ROLES.includes(user.userType)) {
-      if (!user.clientProfileId) {
+      if (user.clientProfileId) {
+        query = query.or(
+          `client_profile_id.eq.${user.clientProfileId},and(email.eq.${user.email},client_profile_id.is.null)`,
+        );
+      } else if (user.email) {
+        query = query.eq('email', user.email).is('client_profile_id', null);
+      } else {
         return { data: [], total: 0, page, limit };
       }
-      query = query.eq('client_profile_id', user.clientProfileId);
     } else if (clientProfileId) {
       query = query.eq('client_profile_id', clientProfileId);
     }
@@ -244,9 +251,11 @@ export class InvoicesService {
       throw new NotFoundException('Invoice not found');
     }
 
-    // Client access check
-    if (!STAFF_ROLES.includes(user.userType) && user.userType !== 'admin') {
-      if (data.client_profile_id !== user.clientProfileId) {
+    // Client access check: must own by clientProfileId or matching email (unlinked)
+    if (!STAFF_ROLES.includes(user.userType)) {
+      const ownedByProfile = user.clientProfileId && data.client_profile_id === user.clientProfileId;
+      const ownedByEmail = !data.client_profile_id && data.email === user.email;
+      if (!ownedByProfile && !ownedByEmail) {
         throw new ForbiddenException('Access denied to this invoice');
       }
     }
@@ -513,12 +522,40 @@ export class InvoicesService {
     }
   }
 
+  /**
+   * Links all guest invoices (no client_profile_id) for a given email to a client profile.
+   * Called when a guest registers or logs in for the first time.
+   *
+   * @param email - The guest's email address
+   * @param clientProfileId - The newly created client profile UUID
+   *
+   * @example
+   * ```typescript
+   * await invoicesService.linkInvoicesByEmail('guest@example.com', 'client-profile-uuid');
+   * ```
+   */
+  async linkInvoicesByEmail(email: string, clientProfileId: string): Promise<void> {
+    const adminClient = this.supabaseService.getAdminClient();
+    const { error } = await adminClient
+      .from('invoices')
+      .update({ client_profile_id: clientProfileId })
+      .eq('email', email)
+      .is('client_profile_id', null);
+
+    if (error) {
+      this.logger.warn(`Failed to link invoices for ${email}: ${error.message}`);
+    } else {
+      this.logger.log(`Linked guest invoices for ${email} to client ${clientProfileId}`);
+    }
+  }
+
   /** Maps an invoices DB row to InvoiceResponse (camelCase) */
   private mapInvoiceRow(row: InvoiceRow, items?: InvoiceItemRow[]): InvoiceResponse {
     return {
       id: row.id,
       invoiceNumber: row.invoice_number,
       clientProfileId: row.client_profile_id,
+      email: row.email,
       caseId: row.case_id,
       issueDate: row.issue_date,
       dueDate: row.due_date,
