@@ -66,27 +66,27 @@ export default function Footer() {
     if (!buttonRef.current || !containerRef.current) return
 
     const containerRect = containerRef.current.getBoundingClientRect()
-    
+
     // Small wiggle radius (max 10px in any direction)
     const maxOffset = 10
-    
+
     // Calculate offset from container center
     const containerCenterX = containerRect.left + containerRect.width / 2
     const containerCenterY = containerRect.top + containerRect.height / 2
     const offsetX = e.clientX - containerCenterX
     const offsetY = e.clientY - containerCenterY
-    
+
     // Normalize and scale to small radius
     const distance = Math.sqrt(offsetX * offsetX + offsetY * offsetY)
     const maxContainerDistance = Math.min(containerRect.width, containerRect.height) / 2
     const normalizedDistance = Math.min(distance / maxContainerDistance, 1)
-    
+
     // Calculate smooth offset within small radius
     const angle = Math.atan2(offsetY, offsetX)
     const smoothOffset = normalizedDistance * maxOffset
     const x = Math.cos(angle) * smoothOffset
     const y = Math.sin(angle) * smoothOffset
-    
+
     // Immediate response with gsap.set for no delay
     gsap.set(buttonRef.current, {
       x: x,
@@ -202,6 +202,7 @@ export default function Footer() {
                 ))}
               </ul>
             </nav>
+
           </div>
 
           {/* Right Column - About & Contact Info */}
@@ -241,10 +242,43 @@ export default function Footer() {
                     Monday to Friday, 9:00am - 5:00pm
                   </p>
                 </div>
+
+                <div className={styles.infoServicesSection}>
+                  <span className={styles.columnLabel}>(POPULAR SERVICES)</span>
+                  <nav aria-label="Popular services">
+                    <ul className={styles.infoServicesList}>
+                      <li>
+                        <Link href="/practice-areas/intellectual-property" className={styles.infoServiceLink}>
+                          Intellectual Property Lawyers
+                        </Link>
+                      </li>
+                      <li>
+                        <Link href="/practice-areas/petroleum-energy-law" className={styles.infoServiceLink}>
+                          Energy & Petroleum Advisory
+                        </Link>
+                      </li>
+                      <li>
+                        <Link href="/practice-areas/alternative-dispute-resolution" className={styles.infoServiceLink}>
+                          Dispute Resolution & Litigation
+                        </Link>
+                      </li>
+                      <li>
+                        <Link href="/services/facilitation/ip-services" className={styles.infoServiceLink}>
+                          Business and IP Facilitation
+                        </Link>
+                      </li>
+                      <li>
+                        <Link href="/complaint-section" className={styles.infoServiceLink}>
+                          Regulatory Complaint Support
+                        </Link>
+                      </li>
+                    </ul>
+                  </nav>
+                </div>
               </div>
             </div>
 
-            <div 
+            <div
               ref={containerRef}
               className={styles.scrollTopContainer}
               onMouseMove={handleMouseMove}

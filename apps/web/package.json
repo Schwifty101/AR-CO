@@ -10,7 +10,8 @@
     "build": "next build",
     "dev": "next dev",
     "lint": "eslint .",
-    "start": "next start"
+    "start": "next start",
+    "tsc": "tsc --noEmit"
   },
   "dependencies": {
     "@calcom/embed-react": "^1.5.3",

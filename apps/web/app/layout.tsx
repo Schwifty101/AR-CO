@@ -11,20 +11,19 @@ import { Toaster } from "@/components/ui/sonner"
 import "./globals.css"
 
 export const metadata: Metadata = {
-  title: "AR&CO Law Firm | Expert Legal Services",
-  description: "Professional legal services and services in Pakistan. Expert corporate law, tax law, immigration, labour law, IP, real estate, litigation, and contract services.",
-  generator: 'v0.app',
+  title: 'AR&CO Law Associates',
+  description: 'Legal services in Pakistan for corporate advisory, dispute resolution, intellectual property, and regulatory representation.',
   keywords: ['law firm', 'legal services', 'Pakistan law', 'corporate law', 'tax law', 'immigration law', 'AR&CO'],
   authors: [{ name: 'AR&CO Law Associates' }],
   creator: 'AR&CO Law Associates',
   publisher: 'AR&CO Law Associates',
-  metadataBase: new URL('https://arco-law.com'),
+  metadataBase: new URL('https://arandcolaw.com'),
   openGraph: {
-    title: 'AR&CO Law Firm | Expert Legal Services',
-    description: 'Professional legal services and services in Pakistan',
+    title: 'AR&CO Law Associates',
+    description: 'Legal services in Pakistan for corporate advisory, dispute resolution, and regulatory matters.',
     type: 'website',
-    locale: 'en_US',
-    url: 'https://arco-law.com',
+    locale: 'en_PK',
+    url: 'https://arandcolaw.com',
     siteName: 'AR&CO Law Associates',
     images: [
       {
@@ -37,8 +36,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'AR&CO Law Firm | Expert Legal Services',
-    description: 'Professional legal services and services in Pakistan',
+    title: 'AR&CO Law Associates',
+    description: 'Legal services in Pakistan for corporate advisory, dispute resolution, and regulatory matters.',
     images: ['/twitter-image.jpg'],
   },
   icons: {

@@ -255,7 +255,7 @@ export default function Testimonials() {
       <div ref={stickyWrapperRef} className={styles.stickyWrapper}>
         {/* Title */}
         <div className={styles.titleContainer}>
-          <h1 ref={titleRef} className={styles.title}>Testimonials</h1>
+          <h2 ref={titleRef} className={styles.title}>Testimonials</h2>
         </div>
 
         {/* Three columns */}

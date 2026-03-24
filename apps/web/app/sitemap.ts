@@ -16,18 +16,7 @@ const STATIC_PUBLIC_ROUTES = [
   '/team',
   '/blogs',
   '/subscribe',
-  '/subscribe/success',
-  '/subscribe/cancel',
   '/complaint-section',
-  '/complaint-section/form',
-]
-
-const AUTH_ROUTES = [
-  '/auth/signin',
-  '/auth/signup',
-  '/auth/forgot-password',
-  '/auth/reset-password',
-  '/auth/verify-email',
 ]
 
 /**
@@ -68,22 +57,22 @@ function getServicePaths(): string[] {
 
   facilitationServices.forEach((service) => {
     const base = `/services/facilitation/${service.id}`
-    paths.push(base, `${base}/process`, `${base}/documents`, `${base}/form`, `${base}/faq`)
+    paths.push(base, `${base}/process`, `${base}/documents`, `${base}/faq`)
   })
 
   overseasServices.forEach((service) => {
     const base = `/services/overseas/${service.id}`
-    paths.push(base, `${base}/process`, `${base}/form`, `${base}/faq`)
+    paths.push(base, `${base}/process`, `${base}/faq`)
   })
 
   womenDeskServices.forEach((service) => {
     const base = `/services/women-desk/${service.id}`
-    paths.push(base, `${base}/process`, `${base}/form`, `${base}/faq`)
+    paths.push(base, `${base}/process`, `${base}/faq`)
   })
 
   regulatoryServices.forEach((service) => {
     const base = `/services/regulatory/${service.id}`
-    paths.push(base, `${base}/process`, `${base}/form`, `${base}/faq`)
+    paths.push(base, `${base}/process`, `${base}/faq`)
   })
 
   return paths
@@ -97,7 +86,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const allPaths = [
     ...STATIC_PUBLIC_ROUTES,
-    ...AUTH_ROUTES,
     ...practiceAreas.map((area) => `/practice-areas/${area.slug}`),
     ...getServicePaths(),
     ...blogPostPaths,
