@@ -26,19 +26,29 @@ export const metadata: Metadata = {
     locale: 'en_US',
     url: 'https://arco-law.com',
     siteName: 'AR&CO Law Associates',
+    images: [
+      {
+        url: '/og-image.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'AR&CO Law Firm',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'AR&CO Law Firm | Expert Legal Services',
     description: 'Professional legal services and services in Pakistan',
+    images: ['/twitter-image.jpg'],
   },
   icons: {
     icon: [
-      { url: '/assets/Favicon/FAVICON.ico', sizes: 'any' },
-      { url: '/assets/Favicon/FAVICON.png', type: 'image/png', sizes: '32x32' },
+      { url: '/favicon-16x16.png', type: 'image/png', sizes: '16x16' },
+      { url: '/favicon-32x32.png', type: 'image/png', sizes: '32x32' },
+      { url: '/favicon-48x48.png', type: 'image/png', sizes: '48x48' },
     ],
     apple: [
-      { url: '/assets/Favicon/FAVICON.png', sizes: '180x180', type: 'image/png' },
+      { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
     ],
   },
   manifest: '/manifest.json',
