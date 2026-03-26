@@ -173,7 +173,7 @@ export default function HomePageClient() {
                 <TrustStats />
                 <AboutSection />
                 <LegalServices />
-                <ConsultationCTA />
+                
                 <ClientLogosCarousel />
                 <Testimonials />
                 <FAQSection />
