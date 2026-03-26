@@ -48,18 +48,39 @@ export const metadata: Metadata = {
 export default function HomePage() {
   const organizationSchema = {
     '@context': 'https://schema.org',
-    '@type': 'Organization',
+    '@type': ['Organization', 'LocalBusiness'],
     '@id': `${SITE_URL}/#organization`,
     name: 'AR&CO Law Associates',
     url: SITE_URL,
     logo: `${SITE_URL}/favicon-512x512.png`,
+    image: `${SITE_URL}/og-image.jpg`,
     email: 'info@arco.law',
     telephone: '+92 51 2252144',
     address: {
       '@type': 'PostalAddress',
       addressLocality: 'Islamabad',
+      addressRegion: 'Islamabad Capital Territory',
       addressCountry: 'PK',
     },
+    openingHoursSpecification: [
+      {
+        '@type': 'OpeningHoursSpecification',
+        dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+        opens: '09:00',
+        closes: '17:00',
+      },
+    ],
+    serviceArea: {
+      '@type': 'Country',
+      name: 'Pakistan',
+    },
+    areaServed: 'Pakistan',
+    priceRange: '$$$',
+    sameAs: [
+      'https://instagram.com/arco.law',
+      'https://Linkedin.com/arco.law',
+      'https://Facebook.com/arco.law',
+    ],
   }
 
   const legalServiceSchema = {
@@ -101,6 +122,61 @@ export default function HomePage() {
     },
   }
 
+  const faqSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: [
+      {
+        '@type': 'Question',
+        name: 'What areas of law does AR&CO specialise in?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'AR&CO Law Associates specialises in corporate law, litigation and dispute resolution, intellectual property, energy law, tax law, immigration law, and real estate law, serving clients across Pakistan.',
+        },
+      },
+      {
+        '@type': 'Question',
+        name: 'Is AR&CO Law Associates based in Islamabad?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Yes, AR&CO Law Associates is headquartered in Islamabad, Pakistan, and serves clients across Pakistan including Rawalpindi, Lahore, and Karachi.',
+        },
+      },
+      {
+        '@type': 'Question',
+        name: 'How do I book a legal consultation with AR&CO?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'You can book a consultation by calling +92 51 2252144, emailing info@arco.law, or using the consultation booking form on our website.',
+        },
+      },
+      {
+        '@type': 'Question',
+        name: 'Does AR&CO handle corporate and business legal matters?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Yes, we provide comprehensive corporate legal services including company incorporation, SECP compliance, contract drafting, mergers and acquisitions, and ongoing corporate advisory for businesses across Pakistan.',
+        },
+      },
+      {
+        '@type': 'Question',
+        name: 'Can AR&CO represent clients across Pakistan?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Yes, AR&CO represents individuals and businesses across all provinces of Pakistan and handles matters before courts and tribunals nationwide.',
+        },
+      },
+      {
+        '@type': 'Question',
+        name: 'Does AR&CO provide SECP registration and company incorporation services?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Yes, our facilitation centre provides end-to-end services for SECP registration, NTN registration, company incorporation, trademark registration, and other regulatory compliance requirements.',
+        },
+      },
+    ],
+  }
+
   return (
     <>
       <script
@@ -114,6 +190,10 @@ export default function HomePage() {
       <script
         type='application/ld+json'
         dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
+      />
+      <script
+        type='application/ld+json'
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
       <HomePageClient />
     </>

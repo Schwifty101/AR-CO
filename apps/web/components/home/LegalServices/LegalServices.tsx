@@ -1,6 +1,7 @@
 "use client"
 
 import { useRef } from "react"
+import Link from "next/link"
 import { motion, useScroll, useTransform, useSpring } from "framer-motion"
 import { ArrowUpRight } from "lucide-react"
 import { useFacilitationOverlay } from "@/components/facilitation"
@@ -9,6 +10,7 @@ import styles from "./LegalServices.module.css"
 
 /**
  * Service verticals displayed as full-width editorial rows.
+ * Each row links to its dedicated page for crawlability and internal link equity.
  */
 const SERVICES = [
   {
@@ -16,7 +18,8 @@ const SERVICES = [
     number: "I",
     title: "Litigation",
     headline: "We provide strong advocacy with trusted legal representation.",
-    cta: "Explore our litigation services",
+    cta: "Explore litigation services",
+    href: "/practice-areas/alternative-dispute-resolution",
   },
   {
     id: "complaint-section",
@@ -24,27 +27,31 @@ const SERVICES = [
     title: "Complaint Section",
     headline: "Tackle your issues through us regarding regulators and public institutions — CDA, HEC, NADRA & more.",
     cta: "File your complaint",
+    href: "/complaint-section",
   },
   {
     id: "facilitation",
     number: "III",
     title: "Facilitation Centre",
     headline: "We simplify legal processes through effective facilitation regarding licensing, registration & certification.",
-    cta: "Explore our facilitation services",
+    cta: "Explore facilitation services",
+    href: "/services/facilitation/ip-services",
   },
   {
     id: "women-desk",
     number: "IV",
     title: "Women's Desk",
     headline: "We offer dedicated legal protection and support to empower women through law.",
-    cta: "Access our women's desk",
+    cta: "Access the women's desk",
+    href: "/services/women-desk/harassment-cases",
   },
   {
     id: "overseas",
     number: "V",
     title: "Overseas Desk",
     headline: "We provide reliable legal solutions beyond borders for overseas Pakistanis.",
-    cta: "Access our overseas desk",
+    cta: "Access the overseas desk",
+    href: "/services/overseas/property-verification",
   },
 ]
 
@@ -134,6 +141,10 @@ export default function QuoteSection() {
               <TextReveal delay={200} duration={0.9}>
                 <p className={styles.rowHeadline}>{service.headline}</p>
               </TextReveal>
+
+              <Link href={service.href} className={styles.rowLink}>
+                {service.cta} →
+              </Link>
             </motion.div>
           ))}
         </div>

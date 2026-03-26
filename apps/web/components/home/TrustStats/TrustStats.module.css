@@ -1,0 +1,112 @@
+/* ============================================================
+   TrustStats — Credential strip between Hero and AboutSection
+   Four stat cells in a horizontal grid.
+   Transparent background — page dark layer shows through.
+   ============================================================ */
+
+.section {
+  position: relative;
+  z-index: 10;
+  padding: 4rem 0;
+  border-top: 1px solid rgba(212, 175, 55, 0.12);
+  border-bottom: 1px solid rgba(212, 175, 55, 0.12);
+}
+
+/* ─── Four-column grid ─── */
+.inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 4rem;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+}
+
+/* ─── Individual stat cell ─── */
+.item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 2rem 1.5rem;
+  border-right: 1px solid rgba(249, 248, 246, 0.06);
+}
+
+.item:last-child {
+  border-right: none;
+}
+
+/* ─── Large value — the dominant number/word ─── */
+.value {
+  font-family: 'Lora', Georgia, serif;
+  font-size: clamp(2rem, 4vw, 3.5rem);
+  font-weight: 300;
+  font-style: italic;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  color: var(--heritage-gold);
+  margin-bottom: 0.75rem;
+}
+
+/* ─── Label — what the value measures ─── */
+.label {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--heritage-cream);
+  margin-bottom: 0.5rem;
+}
+
+/* ─── Detail — supporting context ─── */
+.detail {
+  font-family: 'Lora', 'Times New Roman', serif;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: rgba(249, 248, 246, 0.35);
+}
+
+/* ─── Responsive ─── */
+@media (max-width: 1024px) {
+  .inner {
+    padding: 0 2.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .inner {
+    grid-template-columns: repeat(2, 1fr);
+    padding: 0 1.5rem;
+  }
+
+  .item {
+    border-right: 1px solid rgba(249, 248, 246, 0.06);
+    border-bottom: 1px solid rgba(249, 248, 246, 0.06);
+    padding: 1.75rem 1rem;
+  }
+
+  .item:nth-child(2),
+  .item:nth-child(4) {
+    border-right: none;
+  }
+
+  .item:nth-child(3),
+  .item:nth-child(4) {
+    border-bottom: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .inner {
+    grid-template-columns: 1fr 1fr;
+    padding: 0 1.25rem;
+  }
+}
+
+/* ─── Reduced Motion ─── */
+@media (prefers-reduced-motion: reduce) {
+  .item {
+    transition: none !important;
+  }
+}
