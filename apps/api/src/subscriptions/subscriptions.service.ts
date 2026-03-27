@@ -1,23 +1,11 @@
 /**
- * Subscriptions Service
+ * Subscriptions Service — plan listing, checkout initiation, subscription retrieval,
+ * cancellation/resumption, real-time status, and webhook delegation.
  *
- * Core business logic for subscription management:
- * - Plan listing (public)
- * - Subscription initiation with Safepay checkout
- * - Current subscription retrieval (client)
- * - Safepay webhook processing for lifecycle events
- * - Subscription cancellation (client or admin)
- * - Admin listing with filters and pagination
- * - Plan sync to Safepay (admin one-time operation)
+ * Admin queries delegate to {@link SubscriptionsAdminService}.
+ * Webhook processing delegates to {@link SubscriptionsWebhookService}.
  *
  * @module SubscriptionsModule
- *
- * @example
- * ```typescript
- * const plans = await subscriptionsService.getPlans();
- * const checkout = await subscriptionsService.initiateSubscription(user, 'premium-monthly');
- * const mySub = await subscriptionsService.getMySubscription(userId);
- * ```
  */
 
 import { Injectable, Logger, HttpException, HttpStatus } from '@nestjs/common';
@@ -30,35 +18,26 @@ import type {
   SubscriptionFilters,
 } from '@repo/shared';
 import { SupabaseService } from '../database/supabase.service';
-import { SafepaySubscriptionService } from '../payments/safepay-subscription.service';
+import { LemonSqueezyService } from '../payments/lemonsqueezy.service';
 import type { AuthUser } from '../common/interfaces/auth-user.interface';
 import {
   type SubscriptionPlanRow,
   type UserSubscriptionRow,
   type SubscriptionEventRow,
-  type SafepaySubscriptionWebhookPayload,
+  type LemonSqueezyWebhookPayload,
   mapPlanRow,
   mapSubscriptionRow,
   mapEventRow,
-  safepayTimestampToISO,
 } from './subscriptions.types';
+import { SubscriptionsWebhookService } from './subscriptions-webhook.service';
+import { SubscriptionsAdminService } from './subscriptions-admin.service';
 import { randomUUID } from 'crypto';
 
 /**
- * Service managing subscription plans, user subscriptions, and Safepay integration.
- *
- * Uses SupabaseService for database operations and SafepaySubscriptionService
- * for payment gateway interactions. All DB queries use getAdminClient() since
- * subscriptions require cross-user access for webhook processing.
- *
- * @example
- * ```typescript
- * @Module({
- *   imports: [PaymentsModule],
- *   providers: [SubscriptionsService],
- * })
- * export class SubscriptionsModule {}
- * ```
+ * Facade service for subscription management. Delegates admin queries to
+ * {@link SubscriptionsAdminService} and webhook handling to
+ * {@link SubscriptionsWebhookService}. Core client flows (initiate, cancel,
+ * resume, status check) are implemented here.
  */
 @Injectable()
 export class SubscriptionsService {
@@ -66,7 +45,9 @@ export class SubscriptionsService {
 
   constructor(
     private readonly supabaseService: SupabaseService,
-    private readonly safepaySubscription: SafepaySubscriptionService,
+    private readonly lemonsqueezyService: LemonSqueezyService,
+    private readonly webhookService: SubscriptionsWebhookService,
+    private readonly adminService: SubscriptionsAdminService,
   ) {}
 
   /**
@@ -158,9 +139,9 @@ export class SubscriptionsService {
    * Initiate a new subscription checkout flow.
    *
    * 1. Validates no existing active/pending subscription
-   * 2. Fetches plan by slug and verifies Safepay sync
+   * 2. Fetches plan by slug
    * 3. Creates pending user_subscriptions record
-   * 4. Generates Safepay checkout URL via SDK
+   * 4. Generates LemonSqueezy checkout URL via SDK
    *
    * @param user - Authenticated client user
    * @param planSlug - URL-safe plan identifier (e.g., 'premium-monthly')
@@ -181,7 +162,6 @@ export class SubscriptionsService {
     const client = this.supabaseService.getAdminClient();
 
     // 1. Check no active/pending subscription
-
     const { data: rawExisting } = await client
       .from('user_subscriptions')
       .select('id, status')
@@ -211,12 +191,6 @@ export class SubscriptionsService {
     }
 
     const planRow = rawPlan as unknown as SubscriptionPlanRow;
-    if (!planRow.safepay_plan_token) {
-      throw new HttpException(
-        'Plan not yet synced with Safepay. Contact admin.',
-        HttpStatus.SERVICE_UNAVAILABLE,
-      );
-    }
 
     // 3. Create pending subscription record
     const reference = `SUB-${randomUUID()}`;
@@ -239,10 +213,16 @@ export class SubscriptionsService {
     const subscription = rawSubscription as unknown as { id: string };
 
     // 4. Generate checkout URL
-    const checkoutUrl =
-      await this.safepaySubscription.generateSubscriptionCheckoutUrl({
-        planToken: planRow.safepay_plan_token,
-        reference,
+    const { checkoutUrl } =
+      await this.lemonsqueezyService.createSubscriptionCheckout({
+        email: user.email,
+        name: user.fullName || user.email,
+        customData: {
+          payment_type: 'subscription',
+          user_id: user.id,
+          reference,
+        },
+        redirectUrl: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/payment/success?type=subscription`,
       });
 
     this.logger.log(
@@ -257,80 +237,10 @@ export class SubscriptionsService {
   }
 
   /**
-   * Process a Safepay subscription webhook event.
-   *
-   * Verifies the webhook signature, then routes to the appropriate handler
-   * based on event type. Handles both dot-notation and underscore variants
-   * of payment event types.
-   *
-   * @param body - Safepay webhook payload
-   * @param headers - HTTP request headers (must include X-SFPY-SIGNATURE)
-   * @throws {HttpException} UNAUTHORIZED if signature is invalid
-   *
-   * @example
-   * ```typescript
-   * await subscriptionsService.handleWebhook(req.body, req.headers);
-   * ```
-   */
-  async handleWebhook(
-    body: SafepaySubscriptionWebhookPayload,
-    headers: Record<string, string>,
-  ): Promise<void> {
-    // Verify signature
-    const isValid = this.safepaySubscription.verifyWebhook({
-      body,
-      headers: headers as unknown as import('http').IncomingHttpHeaders,
-    });
-
-    if (!isValid) {
-      this.logger.warn('Invalid webhook signature');
-      throw new HttpException('Invalid signature', HttpStatus.UNAUTHORIZED);
-    }
-
-    const eventType = body.type;
-    const eventData = body.data;
-    this.logger.log(`Received webhook: ${eventType}`);
-
-    // Normalize event type (handle both dot and underscore variants)
-    const normalizedType = eventType
-      .replace(
-        'subscription.payment_succeeded',
-        'subscription.payment.succeeded',
-      )
-      .replace('subscription.payment_failed', 'subscription.payment.failed');
-
-    switch (normalizedType) {
-      case 'subscription.created':
-        await this.handleSubscriptionCreated(eventData);
-        break;
-      case 'subscription.payment.succeeded':
-        await this.handlePaymentSucceeded(eventData);
-        break;
-      case 'subscription.payment.failed':
-        await this.handlePaymentFailed(eventData);
-        break;
-      case 'subscription.canceled':
-        await this.handleSubscriptionCancelled(eventData);
-        break;
-      case 'subscription.ended':
-        await this.handleSubscriptionEnded(eventData);
-        break;
-      case 'subscription.paused':
-        await this.handleSubscriptionPaused(eventData);
-        break;
-      case 'subscription.resumed':
-        await this.handleSubscriptionResumed(eventData);
-        break;
-      default:
-        this.logger.warn(`Unhandled subscription webhook: ${eventType}`);
-    }
-  }
-
-  /**
    * Cancel a subscription (callable by client or admin/staff).
    *
    * Clients can only cancel their own subscription. Admins/staff can cancel any.
-   * Cancels on Safepay if a safepay_subscription_id exists, then updates local record.
+   * Cancels on LemonSqueezy if a lemonsqueezy_subscription_id exists, then updates local record.
    *
    * @param subscriptionId - UUID of the user_subscriptions record
    * @param cancelledBy - Authenticated user performing the cancellation
@@ -378,10 +288,10 @@ export class SubscriptionsService {
       );
     }
 
-    // Cancel on Safepay if we have the subscription ID
-    if (subRow.safepay_subscription_id) {
-      await this.safepaySubscription.cancelSubscription(
-        subRow.safepay_subscription_id,
+    // Cancel on LemonSqueezy if we have the subscription ID
+    if (subRow.lemonsqueezy_subscription_id) {
+      await this.lemonsqueezyService.cancelSubscription(
+        subRow.lemonsqueezy_subscription_id,
       );
     }
 
@@ -396,7 +306,7 @@ export class SubscriptionsService {
       .eq('id', subscriptionId);
 
     // Log event
-    await this.logEvent(subscriptionId, 'subscription.cancelled_by_user', {
+    await this.webhookService.logEvent(subscriptionId, 'subscription.cancelled_by_user', {
       cancelled_by: cancelledBy.id,
     });
 
@@ -406,470 +316,185 @@ export class SubscriptionsService {
   }
 
   /**
-   * List all subscriptions with filters and pagination (admin/staff).
+   * Resume a cancelled subscription (client only).
    *
-   * Joins user_profiles for email and name display. Supports filtering by status.
+   * Verifies ownership, checks the subscription is in CANCELLED state,
+   * calls LemonSqueezy to lift the cancellation, and restores ACTIVE status.
    *
-   * @param filters - Pagination and optional status filter
-   * @returns Paginated subscriptions with user info
+   * @param subscriptionId - UUID of the user_subscriptions record
+   * @param user - Authenticated client user
+   * @throws {HttpException} NOT_FOUND, FORBIDDEN, or BAD_REQUEST
    *
    * @example
    * ```typescript
-   * const result = await subscriptionsService.getSubscriptions({
-   *   page: 1, limit: 20, status: SubscriptionStatus.ACTIVE,
-   * });
-   * // result.data[0].userName, result.total, result.page
+   * await subscriptionsService.resumeSubscription('sub-uuid', currentUser);
    * ```
    */
-  async getSubscriptions(
-    filters: SubscriptionFilters,
-  ): Promise<PaginatedSubscriptionsResponse> {
+  async resumeSubscription(subscriptionId: string, user: AuthUser): Promise<void> {
     const client = this.supabaseService.getAdminClient();
-    const page = filters.page || 1;
-    const limit = filters.limit || 20;
-    const offset = (page - 1) * limit;
 
-    let query = client
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const { data: rawSub, error } = await client
       .from('user_subscriptions')
-      .select('*, subscription_plans(*), user_profiles!inner(full_name)', {
-        count: 'exact',
-      });
+      .select('*')
+      .eq('id', subscriptionId)
+      .single();
 
-    if (filters.status) {
-      query = query.eq('status', filters.status);
+    if (error || !rawSub) {
+      throw new HttpException('Subscription not found', HttpStatus.NOT_FOUND);
     }
 
-    const { data, error, count } = await query
+    const sub = rawSub as unknown as UserSubscriptionRow;
+
+    if (user.userType === UserType.CLIENT && sub.user_id !== user.id) {
+      throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
+    }
+
+    if (sub.status !== (SubscriptionStatus.CANCELLED as string)) {
+      throw new HttpException(
+        'Only cancelled subscriptions can be resumed',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    if (sub.lemonsqueezy_subscription_id) {
+      await this.lemonsqueezyService.resumeSubscription(sub.lemonsqueezy_subscription_id);
+    }
+
+    await client.from('user_subscriptions').update({
+      status: SubscriptionStatus.ACTIVE,
+      cancelled_at: null,
+      ends_at: null,
+      updated_at: new Date().toISOString(),
+    }).eq('id', subscriptionId);
+
+    await this.webhookService.logEvent(subscriptionId, 'subscription.resumed', {
+      resumed_by: user.id,
+    });
+    this.logger.log(`Subscription ${subscriptionId} resumed by user ${user.id}`);
+  }
+
+  /**
+   * Get real-time subscription status for the current user.
+   *
+   * Fetches the local DB record and, when a LemonSqueezy subscription ID exists,
+   * calls the LS API for a live status comparison.
+   *
+   * @param userId - Supabase auth user UUID
+   * @returns Object with local and live status fields
+   *
+   * @example
+   * ```typescript
+   * const status = await subscriptionsService.getMySubscriptionStatus(user.id);
+   * // { status: 'active', liveStatus: 'active', currentPeriodEnd: '...', endsAt: null }
+   * ```
+   */
+  async getMySubscriptionStatus(userId: string): Promise<{
+    status: string;
+    liveStatus: string | null;
+    currentPeriodEnd: string | null;
+    endsAt: string | null;
+  }> {
+    const client = this.supabaseService.getAdminClient();
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const { data: rawSub, error } = await client
+      .from('user_subscriptions')
+      .select('*')
+      .eq('user_id', userId)
+      .in('status', [
+        SubscriptionStatus.ACTIVE,
+        SubscriptionStatus.PENDING,
+        SubscriptionStatus.PAUSED,
+        SubscriptionStatus.UNPAID,
+        SubscriptionStatus.CANCELLED,
+      ])
       .order('created_at', { ascending: false })
-      .range(offset, offset + limit - 1);
+      .limit(1)
+      .maybeSingle();
 
     if (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
 
-    const rows = (data || []) as Array<
-      UserSubscriptionRow & {
-        subscription_plans: SubscriptionPlanRow;
-        user_profiles: { full_name: string };
-      }
-    >;
+    if (!rawSub) {
+      return { status: 'none', liveStatus: null, currentPeriodEnd: null, endsAt: null };
+    }
 
-    // Fetch emails from auth.users for each unique user
-    const userIds = [...new Set(rows.map((r) => r.user_id))];
-    const emailMap = new Map<string, string>();
-    await Promise.all(
-      userIds.map(async (uid) => {
-        const { data: authData } = await client.auth.admin.getUserById(uid);
-        if (authData?.user?.email) {
-          emailMap.set(uid, authData.user.email);
-        }
-      }),
-    );
+    const sub = rawSub as unknown as UserSubscriptionRow;
+
+    let liveStatus: string | null = null;
+    if (sub.lemonsqueezy_subscription_id) {
+      try {
+        const lsData = await this.lemonsqueezyService.getSubscription(
+          sub.lemonsqueezy_subscription_id,
+        ) as { data?: { attributes?: { status?: string } } } | null;
+        liveStatus = lsData?.data?.attributes?.status ?? null;
+      } catch (err) {
+        this.logger.warn(
+          `getMySubscriptionStatus: could not fetch LS status — ${String(err)}`,
+        );
+      }
+    }
 
     return {
-      data: rows.map((row) => ({
-        ...mapSubscriptionRow(row, row.subscription_plans),
-        userId: row.user_id,
-        userEmail: emailMap.get(row.user_id) || '',
-        userName: row.user_profiles?.full_name || '',
-      })),
-      total: count || 0,
-      page,
-      limit,
+      status: sub.status,
+      liveStatus,
+      currentPeriodEnd: sub.current_period_end,
+      endsAt: sub.ends_at,
     };
+  }
+
+  /**
+   * List all subscriptions with filters and pagination (admin/staff).
+   * @see SubscriptionsAdminService.getSubscriptions
+   */
+  async getSubscriptions(filters: SubscriptionFilters): Promise<PaginatedSubscriptionsResponse> {
+    return this.adminService.getSubscriptions(filters);
   }
 
   /**
    * Get a single subscription by ID with event history (admin/staff).
-   *
-   * @param id - UUID of the user_subscriptions record
-   * @returns Subscription detail with events array
-   * @throws {HttpException} NOT_FOUND if subscription does not exist
-   *
-   * @example
-   * ```typescript
-   * const detail = await subscriptionsService.getSubscriptionById('sub-uuid');
-   * console.log(detail.events.length);
-   * ```
+   * @see SubscriptionsAdminService.getSubscriptionById
    */
   async getSubscriptionById(id: string): Promise<SubscriptionDetail> {
-    const client = this.supabaseService.getAdminClient();
-
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const { data: rawSubById, error } = await client
-      .from('user_subscriptions')
-      .select('*, subscription_plans(*)')
-      .eq('id', id)
-      .single();
-
-    if (error || !rawSubById) {
-      throw new HttpException('Subscription not found', HttpStatus.NOT_FOUND);
-    }
-
-    const subRow = rawSubById as unknown as UserSubscriptionRow & {
-      subscription_plans: SubscriptionPlanRow;
-    };
-    const plan = subRow.subscription_plans;
-
-    const { data: events } = await client
-      .from('subscription_events')
-      .select('*')
-      .eq('subscription_id', id)
-      .order('created_at', { ascending: false });
-
-    return {
-      ...mapSubscriptionRow(subRow, plan),
-      events: ((events || []) as SubscriptionEventRow[]).map(mapEventRow),
-    };
+    return this.adminService.getSubscriptionById(id);
   }
 
-  /**
-   * Sync a local subscription plan to Safepay (one-time admin operation).
-   *
-   * Creates the plan on Safepay via REST API and stores the returned
-   * plan token in the subscription_plans table. Idempotent - returns
-   * existing token if plan is already synced.
-   *
-   * @param planId - UUID of the subscription_plans record
-   * @returns Safepay plan token (plan_xxx)
-   * @throws {HttpException} NOT_FOUND if plan does not exist
-   *
-   * @example
-   * ```typescript
-   * const planToken = await subscriptionsService.syncPlanToSafepay('plan-uuid');
-   * // planToken = 'plan_xxx'
-   * ```
-   */
-  async syncPlanToSafepay(planId: string): Promise<string> {
-    const client = this.supabaseService.getAdminClient();
+  // ─── Webhook handler delegates (implementation in SubscriptionsWebhookService) ──
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const { data: rawPlanSync, error } = await client
-      .from('subscription_plans')
-      .select('*')
-      .eq('id', planId)
-      .single();
-
-    if (error || !rawPlanSync) {
-      throw new HttpException('Plan not found', HttpStatus.NOT_FOUND);
-    }
-
-    const planRow = rawPlanSync as unknown as SubscriptionPlanRow;
-    if (planRow.safepay_plan_token) {
-      return planRow.safepay_plan_token;
-    }
-
-    const planToken = await this.safepaySubscription.createPlan({
-      amount: String(planRow.amount),
-      currency: planRow.currency,
-      interval: planRow.interval,
-      intervalCount: planRow.interval_count,
-      product: planRow.name,
-    });
-
-    await client
-      .from('subscription_plans')
-      .update({
-        safepay_plan_token: planToken,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', planId);
-
-    this.logger.log(`Synced plan ${planId} -> ${planToken}`);
-    return planToken;
+  /** @see SubscriptionsWebhookService.handleSubscriptionCreated */
+  async handleSubscriptionCreated(p: LemonSqueezyWebhookPayload): Promise<void> {
+    return this.webhookService.handleSubscriptionCreated(p);
   }
 
-  // ─── Private webhook handlers ─────────────────────────────────────
-
-  /**
-   * Handle subscription.created webhook: link Safepay sub ID to local record.
-   */
-  private async handleSubscriptionCreated(
-    data: SafepaySubscriptionWebhookPayload['data'],
-  ): Promise<void> {
-    const client = this.supabaseService.getAdminClient();
-    const safepaySubId = data.id;
-    const reference = data.reference;
-
-    if (!safepaySubId) {
-      this.logger.warn('subscription.created missing sub ID');
-      return;
-    }
-
-    // Match by reference (our internal UUID passed during checkout)
-    let sub: UserSubscriptionRow | null = null;
-    if (reference) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      const { data: rawFound } = await client
-        .from('user_subscriptions')
-        .select('*')
-        .eq('reference', reference)
-        .eq('status', SubscriptionStatus.PENDING)
-        .maybeSingle();
-      sub = rawFound ? (rawFound as unknown as UserSubscriptionRow) : null;
-    }
-
-    if (!sub) {
-      this.logger.warn(
-        `subscription.created: no pending subscription found for reference=${reference}`,
-      );
-      return;
-    }
-
-    await client
-      .from('user_subscriptions')
-      .update({
-        safepay_subscription_id: safepaySubId,
-        status: SubscriptionStatus.ACTIVE,
-        current_period_start: safepayTimestampToISO(
-          data.current_period_start_date,
-        ),
-        current_period_end: safepayTimestampToISO(data.current_period_end_date),
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', sub.id);
-
-    await this.logEvent(sub.id, 'subscription.created', data);
-    this.logger.log(`Subscription ${sub.id} activated (${safepaySubId})`);
+  /** @see SubscriptionsWebhookService.handleSubscriptionUpdated */
+  async handleSubscriptionUpdated(p: LemonSqueezyWebhookPayload): Promise<void> {
+    return this.webhookService.handleSubscriptionUpdated(p);
   }
 
-  /**
-   * Handle subscription.payment.succeeded: update billing cycle and period dates.
-   */
-  private async handlePaymentSucceeded(
-    data: SafepaySubscriptionWebhookPayload['data'],
-  ): Promise<void> {
-    const client = this.supabaseService.getAdminClient();
-    const safepaySubId = data.id;
-
-    if (!safepaySubId) return;
-
-    const { data: rawSub } = await client
-      .from('user_subscriptions')
-      .select('id')
-      .eq('safepay_subscription_id', safepaySubId)
-      .maybeSingle();
-
-    if (!rawSub) {
-      this.logger.warn(
-        `payment.succeeded: no subscription found for ${safepaySubId}`,
-      );
-      return;
-    }
-
-    const sub = rawSub as unknown as { id: string };
-
-    await client
-      .from('user_subscriptions')
-      .update({
-        status: SubscriptionStatus.ACTIVE,
-        current_billing_cycle: data.current_billing_cycle ?? null,
-        current_period_start: safepayTimestampToISO(
-          data.current_period_start_date,
-        ),
-        current_period_end: safepayTimestampToISO(data.current_period_end_date),
-        last_paid_at:
-          safepayTimestampToISO(data.last_paid_date) ||
-          new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', sub.id);
-
-    await this.logEvent(sub.id, 'subscription.payment.succeeded', data, {
-      billingCycle: data.current_billing_cycle,
-    });
+  /** @see SubscriptionsWebhookService.handlePaymentSuccess */
+  async handlePaymentSuccess(p: LemonSqueezyWebhookPayload): Promise<void> {
+    return this.webhookService.handlePaymentSuccess(p);
   }
 
-  /**
-   * Handle subscription.payment.failed: mark subscription as unpaid.
-   */
-  private async handlePaymentFailed(
-    data: SafepaySubscriptionWebhookPayload['data'],
-  ): Promise<void> {
-    const client = this.supabaseService.getAdminClient();
-    const safepaySubId = data.id;
-
-    if (!safepaySubId) return;
-
-    const { data: rawSub } = await client
-      .from('user_subscriptions')
-      .select('id')
-      .eq('safepay_subscription_id', safepaySubId)
-      .maybeSingle();
-
-    if (!rawSub) return;
-
-    const sub = rawSub as unknown as { id: string };
-
-    await client
-      .from('user_subscriptions')
-      .update({
-        status: SubscriptionStatus.UNPAID,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', sub.id);
-
-    await this.logEvent(sub.id, 'subscription.payment.failed', data);
-    this.logger.warn(`Payment failed for subscription ${sub.id}`);
+  /** @see SubscriptionsWebhookService.handlePaymentFailed */
+  async handlePaymentFailed(p: LemonSqueezyWebhookPayload): Promise<void> {
+    return this.webhookService.handlePaymentFailed(p);
   }
 
-  /**
-   * Handle subscription.canceled: mark subscription as cancelled.
-   */
-  private async handleSubscriptionCancelled(
-    data: SafepaySubscriptionWebhookPayload['data'],
-  ): Promise<void> {
-    const client = this.supabaseService.getAdminClient();
-    const safepaySubId = data.id;
-
-    if (!safepaySubId) return;
-
-    const { data: rawSub } = await client
-      .from('user_subscriptions')
-      .select('id')
-      .eq('safepay_subscription_id', safepaySubId)
-      .maybeSingle();
-
-    if (!rawSub) return;
-
-    const sub = rawSub as unknown as { id: string };
-
-    await client
-      .from('user_subscriptions')
-      .update({
-        status: SubscriptionStatus.CANCELLED,
-        cancelled_at:
-          safepayTimestampToISO(data.canceled_at) || new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', sub.id);
-
-    await this.logEvent(sub.id, 'subscription.canceled', data);
+  /** @see SubscriptionsWebhookService.handlePaymentRecovered */
+  async handlePaymentRecovered(p: LemonSqueezyWebhookPayload): Promise<void> {
+    return this.webhookService.handlePaymentRecovered(p);
   }
 
-  /**
-   * Handle subscription.ended: mark subscription as ended (terminal state).
-   */
-  private async handleSubscriptionEnded(
-    data: SafepaySubscriptionWebhookPayload['data'],
-  ): Promise<void> {
-    const client = this.supabaseService.getAdminClient();
-    const safepaySubId = data.id;
-
-    if (!safepaySubId) return;
-
-    const { data: rawSub } = await client
-      .from('user_subscriptions')
-      .select('id')
-      .eq('safepay_subscription_id', safepaySubId)
-      .maybeSingle();
-
-    if (!rawSub) return;
-
-    const sub = rawSub as unknown as { id: string };
-
-    await client
-      .from('user_subscriptions')
-      .update({
-        status: SubscriptionStatus.ENDED,
-        ended_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', sub.id);
-
-    await this.logEvent(sub.id, 'subscription.ended', data);
+  /** @see SubscriptionsWebhookService.handleSubscriptionCancelled */
+  async handleSubscriptionCancelled(p: LemonSqueezyWebhookPayload): Promise<void> {
+    return this.webhookService.handleSubscriptionCancelled(p);
   }
 
-  /**
-   * Handle subscription.paused: mark subscription as paused.
-   */
-  private async handleSubscriptionPaused(
-    data: SafepaySubscriptionWebhookPayload['data'],
-  ): Promise<void> {
-    const client = this.supabaseService.getAdminClient();
-    const safepaySubId = data.id;
-
-    if (!safepaySubId) return;
-
-    const { data: rawSub } = await client
-      .from('user_subscriptions')
-      .select('id')
-      .eq('safepay_subscription_id', safepaySubId)
-      .maybeSingle();
-
-    if (!rawSub) return;
-
-    const sub = rawSub as unknown as { id: string };
-
-    await client
-      .from('user_subscriptions')
-      .update({
-        status: SubscriptionStatus.PAUSED,
-        paused_at:
-          safepayTimestampToISO(data.paused_at) || new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', sub.id);
-
-    await this.logEvent(sub.id, 'subscription.paused', data);
-  }
-
-  /**
-   * Handle subscription.resumed: reactivate paused subscription.
-   */
-  private async handleSubscriptionResumed(
-    data: SafepaySubscriptionWebhookPayload['data'],
-  ): Promise<void> {
-    const client = this.supabaseService.getAdminClient();
-    const safepaySubId = data.id;
-
-    if (!safepaySubId) return;
-
-    const { data: rawSub } = await client
-      .from('user_subscriptions')
-      .select('id')
-      .eq('safepay_subscription_id', safepaySubId)
-      .maybeSingle();
-
-    if (!rawSub) return;
-
-    const sub = rawSub as unknown as { id: string };
-
-    await client
-      .from('user_subscriptions')
-      .update({
-        status: SubscriptionStatus.ACTIVE,
-        paused_at: null,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', sub.id);
-
-    await this.logEvent(sub.id, 'subscription.resumed', data);
-  }
-
-  /**
-   * Log a subscription lifecycle event to the subscription_events table.
-   *
-   * @param subscriptionId - UUID of the user_subscriptions record
-   * @param eventType - Event type string (e.g., 'subscription.created')
-   * @param eventData - Raw Safepay event data for debugging
-   * @param extra - Optional billing cycle and amount overrides
-   */
-  private async logEvent(
-    subscriptionId: string,
-    eventType: string,
-    eventData: unknown,
-    extra?: { billingCycle?: number; amount?: number },
-  ): Promise<void> {
-    const client = this.supabaseService.getAdminClient();
-    await client.from('subscription_events').insert({
-      subscription_id: subscriptionId,
-      event_type: eventType,
-      safepay_event_data: eventData as Record<string, unknown>,
-      billing_cycle: extra?.billingCycle ?? null,
-      amount: extra?.amount ?? null,
-      status:
-        ((eventData as Record<string, unknown>)?.status as string) ?? null,
-    });
+  /** @see SubscriptionsWebhookService.handleSubscriptionExpired */
+  async handleSubscriptionExpired(p: LemonSqueezyWebhookPayload): Promise<void> {
+    return this.webhookService.handleSubscriptionExpired(p);
   }
 }

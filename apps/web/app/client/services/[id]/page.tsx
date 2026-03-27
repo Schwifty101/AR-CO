@@ -15,7 +15,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
-import { Scale } from 'lucide-react';
+import { Scale, CreditCard } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/lib/auth/use-auth';
 import { Button } from '@/components/ui/button';
@@ -32,6 +32,7 @@ import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   getRegistrationById,
+  initiatePayment,
   type ServiceRegistrationResponse,
 } from '@/lib/api/service-registrations';
 import {
@@ -68,6 +69,18 @@ export default function ServiceRegistrationDetailPage() {
   const [error, setError] = useState<string | null>(null);
 
   const registrationId = params.id as string;
+  const [isPayingNow, setIsPayingNow] = useState(false);
+
+  const handlePayNow = async () => {
+    try {
+      setIsPayingNow(true);
+      const { checkoutUrl } = await initiatePayment(registrationId);
+      window.location.href = checkoutUrl;
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to initiate payment');
+      setIsPayingNow(false);
+    }
+  };
 
   // Fetch registration on mount
   useEffect(() => {
@@ -268,6 +281,26 @@ export default function ServiceRegistrationDetailPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Payment Card — shown when payment is pending */}
+      {registration.paymentStatus === ServiceRegistrationPaymentStatus.PENDING && (
+        <Card className="border-yellow-500/50 bg-yellow-500/5">
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <CreditCard className="h-5 w-5 text-yellow-600" />
+              Payment Required
+            </CardTitle>
+            <CardDescription>
+              Complete your payment to begin processing your service registration.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button onClick={handlePayNow} disabled={isPayingNow} size="lg">
+              {isPayingNow ? 'Redirecting to checkout...' : 'Pay Now'}
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Linked Case */}
       {registration.caseId ? (

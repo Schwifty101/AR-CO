@@ -4,8 +4,7 @@
  * Exposes REST endpoints for subscription management:
  * - Public: List plans
  * - Client: Subscribe, view my subscription, cancel
- * - Admin/Staff: List all subscriptions, view detail, sync plans, cancel
- * - Webhook: Safepay subscription lifecycle events
+ * - Admin/Staff: List all subscriptions, view detail, cancel
  *
  * @module SubscriptionsModule
  *
@@ -22,12 +21,6 @@
  *
  * // Admin - list all subscriptions
  * GET /api/subscriptions?status=active&page=1&limit=20
- *
- * // Admin - sync plan to Safepay
- * POST /api/subscriptions/plans/:id/sync
- *
- * // Safepay webhook
- * POST /api/subscriptions/webhook/safepay
  * ```
  */
 
@@ -39,9 +32,6 @@ import {
   Param,
   Body,
   Query,
-  Headers,
-  HttpCode,
-  HttpStatus,
 } from '@nestjs/common';
 import { Public } from '../common/decorators/public.decorator';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -50,7 +40,6 @@ import { UserType } from '../common/enums/user-type.enum';
 import { SubscriptionStatus } from '@repo/shared';
 import type { AuthUser } from '../common/interfaces/auth-user.interface';
 import { SubscriptionsService } from './subscriptions.service';
-import type { SafepaySubscriptionWebhookPayload } from './subscriptions.types';
 
 /**
  * Subscriptions REST API controller.
@@ -117,33 +106,6 @@ export class SubscriptionsController {
   @Get('my-subscription')
   async getMySubscription(@CurrentUser() user: AuthUser) {
     return this.subscriptionsService.getMySubscription(user.id);
-  }
-
-  /**
-   * Safepay subscription webhook handler (public, verified by signature).
-   *
-   * @param body - Safepay webhook payload
-   * @param headers - HTTP headers containing X-SFPY-SIGNATURE
-   * @returns Acknowledgment
-   *
-   * @example
-   * ```bash
-   * # Safepay sends this automatically
-   * POST /api/subscriptions/webhook/safepay
-   * ```
-   */
-  @Public()
-  @Post('webhook/safepay')
-  @HttpCode(HttpStatus.OK)
-  async handleWebhook(
-    @Body() body: unknown,
-    @Headers() headers: Record<string, string>,
-  ) {
-    await this.subscriptionsService.handleWebhook(
-      body as SafepaySubscriptionWebhookPayload,
-      headers,
-    );
-    return { received: true };
   }
 
   /**
@@ -221,24 +183,50 @@ export class SubscriptionsController {
   }
 
   /**
-   * Sync a local plan to Safepay (admin only, one-time operation).
+   * Resume a cancelled subscription (client only).
    *
-   * Creates the plan on Safepay and stores the returned plan token.
-   * Idempotent - returns existing token if already synced.
+   * Lifts the cancellation on LemonSqueezy and restores ACTIVE status locally.
+   * Only subscriptions in CANCELLED state can be resumed (not ENDED).
    *
-   * @param id - UUID of the subscription_plans record
-   * @returns Safepay plan token
+   * @param id - UUID of the user_subscriptions record
+   * @param user - Authenticated client user
+   * @returns Success confirmation
    *
    * @example
    * ```bash
-   * curl -X POST -H "Authorization: Bearer <token>" \
-   *   http://localhost:4000/api/subscriptions/plans/plan-uuid/sync
+   * curl -X PATCH -H "Authorization: Bearer <token>" \
+   *   http://localhost:4000/api/subscriptions/sub-uuid/resume
    * ```
    */
-  @Roles(UserType.ADMIN)
-  @Post('plans/:id/sync')
-  async syncPlan(@Param('id') id: string) {
-    const planToken = await this.subscriptionsService.syncPlanToSafepay(id);
-    return { planToken };
+  @Roles(UserType.CLIENT)
+  @Patch(':id/resume')
+  async resumeSubscription(
+    @Param('id') id: string,
+    @CurrentUser() user: AuthUser,
+  ) {
+    await this.subscriptionsService.resumeSubscription(id, user);
+    return { success: true };
   }
+
+  /**
+   * Get real-time subscription status for the current user (client only).
+   *
+   * Checks local DB status and, when available, fetches live status from
+   * LemonSqueezy for an up-to-date comparison.
+   *
+   * @param user - Authenticated client user
+   * @returns Local status, live LS status, period end, and ends_at
+   *
+   * @example
+   * ```bash
+   * curl -H "Authorization: Bearer <token>" \
+   *   http://localhost:4000/api/subscriptions/me/status
+   * ```
+   */
+  @Roles(UserType.CLIENT)
+  @Get('me/status')
+  async getMySubscriptionStatus(@CurrentUser() user: AuthUser) {
+    return this.subscriptionsService.getMySubscriptionStatus(user.id);
+  }
+
 }

@@ -20,6 +20,7 @@ import { DocumentsModule } from './documents/documents.module';
 import { ContentModule } from './content/content.module';
 import { AuditModule } from './audit/audit.module';
 import { AdminModule } from './admin/admin.module';
+import { WebhooksModule } from './payments/webhooks.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { AdminModule } from './admin/admin.module';
     ContentModule,
     AuditModule,
     AdminModule,
+    WebhooksModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -202,3 +202,21 @@ export enum InteractionType {
   WHATSAPP = 'whatsapp',
   OTHER = 'other',
 }
+
+/** Invoice lifecycle status — matches DB invoice_status enum */
+export enum InvoiceStatus {
+  DRAFT = 'draft',
+  SENT = 'sent',
+  PAID = 'paid',
+  OVERDUE = 'overdue',
+  CANCELLED = 'cancelled',
+}
+
+/** Payment method used for a transaction */
+export enum PaymentMethod {
+  CARD = 'card',
+  MOBILE_WALLET = 'mobile_wallet',
+  BANK_TRANSFER = 'bank_transfer',
+  CASH = 'cash',
+  OTHER = 'other',
+}

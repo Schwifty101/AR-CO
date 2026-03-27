@@ -3,7 +3,7 @@
  *
  * Manages consultation booking lifecycle for guest users:
  * - Booking creation (guest intake form)
- * - Payment processing via Safepay SDK
+ * - Payment processing via LemonSqueezy
  * - Cal.com webhook integration for appointment scheduling
  * - Status tracking and cancellation (staff)
  *
@@ -28,7 +28,7 @@ import { PaymentsModule } from '../payments/payments.module';
  * Consultations feature module
  *
  * Registers controller and service.
- * Imports PaymentsModule to access SafepayService for payment processing.
+ * Imports PaymentsModule to access LemonSqueezyService for payment processing.
  * Exports service for potential use in other modules.
  */
 @Module({

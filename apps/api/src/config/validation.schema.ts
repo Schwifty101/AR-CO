@@ -101,6 +101,63 @@ export const validationSchema = Joi.object({
       'ADMIN_EMAILS must be a comma-separated string of email addresses',
   }),
 
+  // LemonSqueezy Configuration
+  LEMONSQUEEZY_API_KEY: Joi.string().required().messages({
+    'any.required':
+      'LEMONSQUEEZY_API_KEY is required. Get it from LemonSqueezy Dashboard > Settings > API keys',
+  }),
+  LEMONSQUEEZY_STORE_ID: Joi.string()
+    .when('NODE_ENV', {
+      is: 'production',
+      then: Joi.required(),
+      otherwise: Joi.optional().default(''),
+    })
+    .messages({
+      'any.required':
+        'LEMONSQUEEZY_STORE_ID is required in production. Get it from LemonSqueezy Dashboard > Settings > Stores',
+    }),
+  LEMONSQUEEZY_WEBHOOK_SECRET: Joi.string()
+    .when('NODE_ENV', {
+      is: 'production',
+      then: Joi.required(),
+      otherwise: Joi.optional().default(''),
+    })
+    .messages({
+      'any.required':
+        'LEMONSQUEEZY_WEBHOOK_SECRET is required in production. Get it from LemonSqueezy Dashboard > Settings > Webhooks',
+    }),
+  LEMONSQUEEZY_SUBSCRIPTION_VARIANT_ID: Joi.string()
+    .when('NODE_ENV', {
+      is: 'production',
+      then: Joi.required(),
+      otherwise: Joi.optional().default(''),
+    })
+    .messages({
+      'any.required':
+        'LEMONSQUEEZY_SUBSCRIPTION_VARIANT_ID is required in production.',
+    }),
+  LEMONSQUEEZY_CONSULTATION_VARIANT_ID: Joi.string()
+    .when('NODE_ENV', {
+      is: 'production',
+      then: Joi.required(),
+      otherwise: Joi.optional().default(''),
+    })
+    .messages({
+      'any.required':
+        'LEMONSQUEEZY_CONSULTATION_VARIANT_ID is required in production.',
+    }),
+  LEMONSQUEEZY_SERVICE_VARIANT_ID: Joi.string()
+    .when('NODE_ENV', {
+      is: 'production',
+      then: Joi.required(),
+      otherwise: Joi.optional().default(''),
+    })
+    .messages({
+      'any.required':
+        'LEMONSQUEEZY_SERVICE_VARIANT_ID is required in production.',
+    }),
+  FRONTEND_URL: Joi.string().uri().default('http://localhost:3000'),
+
   // Google APIs Configuration (Optional for development)
   GOOGLE_SERVICE_ACCOUNT_KEY: Joi.string()
     .when('NODE_ENV', {

@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { ConsultationsService } from './consultations.service';
 import { SupabaseService } from '../database/supabase.service';
-import { SafepayService } from '../payments/safepay.service';
+import { LemonSqueezyService } from '../payments/lemonsqueezy.service';
 import {
   ConsultationBookingStatus,
   ConsultationPaymentStatus,
@@ -25,10 +25,8 @@ describe('ConsultationsService', () => {
     from: jest.fn(),
   };
 
-  const mockSafepayService = {
-    createPaymentSession: jest.fn(),
-    generateCheckoutUrl: jest.fn(),
-    verifyPayment: jest.fn(),
+  const mockLemonSqueezyService = {
+    createOneTimeCheckout: jest.fn(),
   };
 
   // ---- Fixtures ----
@@ -47,8 +45,8 @@ describe('ConsultationsService', () => {
     additional_notes: 'Urgent matter',
     consultation_fee: CONSULTATION_FEE_PKR,
     payment_status: ConsultationPaymentStatus.PENDING,
-    safepay_tracker_token: null,
-    safepay_transaction_ref: null,
+    lemonsqueezy_checkout_id: null,
+    lemonsqueezy_order_id: null,
     calcom_booking_uid: null,
     calcom_booking_id: null,
     booking_date: null,
@@ -70,8 +68,8 @@ describe('ConsultationsService', () => {
           },
         },
         {
-          provide: SafepayService,
-          useValue: mockSafepayService,
+          provide: LemonSqueezyService,
+          useValue: mockLemonSqueezyService,
         },
       ],
     }).compile();

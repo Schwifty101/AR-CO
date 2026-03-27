@@ -5,8 +5,7 @@ import { App } from 'supertest/types';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { ConsultationsModule } from '../src/consultations/consultations.module';
 import { ConsultationsService } from '../src/consultations/consultations.service';
-import { SafepayService } from '../src/payments/safepay.service';
-import { SafepaySubscriptionService } from '../src/payments/safepay-subscription.service';
+import { LemonSqueezyService } from '../src/payments/lemonsqueezy.service';
 import { JwtAuthGuard } from '../src/common/guards/jwt-auth.guard';
 import { RolesGuard } from '../src/common/guards/roles.guard';
 import { SupabaseService } from '../src/database/supabase.service';
@@ -43,8 +42,8 @@ const mockConsultationResponse = {
   additionalNotes: null,
   consultationFee: 50000,
   paymentStatus: 'pending',
-  safepayTrackerToken: null,
-  safepayTransactionRef: null,
+  lemonsqueezyCheckoutId: null,
+  lemonsqueezyOrderId: null,
   calcomBookingUid: null,
   calcomBookingId: null,
   bookingDate: null,
@@ -86,8 +85,7 @@ describe('ConsultationsController (e2e)', () => {
       ...mockConsultationResponse,
       bookingStatus: 'cancelled',
     }),
-    initiatePayment: jest.fn().mockResolvedValue({}),
-    confirmPayment: jest.fn().mockResolvedValue({}),
+    initiatePayment: jest.fn().mockResolvedValue({ checkoutUrl: 'https://checkout.lemonsqueezy.com/test' }),
   };
 
   beforeAll(async () => {
@@ -99,9 +97,7 @@ describe('ConsultationsController (e2e)', () => {
     })
       .overrideProvider(ConsultationsService)
       .useValue(mockConsultationsService)
-      .overrideProvider(SafepayService)
-      .useValue({})
-      .overrideProvider(SafepaySubscriptionService)
+      .overrideProvider(LemonSqueezyService)
       .useValue({})
       .overrideProvider(SupabaseService)
       .useValue({})
