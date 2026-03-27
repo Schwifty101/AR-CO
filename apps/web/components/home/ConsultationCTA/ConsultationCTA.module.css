@@ -1,0 +1,238 @@
+/* ============================================================
+   ConsultationCTA — Editorial conversion section
+   Matches the homepage luxury law-firm aesthetic.
+   Transparent background — page dark layer shows through.
+   ============================================================ */
+
+.section {
+  position: relative;
+  padding: 6rem 0;
+  overflow: hidden;
+  z-index: 10;
+}
+
+/* ─── Container ─── */
+.container {
+  max-width: 1400px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 4rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0;
+}
+
+/* ─── Gold rule — top and bottom ─── */
+.rule {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(212, 175, 55, 0.3) 50%,
+    transparent 100%
+  );
+  margin: 2.5rem 0;
+}
+
+/* ─── Eyebrow ─── */
+.eyebrow {
+  display: block;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 0.65rem;
+  font-weight: 500;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: var(--heritage-gold);
+  opacity: 0.7;
+  margin-bottom: 1.5rem;
+}
+
+/* ─── Heading ─── */
+.heading {
+  font-family: 'Lora', Georgia, serif;
+  font-size: clamp(2.2rem, 5vw, 4.5rem);
+  font-weight: 300;
+  line-height: 1.2;
+  letter-spacing: -0.03em;
+  color: var(--heritage-cream);
+  margin: 0 0 1.5rem;
+  max-width: 18ch;
+}
+
+.heading em {
+  font-style: italic;
+  font-weight: 400;
+  color: var(--heritage-gold);
+}
+
+/* ─── Subtext ─── */
+.subtext {
+  font-family: 'Lora', 'Times New Roman', serif;
+  font-size: clamp(0.95rem, 1.3vw, 1.15rem);
+  line-height: 1.65;
+  color: rgba(249, 248, 246, 0.55);
+  max-width: 52ch;
+  margin: 0 0 3rem;
+}
+
+/* ─── CTA Row ─── */
+.ctaRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+}
+
+/* ─── Primary CTA (Book Consultation) ─── */
+.primaryCta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 1.1rem 2.75rem;
+  border: 1px solid var(--heritage-gold);
+  background: transparent;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  border-radius: 100px;
+  transition: box-shadow 0.4s ease;
+  text-decoration: none;
+}
+
+.primaryCta::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--heritage-gold);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.5s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.primaryCta:hover::before {
+  transform: scaleX(1);
+}
+
+.primaryCta:hover {
+  box-shadow: 0 8px 40px rgba(212, 175, 55, 0.2);
+}
+
+.primaryCta span {
+  position: relative;
+  z-index: 1;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--heritage-gold);
+  transition: color 0.4s ease;
+}
+
+.primaryCta:hover span {
+  color: var(--wood-espresso);
+}
+
+/* ─── Secondary CTAs (Call, WhatsApp) ─── */
+.secondaryCta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 1.1rem 2.25rem;
+  border: 1px solid rgba(249, 248, 246, 0.12);
+  background: transparent;
+  border-radius: 100px;
+  text-decoration: none;
+  transition: border-color 0.3s ease, background 0.3s ease;
+}
+
+.secondaryCta:hover {
+  border-color: rgba(249, 248, 246, 0.3);
+  background: rgba(249, 248, 246, 0.04);
+}
+
+.secondaryCta span {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: rgba(249, 248, 246, 0.65);
+  transition: color 0.3s ease;
+}
+
+.secondaryCta:hover span {
+  color: var(--heritage-cream);
+}
+
+/* ─── Icon ─── */
+.ctaIcon {
+  width: 14px;
+  height: 14px;
+  position: relative;
+  z-index: 1;
+  flex-shrink: 0;
+}
+
+.primaryCta .ctaIcon {
+  color: var(--heritage-gold);
+  transition: color 0.4s ease;
+}
+
+.primaryCta:hover .ctaIcon {
+  color: var(--wood-espresso);
+}
+
+.secondaryCta .ctaIcon {
+  color: rgba(249, 248, 246, 0.5);
+  transition: color 0.3s ease;
+}
+
+.secondaryCta:hover .ctaIcon {
+  color: var(--heritage-cream);
+}
+
+/* ─── Responsive ─── */
+@media (max-width: 1024px) {
+  .container {
+    padding: 0 2.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .section {
+    padding: 4rem 0;
+  }
+
+  .container {
+    padding: 0 1.5rem;
+  }
+
+  .ctaRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .primaryCta,
+  .secondaryCta {
+    justify-content: center;
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 0 1.25rem;
+  }
+}
+
+/* ─── Reduced Motion ─── */
+@media (prefers-reduced-motion: reduce) {
+  .primaryCta::before {
+    transition: none !important;
+  }
+}

@@ -276,6 +276,11 @@ export default function HeroV2({ onProgress, onReady, playing = false }: HeroV2P
   return (
     <section className={styles.hero} data-hero-section="true">
 
+      {/* ── Primary SEO H1 — visually hidden, required for keyword-intent signal ── */}
+      <h1 className="sr-only">
+        Law Firm in Islamabad for Businesses and Individuals Across Pakistan
+      </h1>
+
       {/* ── Background video — plays once, holds last frame ─────────────── */}
       {/* src is set programmatically — muted + playsInline required for mobile autoplay */}
       {/* eslint-disable-next-line jsx-a11y/media-has-caption */}

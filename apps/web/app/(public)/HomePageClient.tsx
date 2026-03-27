@@ -16,6 +16,9 @@ const LegalServices = dynamic(() => import('@/components/home/LegalServices/Lega
 const AboutSection = dynamic(() => import('@/components/home/about/AboutSection'), { ssr: false })
 const ClientLogosCarousel = dynamic(() => import('@/components/home/ClientLogosCarousel'), { ssr: false })
 const Testimonials = dynamic(() => import('@/components/home/testimonials/Testimonials'), { ssr: false })
+const ConsultationCTA = dynamic(() => import('@/components/home/ConsultationCTA/ConsultationCTA'), { ssr: false })
+const FAQSection = dynamic(() => import('@/components/home/FAQSection/FAQSection'), { ssr: false })
+const TrustStats = dynamic(() => import('@/components/home/TrustStats/TrustStats'), { ssr: false })
 
 // ─── Page-level background text ───────────────────────────────────────────────
 // Quotes and headlines scattered through non-hero sections.
@@ -167,10 +170,14 @@ export default function HomePageClient() {
 
                 {/* ── Page sections ────────────────────────────────────────────────── */}
                 <Hero onProgress={handleVideoProgress} onReady={handleVideoReady} playing={videoReady} />
+                <TrustStats />
                 <AboutSection />
                 <LegalServices />
+                
                 <ClientLogosCarousel />
                 <Testimonials />
+                <FAQSection />
+                <ConsultationCTA />
             </main>
         </>
     )

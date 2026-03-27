@@ -1,5 +1,6 @@
 import type React from "react"
 import type { Metadata } from "next"
+import { Analytics } from "@vercel/analytics/next"
 import { AuthProvider } from "@/lib/auth/auth-context"
 import { PracticeAreasProvider } from "@/components/practice-areas"
 import PracticeAreasOverlayWrapper from "@/components/practice-areas/PracticeAreasOverlayWrapper"
@@ -64,8 +65,8 @@ export default function RootLayout({
         {/* Preload hero video so download starts immediately with the HTML,
             in parallel with JS chunk downloads. Mobile uses a smaller 1080p file.
             media attr ensures each device only preloads the file it will use. */}
-        <link rel="preload" href="/banner/hero-bg.mp4" as="fetch" crossOrigin="anonymous" media="(min-width: 769px)" />
-        <link rel="preload" href="/banner/hero-bg-mobile.mp4" as="video" media="(max-width: 768px)" />
+        <link rel="preload" href="/banner/hero-bg.mp4" as="fetch" crossOrigin="anonymous" media="(min-width: 769px)" fetchPriority="high" />
+        <link rel="preload" href="/banner/hero-bg-mobile.mp4" as="video" media="(max-width: 768px)" fetchPriority="high" />
         <link
           rel="preload"
           href="/fonts/lora/Lora-VariableItalic.woff2"
@@ -99,6 +100,7 @@ export default function RootLayout({
           </PracticeAreasProvider>
         </AuthProvider>
         <Toaster />
+        <Analytics />
       </body>
     </html>
   )

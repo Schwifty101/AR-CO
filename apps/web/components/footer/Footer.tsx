@@ -10,6 +10,7 @@ import { SIDEPANEL_FOOTER_NAV_ITEMS } from '../data/navData'
 import { usePracticeAreasOverlay } from '../practice-areas'
 import { useFacilitationOverlay } from '../facilitation'
 import { useAboutOverlay } from '../about'
+import { trackCTAClick } from '@/lib/analytics'
 import styles from './Footer.module.css'
 
 /**
@@ -227,15 +228,30 @@ export default function Footer() {
                   </p>
                   <p className={styles.contactItem}>
                     <span className={styles.contactPrefix}>E:</span>
-                    info@arco.law
+                    <a
+                      href="mailto:info@arco.law"
+                      onClick={() => trackCTAClick('email', 'footer')}
+                    >
+                      info@arco.law
+                    </a>
                   </p>
                   <p className={styles.contactItem}>
                     <span className={styles.contactPrefix}>P:</span>
-                    <a href="tel:+92512252144">+92 51 2252144</a>
+                    <a
+                      href="tel:+92512252144"
+                      onClick={() => trackCTAClick('call', 'footer')}
+                    >
+                      +92 51 2252144
+                    </a>
                   </p>
                   <p className={styles.contactItem}>
                     <span className={styles.contactPrefix}>M:</span>
-                    <a href="tel:+923060599916">+92 306 0599916</a>
+                    <a
+                      href="tel:+923060599916"
+                      onClick={() => trackCTAClick('call', 'footer')}
+                    >
+                      +92 306 0599916
+                    </a>
                   </p>
                   <p className={styles.contactItem}>
                     <span className={styles.contactPrefix}>H:</span>

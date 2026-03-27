@@ -1,0 +1,212 @@
+/* ============================================================
+   FAQSection — Editorial accordion
+   Matches the homepage luxury law-firm aesthetic.
+   Two-column on desktop: sticky header left, accordion right.
+   ============================================================ */
+
+.section {
+  position: relative;
+  padding: 8rem 0 6rem;
+  overflow: hidden;
+  z-index: 10;
+}
+
+/* ─── Container: two-column grid on desktop ─── */
+.container {
+  max-width: 1400px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 4rem;
+  display: grid;
+  grid-template-columns: 1fr 1.4fr;
+  gap: 0 6rem;
+  align-items: start;
+}
+
+/* ─── Header — sticky on desktop ─── */
+.header {
+  position: sticky;
+  top: 8rem;
+}
+
+/* ─── Eyebrow ─── */
+.eyebrow {
+  display: block;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 0.65rem;
+  font-weight: 500;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: var(--heritage-gold);
+  opacity: 0.7;
+  margin-bottom: 1.25rem;
+}
+
+/* ─── Heading ─── */
+.heading {
+  font-family: 'Lora', Georgia, serif;
+  font-size: clamp(2.5rem, 4vw, 4rem);
+  font-weight: 300;
+  line-height: 1.2;
+  letter-spacing: -0.03em;
+  color: var(--heritage-cream);
+  margin: 0;
+}
+
+.heading em {
+  font-style: italic;
+  font-weight: 400;
+  color: var(--heritage-gold);
+}
+
+/* ─── Gold rule under header ─── */
+.header::after {
+  content: '';
+  display: block;
+  width: 100%;
+  height: 1px;
+  margin-top: 2rem;
+  background: linear-gradient(
+    90deg,
+    var(--heritage-gold) 0%,
+    rgba(212, 175, 55, 0.15) 100%
+  );
+}
+
+/* ─── Accordion list ─── */
+.list {
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid rgba(249, 248, 246, 0.08);
+  margin: 0;
+  padding: 0;
+}
+
+/* ─── Item ─── */
+.item {
+  border-bottom: 1px solid rgba(249, 248, 246, 0.08);
+}
+
+/* ─── Question button ─── */
+.question {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 2.5rem 1fr 1.5rem;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.75rem 0;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: opacity 0.25s ease;
+}
+
+.question:hover {
+  opacity: 0.85;
+}
+
+/* ─── Number ─── */
+.questionNumber {
+  font-family: 'Lora', Georgia, serif;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  color: var(--heritage-gold);
+  opacity: 0.4;
+  flex-shrink: 0;
+}
+
+/* ─── Question text ─── */
+.questionText {
+  font-family: 'Lora', 'Times New Roman', serif;
+  font-size: clamp(0.95rem, 1.2vw, 1.1rem);
+  font-weight: 400;
+  line-height: 1.45;
+  color: var(--heritage-cream);
+  transition: color 0.25s ease;
+}
+
+.itemOpen .questionText {
+  color: var(--heritage-gold);
+}
+
+/* ─── Toggle icon ─── */
+.icon {
+  font-family: 'Georgia', serif;
+  font-size: 1.1rem;
+  color: var(--heritage-gold);
+  opacity: 0.6;
+  justify-self: end;
+  line-height: 1;
+  user-select: none;
+  transition: opacity 0.25s ease;
+}
+
+.itemOpen .icon {
+  opacity: 1;
+}
+
+/* ─── Answer (Framer Motion controls height) ─── */
+.answer {
+  margin: 0;
+  padding: 0;
+}
+
+.answerText {
+  font-family: 'Lora', 'Times New Roman', serif;
+  font-size: clamp(0.88rem, 1.1vw, 1rem);
+  line-height: 1.7;
+  color: rgba(249, 248, 246, 0.6);
+  padding: 0 0 1.75rem 3.25rem;
+  margin: 0;
+}
+
+/* ─── Responsive ─── */
+@media (max-width: 1024px) {
+  .container {
+    padding: 0 2.5rem;
+    gap: 0 4rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .section {
+    padding: 6rem 0 4rem;
+  }
+
+  .container {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+    padding: 0 1.5rem;
+  }
+
+  .header {
+    position: static;
+  }
+
+  .answerText {
+    padding-left: 2.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 0 1.25rem;
+  }
+
+  .question {
+    grid-template-columns: 2rem 1fr 1.25rem;
+    padding: 1.4rem 0;
+  }
+
+  .answerText {
+    padding-left: 2rem;
+  }
+}
+
+/* ─── Reduced Motion ─── */
+@media (prefers-reduced-motion: reduce) {
+  .question {
+    transition: none !important;
+  }
+}
