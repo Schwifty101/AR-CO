@@ -1,8 +1,7 @@
 /**
- * Payments module providing SafepayService and SafepaySubscriptionService.
+ * Payments module providing LemonSqueezyService, InvoicesService, and payment controllers.
  *
- * Exports both services for use by ConsultationsModule, SubscriptionsModule,
- * ServiceRegistrationsModule, and any other module that needs payment gateway integration.
+ * Exports LemonSqueezyService and InvoicesService for use by other modules.
  *
  * @module PaymentsModule
  *
@@ -15,11 +14,14 @@
  * ```
  */
 import { Module } from '@nestjs/common';
-import { SafepayService } from './safepay.service';
-import { SafepaySubscriptionService } from './safepay-subscription.service';
+import { LemonSqueezyService } from './lemonsqueezy.service';
+import { InvoicesService } from './invoices.service';
+import { InvoicesController } from './invoices.controller';
+import { PaymentsController } from './payments.controller';
 
 @Module({
-  providers: [SafepayService, SafepaySubscriptionService],
-  exports: [SafepayService, SafepaySubscriptionService],
+  controllers: [InvoicesController, PaymentsController],
+  providers: [LemonSqueezyService, InvoicesService],
+  exports: [LemonSqueezyService, InvoicesService],
 })
 export class PaymentsModule {}

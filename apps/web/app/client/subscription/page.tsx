@@ -59,6 +59,7 @@ import {
 import {
   getMySubscription,
   cancelSubscription,
+  resumeSubscription,
   type SubscriptionDetail,
 } from '@/lib/api/subscriptions';
 import { SubscriptionStatus, BillingInterval } from '@repo/shared';
@@ -255,6 +256,7 @@ export default function ClientSubscriptionPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isCancelling, setIsCancelling] = useState(false);
+  const [isResuming, setIsResuming] = useState(false);
 
   /** Fetch subscription data */
   const loadSubscription = useCallback(async () => {
@@ -295,6 +297,23 @@ export default function ClientSubscriptionPage() {
     }
   };
 
+  /** Handle subscription resumption */
+  const handleResume = async () => {
+    if (!subscription) return;
+
+    try {
+      setIsResuming(true);
+      await resumeSubscription(subscription.id);
+      toast.success('Subscription resumed successfully');
+      await loadSubscription();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to resume subscription';
+      toast.error(message);
+    } finally {
+      setIsResuming(false);
+    }
+  };
+
   // Redirect to signin when session is lost
   if (!authLoading && !user) {
     router.push('/auth/signin');
@@ -308,6 +327,8 @@ export default function ClientSubscriptionPage() {
   const isInactive = subscription ? isInactiveStatus(subscription.status) : false;
   const canCancel = subscription
     && subscription.status === SubscriptionStatus.ACTIVE;
+  const canResume = subscription
+    && subscription.status === SubscriptionStatus.PAUSED;
 
   return (
     <div className="space-y-6">
@@ -465,6 +486,15 @@ export default function ClientSubscriptionPage() {
                       </AlertDialogFooter>
                     </AlertDialogContent>
                   </AlertDialog>
+                )}
+                {canResume && (
+                  <Button
+                    variant="outline"
+                    onClick={handleResume}
+                    disabled={isResuming}
+                  >
+                    {isResuming ? 'Resuming...' : 'Resume Subscription'}
+                  </Button>
                 )}
                 {isInactive && (
                   <Button onClick={() => router.push('/subscribe')}>

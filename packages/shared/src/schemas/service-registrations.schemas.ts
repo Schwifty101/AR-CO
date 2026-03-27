@@ -43,6 +43,8 @@ export const ServiceRegistrationResponseSchema = z.object({
   staffNotes: z.string().nullable(),
   caseId: z.string().uuid().nullable(),
   caseNumber: z.string().nullable(),
+  lemonsqueezyCheckoutId: z.string().nullable().optional(),
+  lemonsqueezyOrderId: z.string().nullable().optional(),
   createdAt: z.string(),
   updatedAt: z.string(),
 });

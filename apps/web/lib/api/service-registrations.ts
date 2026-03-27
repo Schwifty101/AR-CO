@@ -21,11 +21,7 @@
  *   phoneNumber: '+923001234567',
  * });
  *
- * const { checkoutUrl } = await initiatePayment(
- *   registration.id,
- *   'https://example.com/success',
- *   'https://example.com/cancel'
- * );
+ * const { checkoutUrl } = await initiatePayment(registration.id);
  * window.location.href = checkoutUrl;
  *
  * // Check status later (no auth)
@@ -109,36 +105,33 @@ export async function createRegistration(
 /**
  * Initiate payment for a service registration (PUBLIC - no auth required)
  *
- * Generates a Safepay checkout URL for the registration. Guest users can pay
- * without logging in.
+ * Creates a LemonSqueezy hosted checkout session for the registration fee.
+ * Guest users can pay without logging in. Redirect URL is configured server-side.
  *
  * @param registrationId - UUID of the registration
- * @param returnUrl - URL to redirect to after successful payment
- * @param cancelUrl - URL to redirect to if payment is cancelled
- * @returns Object containing Safepay checkout URL and registration ID
+ * @returns LemonSqueezy hosted checkout URL
  * @throws Error if request fails or registration not found
  *
  * @example
  * ```typescript
- * const { checkoutUrl, registrationId } = await initiatePayment(
- *   'reg-uuid',
- *   'https://example.com/payment-success',
- *   'https://example.com/payment-cancel'
- * );
- * window.location.href = checkoutUrl; // Redirect to Safepay
+ * const { checkoutUrl } = await initiatePayment('reg-uuid');
+ * window.location.href = checkoutUrl;
  * ```
  */
 export async function initiatePayment(
   registrationId: string,
-  returnUrl: string,
-  cancelUrl: string,
-): Promise<{ checkoutUrl: string; registrationId: string }> {
+  amountPkr?: number,
+  faqPath?: string,
+): Promise<{ checkoutUrl: string }> {
   const response = await fetch(`/api/service-registrations/${registrationId}/pay`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ returnUrl, cancelUrl }),
+    body: JSON.stringify({
+      ...(amountPkr !== undefined && { amount: amountPkr }),
+      ...(faqPath !== undefined && { faqPath }),
+    }),
   });
 
   if (!response.ok) {
@@ -146,7 +139,7 @@ export async function initiatePayment(
     throw new Error(error.message || 'Failed to initiate payment');
   }
 
-  return (await response.json()) as { checkoutUrl: string; registrationId: string };
+  return (await response.json()) as { checkoutUrl: string };
 }
 
 /**

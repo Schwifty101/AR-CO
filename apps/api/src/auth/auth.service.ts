@@ -153,7 +153,7 @@ export class AuthService {
       'client',
       dto.phoneNumber,
     );
-    await this.createClientProfile(authData.user.id);
+    await this.createClientProfile(authData.user.id, dto.email);
 
     await this.logAuthEvent(authData.user.id, 'SIGNUP', 'user', {
       provider: 'email',
@@ -285,7 +285,7 @@ export class AuthService {
       );
 
       if (userType === 'client') {
-        await this.createClientProfile(authUser.id);
+        await this.createClientProfile(authUser.id, authUser.email);
       }
 
       await this.logAuthEvent(authUser.id, 'SIGNUP', 'user', {
@@ -567,12 +567,14 @@ export class AuthService {
    *
    * Uses admin client to bypass RLS.
    */
-  private async createClientProfile(userProfileId: string): Promise<void> {
+  private async createClientProfile(userProfileId: string, email?: string): Promise<void> {
     const adminClient = this.supabaseService.getAdminClient();
 
-    const { error } = await adminClient.from('client_profiles').insert({
-      user_profile_id: userProfileId,
-    });
+    const { data: clientProfile, error } = await adminClient
+      .from('client_profiles')
+      .insert({ user_profile_id: userProfileId })
+      .select('id')
+      .single();
 
     if (error) {
       this.logger.error(
@@ -581,6 +583,18 @@ export class AuthService {
       throw new InternalServerErrorException(
         'Unable to create client profile. Please try again.',
       );
+    }
+
+    // Link any guest invoices stored by email to this new client profile
+    if (email && clientProfile) {
+      const { error: linkError } = await adminClient
+        .from('invoices')
+        .update({ client_profile_id: clientProfile.id })
+        .eq('email', email)
+        .is('client_profile_id', null);
+      if (linkError) {
+        this.logger.warn(`Failed to link guest invoices for ${email}: ${linkError.message}`);
+      }
     }
   }
 

@@ -2,7 +2,6 @@ import type { z } from 'zod';
 import type {
   CreateConsultationSchema,
   ConsultationPaymentInitResponseSchema,
-  ConfirmConsultationPaymentSchema,
   ConsultationStatusCheckSchema,
   ConsultationResponseSchema,
   ConsultationStatusResponseSchema,
@@ -13,11 +12,8 @@ import type {
 /** Data for creating a new consultation booking */
 export type CreateConsultationData = z.infer<typeof CreateConsultationSchema>;
 
-/** Payment initiation response with Safepay credentials */
+/** Payment initiation response with LemonSqueezy checkout URL */
 export type ConsultationPaymentInitResponse = z.infer<typeof ConsultationPaymentInitResponseSchema>;
-
-/** Data for confirming a payment */
-export type ConfirmConsultationPaymentData = z.infer<typeof ConfirmConsultationPaymentSchema>;
 
 /** Guest status check query parameters */
 export type ConsultationStatusCheckData = z.infer<typeof ConsultationStatusCheckSchema>;

@@ -18,17 +18,9 @@ export const CreateConsultationSchema = z.object({
   additionalNotes: z.string().max(2000).optional(),
 });
 
-/** Schema for payment initiation response (returned to frontend for popup checkout) */
+/** Schema for payment initiation response (LemonSqueezy hosted checkout) */
 export const ConsultationPaymentInitResponseSchema = z.object({
   checkoutUrl: z.string().url(),
-  amount: z.number(),
-  currency: z.string(),
-  orderId: z.string(),
-});
-
-/** Schema for confirming payment (frontend sends tracker after onPayment callback) */
-export const ConfirmConsultationPaymentSchema = z.object({
-  trackerToken: z.string().min(1, 'Tracker token is required'),
 });
 
 /** Schema for guest status check query parameters */
@@ -52,8 +44,8 @@ export const ConsultationResponseSchema = z.object({
   additionalNotes: z.string().nullable(),
   consultationFee: z.number(),
   paymentStatus: z.nativeEnum(ConsultationPaymentStatus),
-  safepayTrackerToken: z.string().nullable(),
-  safepayTransactionRef: z.string().nullable(),
+  lemonsqueezyCheckoutId: z.string().nullable(),
+  lemonsqueezyOrderId: z.string().nullable(),
   calcomBookingUid: z.string().nullable(),
   calcomBookingId: z.number().nullable(),
   bookingDate: z.string().nullable(),

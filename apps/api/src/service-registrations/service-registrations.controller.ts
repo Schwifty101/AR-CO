@@ -247,6 +247,31 @@ export class ServiceRegistrationsController {
    * }
    * ```
    */
+  /**
+   * Initiate LemonSqueezy payment for a service registration (PUBLIC - no auth required)
+   *
+   * @param id - The registration ID
+   * @returns LemonSqueezy hosted checkout URL
+   *
+   * @example
+   * ```typescript
+   * POST /api/service-registrations/registration-uuid-123/pay
+   *
+   * Response: { checkoutUrl: "https://checkout.lemonsqueezy.com/..." }
+   * ```
+   */
+  @Post(':id/pay')
+  @Public()
+  @UseGuards(ThrottlerGuard)
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
+  @HttpCode(HttpStatus.OK)
+  async initiatePayment(
+    @Param('id') id: string,
+    @Body() body: { amount?: number; faqPath?: string },
+  ): Promise<{ checkoutUrl: string }> {
+    return this.serviceRegistrationsService.initiatePayment(id, body?.amount, body?.faqPath);
+  }
+
   @Patch(':id/status')
   @Roles(UserType.ADMIN, UserType.STAFF)
   @HttpCode(HttpStatus.OK)

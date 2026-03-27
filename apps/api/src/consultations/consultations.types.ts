@@ -47,7 +47,7 @@ export interface CalcomWebhookPayload {
  * - practice_area, urgency, issue_summary, etc.: Case details
  * - consultation_fee: Fixed fee in PKR (50000)
  * - payment_status: 'pending' | 'paid' | 'failed' | 'refunded'
- * - safepay_tracker_token, safepay_transaction_ref: Payment tracking
+ * - lemonsqueezy_checkout_id, lemonsqueezy_order_id: Payment tracking
  * - calcom_booking_uid, calcom_booking_id: Cal.com integration
  * - booking_date, booking_time, meeting_link: Scheduled consultation
  * - booking_status: Lifecycle status
@@ -67,8 +67,8 @@ export interface ConsultationRow {
   additional_notes: string | null;
   consultation_fee: number;
   payment_status: string;
-  safepay_tracker_token: string | null;
-  safepay_transaction_ref: string | null;
+  lemonsqueezy_checkout_id: string | null;
+  lemonsqueezy_order_id: string | null;
   calcom_booking_uid: string | null;
   calcom_booking_id: number | null;
   booking_date: string | null;
@@ -112,8 +112,8 @@ export function mapConsultationRow(row: ConsultationRow): ConsultationResponse {
     consultationFee: row.consultation_fee,
     paymentStatus:
       row.payment_status as unknown as ConsultationResponse['paymentStatus'],
-    safepayTrackerToken: row.safepay_tracker_token,
-    safepayTransactionRef: row.safepay_transaction_ref,
+    lemonsqueezyCheckoutId: row.lemonsqueezy_checkout_id,
+    lemonsqueezyOrderId: row.lemonsqueezy_order_id,
     calcomBookingUid: row.calcom_booking_uid,
     calcomBookingId: row.calcom_booking_id,
     bookingDate: row.booking_date,

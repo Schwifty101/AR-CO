@@ -78,7 +78,6 @@ export type {
 export type {
   CreateConsultationData,
   ConsultationPaymentInitResponse,
-  ConfirmConsultationPaymentData,
   ConsultationStatusCheckData,
   ConsultationResponse,
   ConsultationStatusResponse,
@@ -123,6 +122,17 @@ export type {
   CreateLegalNewsData,
   LegalNewsResponse,
 } from './content.types';
+
+// Payments / Invoices
+export type {
+  InvoiceItem,
+  InvoiceResponse,
+  CreateInvoiceData,
+  UpdateInvoiceData,
+  AddInvoiceItemData,
+  InvoiceFilters,
+  PaginatedInvoicesResponse,
+} from './payments.types';
 
 // Audit
 export type {

@@ -69,23 +69,25 @@ export interface AdminConfig {
 }
 
 /**
- * Safepay payment gateway configuration interface
+ * LemonSqueezy payment configuration interface (Merchant of Record)
  */
-export interface SafepayConfig {
-  /** Secret API key for backend SDK (sec_xxx) */
-  secretKey: string;
-  /** Public API key for session creation and frontend checkout */
-  publicKey: string;
-  /** Current environment ('sandbox' | 'production') */
-  environment: 'sandbox' | 'production';
-  /** HMAC secret for webhook signature verification */
+export interface LemonSqueezyConfig {
+  /** LemonSqueezy API key */
+  apiKey: string;
+  /** LemonSqueezy store ID */
+  storeId: string;
+  /** HMAC secret for webhook signature verification (X-Signature header) */
   webhookSecret: string;
-  /** API host URL based on environment */
-  host: string;
+  /** Variant ID for Civic Retainer subscription (PKR 700/month) */
+  subscriptionVariantId: string;
+  /** Variant ID for Legal Consultation one-time fee (PKR 50,000) */
+  consultationVariantId: string;
+  /** Variant ID for Facilitation Service standard fee (PKR 5,400) */
+  serviceVariantId: string;
+  /** Variant ID for Facilitation Service with government charges (PKR 8,400) */
+  serviceGovtVariantId: string;
   /** Frontend URL for payment redirect callbacks */
   frontendUrl: string;
-  /** V1 merchant secret for @sfpy/node-sdk X-SFPY-MERCHANT-SECRET header */
-  v1Secret: string;
 }
 
 /**
@@ -105,7 +107,7 @@ export interface Configuration {
   email: EmailConfig;
   fileUpload: FileUploadConfig;
   admin: AdminConfig;
-  safepay: SafepayConfig;
+  lemonsqueezy: LemonSqueezyConfig;
   google: GoogleConfig;
 }
 
@@ -165,20 +167,15 @@ export default (): Configuration => ({
     emails:
       process.env.ADMIN_EMAILS?.split(',').map((email) => email.trim()) || [],
   },
-  safepay: {
-    secretKey: process.env.SAFEPAY_SECRET_KEY || '',
-    publicKey: process.env.SAFEPAY_PUBLIC_KEY || '',
-    environment:
-      (process.env.SAFEPAY_ENVIRONMENT as 'sandbox' | 'production') ||
-      'sandbox',
-    webhookSecret: process.env.SAFEPAY_WEBHOOK_SECRET || '',
-    host:
-      process.env.SAFEPAY_ENVIRONMENT === 'production'
-        ? 'https://api.getsafepay.com'
-        : 'https://sandbox.api.getsafepay.com',
-    frontendUrl: process.env.FRONTEND_URL || 'http://localhost:3000',
-    v1Secret:
-      process.env.SAFEPAY_V1_SECRET || process.env.SAFEPAY_PUBLIC_KEY || '',
+  lemonsqueezy: {
+    apiKey: process.env.LEMONSQUEEZY_API_KEY ?? '',
+    storeId: process.env.LEMONSQUEEZY_STORE_ID ?? '',
+    webhookSecret: process.env.LEMONSQUEEZY_WEBHOOK_SECRET ?? '',
+    subscriptionVariantId: process.env.LEMONSQUEEZY_SUBSCRIPTION_VARIANT_ID ?? '',
+    consultationVariantId: process.env.LEMONSQUEEZY_CONSULTATION_VARIANT_ID ?? '',
+    serviceVariantId: process.env.LEMONSQUEEZY_SERVICE_VARIANT_ID ?? '',
+    serviceGovtVariantId: process.env.LEMONSQUEEZY_SERVICE_GOVT_VARIANT_ID ?? '',
+    frontendUrl: process.env.FRONTEND_URL ?? 'http://localhost:3000',
   },
   google: {
     serviceAccountKey: process.env.GOOGLE_SERVICE_ACCOUNT_KEY || '',
