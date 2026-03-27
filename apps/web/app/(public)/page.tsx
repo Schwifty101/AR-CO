@@ -52,7 +52,7 @@ export default function HomePage() {
     '@id': `${SITE_URL}/#organization`,
     name: 'AR&CO Law Associates',
     url: SITE_URL,
-    logo: `${SITE_URL}/favicon-512x512.png`,
+    logo: `${SITE_URL}/android-chrome-512x512.png`,
     image: `${SITE_URL}/og-image.jpg`,
     email: 'info@arco.law',
     telephone: '+92 51 2252144',
