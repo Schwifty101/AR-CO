@@ -265,27 +265,27 @@ export default function Footer() {
                     <ul className={styles.infoServicesList}>
                       <li>
                         <Link href="/practice-areas/intellectual-property" className={styles.infoServiceLink}>
-                          Intellectual Property Lawyers
+                          <SlotMachineText>Intellectual Property Lawyers</SlotMachineText>
                         </Link>
                       </li>
                       <li>
                         <Link href="/practice-areas/petroleum-energy-law" className={styles.infoServiceLink}>
-                          Energy & Petroleum Advisory
+                          <SlotMachineText>Energy & Petroleum Advisory</SlotMachineText>
                         </Link>
                       </li>
                       <li>
                         <Link href="/practice-areas/alternative-dispute-resolution" className={styles.infoServiceLink}>
-                          Dispute Resolution & Litigation
+                          <SlotMachineText>Dispute Resolution & Litigation</SlotMachineText>
                         </Link>
                       </li>
                       <li>
                         <Link href="/services/facilitation/ip-services" className={styles.infoServiceLink}>
-                          Business and IP Facilitation
+                          <SlotMachineText>Business and IP Facilitation</SlotMachineText>
                         </Link>
                       </li>
                       <li>
                         <Link href="/complaint-section" className={styles.infoServiceLink}>
-                          Regulatory Complaint Support
+                          <SlotMachineText>Regulatory Complaint Support</SlotMachineText>
                         </Link>
                       </li>
                     </ul>
