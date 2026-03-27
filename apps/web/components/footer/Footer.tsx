@@ -380,7 +380,14 @@ export default function Footer() {
             >
               <SlotMachineText>Facebook</SlotMachineText>
             </a>
-            <span className={`${styles.credits} cursor-pointer`}>SITE BY <SlotMachineText>SCHWIFTY</SlotMachineText></span>
+            <a
+              href="https://sobanahmad.dev"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`${styles.credits} cursor-pointer`}
+            >
+              SITE BY <SlotMachineText>SCHWIFTY</SlotMachineText>
+            </a>
           </div>
         </div>
       </div>
