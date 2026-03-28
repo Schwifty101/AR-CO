@@ -155,13 +155,13 @@ export default function ConsultationOverlay({ isOpen, onClose, prefillData }: Co
     }
   }, [isOpen, prefillData])
 
-  /* ─── Jump to step 4 when returning from LemonSqueezy payment ─── */
+  /* ─── Show success when returning from LemonSqueezy payment ─── */
   useEffect(() => {
     if (isOpen && paymentReturnData) {
       setBookingId(paymentReturnData.bookingId)
       setReferenceNumber(paymentReturnData.referenceNumber)
       setPaymentConfirmed(true)
-      setStep(4)
+      setSubmitted(true)
     }
   }, [isOpen, paymentReturnData])
 
@@ -205,7 +205,7 @@ export default function ConsultationOverlay({ isOpen, onClose, prefillData }: Co
     return Object.keys(errs).length === 0
   }
 
-  /* ─── Step 2 Submit: Create Booking + Initiate Payment ─── */
+  /* ─── Step 2 Submit: Create Booking ─── */
   const handleStep2Submit = async () => {
     if (!validateStep(2)) return
     setIsSubmitting(true)
@@ -226,14 +226,29 @@ export default function ConsultationOverlay({ isOpen, onClose, prefillData }: Co
       const booking = await createConsultation(consultationData)
       setBookingId(booking.id)
       setReferenceNumber(booking.referenceNumber)
-
-      const creds = await initiatePayment(booking.id)
-      setPaymentCredentials(creds)
       setStep(3)
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Something went wrong'
       setApiError(msg)
       toast.error('Failed to create booking. Please try again.')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  /* ─── Step 3 Complete: Scheduling done → Initiate Payment ─── */
+  const handleSchedulingComplete = async () => {
+    if (!bookingId) return
+    setIsSubmitting(true)
+    setApiError(null)
+    try {
+      const creds = await initiatePayment(bookingId)
+      setPaymentCredentials(creds)
+      setStep(4)
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Something went wrong'
+      setApiError(msg)
+      toast.error('Failed to initiate payment. Please try again.')
     } finally {
       setIsSubmitting(false)
     }
@@ -409,9 +424,28 @@ export default function ConsultationOverlay({ isOpen, onClose, prefillData }: Co
                         </motion.div>
                       )}
 
-                      {step === 3 && paymentCredentials && bookingId && referenceNumber && (
+                      {step === 3 && referenceNumber && (
                         <motion.div
                           key="step-3"
+                          className={styles.formSection}
+                          variants={sectionVariants}
+                          initial="enter"
+                          animate="center"
+                          exit="exit"
+                        >
+                          <span className={styles.sectionLabel}>Select a Time Slot</span>
+                          <ConsultationSchedulingStep
+                            guestName={formData.name}
+                            guestEmail={formData.email}
+                            referenceNumber={referenceNumber}
+                            onBookingComplete={handleSchedulingComplete}
+                          />
+                        </motion.div>
+                      )}
+
+                      {step === 4 && paymentCredentials && bookingId && referenceNumber && (
+                        <motion.div
+                          key="step-4"
                           className={styles.formSection}
                           variants={sectionVariants}
                           initial="enter"
@@ -425,28 +459,9 @@ export default function ConsultationOverlay({ isOpen, onClose, prefillData }: Co
                             referenceNumber={referenceNumber}
                             onPaymentConfirmed={() => {
                               setPaymentConfirmed(true)
-                              setStep(4)
+                              setSubmitted(true)
                             }}
                             onError={(msg) => setApiError(msg)}
-                          />
-                        </motion.div>
-                      )}
-
-                      {step === 4 && referenceNumber && (
-                        <motion.div
-                          key="step-4"
-                          className={styles.formSection}
-                          variants={sectionVariants}
-                          initial="enter"
-                          animate="center"
-                          exit="exit"
-                        >
-                          <span className={styles.sectionLabel}>Select a Time Slot</span>
-                          <ConsultationSchedulingStep
-                            guestName={formData.name}
-                            guestEmail={formData.email}
-                            referenceNumber={referenceNumber}
-                            onBookingComplete={() => setSubmitted(true)}
                           />
                         </motion.div>
                       )}
