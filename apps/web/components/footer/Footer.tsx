@@ -388,6 +388,7 @@ export default function Footer() {
             >
               SITE BY <SlotMachineText>SCHWIFTY</SlotMachineText>
             </a>
+            {/* meow meow */}
           </div>
         </div>
       </div>
