@@ -153,7 +153,7 @@ export class LemonSqueezyService implements OnModuleInit {
         receiptLinkUrl:
           this.configService.get<string>('lemonsqueezy.frontendUrl', {
             infer: true,
-          }) ?? 'http://localhost:3000',
+          }) ?? 'https://arandcolaw.com',
         enabledVariants: [params.variantId],
       },
       checkoutOptions: {
@@ -218,7 +218,7 @@ export class LemonSqueezyService implements OnModuleInit {
         receiptLinkUrl:
           this.configService.get<string>('lemonsqueezy.frontendUrl', {
             infer: true,
-          }) ?? 'http://localhost:3000',
+          }) ?? 'https://arandcolaw.com',
       },
       checkoutOptions: {
         embed: false,
