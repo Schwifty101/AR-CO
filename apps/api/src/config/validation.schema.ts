@@ -156,7 +156,7 @@ export const validationSchema = Joi.object({
       'any.required':
         'LEMONSQUEEZY_SERVICE_VARIANT_ID is required in production.',
     }),
-  FRONTEND_URL: Joi.string().uri().default('http://localhost:3000'),
+  FRONTEND_URL: Joi.string().uri().default('https://arandcolaw.com'),
 
   // Google APIs Configuration (Optional for development)
   GOOGLE_SERVICE_ACCOUNT_KEY: Joi.string()

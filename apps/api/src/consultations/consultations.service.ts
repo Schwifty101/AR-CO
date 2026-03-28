@@ -194,10 +194,7 @@ export class ConsultationsService {
         infer: true,
       }),
     );
-    const frontendUrl = this.configService.get<string>(
-      'lemonsqueezy.frontendUrl',
-      { infer: true },
-    );
+    const frontendUrl = this.configService.get<string>('lemonsqueezy.frontendUrl', { infer: true });
 
     const { checkoutUrl, checkoutId } =
       await this.lemonsqueezyService.createOneTimeCheckout({

@@ -222,7 +222,7 @@ export class SubscriptionsService {
           user_id: user.id,
           reference,
         },
-        redirectUrl: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/payment/success?type=subscription`,
+        redirectUrl: `${this.configService.get<string>('lemonsqueezy.frontendUrl', { infer: true })}/payment/success?type=subscription`,
       });
 
     this.logger.log(
