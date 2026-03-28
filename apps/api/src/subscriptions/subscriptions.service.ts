@@ -222,7 +222,7 @@ export class SubscriptionsService {
           user_id: user.id,
           reference,
         },
-        redirectUrl: `${this.configService.get<string>('lemonsqueezy.frontendUrl', { infer: true })}/payment/success?type=subscription`,
+        redirectUrl: 'https://arandcolaw.com/payment/success?type=subscription',
       });
 
     this.logger.log(
