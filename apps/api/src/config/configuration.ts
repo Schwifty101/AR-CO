@@ -175,7 +175,7 @@ export default (): Configuration => ({
     consultationVariantId: process.env.LEMONSQUEEZY_CONSULTATION_VARIANT_ID ?? '',
     serviceVariantId: process.env.LEMONSQUEEZY_SERVICE_VARIANT_ID ?? '',
     serviceGovtVariantId: process.env.LEMONSQUEEZY_SERVICE_GOVT_VARIANT_ID ?? '',
-    frontendUrl: process.env.FRONTEND_URL ?? 'https://arandcolaw.com',
+    frontendUrl: 'https://arandcolaw.com',
   },
   google: {
     serviceAccountKey: process.env.GOOGLE_SERVICE_ACCOUNT_KEY || '',
