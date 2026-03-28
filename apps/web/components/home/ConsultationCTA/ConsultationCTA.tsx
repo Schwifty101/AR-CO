@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { Phone, MessageCircle, CalendarCheck } from 'lucide-react'
 import { useConsultationOverlay } from '@/components/consultation'
@@ -76,6 +77,11 @@ export default function ConsultationCTA() {
             <span>WhatsApp</span>
           </a>
         </div>
+
+        {/* Static crawlable link to /team — always in DOM for Google */}
+        <Link href='/team' className={styles.teamLink}>
+          Meet our legal team →
+        </Link>
 
         {/* Bottom rule */}
         <div className={styles.rule} aria-hidden='true' />

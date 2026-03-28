@@ -193,6 +193,13 @@ export default function AboutSection() {
             </div>
           </motion.div>
         </div>
+
+        {/* Static crawlable link to /blogs — always in DOM for Google */}
+        <div className={styles.viewAllRow}>
+          <Link href='/blogs' className={styles.viewAllLink}>
+            View all legal insights →
+          </Link>
+        </div>
       </div>
     </section>
   )

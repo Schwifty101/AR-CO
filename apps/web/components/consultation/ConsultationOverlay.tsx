@@ -16,6 +16,7 @@ import styles from './ConsultationOverlay.module.css'
 /* ─── Types ─── */
 
 import type { ConsultationPrefillData } from './ConsultationContext'
+import { useConsultationOverlay } from './ConsultationContext'
 
 /** Props for the ConsultationOverlay component */
 interface ConsultationOverlayProps {
@@ -85,6 +86,8 @@ const sectionVariants = {
  * ```
  */
 export default function ConsultationOverlay({ isOpen, onClose, prefillData }: ConsultationOverlayProps) {
+  const { paymentReturnData } = useConsultationOverlay()
+
   /* ─── Form State ─── */
   const [step, setStep] = useState(1)
   const [submitted, setSubmitted] = useState(false)
@@ -151,6 +154,16 @@ export default function ConsultationOverlay({ isOpen, onClose, prefillData }: Co
       }))
     }
   }, [isOpen, prefillData])
+
+  /* ─── Jump to step 4 when returning from LemonSqueezy payment ─── */
+  useEffect(() => {
+    if (isOpen && paymentReturnData) {
+      setBookingId(paymentReturnData.bookingId)
+      setReferenceNumber(paymentReturnData.referenceNumber)
+      setPaymentConfirmed(true)
+      setStep(4)
+    }
+  }, [isOpen, paymentReturnData])
 
   /* ─── Field change handler ─── */
   const updateField = (field: keyof ConsultationFormData, value: string) => {

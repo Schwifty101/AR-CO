@@ -196,6 +196,24 @@
   color: var(--heritage-cream);
 }
 
+/* ─── Team link ─── */
+.teamLink {
+  display: inline-block;
+  margin-top: 2rem;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(249, 248, 246, 0.4);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.teamLink:hover {
+  color: var(--heritage-gold);
+}
+
 /* ─── Responsive ─── */
 @media (max-width: 1024px) {
   .container {

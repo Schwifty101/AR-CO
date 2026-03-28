@@ -1,5 +1,6 @@
 import type React from "react"
 import type { Metadata } from "next"
+import { Suspense } from "react"
 import { Analytics } from "@vercel/analytics/next"
 import { AuthProvider } from "@/lib/auth/auth-context"
 import { PracticeAreasProvider } from "@/components/practice-areas"
@@ -92,7 +93,7 @@ export default function RootLayout({
                   {children}
                   <PracticeAreasOverlayWrapper />
                   <FacilitationOverlayWrapper />
-                  <ConsultationOverlayWrapper />
+                  <Suspense><ConsultationOverlayWrapper /></Suspense>
                   <AboutOverlayWrapper />
                 </AboutProvider>
               </ConsultationProvider>

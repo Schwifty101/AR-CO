@@ -210,7 +210,7 @@ export class ConsultationsService {
           reference_id: booking.reference_number,
           booking_id: booking.id,
         },
-        redirectUrl: `${frontendUrl}/client/consultations`,
+        redirectUrl: `${frontendUrl}/?booking_id=${booking.id}&ref=${booking.reference_number}&payment=confirmed`,
         productName: 'Legal Consultation Fee',
       });
 

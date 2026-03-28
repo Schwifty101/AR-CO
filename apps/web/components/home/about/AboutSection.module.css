@@ -342,6 +342,29 @@
   padding-left: 1.5rem;
 }
 
+/* ── View All Insights link ──────────────────────────────────────────────── */
+.viewAllRow {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 2rem;
+}
+
+.viewAllLink {
+  font-family: 'Cabinet Grotesk', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--heritage-gold, #D4AF37);
+  text-decoration: none;
+  opacity: 0.7;
+  transition: opacity 0.3s ease;
+}
+
+.viewAllLink:hover {
+  opacity: 1;
+}
+
 /* ── Responsive Architecture ─────────────────────────────────────────────── */
 @media (max-width: 1200px) {
   .gridContainer {

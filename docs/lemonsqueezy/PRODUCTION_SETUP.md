@@ -90,7 +90,9 @@ The `id` field in the response is your `LEMONSQUEEZY_STORE_ID`.
 Add these to your Railway backend environment:
 
 ```env
-LEMONSQUEEZY_API_KEY=eyJ0...          # From Settings → API Keys
+LEMONSQUEEZY_API_KEY=
+Settings → API Keys
+
 LEMONSQUEEZY_STORE_ID=318521          # From the API call above
 LEMONSQUEEZY_WEBHOOK_SECRET=          # The signing secret you set on the webhook
 

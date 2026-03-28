@@ -9,10 +9,18 @@ export interface ConsultationPrefillData {
   phone?: string
 }
 
+/** Data passed back from LemonSqueezy payment redirect to resume at step 4 */
+export interface PaymentReturnData {
+  bookingId: string
+  referenceNumber: string
+}
+
 interface ConsultationContextType {
   isOverlayOpen: boolean
   prefillData: ConsultationPrefillData | null
+  paymentReturnData: PaymentReturnData | null
   openOverlay: (prefill?: ConsultationPrefillData) => void
+  openOverlayAtPaymentReturn: (data: PaymentReturnData) => void
   closeOverlay: () => void
   toggleOverlay: () => void
 }
@@ -29,15 +37,24 @@ const ConsultationContext = createContext<ConsultationContextType | undefined>(u
 export function ConsultationProvider({ children }: { children: ReactNode }) {
   const [isOverlayOpen, setIsOverlayOpen] = useState(false)
   const [prefillData, setPrefillData] = useState<ConsultationPrefillData | null>(null)
+  const [paymentReturnData, setPaymentReturnData] = useState<PaymentReturnData | null>(null)
 
   const openOverlay = useCallback((prefill?: ConsultationPrefillData) => {
     setPrefillData(prefill ?? null)
+    setPaymentReturnData(null)
+    setIsOverlayOpen(true)
+  }, [])
+
+  const openOverlayAtPaymentReturn = useCallback((data: PaymentReturnData) => {
+    setPaymentReturnData(data)
+    setPrefillData(null)
     setIsOverlayOpen(true)
   }, [])
 
   const closeOverlay = useCallback(() => {
     setIsOverlayOpen(false)
     setPrefillData(null)
+    setPaymentReturnData(null)
   }, [])
 
   const toggleOverlay = useCallback(() => {
@@ -46,7 +63,7 @@ export function ConsultationProvider({ children }: { children: ReactNode }) {
 
   return (
     <ConsultationContext.Provider
-      value={{ isOverlayOpen, prefillData, openOverlay, closeOverlay, toggleOverlay }}
+      value={{ isOverlayOpen, prefillData, paymentReturnData, openOverlay, openOverlayAtPaymentReturn, closeOverlay, toggleOverlay }}
     >
       {children}
     </ConsultationContext.Provider>
