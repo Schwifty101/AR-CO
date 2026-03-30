@@ -91,7 +91,7 @@ export default function ConsultationSchedulingStep({
   referenceNumber,
   onBookingComplete,
 }: SchedulingStepProps) {
-  const calLink = process.env.NEXT_PUBLIC_CALCOM_LINK || 'soban-ahmad/30min'
+  const calLink = process.env.NEXT_PUBLIC_CALCOM_LINK || 'AR&CO/30min'
 
   /** Stable reference to avoid re-subscribing on every render */
   const stableOnComplete = useCallback(onBookingComplete, [onBookingComplete])
