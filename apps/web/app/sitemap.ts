@@ -31,6 +31,7 @@ async function getPublishedBlogPostPaths(): Promise<string[]> {
   try {
     const response = await fetch(url, {
       next: { revalidate: 300 },
+      signal: AbortSignal.timeout(10_000),
     })
 
     if (!response.ok) {

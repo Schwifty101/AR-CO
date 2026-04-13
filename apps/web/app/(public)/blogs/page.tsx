@@ -27,6 +27,7 @@ async function fetchPublishedPosts(contentType: string): Promise<FetchResult<Con
   try {
     const res = await fetch(url, {
       next: { revalidate: 60 },
+      signal: AbortSignal.timeout(10_000),
     })
     if (!res.ok) {
       console.error('Failed to fetch published content posts', {
@@ -66,6 +67,7 @@ async function fetchCategories(): Promise<FetchResult<CategoryResponse[]>> {
   try {
     const res = await fetch(url, {
       next: { revalidate: 60 },
+      signal: AbortSignal.timeout(10_000),
     })
     if (!res.ok) {
       console.error('Failed to fetch content categories', {

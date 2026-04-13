@@ -70,7 +70,8 @@
   transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.4s ease;
   overflow: hidden;
   opacity: 0;
-  will-change: transform, opacity;
+  /* will-change removed: cards are only hover-transitioned, not GSAP-parallaxed.
+     Permanent will-change on 12+ cards wastes GPU memory and can cause jitter. */
   /* Initial hidden state for reveal animation */
 }
 
@@ -181,10 +182,13 @@
   width: 600px;
   height: 600px;
   background: radial-gradient(circle,
-      rgba(212, 175, 55, 0.08) 0%,
-      transparent 70%);
+      rgba(212, 175, 55, 0.06) 0%,
+      rgba(212, 175, 55, 0.02) 40%,
+      transparent 65%);
   border-radius: 50%;
-  filter: blur(60px);
+  /* Avoid filter: blur() — it forces an expensive repaint pass on every frame
+     when nearby elements are composited. The wider radial-gradient above
+     achieves a similar soft-glow look without the paint cost. */
 }
 
 @keyframes orbFloat {

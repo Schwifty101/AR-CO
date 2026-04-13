@@ -22,6 +22,7 @@ async function fetchPostBySlug(slug: string): Promise<ContentPostResponse | null
   try {
     const res = await fetch(url, {
       next: { revalidate: 60 },
+      signal: AbortSignal.timeout(10_000),
     })
     if (!res.ok) {
       console.error('Failed to fetch post by slug', {

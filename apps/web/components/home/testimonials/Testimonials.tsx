@@ -218,28 +218,24 @@ export default function Testimonials() {
     }
 
     // Create parallax scroll effect - left/right columns move faster than middle
-    // scrollDistance is computed inside invalidateOnRefresh to avoid forced reflow on init
+    // `scrub: true` (instant) avoids double-smoothing with Lenis which already
+    // interpolates scroll position. A secondary scrub easing (e.g. 0.8) would
+    // fight Lenis and produce visible jitter/wobble.
+    const scrollDistance = column1.scrollHeight * 0.35
+
     const tl = gsap.timeline({
       scrollTrigger: {
         trigger: section,
         start: "top bottom",
         end: "bottom top",
-        scrub: 0.8,
-        fastScrollEnd: true,
+        scrub: true,
         invalidateOnRefresh: true,
-        onRefresh(self) {
-          const dist = column1.scrollHeight * 0.6
-          gsap.set(column1, { y: -dist * 1.3 * self.progress })
-          gsap.set(column2, { y: -dist * 1.0 * self.progress })
-          gsap.set(column3, { y: -dist * 1.3 * self.progress })
-        }
       }
     })
 
-    const scrollDistance = column1.scrollHeight * 0.6
-    tl.to(column1, { y: -scrollDistance * 1.3, ease: "none" }, 0)
-      .to(column2, { y: -scrollDistance * 1.0, ease: "none" }, 0)
-      .to(column3, { y: -scrollDistance * 1.3, ease: "none" }, 0)
+    tl.to(column1, { y: -scrollDistance * 1.3, ease: "none", force3D: true }, 0)
+      .to(column2, { y: -scrollDistance * 1.0, ease: "none", force3D: true }, 0)
+      .to(column3, { y: -scrollDistance * 1.3, ease: "none", force3D: true }, 0)
 
     return () => {
       ScrollTrigger.getAll().forEach(trigger => {
