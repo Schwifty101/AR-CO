@@ -86,21 +86,22 @@ Import pattern: `import { SignupSchema, UserType, CreateClientSchema } from '@re
 
 All modules follow **Controller-Service-Module** pattern in feature folders:
 
-| Module | Purpose |
-|--------|---------|
-| `auth/` | Signup, signin, OAuth, token refresh, password reset, signout |
-| `users/` | User profile CRUD, client-specific & attorney-specific data |
-| `clients/` | Client profile management + aggregated data (cases, docs, invoices) |
-| `complaints/` | Complaint submission, tracking, staff assignment, status updates |
-| `service-registrations/` | Guest facilitation service registration + payment handling |
-| `services/` | Available services catalog (NTN, SECP, business registration) |
-| `subscriptions/` | Subscription plans and status tracking |
-| `dashboard/` | Admin and client dashboard statistics |
-| `cases/` | Case management, case activities timeline, assignment |
-| `practice-areas/` | Practice areas catalog (read-only listing) |
-| `payments/` | LemonSqueezyService for payment integration (Merchant of Record) |
+| Module                     | Purpose                                                             |
+| -------------------------- | ------------------------------------------------------------------- |
+| `auth/`                  | Signup, signin, OAuth, token refresh, password reset, signout       |
+| `users/`                 | User profile CRUD, client-specific & attorney-specific data         |
+| `clients/`               | Client profile management + aggregated data (cases, docs, invoices) |
+| `complaints/`            | Complaint submission, tracking, staff assignment, status updates    |
+| `service-registrations/` | Guest facilitation service registration + payment handling          |
+| `services/`              | Available services catalog (NTN, SECP, business registration)       |
+| `subscriptions/`         | Subscription plans and status tracking                              |
+| `dashboard/`             | Admin and client dashboard statistics                               |
+| `cases/`                 | Case management, case activities timeline, assignment               |
+| `practice-areas/`        | Practice areas catalog (read-only listing)                          |
+| `payments/`              | LemonSqueezyService for payment integration (Merchant of Record)    |
 
 **Module structure:**
+
 ```
 feature/
 ├── feature.module.ts
@@ -110,6 +111,7 @@ feature/
 ```
 
 **Common utilities** in `apps/api/src/common/`:
+
 - **Decorators:** `@Public()`, `@Roles(UserType.ADMIN)`, `@CurrentUser()`
 - **Guards:** `JwtAuthGuard`, `RolesGuard` (registered globally in main.ts)
 - **Filters:** `HttpExceptionFilter`, `SupabaseExceptionFilter`
@@ -132,6 +134,7 @@ Request → JwtAuthGuard → RolesGuard → Route Handler
 ```
 
 **SupabaseService methods:**
+
 - `getClient(token)` - User-scoped client (RLS enforced)
 - `getAdminClient()` - Admin client (bypasses RLS, use with caution, document why)
 - `getUserFromToken(token)` - Validates JWT and fetches user profile
@@ -141,6 +144,7 @@ Request → JwtAuthGuard → RolesGuard → Route Handler
 ### Backend Configuration System
 
 Typed configuration via factory pattern in `apps/api/src/config/`:
+
 - `AppConfig`, `SupabaseConfig`, `JwtConfig`, `LemonSqueezyConfig`, `EmailConfig`, `FileUploadConfig`, `AdminConfig`
 - Access via NestJS `ConfigService` with typed interfaces
 
@@ -179,6 +183,7 @@ app/
 ### API Proxy Pattern
 
 Frontend proxies `/api/*` to backend via `next.config.js` rewrites:
+
 - Dev: `localhost:3000/api/*` → `localhost:4000/api/*`
 - Prod: Vercel → Railway (`API_BACKEND_URL` env var)
 - Backend sets `app.setGlobalPrefix('api')` in `main.ts`
@@ -244,6 +249,7 @@ const response = await fetch('/api/feature', {
 ## Key Files
 
 ### Backend
+
 - `apps/api/src/main.ts` - Bootstrap: global guards, filters, prefix, CORS
 - `apps/api/src/app.module.ts` - Root module imports
 - `apps/api/src/database/supabase.service.ts` - Supabase client management
@@ -253,6 +259,7 @@ const response = await fetch('/api/feature', {
 - `apps/api/AUTH_QUICK_REFERENCE.md` - Auth patterns reference
 
 ### Frontend
+
 - `apps/web/app/layout.tsx` - Root layout with AuthProvider
 - `apps/web/middleware.ts` - Auth session refresh, route protection
 - `apps/web/lib/supabase/client.ts` - Browser Supabase client
@@ -262,6 +269,7 @@ const response = await fetch('/api/feature', {
 - `apps/web/next.config.js` - API proxy rewrites
 
 ### Configuration
+
 - `turbo.json` - Turborepo pipeline (dev, build, lint tasks)
 - `railway.toml` - Backend deployment config
 - `.node-version` - Node.js 20.18.1

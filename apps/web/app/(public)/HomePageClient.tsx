@@ -171,6 +171,24 @@ export default function HomePageClient() {
                 {/* ── Page sections ────────────────────────────────────────────────── */}
                 <Hero onProgress={handleVideoProgress} onReady={handleVideoReady} playing={videoReady} />
                 <TrustStats />
+
+                {/* ── SEO intro — adds H1-keyword body text + word count ────────── */}
+                <div className={styles.introSection}>
+                    <div className={styles.introDivider} aria-hidden='true' />
+                    <p className={styles.introText}>
+                        As a law firm rooted in Islamabad, AR&amp;CO Law Associates serves businesses
+                        and individuals across Pakistan with principled, results-driven legal counsel.
+                        Our practice spans corporate advisory, civil litigation, intellectual property
+                        protection, and regulatory compliance — grounded in decades of courtroom experience.
+                    </p>
+                    <p className={styles.introText}>
+                        Whether you are safeguarding a commercial venture or resolving a personal
+                        legal matter, our attorneys bring the strategic clarity and tenacity that
+                        complex matters demand. We stand by our clients at every stage — from
+                        consultation through final resolution.
+                    </p>
+                </div>
+
                 <AboutSection />
                 <LegalServices />
                 

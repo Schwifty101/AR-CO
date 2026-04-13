@@ -113,7 +113,7 @@ export default function AboutSection() {
                       <ArrowUpRight className={styles.blogIcon} />
                     </div>
                     <div className={styles.blogContentBottom}>
-                      <span className={styles.blogEyebrow}>Recent Insights</span>
+                      <span className={styles.blogEyebrow}>Latest Insight</span>
                       <h4 className={styles.blogTitle}>{blogs[0].title}</h4>
                     </div>
                   </Link>
@@ -135,7 +135,7 @@ export default function AboutSection() {
                       <ArrowUpRight className={styles.blogIcon} />
                     </div>
                     <div className={styles.blogContentBottom}>
-                      <span className={styles.blogEyebrow}>Recent Insights</span>
+                      <span className={styles.blogEyebrow}>Recent Analysis</span>
                       <h4 className={styles.blogTitle}>{blogs[1].title}</h4>
                     </div>
                   </Link>

@@ -7,7 +7,7 @@ const HOMEPAGE_URL = `${SITE_URL}/`
 export const metadata: Metadata = {
   title: 'Law Firm in Islamabad, Pakistan | AR&CO Law Associates',
   description:
-    'AR&CO Law Associates is a leading law firm in Islamabad, Pakistan for corporate law, litigation, dispute resolution, intellectual property, energy law, and regulatory legal services.',
+    'AR&CO Law Associates is a trusted law firm in Islamabad for corporate law, litigation, dispute resolution, and intellectual property across Pakistan.',
   keywords: [
     'law firm Islamabad',
     'lawyers in Pakistan',
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Law Firm in Islamabad, Pakistan | AR&CO Law Associates',
     description:
-      'Trusted legal counsel in Islamabad for corporate law, litigation, dispute resolution, intellectual property, and regulatory legal matters.',
+      'Trusted legal counsel in Islamabad for corporate law, litigation, dispute resolution, and intellectual property across Pakistan.',
     url: HOMEPAGE_URL,
     siteName: 'AR&CO Law Associates',
     type: 'website',
