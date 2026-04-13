@@ -2,7 +2,7 @@
 
 import { useRef } from "react"
 import Link from "next/link"
-import { motion, useScroll, useTransform, useSpring } from "framer-motion"
+import { motion, useScroll, useTransform } from "framer-motion"
 import { ArrowUpRight } from "lucide-react"
 import { useFacilitationOverlay } from "@/components/facilitation"
 import TextReveal from "@/components/shared/animations/TextReveal"
@@ -59,26 +59,15 @@ export default function QuoteSection() {
   const sectionRef = useRef<HTMLElement>(null)
   const { openOverlay } = useFacilitationOverlay()
 
-  // ── Content entrance ────────────────────────────────────────────────────────
-  // Framer reads window.scrollY which Lenis updates on each frame — no conflict.
-  const { scrollYProgress: entranceProgress } = useScroll({
-    target: sectionRef,
-    offset: ["start 80%", "start 30%"],
-  })
-  const contentY = useTransform(entranceProgress, [0, 1], [30, 0])
-  const contentOpacity = useTransform(entranceProgress, [0, 1], [0.8, 1])
-
   // ── Golden timeline line ─────────────────────────────────────────────────────
-  // Tracks the full section scroll range; spring adds natural deceleration.
+  // Tracks the full section scroll range. Using plain useTransform instead of
+  // useSpring — Lenis already smooths scroll position, so a spring on top would
+  // create oscillating wobble (double-smoothing).
   const { scrollYProgress: lineProgress } = useScroll({
     target: sectionRef,
     offset: ["start 55%", "end 45%"],
   })
-  const lineScaleY = useSpring(lineProgress, {
-    stiffness: 60,
-    damping: 20,
-    restDelta: 0.001,
-  })
+  const lineScaleY = useTransform(lineProgress, [0, 1], [0, 1])
 
   return (
     <motion.section
@@ -90,11 +79,10 @@ export default function QuoteSection() {
       {/* Vertical side text */}
       <span className={styles.sideText}>Services</span>
 
-      {/* Container — subtle entrance driven by scroll */}
-      <motion.div
-        className={styles.container}
-        style={{ y: contentY, opacity: contentOpacity }}
-      >
+      {/* Container — no scroll-driven y/opacity here; per-row whileInView
+           handles entrance. Moving the entire container on every frame caused
+           visible jitter with Lenis smooth scroll. */}
+      <div className={styles.container}>
         {/* Eyebrow + Title */}
         <motion.header
           className={styles.header}
@@ -171,7 +159,7 @@ export default function QuoteSection() {
 
           <p className={styles.firmStamp}>AR&CO — Trusted Legal Partners</p>
         </motion.div>
-      </motion.div>
+      </div>
     </motion.section>
   )
 }
