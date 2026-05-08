@@ -4,7 +4,6 @@ import React, { useRef, useEffect } from 'react'
 import Image from 'next/image'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { getSmoother } from '../smoothScrollInstance'
 import { ITeamMemberExtended } from './types/teamInterfaces'
 
 gsap.registerPlugin(ScrollTrigger)
@@ -62,31 +61,10 @@ export default function TeamLeaderShowcase({ leader }: TeamLeaderShowcaseProps) 
             ScrollTrigger.refresh()
         }
 
-        let onSmootherReady: (() => void) | undefined
-        let fallbackTimer: ReturnType<typeof setTimeout> | undefined
-
-        if (getSmoother()) {
-            initScrollTrigger()
-        } else {
-            onSmootherReady = () => {
-                initScrollTrigger()
-                window.removeEventListener('scroll-smoother-ready', onSmootherReady!)
-            }
-            window.addEventListener('scroll-smoother-ready', onSmootherReady)
-            fallbackTimer = setTimeout(() => {
-                if (!ctx) initScrollTrigger()
-                window.removeEventListener('scroll-smoother-ready', onSmootherReady!)
-            }, 1000)
-        }
+        initScrollTrigger()
 
         return () => {
             ctx?.revert()
-            if (onSmootherReady) {
-                window.removeEventListener('scroll-smoother-ready', onSmootherReady)
-            }
-            if (fallbackTimer) {
-                clearTimeout(fallbackTimer)
-            }
         }
     }, [])
 

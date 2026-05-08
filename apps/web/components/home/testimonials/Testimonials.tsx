@@ -146,9 +146,9 @@ export default function Testimonials() {
 
     const section = sectionRef.current
     const title = titleRef.current
-    const column1 = column1Ref.current
-    const column2 = column2Ref.current
-    const column3 = column3Ref.current
+    const col1 = column1Ref.current
+    const col2 = column2Ref.current
+    const col3 = column3Ref.current
 
     // Initial reveal animations
     // Animate title
@@ -173,9 +173,7 @@ export default function Testimonials() {
     // Animate desktop cards only (mobile cards are display:none on desktop — animating
     // them would cause extra paint on every stagger tick for invisible elements)
     const desktopCards = [
-      ...column1.querySelectorAll(`.${styles.card}`),
-      ...column2.querySelectorAll(`.${styles.card}`),
-      ...column3.querySelectorAll(`.${styles.card}`),
+      ...section.querySelectorAll(`.${styles.columnsContainer} .${styles.card}`),
     ]
 
     gsap.fromTo(desktopCards,
@@ -217,12 +215,10 @@ export default function Testimonials() {
       )
     }
 
-    // Create parallax scroll effect - left/right columns move faster than middle
-    // `scrub: true` (instant) avoids double-smoothing with Lenis which already
-    // interpolates scroll position. A secondary scrub easing (e.g. 0.8) would
-    // fight Lenis and produce visible jitter/wobble.
-    const scrollDistance = column1.scrollHeight * 0.35
-
+    // Column parallax — GSAP ScrollTrigger is Lenis-synced so it reads the
+    // smoothed virtual position. force3D promotes columns to GPU compositor
+    // layers so the per-frame y-translate is composited, not painted.
+    const scrollDistance = col1.scrollHeight * 0.35
     const tl = gsap.timeline({
       scrollTrigger: {
         trigger: section,
@@ -232,10 +228,9 @@ export default function Testimonials() {
         invalidateOnRefresh: true,
       }
     })
-
-    tl.to(column1, { y: -scrollDistance * 1.3, ease: "none", force3D: true }, 0)
-      .to(column2, { y: -scrollDistance * 1.0, ease: "none", force3D: true }, 0)
-      .to(column3, { y: -scrollDistance * 1.3, ease: "none", force3D: true }, 0)
+    tl.to(col1, { y: -scrollDistance * 1.3, ease: "none", force3D: true }, 0)
+      .to(col2, { y: -scrollDistance * 1.0, ease: "none", force3D: true }, 0)
+      .to(col3, { y: -scrollDistance * 1.3, ease: "none", force3D: true }, 0)
 
     return () => {
       ScrollTrigger.getAll().forEach(trigger => {
@@ -256,21 +251,21 @@ export default function Testimonials() {
 
         {/* Three columns */}
         <div className={styles.columnsContainer}>
-          {/* Left Column - Scrolls Down */}
+          {/* Left Column */}
           <div ref={column1Ref} className={styles.column}>
             {column1.map((testimonial, index) => (
               <TestimonialCard key={`col1-${index}`} testimonial={testimonial} />
             ))}
           </div>
 
-          {/* Middle Column - Scrolls Up */}
+          {/* Middle Column */}
           <div ref={column2Ref} className={`${styles.column} ${styles.middleColumn}`}>
             {column2.map((testimonial, index) => (
               <TestimonialCard key={`col2-${index}`} testimonial={testimonial} />
             ))}
           </div>
 
-          {/* Right Column - Scrolls Down */}
+          {/* Right Column */}
           <div ref={column3Ref} className={styles.column}>
             {column3.map((testimonial, index) => (
               <TestimonialCard key={`col3-${index}`} testimonial={testimonial} />

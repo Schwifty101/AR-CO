@@ -4,8 +4,6 @@ import React, { useRef, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { getSmoother } from '../smoothScrollInstance'
-
 gsap.registerPlugin(ScrollTrigger)
 
 interface TeamTransitionProps {
@@ -46,31 +44,10 @@ export default function TeamTransition({ label = "The Collective" }: TeamTransit
             ScrollTrigger.refresh()
         }
 
-        let onSmootherReady: (() => void) | undefined
-        let fallbackTimer: ReturnType<typeof setTimeout> | undefined
-
-        if (getSmoother()) {
-            initScrollTrigger()
-        } else {
-            onSmootherReady = () => {
-                initScrollTrigger()
-                window.removeEventListener('scroll-smoother-ready', onSmootherReady!)
-            }
-            window.addEventListener('scroll-smoother-ready', onSmootherReady)
-            fallbackTimer = setTimeout(() => {
-                if (!ctx) initScrollTrigger()
-                window.removeEventListener('scroll-smoother-ready', onSmootherReady!)
-            }, 1000)
-        }
+        initScrollTrigger()
 
         return () => {
             ctx?.revert()
-            if (onSmootherReady) {
-                window.removeEventListener('scroll-smoother-ready', onSmootherReady)
-            }
-            if (fallbackTimer) {
-                clearTimeout(fallbackTimer)
-            }
         }
     }, [])
 

@@ -1,9 +1,13 @@
 "use client"
 
-import { useRef } from "react"
+import { useRef, useEffect } from "react"
 import Link from "next/link"
-import { motion, useScroll, useTransform } from "framer-motion"
+import { motion } from "framer-motion"
+import gsap from "gsap"
+import { ScrollTrigger } from "gsap/ScrollTrigger"
 import { ArrowUpRight } from "lucide-react"
+
+gsap.registerPlugin(ScrollTrigger)
 import { useFacilitationOverlay } from "@/components/facilitation"
 import TextReveal from "@/components/shared/animations/TextReveal"
 import styles from "./LegalServices.module.css"
@@ -57,20 +61,35 @@ const SERVICES = [
 
 export default function QuoteSection() {
   const sectionRef = useRef<HTMLElement>(null)
+  const goldenLineRef = useRef<HTMLDivElement>(null)
   const { openOverlay } = useFacilitationOverlay()
 
-  // ── Golden timeline line ─────────────────────────────────────────────────────
-  // Tracks the full section scroll range. Using plain useTransform instead of
-  // useSpring — Lenis already smooths scroll position, so a spring on top would
-  // create oscillating wobble (double-smoothing).
-  const { scrollYProgress: lineProgress } = useScroll({
-    target: sectionRef,
-    offset: ["start 55%", "end 45%"],
-  })
-  const lineScaleY = useTransform(lineProgress, [0, 1], [0, 1])
+  // Golden timeline line — GSAP ScrollTrigger is Lenis-synced (via
+  // lenis.on("scroll", ScrollTrigger.update) in SmoothScroll.tsx),
+  // so it reads the smoothed virtual position instead of native scroll.
+  useEffect(() => {
+    if (!sectionRef.current || !goldenLineRef.current) return
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        goldenLineRef.current,
+        { scaleY: 0 },
+        {
+          scaleY: 1,
+          ease: "none",
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: "top 55%",
+            end: "bottom 45%",
+            scrub: true,
+          },
+        },
+      )
+    }, sectionRef)
+    return () => ctx.revert()
+  }, [])
 
   return (
-    <motion.section
+    <section
       ref={sectionRef}
       className={styles.section}
       data-section="services-showcase"
@@ -101,11 +120,8 @@ export default function QuoteSection() {
 
         {/* Service rows */}
         <div className={styles.servicesList}>
-          {/* Scroll-driven golden timeline line — scaleY 0→1 via Framer spring */}
-          <motion.div
-            className={styles.goldenLine}
-            style={{ scaleY: lineScaleY }}
-          />
+          {/* Golden timeline line — scaleY 0→1 driven by GSAP ScrollTrigger */}
+          <div ref={goldenLineRef} className={styles.goldenLine} />
 
           {SERVICES.map((service, idx) => (
             <motion.div
@@ -160,6 +176,6 @@ export default function QuoteSection() {
           <p className={styles.firmStamp}>AR&CO — Trusted Legal Partners</p>
         </motion.div>
       </div>
-    </motion.section>
+    </section>
   )
 }

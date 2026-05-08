@@ -98,32 +98,6 @@ export default function HomePageClient() {
         }
     }, [])
 
-    // ── Global scroll-parallax driver ────────────────────────────────────────
-    // Sets --global-sy on :root. CSS formula used everywhere:
-    // transform: translateY(calc(var(--global-sy, 0) * var(--depth, 0.3) * -1px))
-    // Multiplier 0.35 gives strong, visible vertical drift between depth layers.
-    // On mobile, native scroll fires very rapidly so we rAF-throttle the DOM
-    // write to once per rendered frame instead of once per scroll event.
-    useEffect(() => {
-        // Parallax is desktop-only — skip entirely on mobile to avoid per-frame
-        // style recalculations that cause scroll jank on low-powered devices.
-        if (window.matchMedia('(max-width: 768px)').matches) return
-
-        let rafId: number | null = null
-        const handleScroll = () => {
-            if (rafId !== null) return
-            rafId = requestAnimationFrame(() => {
-                document.documentElement.style.setProperty('--global-sy', (window.scrollY * 0.35).toFixed(2))
-                rafId = null
-            })
-        }
-        window.addEventListener('scroll', handleScroll, { passive: true })
-        handleScroll()
-        return () => {
-            window.removeEventListener('scroll', handleScroll)
-            if (rafId !== null) cancelAnimationFrame(rafId)
-        }
-    }, [])
 
     return (
         <>
