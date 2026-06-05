@@ -5,8 +5,6 @@ import { motion, useInView } from 'framer-motion'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import type { ITeamClosingStatementProps } from './types/teamInterfaces'
-import { getSmoother } from '../smoothScrollInstance'
-
 gsap.registerPlugin(ScrollTrigger)
 
 /**
@@ -77,8 +75,6 @@ export default function TeamClosingStatement({
     // A secondary refresh after 600ms catches late-loading images.
     let rafId: number | undefined
     let settleTimer: ReturnType<typeof setTimeout> | undefined
-    let onSmootherReady: (() => void) | undefined
-    let fallbackTimer: ReturnType<typeof setTimeout> | undefined
 
     const deferredInit = () => {
       rafId = requestAnimationFrame(() => {
@@ -87,30 +83,12 @@ export default function TeamClosingStatement({
       })
     }
 
-    if (getSmoother()) {
-      deferredInit()
-    } else {
-      onSmootherReady = () => {
-        deferredInit()
-        window.removeEventListener('scroll-smoother-ready', onSmootherReady!)
-      }
-      window.addEventListener('scroll-smoother-ready', onSmootherReady)
-      fallbackTimer = setTimeout(() => {
-        if (!ctx) deferredInit()
-        window.removeEventListener('scroll-smoother-ready', onSmootherReady!)
-      }, 1000)
-    }
+    deferredInit()
 
     return () => {
       if (rafId) cancelAnimationFrame(rafId)
       if (settleTimer) clearTimeout(settleTimer)
       ctx?.revert()
-      if (onSmootherReady) {
-        window.removeEventListener('scroll-smoother-ready', onSmootherReady)
-      }
-      if (fallbackTimer) {
-        clearTimeout(fallbackTimer)
-      }
     }
   }, [])
 

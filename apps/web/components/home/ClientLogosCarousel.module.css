@@ -1,30 +1,42 @@
 /* ============================================================
    Client Logos Carousel
-   Scroll-driven horizontal parallax — logo images on dark ground
+   CSS marquee — rows auto-scroll in opposite directions.
+   No JS scroll tracking; GPU-composited via will-change: transform.
    ============================================================ */
 
+/* ─── Keyframes ─── */
+/* Row 1 (7 logos): slides left continuously */
+@keyframes marquee-left {
+  from { transform: translateX(0); }
+  to   { transform: translateX(calc(-7 * (var(--carousel-logo-w) + 1.5rem))); }
+}
+
+/* Row 2 (6 logos): slides right continuously */
+@keyframes marquee-right {
+  from { transform: translateX(calc(-6 * (var(--carousel-logo-w) + 1.5rem))); }
+  to   { transform: translateX(0); }
+}
+
 /* ─── Section wrapper ─── */
+/* --carousel-logo-w is set here and inherited by all child elements,
+   including the animated tracks, so @keyframes calc() resolves correctly. */
 .section {
+  --carousel-logo-w: 200px;
   position: relative;
-  /* 300 vh gives ~200 vh of scroll range for the sticky content */
-  height: 300vh;
   background: transparent;
   z-index: 10;
 }
 
-/* ─── Sticky inner wrapper — stays in view while section scrolls ─── */
-.stickyWrapper {
-  position: sticky;
-  top: 0;
-  left: 0;
+/* ─── Inner wrapper ─── */
+.wrapper {
+  position: relative;
   width: 100%;
-  height: 100vh;
+  padding: 5rem 0;
   overflow: hidden;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: transparent;
 }
 
 /* Subtle atmospheric gold glow */
@@ -73,7 +85,6 @@
   color: var(--heritage-gold, #D4AF37);
 }
 
-/* Thin gold rule under header */
 .titleRule {
   width: 60px;
   height: 1px;
@@ -85,7 +96,7 @@
   opacity: 0.5;
 }
 
-/* ─── Carousel container — clips overflowing rows ─── */
+/* ─── Carousel container ─── */
 .carouselContainer {
   position: relative;
   z-index: 2;
@@ -96,12 +107,17 @@
   gap: 3rem;
 }
 
-/* ─── Individual row track ─── */
+/* ─── Row track — CSS marquee animation ─── */
 .rowTrack {
   display: flex;
   align-items: center;
   gap: 1.5rem;
-  /* will-change added only during scroll via Framer Motion */
+  will-change: transform;
+  animation: marquee-left 35s linear infinite;
+}
+
+.reverseRow {
+  animation: marquee-right 38s linear infinite;
 }
 
 /* ─── Logo card ─── */
@@ -114,15 +130,13 @@
   user-select: none;
 }
 
-/* ─── Logo image wrapper (required for next/image fill) ─── */
+/* ─── Logo image wrapper ─── */
 .logoImageWrapper {
   position: relative;
-  width: 200px;
-  height: 100px;
+  width: var(--carousel-logo-w);
+  height: calc(var(--carousel-logo-w) * 0.5);
 }
 
-/* Logo image — desaturated white so all logos read consistently
-   on the dark background; opacity lifts on hover via parent */
 .logoImage {
   filter: grayscale(100%);
   opacity: 0.45;
@@ -135,30 +149,7 @@
   filter: grayscale(0%);
 }
 
-/* ─── Progress bar (desktop scroll indicator) ─── */
-.progressBar {
-  position: absolute;
-  bottom: 2.5rem;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 10;
-}
-
-.progressTrack {
-  width: 120px;
-  height: 1px;
-  background: rgba(212, 175, 55, 0.18);
-  border-radius: 1px;
-  overflow: hidden;
-}
-
-.progressFill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--heritage-gold, #D4AF37), rgba(212, 175, 55, 0.5));
-  border-radius: 1px;
-}
-
-/* ─── Edge vignette — masks row ends for infinite feel ─── */
+/* ─── Edge vignette ─── */
 .vignette {
   position: absolute;
   top: 0;
@@ -175,74 +166,32 @@
       #0d0906 100%);
 }
 
-/* ─── Mobile: auto-marquee animation ───
-   Row 1: 7 logos × (110px + 1.5rem) = 938px per copy
-   Row 2: 6 logos × (110px + 1.5rem) = 804px per copy */
-@keyframes marquee-left {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(calc(-7 * (110px + 1.5rem))); }
+/* ─── Tablet ─── */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .section { --carousel-logo-w: 130px; }
 }
 
-@keyframes marquee-right {
-  0% { transform: translateX(calc(-6 * (110px + 1.5rem))); }
-  100% { transform: translateX(0); }
-}
-
+/* ─── Mobile ─── */
 @media (max-width: 767px) {
-  .section {
-    height: auto;
-  }
-
-  .stickyWrapper {
-    position: relative;
-    height: auto;
-    padding: 5rem 0;
-  }
+  .section { --carousel-logo-w: 110px; }
 
   .header {
     margin-bottom: 2.5rem;
   }
 
-  .logoImageWrapper {
-    width: 110px;
-    height: 50px;
-  }
-
-  /* Replace flex gap with per-item margin so -25% translates
-     exactly one copy's width (gap breaks % math) */
   .rowTrack {
-    gap: 0;
-    animation: marquee-left 25s linear infinite;
-  }
-
-  .logoCard {
-    margin-right: 1.5rem;
+    animation-duration: 25s;
   }
 
   .reverseRow {
-    animation: marquee-right 25s linear infinite;
-  }
-
-  .progressBar {
-    display: none;
+    animation-duration: 25s;
   }
 }
 
-/* ─── Tablet: narrower section ─── */
-@media (min-width: 768px) and (max-width: 1023px) {
-  .section {
-    height: 260vh;
-  }
-
-  .logoImageWrapper {
-    width: 130px;
-    height: 58px;
-  }
-}
-
-/* ─── Reduced motion: disable animations ─── */
+/* ─── Reduced motion ─── */
 @media (prefers-reduced-motion: reduce) {
-  .rowTrack {
+  .rowTrack,
+  .reverseRow {
     animation: none !important;
   }
 }

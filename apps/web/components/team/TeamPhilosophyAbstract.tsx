@@ -5,7 +5,6 @@ import { motion } from 'framer-motion'
 import Image from 'next/image'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { getSmoother } from '../smoothScrollInstance'
 import { ITeamPhilosophyProps } from './types/teamInterfaces'
 
 gsap.registerPlugin(ScrollTrigger)
@@ -75,33 +74,10 @@ export default function TeamPhilosophyAbstract({
             ScrollTrigger.refresh()
         }
 
-        // If Lenis is already running, init immediately; otherwise wait for the
-        // scroll-smoother-ready event (or fall back after 1s for edge cases)
-        let onSmootherReady: (() => void) | undefined
-        let fallbackTimer: ReturnType<typeof setTimeout> | undefined
-
-        if (getSmoother()) {
-            initParallax()
-        } else {
-            onSmootherReady = () => {
-                initParallax()
-                window.removeEventListener('scroll-smoother-ready', onSmootherReady!)
-            }
-            window.addEventListener('scroll-smoother-ready', onSmootherReady)
-            fallbackTimer = setTimeout(() => {
-                if (!ctx) initParallax()
-                window.removeEventListener('scroll-smoother-ready', onSmootherReady!)
-            }, 1000)
-        }
+        initParallax()
 
         return () => {
             ctx?.revert()
-            if (onSmootherReady) {
-                window.removeEventListener('scroll-smoother-ready', onSmootherReady)
-            }
-            if (fallbackTimer) {
-                clearTimeout(fallbackTimer)
-            }
         }
     }, [])
 
