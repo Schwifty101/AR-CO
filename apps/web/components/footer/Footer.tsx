@@ -229,10 +229,10 @@ export default function Footer() {
                   <p className={styles.contactItem}>
                     <span className={styles.contactPrefix}>E:</span>
                     <a
-                      href="mailto:info@arco.law"
+                      href="mailto:info@arandcolaw"
                       onClick={() => trackCTAClick('email', 'footer')}
                     >
-                      info@arco.law
+                      info@arandcolaw
                     </a>
                   </p>
                   <p className={styles.contactItem}>
