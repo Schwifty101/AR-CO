@@ -702,7 +702,20 @@ describe('CasesService', () => {
         assigned_to: { full_name: 'Attorney Name' },
       };
 
-      mockAdminClient.from.mockReturnValue({
+      // Call 1: user_profiles — verify assignee exists and has allowed role
+      mockAdminClient.from.mockReturnValueOnce({
+        select: jest.fn().mockReturnValue({
+          eq: jest.fn().mockReturnValue({
+            single: jest.fn().mockResolvedValue({
+              data: { user_type: 'attorney' },
+              error: null,
+            }),
+          }),
+        }),
+      });
+
+      // Call 2: cases — update and return updated row
+      mockAdminClient.from.mockReturnValueOnce({
         update: jest.fn().mockReturnValue({
           eq: jest.fn().mockReturnValue({
             select: jest.fn().mockReturnValue({
@@ -733,7 +746,20 @@ describe('CasesService', () => {
         assignedToId: 'attorney-profile-uuid',
       };
 
-      mockAdminClient.from.mockReturnValue({
+      // Call 1: user_profiles — succeeds (assignee found)
+      mockAdminClient.from.mockReturnValueOnce({
+        select: jest.fn().mockReturnValue({
+          eq: jest.fn().mockReturnValue({
+            single: jest.fn().mockResolvedValue({
+              data: { user_type: 'attorney' },
+              error: null,
+            }),
+          }),
+        }),
+      });
+
+      // Call 2: cases — fails (case not found)
+      mockAdminClient.from.mockReturnValueOnce({
         update: jest.fn().mockReturnValue({
           eq: jest.fn().mockReturnValue({
             select: jest.fn().mockReturnValue({
@@ -749,6 +775,44 @@ describe('CasesService', () => {
       await expect(
         service.assign('non-existent', assignDto, staffUser),
       ).rejects.toThrow(NotFoundException);
+    });
+
+    it('should throw NotFoundException when assignee not found', async () => {
+      const assignDto: AssignToData = { assignedToId: 'non-existent-uuid' };
+
+      mockAdminClient.from.mockReturnValueOnce({
+        select: jest.fn().mockReturnValue({
+          eq: jest.fn().mockReturnValue({
+            single: jest.fn().mockResolvedValue({
+              data: null,
+              error: { message: 'Not found' },
+            }),
+          }),
+        }),
+      });
+
+      await expect(
+        service.assign('case-uuid-1', assignDto, staffUser),
+      ).rejects.toThrow(NotFoundException);
+    });
+
+    it('should throw BadRequestException when assignee is not admin or attorney', async () => {
+      const assignDto: AssignToData = { assignedToId: 'client-profile-uuid' };
+
+      mockAdminClient.from.mockReturnValueOnce({
+        select: jest.fn().mockReturnValue({
+          eq: jest.fn().mockReturnValue({
+            single: jest.fn().mockResolvedValue({
+              data: { user_type: 'client' },
+              error: null,
+            }),
+          }),
+        }),
+      });
+
+      await expect(
+        service.assign('case-uuid-1', assignDto, staffUser),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 
