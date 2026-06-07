@@ -233,6 +233,13 @@ export class ServiceRegistrationsService {
       if (!user.clientProfileId) {
         throw new BadRequestException('Client profile not found');
       }
+      // Self-heal: link any of the client's email-matched guest registrations to
+      // their profile before listing. Under manual payment a registration stays
+      // unlinked (client_profile_id = null) until an admin confirms payment, which
+      // can be days later — so without this the client cannot see their own
+      // pending registration in the portal. claimRegistrations is best-effort and
+      // idempotent (WHERE client_profile_id IS NULL AND email = user.email).
+      await this.claimRegistrations(user);
       query = query.eq('client_profile_id', user.clientProfileId);
     }
 
