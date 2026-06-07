@@ -26,6 +26,40 @@ import type { InvoiceResponse, PaginatedInvoicesResponse } from '@repo/shared';
 export type { InvoiceResponse, PaginatedInvoicesResponse } from '@repo/shared';
 
 /**
+ * Manual-payment bank details + contact channels shown to guests during the
+ * screenshot-upload step. `whatsappNumber` is an empty string when not yet
+ * configured, in which case the UI hides the WhatsApp line.
+ */
+export interface PaymentInstructions {
+  bankName: string;
+  accountTitle: string;
+  accountNumber: string;
+  iban: string;
+  whatsappNumber: string;
+  contactEmail: string;
+}
+
+/**
+ * Fetch the manual-payment bank details + contact info (public endpoint).
+ *
+ * @returns Bank details and contact channels for the upload screen
+ *
+ * @example
+ * ```typescript
+ * const info = await getPaymentInstructions();
+ * // info.bankName, info.iban, info.contactEmail
+ * ```
+ */
+export async function getPaymentInstructions(): Promise<PaymentInstructions> {
+  const response = await fetch('/api/payments/instructions');
+  if (!response.ok) {
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
+    throw new Error(error.message || 'Failed to load payment instructions');
+  }
+  return (await response.json()) as PaymentInstructions;
+}
+
+/**
  * A single entry in the payment history list.
  * Covers consultations, service registrations, and subscriptions.
  */

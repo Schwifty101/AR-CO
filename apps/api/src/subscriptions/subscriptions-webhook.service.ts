@@ -63,13 +63,17 @@ export class SubscriptionsWebhookService {
    *
    * @param payload - Verified LemonSqueezy webhook payload
    */
-  async handleSubscriptionCreated(payload: LemonSqueezyWebhookPayload): Promise<void> {
+  async handleSubscriptionCreated(
+    payload: LemonSqueezyWebhookPayload,
+  ): Promise<void> {
     const data = payload.data as LemonSqueezySubscriptionData;
     const attributes = data.attributes;
     const userId = payload.meta.custom_data?.user_id;
 
     if (!userId) {
-      this.logger.warn('handleSubscriptionCreated: missing user_id in custom_data');
+      this.logger.warn(
+        'handleSubscriptionCreated: missing user_id in custom_data',
+      );
       return;
     }
 
@@ -84,25 +88,30 @@ export class SubscriptionsWebhookService {
       .maybeSingle();
 
     if (error || !rawSub) {
-      this.logger.warn(`handleSubscriptionCreated: no pending subscription for user ${userId}`);
+      this.logger.warn(
+        `handleSubscriptionCreated: no pending subscription for user ${userId}`,
+      );
       return;
     }
 
     const sub = rawSub as unknown as UserSubscriptionRow;
     const now = new Date().toISOString();
 
-    await client.from('user_subscriptions').update({
-      status: SubscriptionStatus.ACTIVE,
-      lemonsqueezy_subscription_id: data.id,
-      lemonsqueezy_customer_id: String(attributes.customer_id),
-      lemonsqueezy_order_id: String(attributes.order_id),
-      card_brand: attributes.card_brand,
-      card_last_four: attributes.card_last_four,
-      current_period_start: now,
-      current_period_end: attributes.renews_at,
-      current_billing_cycle: 1,
-      updated_at: now,
-    }).eq('id', sub.id);
+    await client
+      .from('user_subscriptions')
+      .update({
+        status: SubscriptionStatus.ACTIVE,
+        lemonsqueezy_subscription_id: data.id,
+        lemonsqueezy_customer_id: String(attributes.customer_id),
+        lemonsqueezy_order_id: String(attributes.order_id),
+        card_brand: attributes.card_brand,
+        card_last_four: attributes.card_last_four,
+        current_period_start: now,
+        current_period_end: attributes.renews_at,
+        current_billing_cycle: 1,
+        updated_at: now,
+      })
+      .eq('id', sub.id);
 
     await this.logEvent(sub.id, 'subscription.created', attributes);
     this.logger.log(`Subscription ${sub.id} activated for user ${userId}`);
@@ -117,7 +126,9 @@ export class SubscriptionsWebhookService {
    *
    * @param payload - Verified LemonSqueezy webhook payload
    */
-  async handleSubscriptionUpdated(payload: LemonSqueezyWebhookPayload): Promise<void> {
+  async handleSubscriptionUpdated(
+    payload: LemonSqueezyWebhookPayload,
+  ): Promise<void> {
     const data = payload.data as LemonSqueezySubscriptionData;
     const attributes = data.attributes;
 
@@ -131,17 +142,21 @@ export class SubscriptionsWebhookService {
       expired: SubscriptionStatus.ENDED,
     };
 
-    const mappedStatus = statusMap[attributes.status] ?? (sub.status as SubscriptionStatus);
+    const mappedStatus =
+      statusMap[attributes.status] ?? (sub.status as SubscriptionStatus);
 
-    await this.supabaseService.getAdminClient()
-      .from('user_subscriptions').update({
+    await this.supabaseService
+      .getAdminClient()
+      .from('user_subscriptions')
+      .update({
         card_brand: attributes.card_brand,
         card_last_four: attributes.card_last_four,
         current_period_end: attributes.renews_at,
         ends_at: attributes.ends_at,
         status: mappedStatus,
         updated_at: new Date().toISOString(),
-      }).eq('id', sub.id);
+      })
+      .eq('id', sub.id);
 
     await this.logEvent(sub.id, 'subscription.updated', attributes);
   }
@@ -153,21 +168,26 @@ export class SubscriptionsWebhookService {
    *
    * @param payload - Verified LemonSqueezy webhook payload
    */
-  async handlePaymentSuccess(payload: LemonSqueezyWebhookPayload): Promise<void> {
+  async handlePaymentSuccess(
+    payload: LemonSqueezyWebhookPayload,
+  ): Promise<void> {
     const data = payload.data as LemonSqueezySubscriptionData;
     const attributes = data.attributes;
 
     const sub = await this.findByLsId(data.id, 'handlePaymentSuccess');
     if (!sub) return;
 
-    await this.supabaseService.getAdminClient()
-      .from('user_subscriptions').update({
+    await this.supabaseService
+      .getAdminClient()
+      .from('user_subscriptions')
+      .update({
         status: SubscriptionStatus.ACTIVE,
         current_period_end: attributes.renews_at,
         last_paid_at: new Date().toISOString(),
         current_billing_cycle: (sub.current_billing_cycle ?? 0) + 1,
         updated_at: new Date().toISOString(),
-      }).eq('id', sub.id);
+      })
+      .eq('id', sub.id);
 
     await this.logEvent(sub.id, 'subscription.payment_success', attributes);
   }
@@ -179,18 +199,23 @@ export class SubscriptionsWebhookService {
    *
    * @param payload - Verified LemonSqueezy webhook payload
    */
-  async handlePaymentFailed(payload: LemonSqueezyWebhookPayload): Promise<void> {
+  async handlePaymentFailed(
+    payload: LemonSqueezyWebhookPayload,
+  ): Promise<void> {
     const data = payload.data as LemonSqueezySubscriptionData;
     const attributes = data.attributes;
 
     const sub = await this.findByLsId(data.id, 'handlePaymentFailed');
     if (!sub) return;
 
-    await this.supabaseService.getAdminClient()
-      .from('user_subscriptions').update({
+    await this.supabaseService
+      .getAdminClient()
+      .from('user_subscriptions')
+      .update({
         status: SubscriptionStatus.UNPAID,
         updated_at: new Date().toISOString(),
-      }).eq('id', sub.id);
+      })
+      .eq('id', sub.id);
 
     await this.logEvent(sub.id, 'subscription.payment_failed', attributes);
   }
@@ -202,19 +227,24 @@ export class SubscriptionsWebhookService {
    *
    * @param payload - Verified LemonSqueezy webhook payload
    */
-  async handlePaymentRecovered(payload: LemonSqueezyWebhookPayload): Promise<void> {
+  async handlePaymentRecovered(
+    payload: LemonSqueezyWebhookPayload,
+  ): Promise<void> {
     const data = payload.data as LemonSqueezySubscriptionData;
     const attributes = data.attributes;
 
     const sub = await this.findByLsId(data.id, 'handlePaymentRecovered');
     if (!sub) return;
 
-    await this.supabaseService.getAdminClient()
-      .from('user_subscriptions').update({
+    await this.supabaseService
+      .getAdminClient()
+      .from('user_subscriptions')
+      .update({
         status: SubscriptionStatus.ACTIVE,
         current_period_end: attributes.renews_at,
         updated_at: new Date().toISOString(),
-      }).eq('id', sub.id);
+      })
+      .eq('id', sub.id);
 
     await this.logEvent(sub.id, 'subscription.payment_recovered', attributes);
   }
@@ -228,19 +258,24 @@ export class SubscriptionsWebhookService {
    *
    * @param payload - Verified LemonSqueezy webhook payload
    */
-  async handleSubscriptionCancelled(payload: LemonSqueezyWebhookPayload): Promise<void> {
+  async handleSubscriptionCancelled(
+    payload: LemonSqueezyWebhookPayload,
+  ): Promise<void> {
     const data = payload.data as LemonSqueezySubscriptionData;
     const attributes = data.attributes;
 
     const sub = await this.findByLsId(data.id, 'handleSubscriptionCancelled');
     if (!sub) return;
 
-    await this.supabaseService.getAdminClient()
-      .from('user_subscriptions').update({
+    await this.supabaseService
+      .getAdminClient()
+      .from('user_subscriptions')
+      .update({
         cancelled_at: new Date().toISOString(),
         ends_at: attributes.ends_at,
         updated_at: new Date().toISOString(),
-      }).eq('id', sub.id);
+      })
+      .eq('id', sub.id);
 
     await this.logEvent(sub.id, 'subscription.cancelled', attributes);
   }
@@ -253,20 +288,25 @@ export class SubscriptionsWebhookService {
    *
    * @param payload - Verified LemonSqueezy webhook payload
    */
-  async handleSubscriptionExpired(payload: LemonSqueezyWebhookPayload): Promise<void> {
+  async handleSubscriptionExpired(
+    payload: LemonSqueezyWebhookPayload,
+  ): Promise<void> {
     const data = payload.data as LemonSqueezySubscriptionData;
     const attributes = data.attributes;
 
     const sub = await this.findByLsId(data.id, 'handleSubscriptionExpired');
     if (!sub) return;
 
-    await this.supabaseService.getAdminClient()
-      .from('user_subscriptions').update({
+    await this.supabaseService
+      .getAdminClient()
+      .from('user_subscriptions')
+      .update({
         status: SubscriptionStatus.ENDED,
         ends_at: null,
         ended_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-      }).eq('id', sub.id);
+      })
+      .eq('id', sub.id);
 
     await this.logEvent(sub.id, 'subscription.expired', attributes);
   }
@@ -293,7 +333,9 @@ export class SubscriptionsWebhookService {
       .maybeSingle();
 
     if (error || !rawSub) {
-      this.logger.warn(`${callerName}: subscription ${lsSubscriptionId} not found`);
+      this.logger.warn(
+        `${callerName}: subscription ${lsSubscriptionId} not found`,
+      );
       return null;
     }
 

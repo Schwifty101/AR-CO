@@ -34,13 +34,10 @@ import { Public } from '../common/decorators/public.decorator';
 import { LemonSqueezyService } from './lemonsqueezy.service';
 import { InvoicesService } from './invoices.service';
 import { SubscriptionsService } from '../subscriptions/subscriptions.service';
-import { ConsultationsService } from '../consultations/consultations.service';
-import { ServiceRegistrationsService } from '../service-registrations/service-registrations.service';
 import { SupabaseService } from '../database/supabase.service';
 import { InvoiceStatus } from '@repo/shared';
 import {
   LemonSqueezyEventName,
-  PaymentType,
   type LemonSqueezyWebhookPayload,
   type LemonSqueezySubscriptionData,
 } from './types/webhook.types';
@@ -64,8 +61,6 @@ export class WebhookController {
     private readonly lemonSqueezyService: LemonSqueezyService,
     private readonly invoicesService: InvoicesService,
     private readonly subscriptionsService: SubscriptionsService,
-    private readonly consultationsService: ConsultationsService,
-    private readonly serviceRegistrationsService: ServiceRegistrationsService,
     private readonly supabaseService: SupabaseService,
   ) {}
 
@@ -142,7 +137,7 @@ export class WebhookController {
 
     // ── 6. Route to correct handler ────────────────────────────────────────
     try {
-      await this.routeEvent(event_name, paymentType, payload);
+      await this.routeEvent(event_name, payload);
     } catch (err) {
       // Log but don't re-throw — we've already acknowledged receipt.
       // LemonSqueezy will retry if we return non-200, but we've recorded the
@@ -160,45 +155,18 @@ export class WebhookController {
    * Route the webhook event to the correct service handler.
    *
    * @param eventName - LemonSqueezy event name
-   * @param paymentType - custom_data.payment_type value
    * @param payload - Full parsed webhook payload
    */
   private async routeEvent(
     eventName: string,
-    paymentType: string | null,
     payload: LemonSqueezyWebhookPayload,
   ): Promise<void> {
     switch (eventName) {
       // ── Order events ──────────────────────────────────────────────────────
-      case LemonSqueezyEventName.ORDER_CREATED:
-        if (paymentType === PaymentType.CONSULTATION) {
-          await this.consultationsService.handlePaymentConfirmed(payload);
-          if (payload.meta.custom_data?.booking_id) {
-            await this.autoCreateInvoiceForConsultation(payload.meta.custom_data.booking_id);
-          }
-        } else if (paymentType === PaymentType.SERVICE) {
-          await this.serviceRegistrationsService.handlePaymentConfirmed(payload);
-          if (payload.meta.custom_data?.registration_id) {
-            await this.autoCreateInvoiceForServiceRegistration(payload.meta.custom_data.registration_id);
-          }
-        } else {
-          this.logger.warn(
-            `order_created: unknown payment_type="${paymentType}" — no handler`,
-          );
-        }
-        break;
-
-      case LemonSqueezyEventName.ORDER_REFUNDED:
-        if (paymentType === PaymentType.CONSULTATION) {
-          await this.consultationsService.handlePaymentRefunded(payload);
-        } else if (paymentType === PaymentType.SERVICE) {
-          await this.serviceRegistrationsService.handlePaymentRefunded(payload);
-        } else {
-          this.logger.warn(
-            `order_refunded: unknown payment_type="${paymentType}" — no handler`,
-          );
-        }
-        break;
+      // Consultation + service-registration one-time payments are now handled
+      // manually (screenshot upload + admin review), so `order_created` /
+      // `order_refunded` are no longer routed here. Subscriptions remain on
+      // Lemon Squeezy and are handled below.
 
       // ── Subscription lifecycle events ─────────────────────────────────────
       case LemonSqueezyEventName.SUBSCRIPTION_CREATED:
@@ -248,75 +216,6 @@ export class WebhookController {
   }
 
   /**
-   * Auto-creates a PAID invoice for a completed consultation booking.
-   * Uses the guest's email — no client profile required.
-   */
-  private async autoCreateInvoiceForConsultation(bookingId: string): Promise<void> {
-    const db = this.supabaseService.getAdminClient();
-    const { data: booking } = await db
-      .from('consultation_bookings')
-      .select('email, consultation_fee, reference_number')
-      .eq('id', bookingId)
-      .maybeSingle();
-
-    if (!booking) return;
-    const amount = Number(booking.consultation_fee ?? 0);
-    if (amount <= 0) return;
-
-    const dueDate = new Date().toISOString().split('T')[0];
-    try {
-      const invoice = await this.invoicesService.createInvoice({
-        email: booking.email,
-        dueDate,
-        taxAmount: 0,
-        discountAmount: 0,
-        items: [{ description: 'Legal Consultation', quantity: 1, unitPrice: amount }],
-        notes: booking.reference_number ? `Reference: ${booking.reference_number}` : undefined,
-      });
-      await this.invoicesService.updateInvoice(invoice.id, { status: InvoiceStatus.PAID });
-      this.logger.log(`Auto-created consultation invoice for booking ${bookingId}`);
-    } catch (err) {
-      this.logger.error(`Failed to auto-create consultation invoice for ${bookingId}: ${(err as Error).message}`);
-    }
-  }
-
-  /**
-   * Auto-creates a PAID invoice for a completed service registration.
-   * Links to client profile if one exists; otherwise stores by email only.
-   */
-  private async autoCreateInvoiceForServiceRegistration(registrationId: string): Promise<void> {
-    const db = this.supabaseService.getAdminClient();
-    const { data: reg } = await db
-      .from('service_registrations')
-      .select('email, paid_amount, client_profile_id, reference_number, services(name)')
-      .eq('id', registrationId)
-      .maybeSingle();
-
-    if (!reg) return;
-    const amount = Number(reg.paid_amount ?? 0);
-    if (amount <= 0) return;
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const serviceName = (reg.services as any)?.name ?? 'Facilitation Service';
-    const dueDate = new Date().toISOString().split('T')[0];
-    try {
-      const invoice = await this.invoicesService.createInvoice({
-        clientProfileId: reg.client_profile_id ?? undefined,
-        email: reg.email,
-        dueDate,
-        taxAmount: 0,
-        discountAmount: 0,
-        items: [{ description: serviceName, quantity: 1, unitPrice: amount }],
-        notes: reg.reference_number ? `Reference: ${reg.reference_number}` : undefined,
-      });
-      await this.invoicesService.updateInvoice(invoice.id, { status: InvoiceStatus.PAID });
-      this.logger.log(`Auto-created service invoice for registration ${registrationId}`);
-    } catch (err) {
-      this.logger.error(`Failed to auto-create service invoice for ${registrationId}: ${(err as Error).message}`);
-    }
-  }
-
-  /**
    * Auto-creates a PAID invoice for a subscription payment.
    * Looks up user email and client profile from either userId or lsSubscriptionId.
    */
@@ -346,15 +245,19 @@ export class WebhookController {
     const actualUserId: string = sub.user_id ?? userId ?? '';
     if (!actualUserId) return;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const planName: string = (sub.subscription_plans as any)?.name ?? 'Subscription Plan';
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const planName: string =
+      (sub.subscription_plans as any)?.name ?? 'Subscription Plan';
+
     const amount = Number((sub.subscription_plans as any)?.amount ?? 0);
     if (amount <= 0) return;
 
     const [authResult, cpResult] = await Promise.all([
       db.auth.admin.getUserById(actualUserId),
-      db.from('client_profiles').select('id').eq('user_profile_id', actualUserId).maybeSingle(),
+      db
+        .from('client_profiles')
+        .select('id')
+        .eq('user_profile_id', actualUserId)
+        .maybeSingle(),
     ]);
 
     const email = authResult.data?.user?.email;
@@ -371,10 +274,16 @@ export class WebhookController {
         discountAmount: 0,
         items: [{ description: planName, quantity: 1, unitPrice: amount }],
       });
-      await this.invoicesService.updateInvoice(invoice.id, { status: InvoiceStatus.PAID });
-      this.logger.log(`Auto-created subscription invoice for user ${actualUserId}`);
+      await this.invoicesService.updateInvoice(invoice.id, {
+        status: InvoiceStatus.PAID,
+      });
+      this.logger.log(
+        `Auto-created subscription invoice for user ${actualUserId}`,
+      );
     } catch (err) {
-      this.logger.error(`Failed to auto-create subscription invoice for ${actualUserId}: ${(err as Error).message}`);
+      this.logger.error(
+        `Failed to auto-create subscription invoice for ${actualUserId}: ${(err as Error).message}`,
+      );
     }
   }
 }

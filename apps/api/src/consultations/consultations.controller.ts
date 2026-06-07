@@ -40,9 +40,13 @@ import {
   Param,
   Query,
   UseGuards,
+  UseInterceptors,
+  UploadedFile,
+  BadRequestException,
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { ThrottlerGuard, Throttle } from '@nestjs/throttler';
 import { ConsultationsService } from './consultations.service';
 import { Public } from '../common/decorators/public.decorator';
@@ -56,6 +60,7 @@ import {
   ConsultationStatusCheckSchema,
   PaginationSchema,
   ConsultationFiltersSchema,
+  ReviewPaymentSchema,
 } from '@repo/shared';
 import type {
   CreateConsultationData,
@@ -65,9 +70,34 @@ import type {
   PaginatedConsultationsResponse,
   ConsultationFilters,
   PaginationParams,
-  ConsultationPaymentInitResponse,
+  ReviewPaymentData,
 } from '@repo/shared';
 import type { CalcomWebhookPayload } from './consultations.types';
+
+/** Accepts image/pdf payment screenshots up to 10 MB */
+const PROOF_UPLOAD_OPTIONS = {
+  limits: { fileSize: 10 * 1024 * 1024 },
+  fileFilter: (
+    _req: unknown,
+    file: Express.Multer.File,
+    cb: (error: Error | null, acceptFile: boolean) => void,
+  ) => {
+    const allowed = [
+      'image/jpeg',
+      'image/png',
+      'image/webp',
+      'application/pdf',
+    ];
+    if (allowed.includes(file.mimetype)) cb(null, true);
+    else
+      cb(
+        new BadRequestException(
+          'Only JPG, PNG, WEBP, and PDF files are allowed',
+        ),
+        false,
+      );
+  },
+};
 
 /**
  * Consultations REST API controller
@@ -234,31 +264,74 @@ export class ConsultationsController {
   }
 
   /**
-   * Initiate payment for a consultation booking (Guest endpoint - Step 2)
+   * Upload a manual payment screenshot for a booking (Guest endpoint - Step 2)
    *
-   * Creates LemonSqueezy checkout URL for the guest to complete payment.
-   * Guest is redirected to LemonSqueezy hosted checkout page.
-   * Payment confirmation is handled via webhook (Task 10E).
-   *
-   * Rate limited to 10 requests per minute per IP.
+   * Accepts multipart/form-data with a `file` field (jpg/png/webp/pdf, ≤10 MB).
+   * Advances the booking to `awaiting_confirmation` for admin review. The booking
+   * UUID acts as the access token (unguessable). Rate limited to 10/min per IP.
    *
    * @param id - UUID of the consultation booking
-   * @returns LemonSqueezy checkout URL
+   * @param file - Uploaded payment screenshot
+   * @returns Updated booking
    *
    * @example
    * ```bash
-   * curl -X POST http://localhost:4000/api/consultations/abc-uuid/pay
+   * curl -X POST http://localhost:4000/api/consultations/abc-uuid/payment-proof \
+   *   -F "file=@receipt.jpg"
    * ```
    */
-  @Post(':id/pay')
+  @Post(':id/payment-proof')
   @Public()
   @UseGuards(ThrottlerGuard)
   @Throttle({ default: { limit: 10, ttl: 60000 } })
   @HttpCode(HttpStatus.OK)
-  async initiatePayment(
+  @UseInterceptors(FileInterceptor('file', PROOF_UPLOAD_OPTIONS))
+  async uploadPaymentProof(
     @Param('id') id: string,
-  ): Promise<ConsultationPaymentInitResponse> {
-    return this.consultationsService.initiatePayment(id);
+    @UploadedFile() file: Express.Multer.File,
+  ): Promise<ConsultationResponse> {
+    if (!file) {
+      throw new BadRequestException('Payment screenshot file is required');
+    }
+    return this.consultationsService.uploadPaymentProof(id, file);
+  }
+
+  /**
+   * Review a manual payment (Staff endpoint): confirm or flag.
+   *
+   * Confirm marks the booking paid, creates a PAID invoice, and emails the
+   * client. Flag marks it flagged and emails the client. Requires ADMIN/STAFF.
+   *
+   * @param id - UUID of the consultation booking
+   * @param dto - Review action + optional note/amount
+   * @returns Updated booking
+   *
+   * @example
+   * ```bash
+   * curl -X PATCH -H "Authorization: Bearer <token>" \
+   *   -d '{"action":"confirm"}' http://localhost:4000/api/consultations/abc-uuid/review-payment
+   * ```
+   */
+  @Patch(':id/review-payment')
+  @Roles(UserType.ADMIN, UserType.STAFF)
+  async reviewPayment(
+    @Param('id') id: string,
+    @CurrentUser() user: AuthUser,
+    @Body(new ZodValidationPipe(ReviewPaymentSchema)) dto: ReviewPaymentData,
+  ): Promise<ConsultationResponse> {
+    return this.consultationsService.reviewPayment(id, user, dto);
+  }
+
+  /**
+   * Get a signed URL to view the uploaded payment screenshot (Staff endpoint).
+   *
+   * @param id - UUID of the consultation booking
+   * @returns `{ url }` — signed URL valid for 1 hour
+   */
+  @Get(':id/payment-proof-url')
+  @Roles(UserType.ADMIN, UserType.STAFF)
+  async getPaymentProofUrl(@Param('id') id: string): Promise<{ url: string }> {
+    return this.consultationsService.getPaymentProofUrl(id);
   }
 
   /**

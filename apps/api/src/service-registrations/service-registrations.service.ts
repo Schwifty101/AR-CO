@@ -9,7 +9,9 @@ import {
 import { ConfigService } from '@nestjs/config';
 import * as sgMail from '@sendgrid/mail';
 import { SupabaseService } from '../database/supabase.service';
-import { LemonSqueezyService } from '../payments/lemonsqueezy.service';
+import { PaymentProofService } from '../payments/payment-proof.service';
+import { PaymentEmailService } from '../payments/payment-email.service';
+import { InvoicesService } from '../payments/invoices.service';
 import { STAFF_ROLES } from '../common/constants/roles';
 import { validateSortColumn } from '../common/utils/query-helpers';
 import type { AuthUser } from '../common/interfaces/auth-user.interface';
@@ -18,10 +20,12 @@ import {
   ServiceRegistrationStatus,
   ServiceRegistrationPaymentStatus,
   UserType,
+  InvoiceStatus,
   type CreateServiceRegistrationData,
   type GuestStatusCheckData,
   type UpdateRegistrationStatusData,
   type AssignToData,
+  type ReviewPaymentData,
   type ServiceRegistrationResponse,
   type ServiceRegistrationDocumentResponse,
   type GuestStatusResponse,
@@ -29,7 +33,6 @@ import {
   type PaginationParams,
 } from '@repo/shared';
 import type { DbResult, DbListResult } from '../database/db-result.types';
-import type { LemonSqueezyWebhookPayload, LemonSqueezyOrderData } from '../payments/types/webhook.types';
 
 /** Database row shape for the service_registrations table with joined assigned user */
 interface ServiceRegistrationRow {
@@ -45,6 +48,9 @@ interface ServiceRegistrationRow {
   payment_status: ServiceRegistrationPaymentStatus;
   lemonsqueezy_checkout_id: string | null;
   lemonsqueezy_order_id: string | null;
+  payment_proof_path: string | null;
+  payment_review_note: string | null;
+  payment_confirmed_at: string | null;
   status: ServiceRegistrationStatus;
   client_profile_id: string | null;
   assigned_to_id: string | null;
@@ -107,7 +113,9 @@ export class ServiceRegistrationsService {
 
   constructor(
     private readonly supabaseService: SupabaseService,
-    private readonly lemonsqueezyService: LemonSqueezyService,
+    private readonly paymentProofService: PaymentProofService,
+    private readonly paymentEmailService: PaymentEmailService,
+    private readonly invoicesService: InvoicesService,
     private readonly configService: ConfigService<Configuration>,
   ) {}
 
@@ -480,7 +488,9 @@ export class ServiceRegistrationsService {
         `Failed to save document metadata for registration ${registrationId}`,
         error,
       );
-      throw new InternalServerErrorException('Failed to save document metadata');
+      throw new InternalServerErrorException(
+        'Failed to save document metadata',
+      );
     }
 
     this.logger.log(
@@ -609,213 +619,285 @@ export class ServiceRegistrationsService {
   }
 
   /**
-   * Initiates a LemonSqueezy checkout for a service registration fee.
+   * Uploads a manual payment screenshot for a registration.
    *
-   * Fetches the registration and its associated service fee, creates a
-   * one-time checkout via LemonSqueezy, persists the checkout ID, and
-   * returns the hosted checkout URL for the client to complete payment.
+   * Stores the screenshot in the private `payment-proofs` bucket and advances
+   * the registration to `awaiting_confirmation` for admin review. Re-upload is
+   * allowed while payment is not yet confirmed.
    *
    * @param registrationId - The service registration UUID
-   * @returns Hosted checkout URL to redirect the user to
+   * @param file - Uploaded screenshot (jpg/png/webp/pdf)
+   * @returns Updated registration
+   * @throws {NotFoundException} If the registration does not exist
+   * @throws {BadRequestException} If payment already confirmed
+   *
+   * @example
+   * ```typescript
+   * const reg = await service.uploadPaymentProof('reg-uuid', file);
+   * // reg.paymentStatus → 'awaiting_confirmation'
+   * ```
+   */
+  async uploadPaymentProof(
+    registrationId: string,
+    file: Express.Multer.File,
+  ): Promise<ServiceRegistrationResponse> {
+    this.logger.log(
+      `Uploading payment proof for registration: ${registrationId}`,
+    );
+
+    const adminClient = this.supabaseService.getAdminClient();
+
+    const { data: reg, error } = (await adminClient
+      .from('service_registrations')
+      .select('id, payment_status')
+      .eq('id', registrationId)
+      .single()) as DbResult<{
+      id: string;
+      payment_status: ServiceRegistrationPaymentStatus;
+    }>;
+
+    if (error || !reg) {
+      throw new NotFoundException('Registration not found');
+    }
+    if (reg.payment_status === ServiceRegistrationPaymentStatus.PAID) {
+      throw new BadRequestException('Payment already confirmed');
+    }
+
+    const { storagePath } = await this.paymentProofService.uploadProof(
+      `service-registrations/${registrationId}`,
+      file,
+    );
+
+    const { data: updated, error: updateError } = (await adminClient
+      .from('service_registrations')
+      .update({
+        payment_proof_path: storagePath,
+        payment_status: ServiceRegistrationPaymentStatus.AWAITING_CONFIRMATION,
+      })
+      .eq('id', registrationId)
+      .select(REGISTRATION_SELECT_WITH_JOINS)
+      .single()) as DbResult<ServiceRegistrationRow>;
+
+    if (updateError || !updated) {
+      this.logger.error('Failed to record payment proof', updateError);
+      throw new BadRequestException('Failed to record payment proof');
+    }
+
+    this.logger.log(
+      `Payment proof recorded for registration ${registrationId}`,
+    );
+    return this.mapRegistrationRow(updated);
+  }
+
+  /**
+   * Generates a short-lived signed URL for an admin to view the payment proof.
+   *
+   * @param registrationId - The service registration UUID
+   * @returns `{ url }` — signed URL valid for 1 hour
+   * @throws {NotFoundException} If registration or proof not found
+   */
+  async getPaymentProofUrl(registrationId: string): Promise<{ url: string }> {
+    const adminClient = this.supabaseService.getAdminClient();
+    const { data: reg, error } = (await adminClient
+      .from('service_registrations')
+      .select('payment_proof_path')
+      .eq('id', registrationId)
+      .single()) as DbResult<{ payment_proof_path: string | null }>;
+
+    if (error || !reg) {
+      throw new NotFoundException('Registration not found');
+    }
+    if (!reg.payment_proof_path) {
+      throw new NotFoundException(
+        'No payment proof uploaded for this registration',
+      );
+    }
+
+    const url = await this.paymentProofService.getSignedProofUrl(
+      reg.payment_proof_path,
+    );
+    return { url };
+  }
+
+  /**
+   * Reviews a manually-uploaded payment (admin action): confirm or flag.
+   *
+   * - `confirm`: marks the registration paid (payment_status + status = paid),
+   *   records who/when, auto-creates the client account if needed, creates a
+   *   PAID invoice, and emails the client. Idempotent — a no-op if already paid.
+   * - `flag`: marks payment `flagged`, stores the admin note, and emails the
+   *   client. The registration itself continues unchanged.
+   *
+   * @param registrationId - The service registration UUID
+   * @param admin - Authenticated admin/staff user
+   * @param dto - Review action + optional note/amount
+   * @returns Updated registration
    * @throws {NotFoundException} If the registration does not exist
    *
    * @example
    * ```typescript
-   * const { checkoutUrl } = await service.initiatePayment('reg-uuid');
-   * // Redirect user to checkoutUrl
+   * await service.reviewPayment('reg-uuid', admin, { action: 'confirm', amount: 5400 });
    * ```
    */
-  async initiatePayment(registrationId: string, amountPkr?: number, faqPath?: string): Promise<{ checkoutUrl: string }> {
-    this.logger.log(`Initiating LemonSqueezy payment for registration: ${registrationId}`);
-
-    const adminClient = this.supabaseService.getAdminClient();
-
-    const { data: registration, error } = await adminClient
-      .from('service_registrations')
-      .select('*, services!inner(registration_fee, name)')
-      .eq('id', registrationId)
-      .single();
-
-    if (error || !registration) {
-      throw new NotFoundException('Registration not found');
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const reg = registration as any;
-    // Prefer the amount passed from the frontend (calculated from IP_FEES constants),
-    // fall back to DB registration_fee if available, else 0
-    const serviceFee: number = amountPkr ?? Number(reg.services?.registration_fee ?? 0);
-    const serviceName: string = reg.services?.name ?? 'Service Registration';
-
+  async reviewPayment(
+    registrationId: string,
+    admin: AuthUser,
+    dto: ReviewPaymentData,
+  ): Promise<ServiceRegistrationResponse> {
     this.logger.log(
-      `initiatePayment: registrationId=${registrationId} amountPkr=${amountPkr} serviceFee=${serviceFee} customPrice(paisa)=${serviceFee * 100}`,
-    );
-
-    // Pick the variant based on the fee amount:
-    // standard (PKR 5,400) → serviceVariantId
-    // with govt charges (PKR 8,400) → serviceGovtVariantId (falls back to standard if not configured)
-    const IP_FEES_STANDARD = 5400;
-    const stdVariantId = Number(
-      this.configService.get<string>('lemonsqueezy.serviceVariantId', { infer: true }),
-    );
-    const govtVariantId = Number(
-      this.configService.get<string>('lemonsqueezy.serviceGovtVariantId', { infer: true }),
-    );
-    const serviceVariantId = (serviceFee > IP_FEES_STANDARD && govtVariantId)
-      ? govtVariantId
-      : stdVariantId;
-
-    const frontendUrl = this.configService.get<string>(
-      'lemonsqueezy.frontendUrl',
-      { infer: true },
-    );
-
-    this.logger.log(
-      `Using variantId=${serviceVariantId} (serviceFee=${serviceFee}, stdVariant=${stdVariantId}, govtVariant=${govtVariantId})`,
-    );
-
-    const { checkoutUrl, checkoutId } =
-      await this.lemonsqueezyService.createOneTimeCheckout({
-        variantId: serviceVariantId,
-        customPrice: serviceFee * 100, // PKR to paisa (LS uses 2 decimal places for PKR)
-        email: reg.email,
-        name: reg.full_name,
-        customData: {
-          payment_type: 'service',
-          reference_id: reg.reference_number,
-          registration_id: reg.id,
-        },
-        redirectUrl: faqPath
-          ? `${frontendUrl}${faqPath}`
-          : `${frontendUrl}/payment/success?type=service&ref=${reg.reference_number}`,
-        productName: `${serviceName} - Registration Fee`,
-      });
-
-    await adminClient
-      .from('service_registrations')
-      .update({ lemonsqueezy_checkout_id: checkoutId })
-      .eq('id', registrationId);
-
-    this.logger.log(
-      `LemonSqueezy checkout created for registration ${reg.reference_number}: ${checkoutId}`,
-    );
-
-    return { checkoutUrl };
-  }
-
-  /**
-   * Handles LemonSqueezy `order_created` webhook for service registration payments.
-   *
-   * Marks the registration as paid, stores the LemonSqueezy order ID, and
-   * triggers auto account creation so the guest becomes a registered client.
-   *
-   * @param payload - LemonSqueezy webhook payload (order_created event)
-   *
-   * @example
-   * ```typescript
-   * await service.handlePaymentConfirmed(webhookPayload);
-   * // registration.payment_status → 'paid', registration.status → 'paid'
-   * ```
-   */
-  async handlePaymentConfirmed(payload: LemonSqueezyWebhookPayload): Promise<void> {
-    const registrationId = payload.meta.custom_data?.registration_id;
-    if (!registrationId) {
-      this.logger.warn('handlePaymentConfirmed: missing registration_id in custom_data');
-      return;
-    }
-
-    const orderData = payload.data as LemonSqueezyOrderData;
-    const lemonsqueezyOrderId = orderData.id;
-    // total is in paisa — convert to PKR
-    const paidAmountPkr = (orderData.attributes.total ?? 0) / 100;
-
-    this.logger.log(
-      `Payment confirmed for registration ${registrationId}, order: ${lemonsqueezyOrderId}, amount: PKR ${paidAmountPkr}`,
+      `Admin ${admin.id} reviewing payment for registration ${registrationId} (${dto.action})`,
     );
 
     const adminClient = this.supabaseService.getAdminClient();
 
-    // Fetch the full registration for account creation
-    const { data: registration, error: fetchError } = (await adminClient
+    const { data: registration, error } = (await adminClient
       .from('service_registrations')
       .select('*')
       .eq('id', registrationId)
       .single()) as DbResult<ServiceRegistrationRow>;
 
-    if (fetchError || !registration) {
-      this.logger.error(`Registration ${registrationId} not found during payment confirmation`);
-      return;
+    if (error || !registration) {
+      throw new NotFoundException('Registration not found');
     }
 
-    // Mark as paid and store the actual amount charged
-    const { error: updateError } = await adminClient
-      .from('service_registrations')
-      .update({
+    // Idempotent confirm: already paid → return as-is.
+    if (
+      dto.action === 'confirm' &&
+      registration.payment_status === ServiceRegistrationPaymentStatus.PAID
+    ) {
+      this.logger.log(
+        `Registration ${registrationId} already paid — confirm is a no-op`,
+      );
+      const { data: current } = (await adminClient
+        .from('service_registrations')
+        .select(REGISTRATION_SELECT_WITH_JOINS)
+        .eq('id', registrationId)
+        .single()) as DbResult<ServiceRegistrationRow>;
+      return this.mapRegistrationRow(current ?? registration);
+    }
+
+    if (dto.action === 'confirm') {
+      const paidAmount = dto.amount ?? undefined;
+      const update: Record<string, unknown> = {
         payment_status: ServiceRegistrationPaymentStatus.PAID,
         status: ServiceRegistrationStatus.PAID,
-        lemonsqueezy_order_id: lemonsqueezyOrderId,
-        paid_amount: paidAmountPkr,
+        payment_confirmed_by: admin.id,
+        payment_confirmed_at: new Date().toISOString(),
+        payment_review_note: dto.note ?? null,
+      };
+      if (paidAmount !== undefined) update.paid_amount = paidAmount;
+
+      const { data: updated, error: updateError } = (await adminClient
+        .from('service_registrations')
+        .update(update)
+        .eq('id', registrationId)
+        .select(REGISTRATION_SELECT_WITH_JOINS)
+        .single()) as DbResult<ServiceRegistrationRow>;
+
+      if (updateError || !updated) {
+        throw new BadRequestException('Failed to confirm payment');
+      }
+
+      // Auto-create user account if not already linked
+      if (!registration.client_profile_id) {
+        await this.createUserAccount(registration);
+      }
+
+      await this.createPaidInvoice(registrationId);
+      await this.paymentEmailService.send('confirmed', {
+        to: updated.email,
+        fullName: updated.full_name,
+        referenceNumber: updated.reference_number,
+        subject: 'Service Registration',
+      });
+
+      this.logger.log(
+        `Registration ${registrationId} payment confirmed by admin ${admin.id}`,
+      );
+      return this.mapRegistrationRow(updated);
+    }
+
+    // action === 'flag'
+    const { data: flagged, error: flagError } = (await adminClient
+      .from('service_registrations')
+      .update({
+        payment_status: ServiceRegistrationPaymentStatus.FLAGGED,
+        payment_review_note: dto.note ?? null,
       })
-      .eq('id', registrationId);
+      .eq('id', registrationId)
+      .select(REGISTRATION_SELECT_WITH_JOINS)
+      .single()) as DbResult<ServiceRegistrationRow>;
 
-    if (updateError) {
-      this.logger.error(
-        `Failed to confirm payment for registration ${registrationId}: ${updateError.message}`,
-      );
-      throw new BadRequestException(
-        `Failed to confirm service registration payment: ${updateError.message}`,
-      );
+    if (flagError || !flagged) {
+      throw new BadRequestException('Failed to flag payment');
     }
 
-    // Auto-create user account if not already linked
-    if (!registration.client_profile_id) {
-      await this.createUserAccount(registration);
-    }
+    await this.paymentEmailService.send('flagged', {
+      to: flagged.email,
+      fullName: flagged.full_name,
+      referenceNumber: flagged.reference_number,
+      subject: 'Service Registration',
+      note: dto.note,
+    });
 
-    this.logger.log(`Registration ${registrationId} payment confirmed successfully`);
+    this.logger.log(
+      `Registration ${registrationId} payment flagged by admin ${admin.id}`,
+    );
+    return this.mapRegistrationRow(flagged);
   }
 
   /**
-   * Handles LemonSqueezy `order_refunded` webhook for service registration payments.
+   * Auto-creates a PAID invoice for a confirmed service registration.
+   * Links to the client profile if one exists; otherwise stores by email.
+   * Best-effort — failures are logged, not thrown.
    *
-   * Reverts the registration back to pending_payment status when a refund occurs.
-   *
-   * @param payload - LemonSqueezy webhook payload (order_refunded event)
-   *
-   * @example
-   * ```typescript
-   * await service.handlePaymentRefunded(webhookPayload);
-   * // registration.payment_status → 'refunded'
-   * ```
+   * @param registrationId - The service registration UUID
    */
-  async handlePaymentRefunded(payload: LemonSqueezyWebhookPayload): Promise<void> {
-    const registrationId = payload.meta.custom_data?.registration_id;
-    if (!registrationId) {
-      this.logger.warn('handlePaymentRefunded: missing registration_id in custom_data');
-      return;
-    }
-
-    this.logger.log(`Payment refunded for registration ${registrationId}`);
-
+  private async createPaidInvoice(registrationId: string): Promise<void> {
     const adminClient = this.supabaseService.getAdminClient();
-    const { error } = await adminClient
+    const { data: reg } = (await adminClient
       .from('service_registrations')
-      .update({
-        payment_status: ServiceRegistrationPaymentStatus.REFUNDED,
-        status: ServiceRegistrationStatus.PENDING_PAYMENT,
-      })
-      .eq('id', registrationId);
+      .select(
+        'email, paid_amount, client_profile_id, reference_number, services(name)',
+      )
+      .eq('id', registrationId)
+      .maybeSingle()) as DbResult<{
+      email: string;
+      paid_amount: number | null;
+      client_profile_id: string | null;
+      reference_number: string | null;
+      services: { name: string } | null;
+    }>;
 
-    if (error) {
-      this.logger.error(
-        `Failed to process refund for registration ${registrationId}: ${error.message}`,
+    if (!reg) return;
+    const amount = Number(reg.paid_amount ?? 0);
+    if (amount <= 0) return;
+
+    const serviceName = reg.services?.name ?? 'Facilitation Service';
+    const dueDate = new Date().toISOString().split('T')[0];
+    try {
+      const invoice = await this.invoicesService.createInvoice({
+        clientProfileId: reg.client_profile_id ?? undefined,
+        email: reg.email,
+        dueDate,
+        taxAmount: 0,
+        discountAmount: 0,
+        items: [{ description: serviceName, quantity: 1, unitPrice: amount }],
+        notes: reg.reference_number
+          ? `Reference: ${reg.reference_number}`
+          : undefined,
+      });
+      await this.invoicesService.updateInvoice(invoice.id, {
+        status: InvoiceStatus.PAID,
+      });
+      this.logger.log(
+        `Auto-created service invoice for registration ${registrationId}`,
       );
-      throw new BadRequestException(
-        `Failed to process service registration refund: ${error.message}`,
+    } catch (err) {
+      this.logger.error(
+        `Failed to auto-create service invoice for ${registrationId}: ${(err as Error).message}`,
       );
     }
-
-    this.logger.log(`Registration ${registrationId} marked as refunded`);
   }
 
   /**
@@ -829,7 +911,9 @@ export class ServiceRegistrationsService {
    *
    * @param registration - The paid service registration row
    */
-  private async createUserAccount(registration: ServiceRegistrationRow): Promise<void> {
+  private async createUserAccount(
+    registration: ServiceRegistrationRow,
+  ): Promise<void> {
     const adminClient = this.supabaseService.getAdminClient();
 
     // Check if an auth user with this email already exists
@@ -842,7 +926,9 @@ export class ServiceRegistrationsService {
 
     if (existingAuthUser) {
       userId = existingAuthUser.id;
-      this.logger.log(`Auth user already exists for ${registration.email}: ${userId}`);
+      this.logger.log(
+        `Auth user already exists for ${registration.email}: ${userId}`,
+      );
     } else {
       // Generate a temporary password — user will reset on first login
       const tempPassword = `Arco${Math.random().toString(36).slice(2, 10)}!`;
@@ -897,11 +983,12 @@ export class ServiceRegistrationsService {
     }
 
     // Create or fetch client_profile
-    const { data: clientProfile, error: clientProfileError } = (await adminClient
-      .from('client_profiles')
-      .upsert({ user_profile_id: userId }, { onConflict: 'user_profile_id' })
-      .select('id')
-      .single()) as DbResult<{ id: string }>;
+    const { data: clientProfile, error: clientProfileError } =
+      (await adminClient
+        .from('client_profiles')
+        .upsert({ user_profile_id: userId }, { onConflict: 'user_profile_id' })
+        .select('id')
+        .single()) as DbResult<{ id: string }>;
 
     if (clientProfileError || !clientProfile) {
       this.logger.error(
@@ -923,7 +1010,9 @@ export class ServiceRegistrationsService {
       .eq('email', registration.email)
       .is('client_profile_id', null);
     if (invoiceLinkError) {
-      this.logger.warn(`Failed to link guest invoices for ${registration.email}: ${invoiceLinkError.message}`);
+      this.logger.warn(
+        `Failed to link guest invoices for ${registration.email}: ${invoiceLinkError.message}`,
+      );
     }
 
     this.logger.log(
@@ -943,17 +1032,25 @@ export class ServiceRegistrationsService {
     fullName: string,
     tempPassword: string,
   ): Promise<void> {
-    const sendgridApiKey = this.configService.get<string>('email.resendApiKey', {
-      infer: true,
-    });
+    const sendgridApiKey = this.configService.get<string>(
+      'email.resendApiKey',
+      {
+        infer: true,
+      },
+    );
     if (!sendgridApiKey) {
-      this.logger.warn('SendGrid API key not configured — skipping welcome email');
+      this.logger.warn(
+        'SendGrid API key not configured — skipping welcome email',
+      );
       return;
     }
 
-    const frontendUrl = this.configService.get<string>('lemonsqueezy.frontendUrl', {
-      infer: true,
-    });
+    const frontendUrl = this.configService.get<string>(
+      'lemonsqueezy.frontendUrl',
+      {
+        infer: true,
+      },
+    );
 
     sgMail.setApiKey(sendgridApiKey);
 
@@ -1001,6 +1098,9 @@ export class ServiceRegistrationsService {
       caseId: row.case_id ?? null,
       caseNumber: row.case?.case_number ?? null,
       staffNotes: row.staff_notes ?? null,
+      paymentProofPath: row.payment_proof_path ?? null,
+      paymentReviewNote: row.payment_review_note ?? null,
+      paymentConfirmedAt: row.payment_confirmed_at ?? null,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
     };

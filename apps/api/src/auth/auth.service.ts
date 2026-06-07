@@ -567,7 +567,10 @@ export class AuthService {
    *
    * Uses admin client to bypass RLS.
    */
-  private async createClientProfile(userProfileId: string, email?: string): Promise<void> {
+  private async createClientProfile(
+    userProfileId: string,
+    email?: string,
+  ): Promise<void> {
     const adminClient = this.supabaseService.getAdminClient();
 
     const { data: clientProfile, error } = await adminClient
@@ -593,7 +596,9 @@ export class AuthService {
         .eq('email', email)
         .is('client_profile_id', null);
       if (linkError) {
-        this.logger.warn(`Failed to link guest invoices for ${email}: ${linkError.message}`);
+        this.logger.warn(
+          `Failed to link guest invoices for ${email}: ${linkError.message}`,
+        );
       }
     }
   }

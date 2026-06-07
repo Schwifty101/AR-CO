@@ -35,8 +35,12 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import {
-  getConsultations, type PaginatedConsultations,
+  getConsultations,
+  getConsultationProofUrl,
+  reviewConsultationPayment,
+  type PaginatedConsultations,
 } from '@/lib/api/consultations';
+import PaymentReviewPanel from '@/components/admin/PaymentReviewPanel';
 import type { ConsultationResponse } from '@repo/shared';
 import {
   ConsultationBookingStatus, ConsultationPaymentStatus,
@@ -159,9 +163,19 @@ function DetailItem({ label, value, fullWidth = false }: {
  * <ExpandedDetails consultation={consultationData} />
  * ```
  */
-function ExpandedDetails({ consultation }: { consultation: ConsultationResponse }) {
+function ExpandedDetails({ consultation, onReviewed }: {
+  consultation: ConsultationResponse;
+  onReviewed: () => void;
+}) {
   return (
-    <div className="p-4 bg-muted/30 rounded-md">
+    <div className="p-4 bg-muted/30 rounded-md space-y-4">
+      <PaymentReviewPanel
+        paymentStatus={consultation.paymentStatus}
+        hasProof={!!consultation.paymentProofPath}
+        getProofUrl={() => getConsultationProofUrl(consultation.id)}
+        onReview={(data) => reviewConsultationPayment(consultation.id, data).then(() => undefined)}
+        onReviewed={onReviewed}
+      />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <DetailItem label="Reference Number" value={consultation.referenceNumber} />
         <DetailItem label="Urgency" value={formatLabel(consultation.urgency)} />
@@ -215,12 +229,13 @@ function ExpandedDetails({ consultation }: { consultation: ConsultationResponse 
  * />
  * ```
  */
-function ConsultationRow({ consultation, isExpanded, paymentBadge, bookingBadge, onToggle }: {
+function ConsultationRow({ consultation, isExpanded, paymentBadge, bookingBadge, onToggle, onReviewed }: {
   consultation: ConsultationResponse;
   isExpanded: boolean;
   paymentBadge: BadgeProps;
   bookingBadge: BadgeProps;
   onToggle: (id: string) => void;
+  onReviewed: () => void;
 }) {
   return (
     <>
@@ -251,7 +266,7 @@ function ConsultationRow({ consultation, isExpanded, paymentBadge, bookingBadge,
       {isExpanded && (
         <TableRow>
           <TableCell colSpan={TOTAL_COLS} className="p-0 border-b">
-            <ExpandedDetails consultation={consultation} />
+            <ExpandedDetails consultation={consultation} onReviewed={onReviewed} />
           </TableCell>
         </TableRow>
       )}
@@ -411,6 +426,7 @@ export default function ConsultationGuestsTable() {
                         paymentBadge={getPaymentBadgeProps(consultation.paymentStatus)}
                         bookingBadge={getBookingBadgeProps(consultation.bookingStatus)}
                         onToggle={handleRowClick}
+                        onReviewed={loadConsultations}
                       />
                     ))
                   )}

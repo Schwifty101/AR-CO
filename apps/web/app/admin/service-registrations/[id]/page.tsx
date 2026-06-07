@@ -23,6 +23,7 @@ import {
   Card,
   CardContent,
   CardHeader,
+  CardTitle,
 } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
@@ -31,9 +32,12 @@ import {
   assignRegistration,
   listRegistrationDocuments,
   getDocumentDownloadUrl,
+  getServiceProofUrl,
+  reviewServicePayment,
   type ServiceRegistrationResponse,
   type ServiceRegistrationDocument,
 } from '@/lib/api/service-registrations';
+import PaymentReviewPanel from '@/components/admin/PaymentReviewPanel';
 import { createCaseFromRegistration } from '@/lib/api/cases';
 import { getUsers } from '@/lib/api/users';
 import {
@@ -365,6 +369,22 @@ export default function AdminServiceRegistrationDetailPage() {
 
       {/* Service Details Card */}
       <ServiceDetailsCard registration={registration} />
+
+      {/* Payment Review Card */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Payment</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <PaymentReviewPanel
+            paymentStatus={registration.paymentStatus}
+            hasProof={!!registration.paymentProofPath}
+            getProofUrl={() => getServiceProofUrl(registration.id)}
+            onReview={(data) => reviewServicePayment(registration.id, data).then(() => undefined)}
+            onReviewed={loadRegistration}
+          />
+        </CardContent>
+      </Card>
 
       {/* Staff Actions Card */}
       <StaffActionsCard

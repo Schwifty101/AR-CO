@@ -306,9 +306,13 @@ export class SubscriptionsService {
       .eq('id', subscriptionId);
 
     // Log event
-    await this.webhookService.logEvent(subscriptionId, 'subscription.cancelled_by_user', {
-      cancelled_by: cancelledBy.id,
-    });
+    await this.webhookService.logEvent(
+      subscriptionId,
+      'subscription.cancelled_by_user',
+      {
+        cancelled_by: cancelledBy.id,
+      },
+    );
 
     this.logger.log(
       `Subscription ${subscriptionId} cancelled by ${cancelledBy.id}`,
@@ -330,7 +334,10 @@ export class SubscriptionsService {
    * await subscriptionsService.resumeSubscription('sub-uuid', currentUser);
    * ```
    */
-  async resumeSubscription(subscriptionId: string, user: AuthUser): Promise<void> {
+  async resumeSubscription(
+    subscriptionId: string,
+    user: AuthUser,
+  ): Promise<void> {
     const client = this.supabaseService.getAdminClient();
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -358,20 +365,27 @@ export class SubscriptionsService {
     }
 
     if (sub.lemonsqueezy_subscription_id) {
-      await this.lemonsqueezyService.resumeSubscription(sub.lemonsqueezy_subscription_id);
+      await this.lemonsqueezyService.resumeSubscription(
+        sub.lemonsqueezy_subscription_id,
+      );
     }
 
-    await client.from('user_subscriptions').update({
-      status: SubscriptionStatus.ACTIVE,
-      cancelled_at: null,
-      ends_at: null,
-      updated_at: new Date().toISOString(),
-    }).eq('id', subscriptionId);
+    await client
+      .from('user_subscriptions')
+      .update({
+        status: SubscriptionStatus.ACTIVE,
+        cancelled_at: null,
+        ends_at: null,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', subscriptionId);
 
     await this.webhookService.logEvent(subscriptionId, 'subscription.resumed', {
       resumed_by: user.id,
     });
-    this.logger.log(`Subscription ${subscriptionId} resumed by user ${user.id}`);
+    this.logger.log(
+      `Subscription ${subscriptionId} resumed by user ${user.id}`,
+    );
   }
 
   /**
@@ -418,7 +432,12 @@ export class SubscriptionsService {
     }
 
     if (!rawSub) {
-      return { status: 'none', liveStatus: null, currentPeriodEnd: null, endsAt: null };
+      return {
+        status: 'none',
+        liveStatus: null,
+        currentPeriodEnd: null,
+        endsAt: null,
+      };
     }
 
     const sub = rawSub as unknown as UserSubscriptionRow;
@@ -426,9 +445,9 @@ export class SubscriptionsService {
     let liveStatus: string | null = null;
     if (sub.lemonsqueezy_subscription_id) {
       try {
-        const lsData = await this.lemonsqueezyService.getSubscription(
+        const lsData = (await this.lemonsqueezyService.getSubscription(
           sub.lemonsqueezy_subscription_id,
-        ) as { data?: { attributes?: { status?: string } } } | null;
+        )) as { data?: { attributes?: { status?: string } } } | null;
         liveStatus = lsData?.data?.attributes?.status ?? null;
       } catch (err) {
         this.logger.warn(
@@ -449,7 +468,9 @@ export class SubscriptionsService {
    * List all subscriptions with filters and pagination (admin/staff).
    * @see SubscriptionsAdminService.getSubscriptions
    */
-  async getSubscriptions(filters: SubscriptionFilters): Promise<PaginatedSubscriptionsResponse> {
+  async getSubscriptions(
+    filters: SubscriptionFilters,
+  ): Promise<PaginatedSubscriptionsResponse> {
     return this.adminService.getSubscriptions(filters);
   }
 
@@ -464,12 +485,16 @@ export class SubscriptionsService {
   // ─── Webhook handler delegates (implementation in SubscriptionsWebhookService) ──
 
   /** @see SubscriptionsWebhookService.handleSubscriptionCreated */
-  async handleSubscriptionCreated(p: LemonSqueezyWebhookPayload): Promise<void> {
+  async handleSubscriptionCreated(
+    p: LemonSqueezyWebhookPayload,
+  ): Promise<void> {
     return this.webhookService.handleSubscriptionCreated(p);
   }
 
   /** @see SubscriptionsWebhookService.handleSubscriptionUpdated */
-  async handleSubscriptionUpdated(p: LemonSqueezyWebhookPayload): Promise<void> {
+  async handleSubscriptionUpdated(
+    p: LemonSqueezyWebhookPayload,
+  ): Promise<void> {
     return this.webhookService.handleSubscriptionUpdated(p);
   }
 
@@ -489,12 +514,16 @@ export class SubscriptionsService {
   }
 
   /** @see SubscriptionsWebhookService.handleSubscriptionCancelled */
-  async handleSubscriptionCancelled(p: LemonSqueezyWebhookPayload): Promise<void> {
+  async handleSubscriptionCancelled(
+    p: LemonSqueezyWebhookPayload,
+  ): Promise<void> {
     return this.webhookService.handleSubscriptionCancelled(p);
   }
 
   /** @see SubscriptionsWebhookService.handleSubscriptionExpired */
-  async handleSubscriptionExpired(p: LemonSqueezyWebhookPayload): Promise<void> {
+  async handleSubscriptionExpired(
+    p: LemonSqueezyWebhookPayload,
+  ): Promise<void> {
     return this.webhookService.handleSubscriptionExpired(p);
   }
 }

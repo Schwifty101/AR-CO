@@ -37,6 +37,7 @@ import type {
   AssignToData,
   GuestStatusResponse,
   PaginatedServiceRegistrationsResponse,
+  ReviewPaymentData,
 } from '@repo/shared';
 
 // Re-export types for consumers that import from this module
@@ -103,43 +104,95 @@ export async function createRegistration(
 }
 
 /**
- * Initiate payment for a service registration (PUBLIC - no auth required)
+ * Upload a manual payment screenshot for a registration (PUBLIC - no auth)
  *
- * Creates a LemonSqueezy hosted checkout session for the registration fee.
- * Guest users can pay without logging in. Redirect URL is configured server-side.
+ * Sends a multipart/form-data request with the screenshot. Advances the
+ * registration to `awaiting_confirmation` for admin review.
  *
  * @param registrationId - UUID of the registration
- * @returns LemonSqueezy hosted checkout URL
+ * @param file - The payment screenshot (jpg/png/webp/pdf, ≤10 MB)
+ * @returns Updated registration
  * @throws Error if request fails or registration not found
  *
  * @example
  * ```typescript
- * const { checkoutUrl } = await initiatePayment('reg-uuid');
- * window.location.href = checkoutUrl;
+ * const reg = await uploadServicePaymentProof('reg-uuid', file);
+ * // reg.paymentStatus === 'awaiting_confirmation'
  * ```
  */
-export async function initiatePayment(
+export async function uploadServicePaymentProof(
   registrationId: string,
-  amountPkr?: number,
-  faqPath?: string,
-): Promise<{ checkoutUrl: string }> {
-  const response = await fetch(`/api/service-registrations/${registrationId}/pay`, {
+  file: File,
+): Promise<ServiceRegistrationResponse> {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const response = await fetch(`/api/service-registrations/${registrationId}/payment-proof`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      ...(amountPkr !== undefined && { amount: amountPkr }),
-      ...(faqPath !== undefined && { faqPath }),
-    }),
+    body: formData,
   });
 
   if (!response.ok) {
     const error = (await response.json().catch(() => ({}))) as { message?: string };
-    throw new Error(error.message || 'Failed to initiate payment');
+    throw new Error(error.message || 'Failed to upload payment screenshot');
   }
 
-  return (await response.json()) as { checkoutUrl: string };
+  return (await response.json()) as ServiceRegistrationResponse;
+}
+
+/**
+ * Review a registration's manual payment (staff only): confirm or flag.
+ *
+ * @param id - UUID of the registration
+ * @param data - Review action + optional note/amount
+ * @returns Updated registration
+ *
+ * @example
+ * ```typescript
+ * await reviewServicePayment(id, { action: 'confirm', amount: 5400 });
+ * ```
+ */
+export async function reviewServicePayment(
+  id: string,
+  data: ReviewPaymentData,
+): Promise<ServiceRegistrationResponse> {
+  const token = await getSessionToken();
+  const response = await fetch(`/api/service-registrations/${id}/review-payment`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
+    throw new Error(error.message || 'Failed to review payment');
+  }
+
+  return (await response.json()) as ServiceRegistrationResponse;
+}
+
+/**
+ * Get a signed URL to view the uploaded payment screenshot (staff only).
+ *
+ * @param id - UUID of the registration
+ * @returns Signed URL valid for 1 hour
+ */
+export async function getServiceProofUrl(id: string): Promise<string> {
+  const token = await getSessionToken();
+  const response = await fetch(`/api/service-registrations/${id}/payment-proof-url`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  if (!response.ok) {
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
+    throw new Error(error.message || 'Failed to load payment proof');
+  }
+
+  const data = (await response.json()) as { url: string };
+  return data.url;
 }
 
 /**

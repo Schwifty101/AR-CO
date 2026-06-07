@@ -98,6 +98,25 @@ export interface GoogleConfig {
 }
 
 /**
+ * Manual payment configuration interface.
+ *
+ * Bank details + contact channels shown to guests who pay manually (bank
+ * transfer + screenshot upload). The WhatsApp number and bank details are
+ * provided later via env; until then clearly-marked placeholders are used and
+ * the WhatsApp line is hidden when empty.
+ */
+export interface ManualPaymentConfig {
+  bankName: string;
+  accountTitle: string;
+  accountNumber: string;
+  iban: string;
+  /** Official WhatsApp number for queries; empty string → UI hides the line */
+  whatsappNumber: string;
+  /** Contact email for queries (final: info@arandcolaw.com) */
+  contactEmail: string;
+}
+
+/**
  * Complete application configuration interface
  */
 export interface Configuration {
@@ -109,6 +128,7 @@ export interface Configuration {
   admin: AdminConfig;
   lemonsqueezy: LemonSqueezyConfig;
   google: GoogleConfig;
+  manualPayment: ManualPaymentConfig;
 }
 
 /**
@@ -171,13 +191,26 @@ export default (): Configuration => ({
     apiKey: process.env.LEMONSQUEEZY_API_KEY ?? '',
     storeId: process.env.LEMONSQUEEZY_STORE_ID ?? '',
     webhookSecret: process.env.LEMONSQUEEZY_WEBHOOK_SECRET ?? '',
-    subscriptionVariantId: process.env.LEMONSQUEEZY_SUBSCRIPTION_VARIANT_ID ?? '',
-    consultationVariantId: process.env.LEMONSQUEEZY_CONSULTATION_VARIANT_ID ?? '',
+    subscriptionVariantId:
+      process.env.LEMONSQUEEZY_SUBSCRIPTION_VARIANT_ID ?? '',
+    consultationVariantId:
+      process.env.LEMONSQUEEZY_CONSULTATION_VARIANT_ID ?? '',
     serviceVariantId: process.env.LEMONSQUEEZY_SERVICE_VARIANT_ID ?? '',
-    serviceGovtVariantId: process.env.LEMONSQUEEZY_SERVICE_GOVT_VARIANT_ID ?? '',
+    serviceGovtVariantId:
+      process.env.LEMONSQUEEZY_SERVICE_GOVT_VARIANT_ID ?? '',
     frontendUrl: 'https://arandcolaw.com',
   },
   google: {
     serviceAccountKey: process.env.GOOGLE_SERVICE_ACCOUNT_KEY || '',
+  },
+  // Real bank/WhatsApp values are TBD — fall back to clearly-marked placeholders
+  // until the env vars are set. contactEmail is final.
+  manualPayment: {
+    bankName: process.env.MANUAL_PAY_BANK_NAME || 'Bank details to be provided',
+    accountTitle: process.env.MANUAL_PAY_ACCOUNT_TITLE || 'AR & CO',
+    accountNumber: process.env.MANUAL_PAY_ACCOUNT_NUMBER || 'XXXX-XXXX-XXXX',
+    iban: process.env.MANUAL_PAY_IBAN || 'PKXX XXXX XXXX XXXX XXXX XXXX',
+    whatsappNumber: process.env.MANUAL_PAY_WHATSAPP || '',
+    contactEmail: process.env.MANUAL_PAY_CONTACT_EMAIL || 'info@arandcolaw.com',
   },
 });

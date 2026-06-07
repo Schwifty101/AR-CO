@@ -56,7 +56,9 @@ const STATUS_COLORS: Record<ServiceRegistrationStatus, string> = {
 /** Payment status badge color mapping */
 const PAYMENT_STATUS_COLORS: Record<ServiceRegistrationPaymentStatus, string> = {
   [ServiceRegistrationPaymentStatus.PENDING]: 'bg-yellow-500 text-white',
+  [ServiceRegistrationPaymentStatus.AWAITING_CONFIRMATION]: 'bg-amber-500 text-white',
   [ServiceRegistrationPaymentStatus.PAID]: 'bg-green-500 text-white',
+  [ServiceRegistrationPaymentStatus.FLAGGED]: 'bg-orange-600 text-white',
   [ServiceRegistrationPaymentStatus.FAILED]: 'bg-red-500 text-white',
   [ServiceRegistrationPaymentStatus.REFUNDED]: 'bg-gray-500 text-white',
 };

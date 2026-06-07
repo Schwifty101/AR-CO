@@ -52,6 +52,12 @@ export const ConsultationResponseSchema = z.object({
   bookingTime: z.string().nullable(),
   meetingLink: z.string().nullable(),
   bookingStatus: z.nativeEnum(ConsultationBookingStatus),
+  /** Storage path of the uploaded payment screenshot (manual payment flow) */
+  paymentProofPath: z.string().nullable().optional(),
+  /** Admin note recorded when reviewing the payment proof */
+  paymentReviewNote: z.string().nullable().optional(),
+  /** Timestamp the admin confirmed the manual payment */
+  paymentConfirmedAt: z.string().nullable().optional(),
   createdAt: z.string(),
   updatedAt: z.string(),
 });

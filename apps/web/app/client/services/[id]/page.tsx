@@ -32,9 +32,9 @@ import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   getRegistrationById,
-  initiatePayment,
   type ServiceRegistrationResponse,
 } from '@/lib/api/service-registrations';
+import ManualPaymentDialog from '@/components/payment/ManualPaymentDialog';
 import {
   ServiceRegistrationStatus,
   ServiceRegistrationPaymentStatus,
@@ -52,7 +52,9 @@ const STATUS_COLORS: Record<ServiceRegistrationStatus, string> = {
 /** Payment status badge color mapping */
 const PAYMENT_STATUS_COLORS: Record<ServiceRegistrationPaymentStatus, string> = {
   [ServiceRegistrationPaymentStatus.PENDING]: 'bg-yellow-500 text-white',
+  [ServiceRegistrationPaymentStatus.AWAITING_CONFIRMATION]: 'bg-amber-500 text-white',
   [ServiceRegistrationPaymentStatus.PAID]: 'bg-green-500 text-white',
+  [ServiceRegistrationPaymentStatus.FLAGGED]: 'bg-orange-600 text-white',
   [ServiceRegistrationPaymentStatus.FAILED]: 'bg-red-500 text-white',
   [ServiceRegistrationPaymentStatus.REFUNDED]: 'bg-gray-500 text-white',
 };
@@ -69,16 +71,18 @@ export default function ServiceRegistrationDetailPage() {
   const [error, setError] = useState<string | null>(null);
 
   const registrationId = params.id as string;
-  const [isPayingNow, setIsPayingNow] = useState(false);
+  const [showPaymentDialog, setShowPaymentDialog] = useState(false);
 
-  const handlePayNow = async () => {
+  const handlePayNow = () => setShowPaymentDialog(true);
+
+  const handlePaymentComplete = async () => {
+    setShowPaymentDialog(false);
+    toast.success('Payment screenshot uploaded — our team will verify it shortly.');
     try {
-      setIsPayingNow(true);
-      const { checkoutUrl } = await initiatePayment(registrationId);
-      window.location.href = checkoutUrl;
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed to initiate payment');
-      setIsPayingNow(false);
+      const data = await getRegistrationById(registrationId);
+      setRegistration(data);
+    } catch {
+      // non-fatal — page can be refreshed manually
     }
   };
 
@@ -282,25 +286,44 @@ export default function ServiceRegistrationDetailPage() {
         </CardContent>
       </Card>
 
-      {/* Payment Card — shown when payment is pending */}
-      {registration.paymentStatus === ServiceRegistrationPaymentStatus.PENDING && (
+      {/* Payment Card — shown while payment is pending / under review / flagged */}
+      {(registration.paymentStatus === ServiceRegistrationPaymentStatus.PENDING ||
+        registration.paymentStatus === ServiceRegistrationPaymentStatus.AWAITING_CONFIRMATION ||
+        registration.paymentStatus === ServiceRegistrationPaymentStatus.FLAGGED) && (
         <Card className="border-yellow-500/50 bg-yellow-500/5">
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
               <CreditCard className="h-5 w-5 text-yellow-600" />
-              Payment Required
+              {registration.paymentStatus === ServiceRegistrationPaymentStatus.AWAITING_CONFIRMATION
+                ? 'Payment Under Review'
+                : 'Payment Required'}
             </CardTitle>
             <CardDescription>
-              Complete your payment to begin processing your service registration.
+              {registration.paymentStatus === ServiceRegistrationPaymentStatus.AWAITING_CONFIRMATION
+                ? 'Your payment screenshot has been received. Our team will verify it shortly.'
+                : registration.paymentStatus === ServiceRegistrationPaymentStatus.FLAGGED
+                  ? 'We could not verify your payment. Please re-upload a clear screenshot or contact us.'
+                  : 'Transfer the registration fee and upload your payment screenshot to begin processing.'}
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button onClick={handlePayNow} disabled={isPayingNow} size="lg">
-              {isPayingNow ? 'Redirecting to checkout...' : 'Pay Now'}
+            <Button onClick={handlePayNow} size="lg">
+              {registration.paymentStatus === ServiceRegistrationPaymentStatus.AWAITING_CONFIRMATION
+                ? 'Re-upload Screenshot'
+                : 'Upload Payment Proof'}
             </Button>
           </CardContent>
         </Card>
       )}
+
+      <ManualPaymentDialog
+        open={showPaymentDialog}
+        registrationId={registrationId}
+        referenceNumber={registration.referenceNumber}
+        amountPkr={0}
+        onClose={() => setShowPaymentDialog(false)}
+        onComplete={handlePaymentComplete}
+      />
 
       {/* Linked Case */}
       {registration.caseId ? (

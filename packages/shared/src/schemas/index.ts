@@ -25,7 +25,7 @@ export {
   PaginatedUsersResponseSchema,
 } from './users.schemas';
 
-export { PaginationSchema, AssignToSchema } from './common.schemas';
+export { PaginationSchema, AssignToSchema, ReviewPaymentSchema } from './common.schemas';
 
 export {
   AdminDashboardStatsSchema,

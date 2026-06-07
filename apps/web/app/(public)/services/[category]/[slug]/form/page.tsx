@@ -19,7 +19,8 @@ import {
 } from '@/lib/categoryDataMapper'
 import { IP_FEES } from '@/components/data/facilitationCenterData'
 import type { FormField } from '@/components/data/facilitationCenterData'
-import { createRegistration, uploadRegistrationDocument, initiatePayment } from '@/lib/api/service-registrations'
+import { createRegistration, uploadRegistrationDocument } from '@/lib/api/service-registrations'
+import ManualPaymentDialog from '@/components/payment/ManualPaymentDialog'
 import { getPendingDocuments, clearPendingDocuments } from '@/lib/serviceDocumentStore'
 import { getServices } from '@/lib/api/services'
 
@@ -313,6 +314,10 @@ export default function ServiceForm({ params }: PageProps) {
   const [serviceId, setServiceId] = useState<string | null>(null)
   /** True while the API submission request is in-flight */
   const [isSubmitting, setIsSubmitting] = useState(false)
+  /** Pending manual-payment context — opens the screenshot-upload dialog when set */
+  const [pendingPayment, setPendingPayment] = useState<
+    { registrationId: string; referenceNumber: string; amountPkr: number } | null
+  >(null)
 
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const formWrapperRef = useRef<HTMLDivElement>(null)
@@ -674,9 +679,13 @@ export default function ServiceForm({ params }: PageProps) {
       sessionStorage.setItem(`submitted_${category}_${slug}`, registration.referenceNumber)
       sessionStorage.removeItem(`docs_completed_${category}_${slug}`)
 
-      // Redirect to LemonSqueezy checkout — on success LS sends user directly to FAQ
-      const { checkoutUrl } = await initiatePayment(registration.id, ipTotal, `/services/${category}/${slug}/faq`)
-      window.location.href = checkoutUrl
+      // Open the manual-payment dialog (bank transfer + screenshot upload)
+      setPendingPayment({
+        registrationId: registration.id,
+        referenceNumber: registration.referenceNumber,
+        amountPkr: ipTotal,
+      })
+      setIsSubmitting(false)
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Submission failed. Please try again.'
       toast.error(message)
@@ -762,10 +771,14 @@ export default function ServiceForm({ params }: PageProps) {
       sessionStorage.setItem(`submitted_${category}_${slug}`, registration.referenceNumber)
       sessionStorage.removeItem(`docs_completed_${category}_${slug}`)
 
-      // Redirect to LemonSqueezy checkout — on success LS sends user directly to FAQ
+      // Open the manual-payment dialog (bank transfer + screenshot upload)
       const nonIpTotal = IP_FEES.serviceCharges + IP_FEES.registrationFee
-      const { checkoutUrl } = await initiatePayment(registration.id, nonIpTotal, `/services/${category}/${slug}/faq`)
-      window.location.href = checkoutUrl
+      setPendingPayment({
+        registrationId: registration.id,
+        referenceNumber: registration.referenceNumber,
+        amountPkr: nonIpTotal,
+      })
+      setIsSubmitting(false)
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Submission failed. Please try again.'
       toast.error(message)
@@ -2167,6 +2180,20 @@ export default function ServiceForm({ params }: PageProps) {
           </AnimatePresence>
         </div>
       </div>
+
+      {pendingPayment && (
+        <ManualPaymentDialog
+          open
+          registrationId={pendingPayment.registrationId}
+          referenceNumber={pendingPayment.referenceNumber}
+          amountPkr={pendingPayment.amountPkr}
+          onClose={() => setPendingPayment(null)}
+          onComplete={() => {
+            setPendingPayment(null)
+            router.push(`/services/${category}/${slug}/faq`)
+          }}
+        />
+      )}
     </div>
   )
 }

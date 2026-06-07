@@ -75,6 +75,10 @@ export interface ConsultationRow {
   booking_time: string | null;
   meeting_link: string | null;
   booking_status: string;
+  payment_proof_path: string | null;
+  payment_review_note: string | null;
+  payment_confirmed_by: string | null;
+  payment_confirmed_at: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -121,6 +125,9 @@ export function mapConsultationRow(row: ConsultationRow): ConsultationResponse {
     meetingLink: row.meeting_link,
     bookingStatus:
       row.booking_status as unknown as ConsultationResponse['bookingStatus'],
+    paymentProofPath: row.payment_proof_path,
+    paymentReviewNote: row.payment_review_note,
+    paymentConfirmedAt: row.payment_confirmed_at,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };

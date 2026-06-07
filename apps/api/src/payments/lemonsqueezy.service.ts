@@ -143,9 +143,10 @@ export class LemonSqueezyService implements OnModuleInit {
     );
 
     const { data, error } = await createCheckout(storeId, params.variantId, {
-      ...(params.customPrice !== undefined && params.customPrice > 0 && {
-        customPrice: params.customPrice,
-      }),
+      ...(params.customPrice !== undefined &&
+        params.customPrice > 0 && {
+          customPrice: params.customPrice,
+        }),
       productOptions: {
         ...(params.productName && { name: params.productName }),
         redirectUrl: params.redirectUrl,
@@ -205,10 +206,9 @@ export class LemonSqueezyService implements OnModuleInit {
       this.configService.get<string>('lemonsqueezy.storeId', { infer: true }),
     );
     const variantId = Number(
-      this.configService.get<string>(
-        'lemonsqueezy.subscriptionVariantId',
-        { infer: true },
-      ),
+      this.configService.get<string>('lemonsqueezy.subscriptionVariantId', {
+        infer: true,
+      }),
     );
 
     const { data, error } = await createCheckout(storeId, variantId, {
@@ -275,9 +275,7 @@ export class LemonSqueezyService implements OnModuleInit {
       );
       return false;
     }
-    const digest = createHmac('sha256', secret)
-      .update(rawBody)
-      .digest('hex');
+    const digest = createHmac('sha256', secret).update(rawBody).digest('hex');
     return digest === signature;
   }
 

@@ -1,4 +1,4 @@
-export type { AssignToData, PaginationParams } from './common.types';
+export type { AssignToData, PaginationParams, ReviewPaymentData } from './common.types';
 
 export type {
   SignupData,

@@ -12,7 +12,7 @@
  * ```typescript
  * import {
  *   createConsultation,
- *   initiatePayment,
+ *   uploadPaymentProof,
  *   checkBookingStatus,
  *   getConsultations,
  * } from '@/lib/api/consultations';
@@ -27,9 +27,8 @@
  *   issueSummary: 'Need advice on company registration',
  * });
  *
- * // Guest: Initiate payment — redirect to LemonSqueezy hosted checkout
- * const { checkoutUrl } = await initiatePayment(booking.id);
- * window.location.href = checkoutUrl;
+ * // Guest: Upload the bank-transfer screenshot for admin review
+ * await uploadPaymentProof(booking.id, file);
  *
  * // Guest: Check booking status
  * const status = await checkBookingStatus({
@@ -46,18 +45,17 @@ import { getSessionToken, type PaginationParams } from './auth-helpers';
 import type {
   CreateConsultationData,
   ConsultationResponse,
-  ConsultationPaymentInitResponse,
   ConsultationStatusResponse,
   ConsultationStatusCheckData,
   PaginatedConsultationsResponse,
   ConsultationFilters,
+  ReviewPaymentData,
 } from '@repo/shared';
 
 // Re-export types for consumers that import from this module
 export type {
   CreateConsultationData,
   ConsultationResponse,
-  ConsultationPaymentInitResponse,
   ConsultationStatusResponse,
   ConsultationStatusCheckData,
   ConsultationFilters,
@@ -116,37 +114,96 @@ export async function createConsultation(
 }
 
 /**
- * Initiate payment for a consultation booking (guest endpoint)
+ * Upload a manual payment screenshot for a booking (guest endpoint)
  *
- * Creates a LemonSqueezy hosted checkout session for the consultation fee (PKR 50,000).
- * Returns a checkout URL to redirect the user to payment.
+ * Sends a multipart/form-data request with the screenshot. Advances the booking
+ * to `awaiting_confirmation` for admin review.
  *
  * @param bookingId - UUID of the consultation booking
- * @returns LemonSqueezy hosted checkout URL
+ * @param file - The payment screenshot (jpg/png/webp/pdf, ≤10 MB)
+ * @returns Updated consultation booking
  * @throws Error if request fails or booking not found
  *
  * @example
  * ```typescript
- * const { checkoutUrl } = await initiatePayment('550e8400-e29b-41d4-a716-446655440000');
- * window.location.href = checkoutUrl;
+ * const booking = await uploadPaymentProof(bookingId, file);
+ * // booking.paymentStatus === 'awaiting_confirmation'
  * ```
  */
-export async function initiatePayment(
+export async function uploadPaymentProof(
   bookingId: string,
-): Promise<ConsultationPaymentInitResponse> {
-  const response = await fetch(`/api/consultations/${bookingId}/pay`, {
+  file: File,
+): Promise<ConsultationResponse> {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const response = await fetch(`/api/consultations/${bookingId}/payment-proof`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    body: formData,
   });
 
   if (!response.ok) {
     const error = (await response.json().catch(() => ({}))) as { message?: string };
-    throw new Error(error.message || 'Failed to initiate payment');
+    throw new Error(error.message || 'Failed to upload payment screenshot');
   }
 
-  return (await response.json()) as ConsultationPaymentInitResponse;
+  return (await response.json()) as ConsultationResponse;
+}
+
+/**
+ * Review a consultation's manual payment (staff endpoint): confirm or flag.
+ *
+ * @param id - UUID of the consultation booking
+ * @param data - Review action + optional note/amount
+ * @returns Updated consultation booking
+ *
+ * @example
+ * ```typescript
+ * await reviewConsultationPayment(id, { action: 'confirm' });
+ * await reviewConsultationPayment(id, { action: 'flag', note: 'Amount mismatch' });
+ * ```
+ */
+export async function reviewConsultationPayment(
+  id: string,
+  data: ReviewPaymentData,
+): Promise<ConsultationResponse> {
+  const token = await getSessionToken();
+  const response = await fetch(`/api/consultations/${id}/review-payment`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
+    throw new Error(error.message || 'Failed to review payment');
+  }
+
+  return (await response.json()) as ConsultationResponse;
+}
+
+/**
+ * Get a signed URL to view the uploaded payment screenshot (staff endpoint).
+ *
+ * @param id - UUID of the consultation booking
+ * @returns Signed URL valid for 1 hour
+ */
+export async function getConsultationProofUrl(id: string): Promise<string> {
+  const token = await getSessionToken();
+  const response = await fetch(`/api/consultations/${id}/payment-proof-url`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  if (!response.ok) {
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
+    throw new Error(error.message || 'Failed to load payment proof');
+  }
+
+  const data = (await response.json()) as { url: string };
+  return data.url;
 }
 
 /**

@@ -6,7 +6,9 @@ import {
 } from '@nestjs/common';
 import { ConsultationsService } from './consultations.service';
 import { SupabaseService } from '../database/supabase.service';
-import { LemonSqueezyService } from '../payments/lemonsqueezy.service';
+import { PaymentProofService } from '../payments/payment-proof.service';
+import { PaymentEmailService } from '../payments/payment-email.service';
+import { InvoicesService } from '../payments/invoices.service';
 import {
   ConsultationBookingStatus,
   ConsultationPaymentStatus,
@@ -25,8 +27,18 @@ describe('ConsultationsService', () => {
     from: jest.fn(),
   };
 
-  const mockLemonSqueezyService = {
-    createOneTimeCheckout: jest.fn(),
+  const mockPaymentProofService = {
+    uploadProof: jest.fn(),
+    getSignedProofUrl: jest.fn(),
+  };
+
+  const mockPaymentEmailService = {
+    send: jest.fn(),
+  };
+
+  const mockInvoicesService = {
+    createInvoice: jest.fn(),
+    updateInvoice: jest.fn(),
   };
 
   // ---- Fixtures ----
@@ -53,6 +65,10 @@ describe('ConsultationsService', () => {
     booking_time: null,
     meeting_link: null,
     booking_status: ConsultationBookingStatus.PENDING_PAYMENT,
+    payment_proof_path: null,
+    payment_review_note: null,
+    payment_confirmed_by: null,
+    payment_confirmed_at: null,
     created_at: '2026-03-01T10:00:00Z',
     updated_at: '2026-03-01T10:00:00Z',
   };
@@ -68,8 +84,16 @@ describe('ConsultationsService', () => {
           },
         },
         {
-          provide: LemonSqueezyService,
-          useValue: mockLemonSqueezyService,
+          provide: PaymentProofService,
+          useValue: mockPaymentProofService,
+        },
+        {
+          provide: PaymentEmailService,
+          useValue: mockPaymentEmailService,
+        },
+        {
+          provide: InvoicesService,
+          useValue: mockInvoicesService,
         },
       ],
     }).compile();

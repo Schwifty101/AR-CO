@@ -13,11 +13,17 @@
  */
 
 import { Controller, Get, Query } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { SupabaseService } from '../database/supabase.service';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { Public } from '../common/decorators/public.decorator';
 import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
 import { STAFF_ROLES } from '../common/constants/roles';
 import type { AuthUser } from '../common/interfaces/auth-user.interface';
+import type {
+  Configuration,
+  ManualPaymentConfig,
+} from '../config/configuration';
 import { PaginationSchema, type PaginationParams } from '@repo/shared';
 
 /** A single entry in the aggregated payment history */
@@ -38,7 +44,26 @@ export interface PaymentHistoryEntry {
  */
 @Controller('payments')
 export class PaymentsController {
-  constructor(private readonly supabaseService: SupabaseService) {}
+  constructor(
+    private readonly supabaseService: SupabaseService,
+    private readonly configService: ConfigService<Configuration>,
+  ) {}
+
+  /**
+   * Returns the manual-payment bank details + contact channels shown to guests
+   * during the screenshot-upload step. Public — no authentication required.
+   *
+   * WhatsApp is omitted when not yet configured so the UI can hide that line.
+   *
+   * @example GET /api/payments/instructions
+   */
+  @Get('instructions')
+  @Public()
+  getPaymentInstructions(): ManualPaymentConfig {
+    return this.configService.get('manualPayment', {
+      infer: true,
+    }) as ManualPaymentConfig;
+  }
 
   /**
    * Returns aggregated payment history across consultations, service registrations,
@@ -50,9 +75,15 @@ export class PaymentsController {
    */
   @Get('history')
   async getPaymentHistory(
-    @Query(new ZodValidationPipe(PaginationSchema)) pagination: PaginationParams,
+    @Query(new ZodValidationPipe(PaginationSchema))
+    pagination: PaginationParams,
     @CurrentUser() user: AuthUser,
-  ): Promise<{ data: PaymentHistoryEntry[]; total: number; page: number; limit: number }> {
+  ): Promise<{
+    data: PaymentHistoryEntry[];
+    total: number;
+    page: number;
+    limit: number;
+  }> {
     const { page = 1, limit = 20 } = pagination;
     const adminClient = this.supabaseService.getAdminClient();
     const isStaff = STAFF_ROLES.includes(user.userType);
@@ -82,7 +113,6 @@ export class PaymentsController {
 
   /** Fetches paid consultation bookings */
   private async fetchConsultationPayments(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     adminClient: any,
     user: AuthUser,
     isStaff: boolean,
@@ -98,7 +128,11 @@ export class PaymentsController {
 
     const { data } = await query;
     return (data ?? []).map(
-      (row: { reference_number: string; consultation_fee: number; updated_at: string }) => ({
+      (row: {
+        reference_number: string;
+        consultation_fee: number;
+        updated_at: string;
+      }) => ({
         type: 'consultation' as const,
         referenceNumber: row.reference_number,
         description: 'Legal Consultation Fee',
@@ -112,7 +146,6 @@ export class PaymentsController {
 
   /** Fetches paid service registrations */
   private async fetchServicePayments(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     adminClient: any,
     user: AuthUser,
     isStaff: boolean,
@@ -129,30 +162,28 @@ export class PaymentsController {
     }
 
     const { data } = await query;
-    return (data ?? []).map(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (row: any) => ({
-        type: 'service' as const,
-        referenceNumber: row.reference_number,
-        description: `${row.services?.name ?? 'Service'} - Registration Fee`,
-        amount: Number(row.paid_amount ?? 0),
-        currency: 'PKR',
-        status: 'paid',
-        paidAt: row.updated_at,
-      }),
-    );
+    return (data ?? []).map((row: any) => ({
+      type: 'service' as const,
+      referenceNumber: row.reference_number,
+      description: `${row.services?.name ?? 'Service'} - Registration Fee`,
+      amount: Number(row.paid_amount ?? 0),
+      currency: 'PKR',
+      status: 'paid',
+      paidAt: row.updated_at,
+    }));
   }
 
   /** Fetches active/paid subscriptions */
   private async fetchSubscriptionPayments(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     adminClient: any,
     user: AuthUser,
     isStaff: boolean,
   ): Promise<PaymentHistoryEntry[]> {
     let query = adminClient
       .from('user_subscriptions')
-      .select('id, status, last_paid_at, subscription_plans!inner(name, amount, currency)')
+      .select(
+        'id, status, last_paid_at, subscription_plans!inner(name, amount, currency)',
+      )
       .in('status', ['active', 'cancelled', 'ended']);
 
     if (!isStaff) {
@@ -160,17 +191,14 @@ export class PaymentsController {
     }
 
     const { data } = await query;
-    return (data ?? []).map(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (row: any) => ({
-        type: 'subscription' as const,
-        referenceNumber: row.id,
-        description: `${row.subscription_plans?.name ?? 'Subscription'} Plan`,
-        amount: row.subscription_plans?.amount ?? 0,
-        currency: row.subscription_plans?.currency ?? 'PKR',
-        status: row.status,
-        paidAt: row.last_paid_at ?? null,
-      }),
-    );
+    return (data ?? []).map((row: any) => ({
+      type: 'subscription' as const,
+      referenceNumber: row.id,
+      description: `${row.subscription_plans?.name ?? 'Subscription'} Plan`,
+      amount: row.subscription_plans?.amount ?? 0,
+      currency: row.subscription_plans?.currency ?? 'PKR',
+      status: row.status,
+      paidAt: row.last_paid_at ?? null,
+    }));
   }
 }

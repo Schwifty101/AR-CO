@@ -134,6 +134,77 @@
 }
 .paymentSecurityNote svg { flex-shrink: 0; margin-top: 0.1rem; opacity: 0.5; }
 
+/* ─── Manual payment: bank details + screenshot upload ─── */
+.bankDetails {
+  padding: 0.9rem 1rem;
+  border: 1px solid rgba(249, 248, 246, 0.08);
+  border-radius: 4px;
+  background: rgba(249, 248, 246, 0.02);
+}
+.bankDetailsTitle {
+  margin: 0 0 0.75rem;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: rgba(249, 248, 246, 0.55);
+}
+.bankDetailsList { margin: 0; display: flex; flex-direction: column; gap: 0.4rem; }
+.bankDetailsList > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.8rem;
+}
+.bankDetailsList dt {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  color: rgba(249, 248, 246, 0.4);
+}
+.bankDetailsList dd {
+  margin: 0;
+  text-align: right;
+  color: rgba(249, 248, 246, 0.85);
+  letter-spacing: 0.02em;
+}
+.bankDetailsNote {
+  margin: 0.75rem 0 0;
+  font-size: 0.7rem;
+  line-height: 1.5;
+  color: rgba(249, 248, 246, 0.4);
+}
+.bankDetailsNote strong { color: rgba(212, 175, 55, 0.75); }
+
+.fileSelectButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.7rem 1rem;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 0.8rem;
+  color: rgba(249, 248, 246, 0.8);
+  background: transparent;
+  border: 1px dashed rgba(249, 248, 246, 0.2);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+.fileSelectButton:hover:not(:disabled) {
+  border-color: rgba(212, 175, 55, 0.5);
+  color: rgba(249, 248, 246, 0.95);
+}
+.fileSelectButton:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.fileSelected {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.72rem;
+  color: rgba(212, 175, 55, 0.8);
+  word-break: break-all;
+}
+.fileSelected svg { flex-shrink: 0; }
+
 /* ─── Scheduling Step ─── */
 .schedulingHeader {
   display: flex;

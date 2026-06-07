@@ -28,7 +28,11 @@ import { PaymentsModule } from '../payments/payments.module';
 @Module({
   imports: [PaymentsModule],
   controllers: [SubscriptionsController],
-  providers: [SubscriptionsService, SubscriptionsWebhookService, SubscriptionsAdminService],
+  providers: [
+    SubscriptionsService,
+    SubscriptionsWebhookService,
+    SubscriptionsAdminService,
+  ],
   exports: [SubscriptionsService],
 })
 export class SubscriptionsModule {}

@@ -3,12 +3,10 @@ import { INestApplication, HttpStatus } from '@nestjs/common';
 import request from 'supertest';
 import { App } from 'supertest/types';
 import { ThrottlerModule } from '@nestjs/throttler';
-import { ConsultationsModule } from '../src/consultations/consultations.module';
+import { ConsultationsController } from '../src/consultations/consultations.controller';
 import { ConsultationsService } from '../src/consultations/consultations.service';
-import { LemonSqueezyService } from '../src/payments/lemonsqueezy.service';
 import { JwtAuthGuard } from '../src/common/guards/jwt-auth.guard';
 import { RolesGuard } from '../src/common/guards/roles.guard';
-import { SupabaseService } from '../src/database/supabase.service';
 import { UserType } from '../src/common/enums/user-type.enum';
 import type { AuthUser } from '../src/common/interfaces/auth-user.interface';
 
@@ -85,23 +83,25 @@ describe('ConsultationsController (e2e)', () => {
       ...mockConsultationResponse,
       bookingStatus: 'cancelled',
     }),
-    initiatePayment: jest.fn().mockResolvedValue({ checkoutUrl: 'https://checkout.lemonsqueezy.com/test' }),
+    uploadPaymentProof: jest.fn().mockResolvedValue(mockConsultationResponse),
+    reviewPayment: jest.fn().mockResolvedValue(mockConsultationResponse),
+    getPaymentProofUrl: jest
+      .fn()
+      .mockResolvedValue({ url: 'https://signed.example/proof' }),
   };
 
   beforeAll(async () => {
+    // Test the controller in isolation with a mocked service — avoids dragging
+    // in PaymentsModule's provider graph (InvoicesService → SupabaseService etc.).
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [
-        ConsultationsModule,
         ThrottlerModule.forRoot({ throttlers: [{ ttl: 60000, limit: 100 }] }),
       ],
-    })
-      .overrideProvider(ConsultationsService)
-      .useValue(mockConsultationsService)
-      .overrideProvider(LemonSqueezyService)
-      .useValue({})
-      .overrideProvider(SupabaseService)
-      .useValue({})
-      .compile();
+      controllers: [ConsultationsController],
+      providers: [
+        { provide: ConsultationsService, useValue: mockConsultationsService },
+      ],
+    }).compile();
 
     app = moduleFixture.createNestApplication();
     app.setGlobalPrefix('api');

@@ -45,6 +45,12 @@ export const ServiceRegistrationResponseSchema = z.object({
   caseNumber: z.string().nullable(),
   lemonsqueezyCheckoutId: z.string().nullable().optional(),
   lemonsqueezyOrderId: z.string().nullable().optional(),
+  /** Storage path of the uploaded payment screenshot (manual payment flow) */
+  paymentProofPath: z.string().nullable().optional(),
+  /** Admin note recorded when reviewing the payment proof */
+  paymentReviewNote: z.string().nullable().optional(),
+  /** Timestamp the admin confirmed the manual payment */
+  paymentConfirmedAt: z.string().nullable().optional(),
   createdAt: z.string(),
   updatedAt: z.string(),
 });

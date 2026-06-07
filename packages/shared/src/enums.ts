@@ -49,7 +49,11 @@ export enum ServiceRegistrationStatus {
 /** Payment status for service registrations */
 export enum ServiceRegistrationPaymentStatus {
   PENDING = 'pending',
+  /** Screenshot proof uploaded by the guest, awaiting admin review */
+  AWAITING_CONFIRMATION = 'awaiting_confirmation',
   PAID = 'paid',
+  /** Admin reviewed the proof and flagged an issue; handled out-of-band */
+  FLAGGED = 'flagged',
   FAILED = 'failed',
   REFUNDED = 'refunded',
 }
@@ -104,7 +108,11 @@ export enum ConsultationUrgency {
 /** Consultation payment status */
 export enum ConsultationPaymentStatus {
   PENDING = 'pending',
+  /** Screenshot proof uploaded by the guest, awaiting admin review */
+  AWAITING_CONFIRMATION = 'awaiting_confirmation',
   PAID = 'paid',
+  /** Admin reviewed the proof and flagged an issue; handled out-of-band */
+  FLAGGED = 'flagged',
   FAILED = 'failed',
   REFUNDED = 'refunded',
 }

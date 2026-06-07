@@ -1,5 +1,9 @@
 import type { z } from 'zod';
-import type { AssignToSchema, PaginationSchema } from '../schemas/common.schemas';
+import type {
+  AssignToSchema,
+  PaginationSchema,
+  ReviewPaymentSchema,
+} from '../schemas/common.schemas';
 
 /**
  * Data for assigning a staff/attorney to an entity (case, complaint, service registration).
@@ -20,3 +24,13 @@ export type AssignToData = z.infer<typeof AssignToSchema>;
  * ```
  */
 export type PaginationParams = z.infer<typeof PaginationSchema>;
+
+/**
+ * Data for an admin reviewing a manually-uploaded payment proof.
+ *
+ * @example
+ * ```typescript
+ * const review: ReviewPaymentData = { action: 'confirm', amount: 50000 };
+ * ```
+ */
+export type ReviewPaymentData = z.infer<typeof ReviewPaymentSchema>;

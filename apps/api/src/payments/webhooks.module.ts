@@ -1,8 +1,10 @@
 /**
  * Webhooks Module
  *
- * Hosts the LemonSqueezy webhook controller and injects all three service
- * modules that handle payment events. Kept separate from PaymentsModule to
+ * Hosts the LemonSqueezy webhook controller. Since consultation and service
+ * one-time payments are now handled manually (screenshot + admin review), the
+ * webhook only routes subscription events, so only SubscriptionsModule (plus
+ * PaymentsModule for invoices) is required. Kept separate from PaymentsModule to
  * avoid circular dependencies (SubscriptionsModule → PaymentsModule would
  * become circular if PaymentsModule imported SubscriptionsModule).
  *
@@ -20,16 +22,9 @@ import { Module } from '@nestjs/common';
 import { WebhookController } from './webhook.controller';
 import { PaymentsModule } from './payments.module';
 import { SubscriptionsModule } from '../subscriptions/subscriptions.module';
-import { ConsultationsModule } from '../consultations/consultations.module';
-import { ServiceRegistrationsModule } from '../service-registrations/service-registrations.module';
 
 @Module({
-  imports: [
-    PaymentsModule,
-    SubscriptionsModule,
-    ConsultationsModule,
-    ServiceRegistrationsModule,
-  ],
+  imports: [PaymentsModule, SubscriptionsModule],
   controllers: [WebhookController],
 })
 export class WebhooksModule {}

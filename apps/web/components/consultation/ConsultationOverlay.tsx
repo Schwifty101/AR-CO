@@ -5,8 +5,9 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { X, ArrowRight, ArrowLeft, Check, Loader2, AlertCircle } from 'lucide-react'
 import { toast } from 'sonner'
 import { useScrollLock } from '@/lib/hooks/useScrollLock'
-import { createConsultation, initiatePayment } from '@/lib/api/consultations'
-import type { ConsultationPaymentInitResponse, CreateConsultationData } from '@repo/shared'
+import { createConsultation } from '@/lib/api/consultations'
+import { getPaymentInstructions, type PaymentInstructions } from '@/lib/api/payments'
+import type { CreateConsultationData } from '@repo/shared'
 import { PersonalInfoStep, CaseDetailsStep, INITIAL_FORM_DATA } from './ConsultationFormSteps'
 import type { ConsultationFormData } from './ConsultationFormSteps'
 import ConsultationPaymentStep from './ConsultationPaymentStep'
@@ -16,7 +17,6 @@ import styles from './ConsultationOverlay.module.css'
 /* ─── Types ─── */
 
 import type { ConsultationPrefillData } from './ConsultationContext'
-import { useConsultationOverlay } from './ConsultationContext'
 
 /** Props for the ConsultationOverlay component */
 interface ConsultationOverlayProps {
@@ -73,10 +73,10 @@ const sectionVariants = {
  * Four-step booking overlay for scheduling a paid legal consultation:
  *   1. Personal info (name, email, phone)
  *   2. Case details (practice area, description, urgency, optional fields)
- *      On submit: creates consultation booking + initiates payment
- *   3. Payment (Safepay embedded checkout)
- *      On success: confirms payment, advances to scheduling
- *   4. Cal.com scheduling (gated behind payment confirmation)
+ *      On submit: creates consultation booking
+ *   3. Manual payment (bank transfer + screenshot upload)
+ *      On upload: booking → awaiting_confirmation, advances to scheduling
+ *   4. Cal.com scheduling (slots ≥ 24h out; admin verifies payment separately)
  *
  * Unfolds from top with backdrop blur. Dark luxury aesthetic.
  *
@@ -86,8 +86,6 @@ const sectionVariants = {
  * ```
  */
 export default function ConsultationOverlay({ isOpen, onClose, prefillData }: ConsultationOverlayProps) {
-  const { paymentReturnData } = useConsultationOverlay()
-
   /* ─── Form State ─── */
   const [step, setStep] = useState(1)
   const [submitted, setSubmitted] = useState(false)
@@ -97,9 +95,7 @@ export default function ConsultationOverlay({ isOpen, onClose, prefillData }: Co
   /* ─── Booking & Payment State ─── */
   const [bookingId, setBookingId] = useState<string | null>(null)
   const [referenceNumber, setReferenceNumber] = useState<string | null>(null)
-  const [paymentCredentials, setPaymentCredentials] =
-    useState<ConsultationPaymentInitResponse | null>(null)
-  const [paymentConfirmed, setPaymentConfirmed] = useState(false)
+  const [contactInfo, setContactInfo] = useState<PaymentInstructions | null>(null)
 
   /* ─── API State ─── */
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -130,8 +126,6 @@ export default function ConsultationOverlay({ isOpen, onClose, prefillData }: Co
         setFormData(INITIAL_FORM_DATA)
         setBookingId(null)
         setReferenceNumber(null)
-        setPaymentCredentials(null)
-        setPaymentConfirmed(false)
         setIsSubmitting(false)
         setApiError(null)
       }, 400)
@@ -155,15 +149,14 @@ export default function ConsultationOverlay({ isOpen, onClose, prefillData }: Co
     }
   }, [isOpen, prefillData])
 
-  /* ─── Show success when returning from LemonSqueezy payment ─── */
+  /* ─── Load contact info (WhatsApp/email) for the success screen ─── */
   useEffect(() => {
-    if (isOpen && paymentReturnData) {
-      setBookingId(paymentReturnData.bookingId)
-      setReferenceNumber(paymentReturnData.referenceNumber)
-      setPaymentConfirmed(true)
-      setSubmitted(true)
+    if (isOpen && !contactInfo) {
+      getPaymentInstructions()
+        .then(setContactInfo)
+        .catch(() => setContactInfo(null))
     }
-  }, [isOpen, paymentReturnData])
+  }, [isOpen, contactInfo])
 
   /* ─── Field change handler ─── */
   const updateField = (field: keyof ConsultationFormData, value: string) => {
@@ -236,22 +229,9 @@ export default function ConsultationOverlay({ isOpen, onClose, prefillData }: Co
     }
   }
 
-  /* ─── Step 3 Complete: Scheduling done → Initiate Payment ─── */
-  const handleSchedulingComplete = async () => {
-    if (!bookingId) return
-    setIsSubmitting(true)
-    setApiError(null)
-    try {
-      const creds = await initiatePayment(bookingId)
-      setPaymentCredentials(creds)
-      setStep(4)
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Something went wrong'
-      setApiError(msg)
-      toast.error('Failed to initiate payment. Please try again.')
-    } finally {
-      setIsSubmitting(false)
-    }
+  /* ─── Step 4 Complete: Scheduling done → Show success ─── */
+  const handleSchedulingComplete = () => {
+    setSubmitted(true)
   }
 
   /* ─── Navigation ─── */
@@ -322,17 +302,24 @@ export default function ConsultationOverlay({ isOpen, onClose, prefillData }: Co
                     <div className={styles.successIcon}>
                       <Check size={24} />
                     </div>
-                    <h3 className={styles.successTitle}>Booking Confirmed</h3>
+                    <h3 className={styles.successTitle}>Booking Received</h3>
                     <p className={styles.successText}>
-                      Thank you, {formData.name}. Your consultation has been
-                      {paymentConfirmed ? ' paid and' : ''} booked successfully.
+                      Thank you, {formData.name}. Your consultation slot is booked.
                       {referenceNumber && (
                         <>
                           {' '}Your reference number is{' '}
                           <strong>{referenceNumber}</strong>.
                         </>
                       )}
-                      {' '}Our legal team will send you a confirmation email shortly.
+                      {' '}Our team will verify your payment and send a confirmation
+                      email shortly.
+                    </p>
+                    <p className={styles.successContact}>
+                      Questions about your booking? Contact us
+                      {contactInfo?.whatsappNumber ? (
+                        <> on WhatsApp <strong>{contactInfo.whatsappNumber}</strong> or</>
+                      ) : null}
+                      {' '}at <strong>{contactInfo?.contactEmail ?? 'info@arandcolaw.com'}</strong>.
                     </p>
                     <button className={styles.successClose} onClick={onClose}>
                       Close
@@ -424,9 +411,28 @@ export default function ConsultationOverlay({ isOpen, onClose, prefillData }: Co
                         </motion.div>
                       )}
 
-                      {step === 3 && referenceNumber && (
+                      {step === 3 && bookingId && referenceNumber && (
                         <motion.div
                           key="step-3"
+                          className={styles.formSection}
+                          variants={sectionVariants}
+                          initial="enter"
+                          animate="center"
+                          exit="exit"
+                        >
+                          <span className={styles.sectionLabel}>Payment</span>
+                          <ConsultationPaymentStep
+                            bookingId={bookingId}
+                            referenceNumber={referenceNumber}
+                            onUploaded={() => setStep(4)}
+                            onError={(msg) => setApiError(msg)}
+                          />
+                        </motion.div>
+                      )}
+
+                      {step === 4 && referenceNumber && (
+                        <motion.div
+                          key="step-4"
                           className={styles.formSection}
                           variants={sectionVariants}
                           initial="enter"
@@ -439,29 +445,6 @@ export default function ConsultationOverlay({ isOpen, onClose, prefillData }: Co
                             guestEmail={formData.email}
                             referenceNumber={referenceNumber}
                             onBookingComplete={handleSchedulingComplete}
-                          />
-                        </motion.div>
-                      )}
-
-                      {step === 4 && paymentCredentials && bookingId && referenceNumber && (
-                        <motion.div
-                          key="step-4"
-                          className={styles.formSection}
-                          variants={sectionVariants}
-                          initial="enter"
-                          animate="center"
-                          exit="exit"
-                        >
-                          <span className={styles.sectionLabel}>Secure Payment</span>
-                          <ConsultationPaymentStep
-                            paymentCredentials={paymentCredentials}
-                            bookingId={bookingId}
-                            referenceNumber={referenceNumber}
-                            onPaymentConfirmed={() => {
-                              setPaymentConfirmed(true)
-                              setSubmitted(true)
-                            }}
-                            onError={(msg) => setApiError(msg)}
                           />
                         </motion.div>
                       )}

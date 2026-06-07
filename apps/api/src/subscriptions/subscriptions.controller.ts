@@ -228,5 +228,4 @@ export class SubscriptionsController {
   async getMySubscriptionStatus(@CurrentUser() user: AuthUser) {
     return this.subscriptionsService.getMySubscriptionStatus(user.id);
   }
-
 }

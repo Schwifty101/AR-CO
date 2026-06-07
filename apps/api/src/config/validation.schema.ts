@@ -158,6 +158,16 @@ export const validationSchema = Joi.object({
     }),
   FRONTEND_URL: Joi.string().uri().optional(),
 
+  // Manual Payment Configuration (all optional — placeholders used until provided)
+  MANUAL_PAY_BANK_NAME: Joi.string().optional(),
+  MANUAL_PAY_ACCOUNT_TITLE: Joi.string().optional(),
+  MANUAL_PAY_ACCOUNT_NUMBER: Joi.string().optional(),
+  MANUAL_PAY_IBAN: Joi.string().optional(),
+  MANUAL_PAY_WHATSAPP: Joi.string().optional().allow(''),
+  MANUAL_PAY_CONTACT_EMAIL: Joi.string().email().optional().messages({
+    'string.email': 'MANUAL_PAY_CONTACT_EMAIL must be a valid email address',
+  }),
+
   // Google APIs Configuration (Optional for development)
   GOOGLE_SERVICE_ACCOUNT_KEY: Joi.string()
     .when('NODE_ENV', {

@@ -4,9 +4,12 @@ import {
   ForbiddenException,
   InternalServerErrorException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { ServiceRegistrationsService } from './service-registrations.service';
 import { SupabaseService } from '../database/supabase.service';
-import { LemonSqueezyService } from '../payments/lemonsqueezy.service';
+import { PaymentProofService } from '../payments/payment-proof.service';
+import { PaymentEmailService } from '../payments/payment-email.service';
+import { InvoicesService } from '../payments/invoices.service';
 import { UserType } from '../common/enums/user-type.enum';
 import type { AuthUser } from '../common/interfaces/auth-user.interface';
 import {
@@ -71,6 +74,9 @@ describe('ServiceRegistrationsService', () => {
     payment_status: ServiceRegistrationPaymentStatus.PENDING,
     lemonsqueezy_checkout_id: null,
     lemonsqueezy_order_id: null,
+    payment_proof_path: null,
+    payment_review_note: null,
+    payment_confirmed_at: null,
     status: ServiceRegistrationStatus.PENDING_PAYMENT,
     client_profile_id: null,
     assigned_to_id: null,
@@ -90,10 +96,26 @@ describe('ServiceRegistrationsService', () => {
           },
         },
         {
-          provide: LemonSqueezyService,
+          provide: PaymentProofService,
           useValue: {
-            createOneTimeCheckout: jest.fn(),
+            uploadProof: jest.fn(),
+            getSignedProofUrl: jest.fn(),
           },
+        },
+        {
+          provide: PaymentEmailService,
+          useValue: { send: jest.fn() },
+        },
+        {
+          provide: InvoicesService,
+          useValue: {
+            createInvoice: jest.fn(),
+            updateInvoice: jest.fn(),
+          },
+        },
+        {
+          provide: ConfigService,
+          useValue: { get: jest.fn() },
         },
       ],
     }).compile();

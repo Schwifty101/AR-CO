@@ -28,10 +28,12 @@ import {
   UpdateRegistrationStatusSchema,
   AssignToSchema,
   PaginationSchema,
+  ReviewPaymentSchema,
   type CreateServiceRegistrationData,
   type GuestStatusCheckData,
   type UpdateRegistrationStatusData,
   type AssignToData,
+  type ReviewPaymentData,
   type ServiceRegistrationResponse,
   type ServiceRegistrationDocumentResponse,
   type GuestStatusResponse,
@@ -248,28 +250,95 @@ export class ServiceRegistrationsController {
    * ```
    */
   /**
-   * Initiate LemonSqueezy payment for a service registration (PUBLIC - no auth required)
+   * Upload a manual payment screenshot for a registration (PUBLIC - no auth)
    *
-   * @param id - The registration ID
-   * @returns LemonSqueezy hosted checkout URL
+   * Accepts multipart/form-data with a `file` field (jpg/png/webp/pdf, ≤10 MB).
+   * Advances the registration to `awaiting_confirmation` for admin review. The
+   * registration UUID acts as the access token. Rate limited to 10/min per IP.
+   *
+   * @param id - The registration UUID
+   * @param file - Uploaded payment screenshot
+   * @returns Updated registration
    *
    * @example
-   * ```typescript
-   * POST /api/service-registrations/registration-uuid-123/pay
-   *
-   * Response: { checkoutUrl: "https://checkout.lemonsqueezy.com/..." }
+   * ```bash
+   * curl -X POST http://localhost:4000/api/service-registrations/uuid/payment-proof \
+   *   -F "file=@receipt.jpg"
    * ```
    */
-  @Post(':id/pay')
+  @Post(':id/payment-proof')
   @Public()
   @UseGuards(ThrottlerGuard)
   @Throttle({ default: { limit: 10, ttl: 60000 } })
   @HttpCode(HttpStatus.OK)
-  async initiatePayment(
+  @UseInterceptors(
+    FileInterceptor('file', {
+      limits: { fileSize: 10 * 1024 * 1024 },
+      fileFilter: (_req, file, cb) => {
+        const allowed = [
+          'image/jpeg',
+          'image/png',
+          'image/webp',
+          'application/pdf',
+        ];
+        if (allowed.includes(file.mimetype)) cb(null, true);
+        else
+          cb(
+            new BadRequestException(
+              'Only JPG, PNG, WEBP, and PDF files are allowed',
+            ),
+            false,
+          );
+      },
+    }),
+  )
+  async uploadPaymentProof(
     @Param('id') id: string,
-    @Body() body: { amount?: number; faqPath?: string },
-  ): Promise<{ checkoutUrl: string }> {
-    return this.serviceRegistrationsService.initiatePayment(id, body?.amount, body?.faqPath);
+    @UploadedFile() file: Express.Multer.File,
+  ): Promise<ServiceRegistrationResponse> {
+    if (!file) {
+      throw new BadRequestException('Payment screenshot file is required');
+    }
+    return this.serviceRegistrationsService.uploadPaymentProof(id, file);
+  }
+
+  /**
+   * Review a manual payment (staff only): confirm or flag.
+   *
+   * Confirm marks the registration paid, creates the client account + a PAID
+   * invoice, and emails the client. Flag marks it flagged and emails the client.
+   *
+   * @param id - The registration UUID
+   * @param dto - Review action + optional note/amount
+   * @returns Updated registration
+   *
+   * @example
+   * ```typescript
+   * PATCH /api/service-registrations/uuid/review-payment
+   * { "action": "confirm", "amount": 5400 }
+   * ```
+   */
+  @Patch(':id/review-payment')
+  @Roles(UserType.ADMIN, UserType.STAFF)
+  @HttpCode(HttpStatus.OK)
+  async reviewPayment(
+    @Param('id') id: string,
+    @CurrentUser() user: AuthUser,
+    @Body(new ZodValidationPipe(ReviewPaymentSchema)) dto: ReviewPaymentData,
+  ): Promise<ServiceRegistrationResponse> {
+    return this.serviceRegistrationsService.reviewPayment(id, user, dto);
+  }
+
+  /**
+   * Get a signed URL to view the uploaded payment screenshot (staff only).
+   *
+   * @param id - The registration UUID
+   * @returns `{ url }` — signed URL valid for 1 hour
+   */
+  @Get(':id/payment-proof-url')
+  @Roles(UserType.ADMIN, UserType.STAFF)
+  async getPaymentProofUrl(@Param('id') id: string): Promise<{ url: string }> {
+    return this.serviceRegistrationsService.getPaymentProofUrl(id);
   }
 
   @Patch(':id/status')

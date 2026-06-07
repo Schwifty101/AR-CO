@@ -33,15 +33,16 @@ import {
   BadRequestException,
   ConflictException,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { SupabaseService } from '../database/supabase.service';
-import { LemonSqueezyService } from '../payments/lemonsqueezy.service';
-import type { Configuration } from '../config/configuration';
+import { PaymentProofService } from '../payments/payment-proof.service';
+import { PaymentEmailService } from '../payments/payment-email.service';
+import { InvoicesService } from '../payments/invoices.service';
 import type { DbResult, DbListResult } from '../database/db-result.types';
 import {
   validateSortColumn,
   sanitizePostgrestFilter,
 } from '../common/utils/query-helpers';
+import type { AuthUser } from '../common/interfaces/auth-user.interface';
 import type {
   CreateConsultationData,
   ConsultationStatusCheckData,
@@ -50,11 +51,12 @@ import type {
   PaginatedConsultationsResponse,
   ConsultationFilters,
   PaginationParams,
-  ConsultationPaymentInitResponse,
+  ReviewPaymentData,
 } from '@repo/shared';
 import {
   ConsultationBookingStatus,
   ConsultationPaymentStatus,
+  InvoiceStatus,
 } from '@repo/shared';
 import {
   ConsultationRow,
@@ -62,7 +64,6 @@ import {
   mapConsultationRow,
   type CalcomWebhookPayload,
 } from './consultations.types';
-import type { LemonSqueezyWebhookPayload, LemonSqueezyOrderData } from '../payments/types/webhook.types';
 
 /**
  * Allowed columns for sorting consultation list queries.
@@ -82,8 +83,9 @@ export class ConsultationsService {
 
   constructor(
     private readonly supabaseService: SupabaseService,
-    private readonly lemonsqueezyService: LemonSqueezyService,
-    private readonly configService: ConfigService<Configuration>,
+    private readonly paymentProofService: PaymentProofService,
+    private readonly paymentEmailService: PaymentEmailService,
+    private readonly invoicesService: InvoicesService,
   ) {}
 
   /**
@@ -148,30 +150,131 @@ export class ConsultationsService {
   }
 
   /**
-   * Initiates LemonSqueezy payment checkout for a consultation booking (Step 2: Payment)
+   * Uploads a manual payment screenshot for a booking (Step 2: Payment proof).
    *
-   * Creates a LemonSqueezy checkout URL for the guest to complete payment.
-   * Stores the checkout ID in the database for webhook correlation.
+   * Stores the screenshot in the private `payment-proofs` bucket and advances
+   * the booking to `awaiting_confirmation` so an admin can review it. Re-upload
+   * is allowed while the payment is not yet confirmed.
    *
    * @param bookingId - UUID of the consultation booking
-   * @returns LemonSqueezy checkout URL
+   * @param file - Uploaded screenshot (jpg/png/webp/pdf)
+   * @returns Updated booking
    * @throws {NotFoundException} If booking not found
-   * @throws {BadRequestException} If payment already completed
+   * @throws {BadRequestException} If payment already confirmed
    *
    * @example
    * ```typescript
-   * const payment = await consultationsService.initiatePayment('booking-uuid');
-   * // payment.checkoutUrl → 'https://checkout.lemonsqueezy.com/checkout/...'
+   * const booking = await consultationsService.uploadPaymentProof('booking-uuid', file);
+   * // booking.paymentStatus → 'awaiting_confirmation'
    * ```
    */
-  async initiatePayment(
+  async uploadPaymentProof(
     bookingId: string,
-  ): Promise<ConsultationPaymentInitResponse> {
-    this.logger.log(`Initiating LemonSqueezy payment for booking: ${bookingId}`);
+    file: Express.Multer.File,
+  ): Promise<ConsultationResponse> {
+    this.logger.log(`Uploading payment proof for booking: ${bookingId}`);
 
     const adminClient = this.supabaseService.getAdminClient();
 
-    // Fetch booking
+    const { data: booking, error } = (await adminClient
+      .from('consultation_bookings')
+      .select('id, payment_status')
+      .eq('id', bookingId)
+      .single()) as DbResult<{ id: string; payment_status: string }>;
+
+    if (error || !booking) {
+      throw new NotFoundException('Booking not found');
+    }
+    if (
+      (booking.payment_status as ConsultationPaymentStatus) ===
+      ConsultationPaymentStatus.PAID
+    ) {
+      throw new BadRequestException('Payment already confirmed');
+    }
+
+    const { storagePath } = await this.paymentProofService.uploadProof(
+      `consultations/${bookingId}`,
+      file,
+    );
+
+    const { data: updated, error: updateError } = (await adminClient
+      .from('consultation_bookings')
+      .update({
+        payment_proof_path: storagePath,
+        payment_status: ConsultationPaymentStatus.AWAITING_CONFIRMATION,
+      })
+      .eq('id', bookingId)
+      .select()
+      .single()) as DbResult<ConsultationRow>;
+
+    if (updateError || !updated) {
+      this.logger.error('Failed to record payment proof', updateError);
+      throw new BadRequestException('Failed to record payment proof');
+    }
+
+    this.logger.log(`Payment proof recorded for booking ${bookingId}`);
+    return mapConsultationRow(updated);
+  }
+
+  /**
+   * Generates a short-lived signed URL for an admin to view the payment proof.
+   *
+   * @param bookingId - UUID of the consultation booking
+   * @returns Signed URL (1h) for the uploaded screenshot
+   * @throws {NotFoundException} If booking or proof not found
+   */
+  async getPaymentProofUrl(bookingId: string): Promise<{ url: string }> {
+    const adminClient = this.supabaseService.getAdminClient();
+    const { data: booking, error } = (await adminClient
+      .from('consultation_bookings')
+      .select('payment_proof_path')
+      .eq('id', bookingId)
+      .single()) as DbResult<{ payment_proof_path: string | null }>;
+
+    if (error || !booking) {
+      throw new NotFoundException('Booking not found');
+    }
+    if (!booking.payment_proof_path) {
+      throw new NotFoundException('No payment proof uploaded for this booking');
+    }
+
+    const url = await this.paymentProofService.getSignedProofUrl(
+      booking.payment_proof_path,
+    );
+    return { url };
+  }
+
+  /**
+   * Reviews a manually-uploaded payment (admin action): confirm or flag.
+   *
+   * - `confirm`: marks the booking paid, records who/when, auto-creates a PAID
+   *   invoice, and emails the client. Idempotent — a no-op if already paid.
+   *   Does NOT change `booking_status` (it may already be `booked` from Cal.com).
+   * - `flag`: marks the booking `flagged`, stores the admin note, and emails the
+   *   client. The booking itself continues unchanged.
+   *
+   * @param bookingId - UUID of the consultation booking
+   * @param admin - Authenticated admin/staff user
+   * @param dto - Review action + optional note/amount
+   * @returns Updated booking
+   * @throws {NotFoundException} If booking not found
+   *
+   * @example
+   * ```typescript
+   * await consultationsService.reviewPayment('booking-uuid', admin, { action: 'confirm' });
+   * ```
+   */
+  async reviewPayment(
+    bookingId: string,
+    admin: AuthUser,
+    dto: ReviewPaymentData,
+  ): Promise<ConsultationResponse> {
+    this.logger.log(
+      `Admin ${admin.id} reviewing payment for booking ${bookingId} (${dto.action})`,
+    );
+
+    const adminClient = this.supabaseService.getAdminClient();
+
     const { data: booking, error } = (await adminClient
       .from('consultation_bookings')
       .select('*')
@@ -182,46 +285,111 @@ export class ConsultationsService {
       throw new NotFoundException('Booking not found');
     }
 
+    // Idempotent confirm: already paid → return as-is.
     if (
-      (booking.payment_status as unknown as ConsultationPaymentStatus) ===
-      ConsultationPaymentStatus.PAID
+      dto.action === 'confirm' &&
+      (booking.payment_status as ConsultationPaymentStatus) ===
+        ConsultationPaymentStatus.PAID
     ) {
-      throw new BadRequestException('Payment already completed');
+      this.logger.log(`Booking ${bookingId} already paid — confirm is a no-op`);
+      return mapConsultationRow(booking);
     }
 
-    const consultationVariantId = Number(
-      this.configService.get<string>('lemonsqueezy.consultationVariantId', {
-        infer: true,
-      }),
-    );
-    const frontendUrl = this.configService.get<string>('lemonsqueezy.frontendUrl', { infer: true });
+    if (dto.action === 'confirm') {
+      const { data: updated, error: updateError } = (await adminClient
+        .from('consultation_bookings')
+        .update({
+          payment_status: ConsultationPaymentStatus.PAID,
+          payment_confirmed_by: admin.id,
+          payment_confirmed_at: new Date().toISOString(),
+          payment_review_note: dto.note ?? null,
+        })
+        .eq('id', bookingId)
+        .select()
+        .single()) as DbResult<ConsultationRow>;
 
-    const { checkoutUrl, checkoutId } =
-      await this.lemonsqueezyService.createOneTimeCheckout({
-        variantId: consultationVariantId,
-        // No customPrice — fee is fixed at PKR 50,000 on the LS product itself
-        email: booking.email,
-        name: booking.full_name,
-        customData: {
-          payment_type: 'consultation',
-          reference_id: booking.reference_number,
-          booking_id: booking.id,
-        },
-        redirectUrl: `${frontendUrl}/?booking_id=${booking.id}&ref=${booking.reference_number}&payment=confirmed`,
-        productName: 'Legal Consultation Fee',
+      if (updateError || !updated) {
+        throw new BadRequestException('Failed to confirm payment');
+      }
+
+      await this.createPaidInvoice(updated);
+      await this.paymentEmailService.send('confirmed', {
+        to: updated.email,
+        fullName: updated.full_name,
+        referenceNumber: updated.reference_number,
+        subject: 'Legal Consultation',
       });
 
-    // Store checkout ID in database
-    await adminClient
+      this.logger.log(
+        `Booking ${bookingId} payment confirmed by admin ${admin.id}`,
+      );
+      return mapConsultationRow(updated);
+    }
+
+    // action === 'flag'
+    const { data: flagged, error: flagError } = (await adminClient
       .from('consultation_bookings')
-      .update({ lemonsqueezy_checkout_id: checkoutId })
-      .eq('id', bookingId);
+      .update({
+        payment_status: ConsultationPaymentStatus.FLAGGED,
+        payment_review_note: dto.note ?? null,
+      })
+      .eq('id', bookingId)
+      .select()
+      .single()) as DbResult<ConsultationRow>;
+
+    if (flagError || !flagged) {
+      throw new BadRequestException('Failed to flag payment');
+    }
+
+    await this.paymentEmailService.send('flagged', {
+      to: flagged.email,
+      fullName: flagged.full_name,
+      referenceNumber: flagged.reference_number,
+      subject: 'Legal Consultation',
+      note: dto.note,
+    });
 
     this.logger.log(
-      `LemonSqueezy checkout created for ${booking.reference_number}: ${checkoutId}`,
+      `Booking ${bookingId} payment flagged by admin ${admin.id}`,
     );
+    return mapConsultationRow(flagged);
+  }
 
-    return { checkoutUrl };
+  /**
+   * Auto-creates a PAID invoice for a confirmed consultation booking.
+   * Uses the guest's email — no client profile required. Best-effort.
+   *
+   * @param booking - The confirmed consultation row
+   */
+  private async createPaidInvoice(booking: ConsultationRow): Promise<void> {
+    const amount = Number(booking.consultation_fee ?? 0);
+    if (amount <= 0) return;
+
+    const dueDate = new Date().toISOString().split('T')[0];
+    try {
+      const invoice = await this.invoicesService.createInvoice({
+        email: booking.email,
+        dueDate,
+        taxAmount: 0,
+        discountAmount: 0,
+        items: [
+          { description: 'Legal Consultation', quantity: 1, unitPrice: amount },
+        ],
+        notes: booking.reference_number
+          ? `Reference: ${booking.reference_number}`
+          : undefined,
+      });
+      await this.invoicesService.updateInvoice(invoice.id, {
+        status: InvoiceStatus.PAID,
+      });
+      this.logger.log(
+        `Auto-created consultation invoice for booking ${booking.id}`,
+      );
+    } catch (err) {
+      this.logger.error(
+        `Failed to auto-create consultation invoice for ${booking.id}: ${(err as Error).message}`,
+      );
+    }
   }
 
   /**
@@ -529,102 +697,6 @@ export class ConsultationsService {
 
     this.logger.log(`Booking ${id} cancelled successfully`);
     return mapConsultationRow(updated);
-  }
-
-  /**
-   * Handles LemonSqueezy `order_created` webhook for consultation payments.
-   *
-   * Extracts `booking_id` from custom_data, marks the booking as paid,
-   * stores the LemonSqueezy order ID, and advances booking_status to
-   * `payment_confirmed` so the guest can proceed to schedule via Cal.com.
-   *
-   * @param payload - LemonSqueezy webhook payload (order_created event)
-   *
-   * @example
-   * ```typescript
-   * await consultationsService.handlePaymentConfirmed(webhookPayload);
-   * // booking.payment_status → 'paid'
-   * // booking.booking_status → 'payment_confirmed'
-   * ```
-   */
-  async handlePaymentConfirmed(payload: LemonSqueezyWebhookPayload): Promise<void> {
-    const bookingId = payload.meta.custom_data?.booking_id;
-    if (!bookingId) {
-      this.logger.warn('handlePaymentConfirmed: missing booking_id in custom_data');
-      return;
-    }
-
-    const orderData = payload.data as LemonSqueezyOrderData;
-    const lemonsqueezyOrderId = orderData.id;
-
-    this.logger.log(
-      `Payment confirmed for booking ${bookingId}, order: ${lemonsqueezyOrderId}`,
-    );
-
-    const adminClient = this.supabaseService.getAdminClient();
-    const { error } = await adminClient
-      .from('consultation_bookings')
-      .update({
-        payment_status: ConsultationPaymentStatus.PAID,
-        booking_status: ConsultationBookingStatus.PAYMENT_CONFIRMED,
-        lemonsqueezy_order_id: lemonsqueezyOrderId,
-      })
-      .eq('id', bookingId);
-
-    if (error) {
-      this.logger.error(
-        `Failed to confirm payment for booking ${bookingId}: ${error.message}`,
-      );
-      throw new BadRequestException(
-        `Failed to confirm consultation payment: ${error.message}`,
-      );
-    }
-
-    this.logger.log(`Booking ${bookingId} payment confirmed successfully`);
-  }
-
-  /**
-   * Handles LemonSqueezy `order_refunded` webhook for consultation payments.
-   *
-   * Marks the booking as refunded and cancelled when a refund is processed.
-   *
-   * @param payload - LemonSqueezy webhook payload (order_refunded event)
-   *
-   * @example
-   * ```typescript
-   * await consultationsService.handlePaymentRefunded(webhookPayload);
-   * // booking.payment_status → 'refunded'
-   * // booking.booking_status → 'cancelled'
-   * ```
-   */
-  async handlePaymentRefunded(payload: LemonSqueezyWebhookPayload): Promise<void> {
-    const bookingId = payload.meta.custom_data?.booking_id;
-    if (!bookingId) {
-      this.logger.warn('handlePaymentRefunded: missing booking_id in custom_data');
-      return;
-    }
-
-    this.logger.log(`Payment refunded for booking ${bookingId}`);
-
-    const adminClient = this.supabaseService.getAdminClient();
-    const { error } = await adminClient
-      .from('consultation_bookings')
-      .update({
-        payment_status: ConsultationPaymentStatus.REFUNDED,
-        booking_status: ConsultationBookingStatus.CANCELLED,
-      })
-      .eq('id', bookingId);
-
-    if (error) {
-      this.logger.error(
-        `Failed to process refund for booking ${bookingId}: ${error.message}`,
-      );
-      throw new BadRequestException(
-        `Failed to process consultation refund: ${error.message}`,
-      );
-    }
-
-    this.logger.log(`Booking ${bookingId} marked as refunded`);
   }
 
   /**

@@ -154,9 +154,16 @@ export class InvoicesService {
     }
 
     // Recalculate totals
-    await this.calculateAndSaveTotals(invoice.id, invoice.tax_amount, invoice.discount_amount);
+    await this.calculateAndSaveTotals(
+      invoice.id,
+      invoice.tax_amount,
+      invoice.discount_amount,
+    );
 
-    return this.getInvoiceById(invoice.id, { id: '', userType: 'admin' } as AuthUser);
+    return this.getInvoiceById(invoice.id, {
+      id: '',
+      userType: 'admin',
+    } as AuthUser);
   }
 
   /**
@@ -174,15 +181,16 @@ export class InvoicesService {
    * const result = await invoicesService.getInvoices({ page: 1, limit: 20 }, user);
    * ```
    */
-  async getInvoices(filters: InvoiceFilters, user: AuthUser): Promise<PaginatedInvoicesResponse> {
+  async getInvoices(
+    filters: InvoiceFilters,
+    user: AuthUser,
+  ): Promise<PaginatedInvoicesResponse> {
     this.logger.log(`Fetching invoices for user ${user.id}`);
     const adminClient = this.supabaseService.getAdminClient();
     const { page = 1, limit = 20, status, clientProfileId } = filters;
     const offset = (page - 1) * limit;
 
-    let query = adminClient
-      .from('invoices')
-      .select('*', { count: 'exact' });
+    let query = adminClient.from('invoices').select('*', { count: 'exact' });
 
     // Clients see their own invoices: linked by clientProfileId OR unlinked by email
     if (!STAFF_ROLES.includes(user.userType)) {
@@ -253,7 +261,8 @@ export class InvoicesService {
 
     // Client access check: must own by clientProfileId or matching email (unlinked)
     if (!STAFF_ROLES.includes(user.userType)) {
-      const ownedByProfile = user.clientProfileId && data.client_profile_id === user.clientProfileId;
+      const ownedByProfile =
+        user.clientProfileId && data.client_profile_id === user.clientProfileId;
       const ownedByEmail = !data.client_profile_id && data.email === user.email;
       if (!ownedByProfile && !ownedByEmail) {
         throw new ForbiddenException('Access denied to this invoice');
@@ -276,15 +285,20 @@ export class InvoicesService {
    * const updated = await invoicesService.updateInvoice('uuid', { status: InvoiceStatus.SENT });
    * ```
    */
-  async updateInvoice(id: string, dto: UpdateInvoiceData): Promise<InvoiceResponse> {
+  async updateInvoice(
+    id: string,
+    dto: UpdateInvoiceData,
+  ): Promise<InvoiceResponse> {
     this.logger.log(`Updating invoice ${id}`);
     const adminClient = this.supabaseService.getAdminClient();
 
     const updateData: Record<string, unknown> = {};
     if (dto.dueDate !== undefined) updateData.due_date = dto.dueDate;
     if (dto.taxAmount !== undefined) updateData.tax_amount = dto.taxAmount;
-    if (dto.discountAmount !== undefined) updateData.discount_amount = dto.discountAmount;
-    if (dto.paymentTerms !== undefined) updateData.payment_terms = dto.paymentTerms;
+    if (dto.discountAmount !== undefined)
+      updateData.discount_amount = dto.discountAmount;
+    if (dto.paymentTerms !== undefined)
+      updateData.payment_terms = dto.paymentTerms;
     if (dto.notes !== undefined) updateData.notes = dto.notes;
     if (dto.status !== undefined) updateData.status = dto.status;
 
@@ -306,7 +320,11 @@ export class InvoicesService {
         .eq('id', id)
         .single()) as DbResult<{ tax_amount: number; discount_amount: number }>;
       if (inv) {
-        await this.calculateAndSaveTotals(id, inv.tax_amount, inv.discount_amount);
+        await this.calculateAndSaveTotals(
+          id,
+          inv.tax_amount,
+          inv.discount_amount,
+        );
       }
     }
 
@@ -328,7 +346,10 @@ export class InvoicesService {
    * });
    * ```
    */
-  async addInvoiceItem(invoiceId: string, dto: AddInvoiceItemData): Promise<InvoiceItem> {
+  async addInvoiceItem(
+    invoiceId: string,
+    dto: AddInvoiceItemData,
+  ): Promise<InvoiceItem> {
     this.logger.log(`Adding item to invoice ${invoiceId}`);
     const adminClient = this.supabaseService.getAdminClient();
     const amount = dto.quantity * dto.unitPrice;
@@ -358,7 +379,11 @@ export class InvoicesService {
       .single()) as DbResult<{ tax_amount: number; discount_amount: number }>;
 
     if (inv) {
-      await this.calculateAndSaveTotals(invoiceId, inv.tax_amount, inv.discount_amount);
+      await this.calculateAndSaveTotals(
+        invoiceId,
+        inv.tax_amount,
+        inv.discount_amount,
+      );
     }
 
     return this.mapItemRow(data);
@@ -394,8 +419,13 @@ export class InvoicesService {
       throw new NotFoundException('Invoice not found');
     }
 
-    if (invoice.status === InvoiceStatus.PAID || invoice.status === InvoiceStatus.CANCELLED) {
-      throw new BadRequestException(`Cannot send invoice with status: ${invoice.status}`);
+    if (
+      invoice.status === InvoiceStatus.PAID ||
+      invoice.status === InvoiceStatus.CANCELLED
+    ) {
+      throw new BadRequestException(
+        `Cannot send invoice with status: ${invoice.status}`,
+      );
     }
 
     // Fetch client email via client_profiles → user_profiles join
@@ -413,12 +443,20 @@ export class InvoicesService {
       : { data: null };
 
     const clientEmail = authUser?.user?.email;
-    const clientName = clientProfile?.user_profiles?.full_name ?? 'Valued Client';
+    const clientName =
+      clientProfile?.user_profiles?.full_name ?? 'Valued Client';
 
     if (clientEmail) {
-      await this.sendInvoiceEmail(invoice, invoice.invoice_items ?? [], clientEmail, clientName);
+      await this.sendInvoiceEmail(
+        invoice,
+        invoice.invoice_items ?? [],
+        clientEmail,
+        clientName,
+      );
     } else {
-      this.logger.warn(`No email found for client profile ${invoice.client_profile_id}`);
+      this.logger.warn(
+        `No email found for client profile ${invoice.client_profile_id}`,
+      );
     }
 
     // Update status to sent
@@ -427,7 +465,10 @@ export class InvoicesService {
       .update({ status: InvoiceStatus.SENT })
       .eq('id', invoiceId);
 
-    return this.getInvoiceById(invoiceId, { id: '', userType: 'admin' } as AuthUser);
+    return this.getInvoiceById(invoiceId, {
+      id: '',
+      userType: 'admin',
+    } as AuthUser);
   }
 
   /**
@@ -449,7 +490,10 @@ export class InvoicesService {
       .select('amount')
       .eq('invoice_id', invoiceId)) as DbListResult<{ amount: number }>;
 
-    const subtotal = (items ?? []).reduce((sum, item) => sum + Number(item.amount), 0);
+    const subtotal = (items ?? []).reduce(
+      (sum, item) => sum + Number(item.amount),
+      0,
+    );
     const totalAmount = subtotal + Number(taxAmount) - Number(discountAmount);
 
     await adminClient
@@ -467,9 +511,14 @@ export class InvoicesService {
     toEmail: string,
     toName: string,
   ): Promise<void> {
-    const sendgridApiKey = this.configService.get<string>('email.resendApiKey', { infer: true });
+    const sendgridApiKey = this.configService.get<string>(
+      'email.resendApiKey',
+      { infer: true },
+    );
     if (!sendgridApiKey) {
-      this.logger.warn('SendGrid API key not configured — skipping invoice email');
+      this.logger.warn(
+        'SendGrid API key not configured — skipping invoice email',
+      );
       return;
     }
 
@@ -534,7 +583,10 @@ export class InvoicesService {
    * await invoicesService.linkInvoicesByEmail('guest@example.com', 'client-profile-uuid');
    * ```
    */
-  async linkInvoicesByEmail(email: string, clientProfileId: string): Promise<void> {
+  async linkInvoicesByEmail(
+    email: string,
+    clientProfileId: string,
+  ): Promise<void> {
     const adminClient = this.supabaseService.getAdminClient();
     const { error } = await adminClient
       .from('invoices')
@@ -543,14 +595,21 @@ export class InvoicesService {
       .is('client_profile_id', null);
 
     if (error) {
-      this.logger.warn(`Failed to link invoices for ${email}: ${error.message}`);
+      this.logger.warn(
+        `Failed to link invoices for ${email}: ${error.message}`,
+      );
     } else {
-      this.logger.log(`Linked guest invoices for ${email} to client ${clientProfileId}`);
+      this.logger.log(
+        `Linked guest invoices for ${email} to client ${clientProfileId}`,
+      );
     }
   }
 
   /** Maps an invoices DB row to InvoiceResponse (camelCase) */
-  private mapInvoiceRow(row: InvoiceRow, items?: InvoiceItemRow[]): InvoiceResponse {
+  private mapInvoiceRow(
+    row: InvoiceRow,
+    items?: InvoiceItemRow[],
+  ): InvoiceResponse {
     return {
       id: row.id,
       invoiceNumber: row.invoice_number,
