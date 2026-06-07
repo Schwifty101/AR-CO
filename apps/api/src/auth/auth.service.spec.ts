@@ -14,10 +14,16 @@ import { SupabaseService } from '../database/supabase.service';
 import { AdminWhitelistService } from '../database/admin-whitelist.service';
 import { AuditService } from '../audit/audit.service';
 
+/** Mock Supabase client returned by getClient() (anon/user-scoped client) */
+const mockAnonClient = {
+  auth: {
+    signUp: jest.fn(),
+  },
+};
+
 /** Mock Supabase client returned by getAdminClient() */
 const mockAdminClient = {
   auth: {
-    signUp: jest.fn(),
     signInWithPassword: jest.fn(),
     getUser: jest.fn(),
     refreshSession: jest.fn(),
@@ -45,6 +51,7 @@ describe('AuthService', () => {
   let service: AuthService;
   let supabaseService: jest.Mocked<SupabaseService>;
   let adminWhitelistService: jest.Mocked<AdminWhitelistService>;
+  let auditService: jest.Mocked<AuditService>;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -76,13 +83,17 @@ describe('AuthService', () => {
     service = module.get<AuthService>(AuthService);
     supabaseService = module.get(SupabaseService);
     adminWhitelistService = module.get(AdminWhitelistService);
+    auditService = module.get(AuditService);
 
-    // Reset all mocks
-    jest.clearAllMocks();
+    // Reset all mocks (clears calls AND implementations to prevent stale mock leakage)
+    jest.resetAllMocks();
     supabaseService.getAdminClient.mockReturnValue(
       mockAdminClient as unknown as ReturnType<
         SupabaseService['getAdminClient']
       >,
+    );
+    supabaseService.getClient.mockReturnValue(
+      mockAnonClient as unknown as ReturnType<SupabaseService['getClient']>,
     );
   });
 
@@ -101,15 +112,15 @@ describe('AuthService', () => {
 
     it('should return pending confirmation response on successful signup', async () => {
       const userId = 'test-uuid-123';
-      mockAdminClient.auth.signUp.mockResolvedValue({
+      mockAnonClient.auth.signUp.mockResolvedValue({
         data: {
-          user: { id: userId },
+          user: { id: userId, identities: [{}] },
           session: null,
         },
         error: null,
       });
 
-      // Mock user_profiles select (no existing profile)
+      // Mock all tables touched by the signup path
       mockAdminClient.from.mockImplementation((table: string) => {
         if (table === 'user_profiles') {
           return {
@@ -121,7 +132,31 @@ describe('AuthService', () => {
                 }),
               }),
             }),
+            insert: jest.fn().mockResolvedValue({ data: null, error: null }),
           };
+        }
+        if (table === 'client_profiles') {
+          return {
+            insert: jest.fn().mockReturnValue({
+              select: jest.fn().mockReturnValue({
+                single: jest
+                  .fn()
+                  .mockResolvedValue({ data: { id: 'cp-uuid' }, error: null }),
+              }),
+            }),
+          };
+        }
+        if (table === 'invoices') {
+          return {
+            update: jest.fn().mockReturnValue({
+              eq: jest.fn().mockReturnValue({
+                is: jest.fn().mockResolvedValue({ error: null }),
+              }),
+            }),
+          };
+        }
+        if (table === 'activity_logs') {
+          return { insert: jest.fn().mockResolvedValue({ error: null }) };
         }
         return mockQueryBuilder(null);
       });
@@ -139,7 +174,7 @@ describe('AuthService', () => {
     });
 
     it('should throw UnauthorizedException on signup failure', async () => {
-      mockAdminClient.auth.signUp.mockResolvedValue({
+      mockAnonClient.auth.signUp.mockResolvedValue({
         data: { user: null, session: null },
         error: { message: 'Email already exists' },
       });
@@ -224,30 +259,21 @@ describe('AuthService', () => {
         error: null,
       });
 
-      // First call: fetchUserProfileOrNull returns null (no profile yet)
-      // Then insert calls for profile creation
-      // Then activity_logs insert
-      const fromCalls: string[] = [];
-      mockAdminClient.from.mockImplementation((table: string) => {
-        fromCalls.push(table);
-        if (
-          table === 'user_profiles' &&
-          fromCalls.filter((t) => t === 'user_profiles').length === 1
-        ) {
-          // First call: select (profile lookup) - returns null
-          return {
-            select: jest.fn().mockReturnValue({
-              eq: jest.fn().mockReturnValue({
-                single: jest.fn().mockResolvedValue({
-                  data: null,
-                  error: { code: 'PGRST116' },
-                }),
-              }),
+      // First call: user_profiles select (no existing profile)
+      mockAdminClient.from.mockImplementationOnce(() => ({
+        select: jest.fn().mockReturnValue({
+          eq: jest.fn().mockReturnValue({
+            single: jest.fn().mockResolvedValue({
+              data: null,
+              error: { code: 'PGRST116' },
             }),
-          };
-        }
+          }),
+        }),
+      }));
+
+      // All remaining calls via mockImplementation for other tables
+      mockAdminClient.from.mockImplementation((table: string) => {
         if (table === 'user_profiles') {
-          // Second call: insert
           return { insert: jest.fn().mockResolvedValue({ error: null }) };
         }
         if (table === 'activity_logs') {
@@ -296,7 +322,24 @@ describe('AuthService', () => {
           };
         }
         if (table === 'client_profiles') {
-          return { insert: jest.fn().mockResolvedValue({ error: null }) };
+          return {
+            insert: jest.fn().mockReturnValue({
+              select: jest.fn().mockReturnValue({
+                single: jest
+                  .fn()
+                  .mockResolvedValue({ data: { id: 'cp-uuid' }, error: null }),
+              }),
+            }),
+          };
+        }
+        if (table === 'invoices') {
+          return {
+            update: jest.fn().mockReturnValue({
+              eq: jest.fn().mockReturnValue({
+                is: jest.fn().mockResolvedValue({ error: null }),
+              }),
+            }),
+          };
         }
         if (table === 'activity_logs') {
           return { insert: jest.fn().mockResolvedValue({ error: null }) };
@@ -415,13 +458,12 @@ describe('AuthService', () => {
 
   describe('signout', () => {
     it('should log signout event and return success', async () => {
-      mockAdminClient.from.mockImplementation(() => ({
-        insert: jest.fn().mockResolvedValue({ error: null }),
-      }));
+      auditService.log.mockResolvedValue(undefined);
 
       const result = await service.signout('user-uuid');
 
       expect(result.message).toBe('Signed out successfully.');
+      expect(auditService.log).toHaveBeenCalled();
     });
   });
 });
