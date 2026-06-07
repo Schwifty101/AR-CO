@@ -54,7 +54,7 @@ export default function HomePage() {
     url: SITE_URL,
     logo: `${SITE_URL}/android-chrome-512x512.png`,
     image: `${SITE_URL}/og-image.jpg`,
-    email: 'info@arco.law',
+    email: 'info@arandcolaw.com',
     telephone: '+92 51 2252144',
     address: {
       '@type': 'PostalAddress',
@@ -77,9 +77,9 @@ export default function HomePage() {
     areaServed: 'Pakistan',
     priceRange: '$$$',
     sameAs: [
-      'https://instagram.com/arco.law',
-      'https://Linkedin.com/arco.law',
-      'https://Facebook.com/arco.law',
+      'https://www.instagram.com/a.r.and.co/',
+      'https://www.linkedin.com/in/barrister-shoaib-razzaq-bb1181220/',
+      'https://www.facebook.com/profile.php?id=61589943938111',
     ],
   }
 
@@ -93,7 +93,7 @@ export default function HomePage() {
     areaServed: 'Pakistan',
     priceRange: '$$$',
     telephone: '+92 51 2252144',
-    email: 'info@arco.law',
+    email: 'info@arandcolaw.com',
     address: {
       '@type': 'PostalAddress',
       addressLocality: 'Islamabad',
@@ -147,7 +147,7 @@ export default function HomePage() {
         name: 'How do I book a legal consultation with AR&CO?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'You can book a consultation by calling +92 51 2252144, emailing info@arco.law, or using the consultation booking form on our website.',
+          text: 'You can book a consultation by calling +92 51 2252144, emailing info@arandcolaw.com, or using the consultation booking form on our website.',
         },
       },
       {

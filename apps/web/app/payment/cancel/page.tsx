@@ -155,10 +155,10 @@ export default function PaymentCancelPage() {
           If you experienced an issue during payment, please contact our support
           team at{' '}
           <a
-            href="mailto:support@arcolawfirm.com"
+            href="mailto:info@arandcolaw.com"
             className="underline hover:text-foreground"
           >
-            support@arcolawfirm.com
+            info@arandcolaw.com
           </a>
           .
         </p>

@@ -208,7 +208,7 @@ export default function PrivacyPolicy() {
                         <p style={{ ...BODY, marginBottom: '0.25rem' }}>Islamabad, Pakistan</p>
                         <p style={{ ...BODY, marginBottom: '0.25rem' }}>
                             <span style={{ color: 'var(--heritage-gold, #D4AF37)', opacity: 0.8 }}>Email: </span>
-                            <a href="mailto:info@arco.law" style={LINK}>info@arco.law</a>
+                            <a href="mailto:info@arandcolaw.com" style={LINK}>info@arandcolaw.com</a>
                         </p>
                         <p style={BODY}>
                             <span style={{ color: 'var(--heritage-gold, #D4AF37)', opacity: 0.8 }}>Phone: </span>

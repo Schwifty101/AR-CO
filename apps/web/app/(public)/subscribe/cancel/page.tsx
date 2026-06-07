@@ -53,8 +53,8 @@ export default function SubscribeCancelPage() {
 
           <p className={styles.note}>
             Need help? Contact us at{' '}
-            <a href="mailto:support@arco.com" className={styles.contactLink}>
-              support@arco.com
+            <a href="mailto:info@arandcolaw.com" className={styles.contactLink}>
+              info@arandcolaw.com
             </a>
           </p>
         </motion.div>

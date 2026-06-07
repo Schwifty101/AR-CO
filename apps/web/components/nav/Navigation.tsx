@@ -582,7 +582,7 @@ const FullScreenMenu: React.FC<IFullScreenMenuProps> = ({ onClose, navItems, onO
                 {/* Right Group - Social & Credits */}
                 <div className={styles.bottomRight}>
                     <a
-                        href="https://instagram.com/arco.law"
+                        href="https://www.instagram.com/a.r.and.co/"
                         target="_blank"
                         rel="noopener noreferrer"
                         className={styles.socialLink}
@@ -590,7 +590,7 @@ const FullScreenMenu: React.FC<IFullScreenMenuProps> = ({ onClose, navItems, onO
                         <SlotMachineText>Instagram</SlotMachineText>
                     </a>
                     <a
-                        href="https://Linkedin.com/arco.law"
+                        href="https://www.linkedin.com/in/barrister-shoaib-razzaq-bb1181220/"
                         target="_blank"
                         rel="noopener noreferrer"
                         className={styles.socialLink}
@@ -598,12 +598,18 @@ const FullScreenMenu: React.FC<IFullScreenMenuProps> = ({ onClose, navItems, onO
                         <SlotMachineText>LinkedIn</SlotMachineText>
                     </a>
                     <a
-                        href="https://Facebook.com/arco.law"
+                        href="https://www.facebook.com/profile.php?id=61589943938111"
                         target="_blank"
                         rel="noopener noreferrer"
                         className={styles.socialLink}
                     >
                         <SlotMachineText>Facebook</SlotMachineText>
+                    </a>
+                    <a
+                        href="mailto:info@arandcolaw.com"
+                        className={styles.socialLink}
+                    >
+                        <SlotMachineText>info@arandcolaw.com</SlotMachineText>
                     </a>
                     <a
                         href="https://sobanahmad.dev"

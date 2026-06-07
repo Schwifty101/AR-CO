@@ -373,12 +373,18 @@ export default function Footer() {
               <SlotMachineText>LinkedIn</SlotMachineText>
             </a>
             <a
-              href="https://www.facebook.com/ipo.pakistan/"
+              href="https://www.facebook.com/profile.php?id=61589943938111"
               target="_blank"
               rel="noopener noreferrer"
               className={styles.socialLink}
             >
               <SlotMachineText>Facebook</SlotMachineText>
+            </a>
+            <a
+              href="mailto:info@arandcolaw.com"
+              className={styles.socialLink}
+            >
+              <SlotMachineText>info@arandcolaw.com</SlotMachineText>
             </a>
             <a
               href="https://sobanahmad.dev"

@@ -24,7 +24,7 @@ const FAQS: FAQ[] = [
   {
     question: 'How do I book a legal consultation?',
     answer:
-      'You can book a consultation by calling +92 51 2252144, sending a WhatsApp message to +92 306 0599916, emailing info@arco.law, or using the consultation form on our website. We respond within one business day.',
+      'You can book a consultation by calling +92 51 2252144, sending a WhatsApp message to +92 306 0599916, emailing info@arandcolaw.com, or using the consultation form on our website. We respond within one business day.',
   },
   {
     question: 'Does AR&CO handle corporate and business legal matters?',
