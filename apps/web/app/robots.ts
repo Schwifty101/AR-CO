@@ -17,8 +17,6 @@ export default function robots(): MetadataRoute.Robots {
         '/auth',
         '/auth/callback',
         '/auth/confirm',
-        '/subscribe/success',
-        '/subscribe/cancel',
         '/complaint-section/form',
         '/services/*/*/form',
         '/payment-callback',

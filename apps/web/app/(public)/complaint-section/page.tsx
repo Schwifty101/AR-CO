@@ -1,12 +1,9 @@
 'use client'
 
-import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { ArrowUpRight, Shield, Scale, FileText, Users, Building2, CheckCircle2 } from 'lucide-react'
 import styles from './complaint.module.css'
-import { useAuth } from '@/lib/auth/use-auth'
-import { getMySubscription } from '@/lib/api/subscriptions'
 
 const INSTITUTIONS = [
   { code: 'CDA', name: 'Capital Development Authority' },
@@ -101,18 +98,7 @@ const fadeUp = {
 }
 
 export default function ComplaintSectionPage() {
-  const { user, isLoading } = useAuth()
-  const [hasSubscription, setHasSubscription] = useState(false)
-
-  useEffect(() => {
-    if (isLoading) return
-    if (!user) return
-    getMySubscription()
-      .then(sub => setHasSubscription(sub?.status === 'active'))
-      .catch(() => setHasSubscription(false))
-  }, [user, isLoading])
-
-  const ctaHref = hasSubscription ? '/complaint-section/form' : '/subscribe'
+  const ctaHref = '/complaint-section/form'
 
   return (
     <main className={styles.main}>
@@ -130,7 +116,7 @@ export default function ComplaintSectionPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.15 }}
           >
-            Premium Legal Service
+            Legal Complaint Service
           </motion.span>
 
           <motion.h1
@@ -165,7 +151,7 @@ export default function ComplaintSectionPage() {
               <span>File a Complaint</span>
               <ArrowUpRight className={styles.ctaIcon} />
             </Link>
-            <span className={styles.ctaNote}>Premium clients · Priority access</span>
+            <span className={styles.ctaNote}>PKR 1,000 flat fee · Per complaint</span>
           </motion.div>
         </motion.div>
 
@@ -322,23 +308,24 @@ export default function ComplaintSectionPage() {
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
         >
           <div className={styles.ctaBannerText}>
-            <span className={styles.ctaBannerEyebrow}>Premium Access Required</span>
+            <span className={styles.ctaBannerEyebrow}>Start Your Case</span>
             <h2 className={styles.ctaBannerTitle}>
               Ready to file your <em>complaint?</em>
             </h2>
             <p className={styles.ctaBannerSub}>
-              The Complaint Section is available to AR&CO premium subscribers. Subscribe
-              to gain immediate access to our legal complaint team and begin your case.
+              File your complaint online in minutes. A flat filing fee of PKR 1,000 applies
+              per complaint — our legal complaint team will review your case once payment is
+              verified.
             </p>
           </div>
 
           <div className={styles.ctaBannerActions}>
             <Link href={ctaHref} className={styles.ctaPrimary}>
-              <span>{hasSubscription ? 'File a Complaint' : 'Subscribe — Get Access'}</span>
+              <span>File a Complaint</span>
               <ArrowUpRight className={styles.ctaIcon} />
             </Link>
             <p className={styles.ctaBannerDisclaimer}>
-              All subscriptions include a free initial consultation
+              A flat fee of PKR 1,000 applies per complaint
             </p>
           </div>
         </motion.div>

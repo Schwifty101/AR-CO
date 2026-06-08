@@ -43,10 +43,13 @@ import {
   getComplaintById,
   updateComplaintStatus,
   assignComplaint,
+  getComplaintProofUrl,
+  reviewComplaintPayment,
   type ComplaintResponse,
 } from '@/lib/api/complaints';
 import { getUsers } from '@/lib/api/users';
-import { ComplaintStatus } from '@repo/shared';
+import { ComplaintStatus, ComplaintPaymentStatus } from '@repo/shared';
+import PaymentReviewPanel from '@/components/admin/PaymentReviewPanel';
 
 /** Complaint status badge color mapping */
 const STATUS_COLORS: Record<ComplaintStatus, string> = {
@@ -55,6 +58,14 @@ const STATUS_COLORS: Record<ComplaintStatus, string> = {
   [ComplaintStatus.ESCALATED]: 'bg-orange-500 text-white',
   [ComplaintStatus.RESOLVED]: 'bg-green-500 text-white',
   [ComplaintStatus.CLOSED]: 'bg-blue-500 text-white',
+};
+
+/** Payment status badge color mapping */
+const PAYMENT_STATUS_COLORS: Record<ComplaintPaymentStatus, string> = {
+  [ComplaintPaymentStatus.PENDING]: 'bg-gray-400 text-white',
+  [ComplaintPaymentStatus.AWAITING_CONFIRMATION]: 'bg-yellow-500 text-white',
+  [ComplaintPaymentStatus.PAID]: 'bg-green-600 text-white',
+  [ComplaintPaymentStatus.FLAGGED]: 'bg-red-500 text-white',
 };
 
 /** Update status form schema */
@@ -177,6 +188,16 @@ export default function AdminComplaintDetailPage() {
       toast.success('Complaint assigned successfully');
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Failed to assign complaint');
+    }
+  };
+
+  /** Re-fetch the complaint after a payment review action */
+  const reloadComplaint = async () => {
+    try {
+      const data = await getComplaintById(complaintId);
+      setComplaint(data);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to refresh complaint');
     }
   };
 
@@ -343,6 +364,95 @@ export default function AdminComplaintDetailPage() {
               </div>
             )}
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Complainant & Payment */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Complainant & Payment</CardTitle>
+          <CardDescription>
+            Guest contact details and manual payment review (PKR 1,000 filing fee)
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label className="text-muted-foreground">Full Name</Label>
+              <p className="font-medium">{complaint.fullName || 'N/A'}</p>
+            </div>
+            <div>
+              <Label className="text-muted-foreground">Email</Label>
+              <p className="font-medium">{complaint.email || 'N/A'}</p>
+            </div>
+            <div>
+              <Label className="text-muted-foreground">Phone</Label>
+              <p className="font-medium">{complaint.phoneNumber || 'N/A'}</p>
+            </div>
+            <div>
+              <Label className="text-muted-foreground">CNIC</Label>
+              <p className="font-medium">{complaint.cnic || 'N/A'}</p>
+            </div>
+            <div>
+              <Label className="text-muted-foreground">City</Label>
+              <p className="font-medium">{complaint.city || 'N/A'}</p>
+            </div>
+            <div>
+              <Label className="text-muted-foreground">Address</Label>
+              <p className="font-medium">{complaint.address || 'N/A'}</p>
+            </div>
+            <div>
+              <Label className="text-muted-foreground">Department</Label>
+              <p className="font-medium">{complaint.department || 'N/A'}</p>
+            </div>
+            <div>
+              <Label className="text-muted-foreground">Institution Reference</Label>
+              <p className="font-medium">{complaint.institutionReference || 'N/A'}</p>
+            </div>
+            <div>
+              <Label className="text-muted-foreground">Issue Type</Label>
+              <p className="font-medium">{complaint.issueType || 'N/A'}</p>
+            </div>
+            <div>
+              <Label className="text-muted-foreground">Incident Date</Label>
+              <p className="font-medium">{complaint.incidentDate || 'N/A'}</p>
+            </div>
+            <div>
+              <Label className="text-muted-foreground">Prior Attempts</Label>
+              <p className="font-medium">
+                {complaint.priorAttempts === null
+                  ? 'N/A'
+                  : complaint.priorAttempts
+                  ? `Yes${complaint.priorAttemptReference ? ` (${complaint.priorAttemptReference})` : ''}`
+                  : 'No'}
+              </p>
+            </div>
+            <div>
+              <Label className="text-muted-foreground">Payment Status</Label>
+              <div className="mt-1">
+                <Badge className={PAYMENT_STATUS_COLORS[complaint.paymentStatus]}>
+                  {complaint.paymentStatus.replace(/_/g, ' ')}
+                </Badge>
+              </div>
+            </div>
+          </div>
+
+          {complaint.desiredOutcome && (
+            <div>
+              <Label className="text-muted-foreground">Desired Outcome</Label>
+              <p className="whitespace-pre-wrap">{complaint.desiredOutcome}</p>
+            </div>
+          )}
+
+          <Separator />
+
+          <PaymentReviewPanel
+            paymentStatus={complaint.paymentStatus}
+            hasProof={!!complaint.paymentProofPath}
+            getProofUrl={() => getComplaintProofUrl(complaint.id)}
+            onReview={(d) => reviewComplaintPayment(complaint.id, d).then(() => undefined)}
+            onReviewed={reloadComplaint}
+          />
         </CardContent>
       </Card>
 

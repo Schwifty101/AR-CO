@@ -2,6 +2,7 @@ export {
   UserType,
   CompanyType,
   ComplaintStatus,
+  ComplaintPaymentStatus,
   ComplaintCategory,
   ServiceRegistrationStatus,
   ServiceRegistrationPaymentStatus,

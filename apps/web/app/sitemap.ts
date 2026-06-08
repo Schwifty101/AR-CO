@@ -15,7 +15,6 @@ const STATIC_PUBLIC_ROUTES = [
   '/privacy',
   '/team',
   '/blogs',
-  '/subscribe',
   '/complaint-section',
 ]
 

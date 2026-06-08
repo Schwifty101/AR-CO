@@ -3,6 +3,16 @@
    Heritage gold / cream / dark aesthetic
    ============================================================ */
 
+.spinner {
+  animation: complaintSpin 0.8s linear infinite;
+}
+
+@keyframes complaintSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .main {
   min-height: 100vh;
   overflow-x: hidden;

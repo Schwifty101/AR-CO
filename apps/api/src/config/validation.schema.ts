@@ -78,15 +78,19 @@ export const validationSchema = Joi.object({
         'JWT_REFRESH_TOKEN_EXPIRATION must be in format: 15m, 1h, 7d, etc.',
     }),
 
-  // Email Configuration (Optional until Resend is fully integrated)
-  RESEND_API_KEY: Joi.string().optional(),
-  RESEND_FROM_EMAIL: Joi.string()
-    .email()
-    .default('noreply@example.com')
-    .messages({
-      'string.email': 'RESEND_FROM_EMAIL must be a valid email address',
-    }),
-  RESEND_FROM_NAME: Joi.string().default('AR&CO Law Firm'),
+  // Email Configuration (SMTP / nodemailer). Optional — sends are skipped if SMTP_HOST is unset.
+  SMTP_HOST: Joi.string().optional().allow(''),
+  SMTP_PORT: Joi.number().optional().default(587),
+  SMTP_SECURE: Joi.string().optional().valid('true', 'false').default('false'),
+  SMTP_USER: Joi.string().optional().allow(''),
+  SMTP_PASS: Joi.string().optional().allow(''),
+  MAIL_FROM: Joi.string().email().default('info@arandcolaw.com').messages({
+    'string.email': 'MAIL_FROM must be a valid email address',
+  }),
+  MAIL_FROM_NAME: Joi.string().default('AR&CO Law Firm'),
+  MAIL_ADMIN: Joi.string().email().default('info@arandcolaw.com').messages({
+    'string.email': 'MAIL_ADMIN must be a valid email address',
+  }),
 
   // File Upload Configuration
   MAX_FILE_SIZE: Joi.number().integer().positive().default(10485760).messages({

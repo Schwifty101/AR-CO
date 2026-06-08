@@ -45,12 +45,25 @@ export interface JwtConfig {
 }
 
 /**
- * Email configuration interface
+ * Email configuration interface (SMTP / nodemailer)
  */
 export interface EmailConfig {
-  resendApiKey: string;
+  /** SMTP host (e.g. smtp.gmail.com, mail.arandcolaw.com) */
+  smtpHost: string;
+  /** SMTP port (587 for STARTTLS, 465 for SSL) */
+  smtpPort: number;
+  /** Use a fully-encrypted connection (true for port 465) */
+  smtpSecure: boolean;
+  /** SMTP auth username (usually the full mailbox address) */
+  smtpUser: string;
+  /** SMTP auth password / app password */
+  smtpPass: string;
+  /** From address shown to recipients (info@arandcolaw.com) */
   fromEmail: string;
+  /** From display name */
   fromName: string;
+  /** Internal mailbox that receives new-registration notifications */
+  adminEmail: string;
 }
 
 /**
@@ -168,9 +181,14 @@ export default (): Configuration => ({
     refreshTokenExpiration: process.env.JWT_REFRESH_TOKEN_EXPIRATION || '7d',
   },
   email: {
-    resendApiKey: process.env.RESEND_API_KEY || '',
-    fromEmail: process.env.RESEND_FROM_EMAIL || 'noreply@example.com',
-    fromName: process.env.RESEND_FROM_NAME || 'AR&CO Law Firm',
+    smtpHost: process.env.SMTP_HOST || '',
+    smtpPort: parseInt(process.env.SMTP_PORT || '587', 10),
+    smtpSecure: process.env.SMTP_SECURE === 'true',
+    smtpUser: process.env.SMTP_USER || '',
+    smtpPass: process.env.SMTP_PASS || '',
+    fromEmail: process.env.MAIL_FROM || 'info@arandcolaw.com',
+    fromName: process.env.MAIL_FROM_NAME || 'AR&CO Law Firm',
+    adminEmail: process.env.MAIL_ADMIN || 'info@arandcolaw.com',
   },
   fileUpload: {
     maxFileSize: parseInt(process.env.MAX_FILE_SIZE || '10485760', 10), // 10MB default

@@ -28,9 +28,11 @@
 import { getSessionToken, type PaginationParams } from './auth-helpers';
 import type {
   ComplaintResponse,
+  ComplaintStatusResponse,
   CreateComplaintData,
   UpdateComplaintStatusData,
   AssignToData,
+  ReviewPaymentData,
   ComplaintFilters,
   PaginatedComplaintsResponse,
 } from '@repo/shared';
@@ -38,9 +40,11 @@ import type {
 // Re-export types for consumers that import from this module
 export type {
   ComplaintResponse,
+  ComplaintStatusResponse,
   CreateComplaintData,
   UpdateComplaintStatusData,
   AssignToData,
+  ReviewPaymentData,
   ComplaintFilters,
 } from '@repo/shared';
 export type { PaginationParams } from './auth-helpers';
@@ -56,35 +60,36 @@ export interface PaginatedComplaints {
 
 
 /**
- * Submit a new complaint (client with active subscription only)
+ * Submit a new complaint (PUBLIC — no auth, no subscription required)
  *
- * Creates a new complaint against a government organization. Requires an active subscription.
+ * Creates a complaint against a government organization. The complaint is filed
+ * as a guest; payment (PKR 1,000) is collected via a screenshot upload as the
+ * final step (see {@link uploadComplaintPaymentProof}).
  *
- * @param data - Complaint data (targetOrganization, category, description, etc.)
- * @returns Created complaint record
- * @throws Error if request fails or user lacks active subscription
+ * @param data - Complaint data (contact + structured intake)
+ * @returns Created complaint record (includes the generated complaintNumber)
+ * @throws Error if request fails
  *
  * @example
  * ```typescript
  * const complaint = await submitComplaint({
- *   targetOrganization: 'SECP',
- *   category: 'registration',
- *   description: 'Delay in company registration approval',
- *   urgencyLevel: 'high',
+ *   title: 'Unlawful tax assessment',
+ *   description: 'Detailed account of the incident…',
+ *   targetOrganization: 'FBR',
+ *   fullName: 'Sara Ahmed',
+ *   email: 'sara@example.com',
+ *   phoneNumber: '+923001234567',
+ *   declarationTruthful: true,
+ *   declarationTerms: true,
  * });
  * ```
  */
 export async function submitComplaint(
   data: CreateComplaintData,
 ): Promise<ComplaintResponse> {
-  const token = await getSessionToken();
-
   const response = await fetch('/api/complaints', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   });
 
@@ -94,6 +99,142 @@ export async function submitComplaint(
   }
 
   return (await response.json()) as ComplaintResponse;
+}
+
+/**
+ * Upload a manual payment screenshot for a complaint (PUBLIC — no auth)
+ *
+ * Advances the complaint to `awaiting_confirmation` for admin review. The
+ * complaint UUID acts as the access token.
+ *
+ * @param id - UUID of the complaint
+ * @param file - The payment screenshot (jpg/png/webp/pdf, ≤10 MB)
+ * @returns Updated complaint record
+ * @throws Error if upload fails
+ *
+ * @example
+ * ```typescript
+ * await uploadComplaintPaymentProof(complaint.id, screenshotFile);
+ * // complaint.paymentStatus === 'awaiting_confirmation'
+ * ```
+ */
+export async function uploadComplaintPaymentProof(
+  id: string,
+  file: File,
+): Promise<ComplaintResponse> {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const response = await fetch(`/api/complaints/${id}/payment-proof`, {
+    method: 'POST',
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
+    throw new Error(error.message || 'Failed to upload payment screenshot');
+  }
+
+  return (await response.json()) as ComplaintResponse;
+}
+
+/**
+ * Review a complaint's manual payment (staff/admin only): confirm or flag.
+ *
+ * @param id - UUID of the complaint
+ * @param data - Review action + optional note
+ * @returns Updated complaint record
+ *
+ * @example
+ * ```typescript
+ * await reviewComplaintPayment(id, { action: 'confirm' });
+ * await reviewComplaintPayment(id, { action: 'flag', note: 'Screenshot unreadable' });
+ * ```
+ */
+export async function reviewComplaintPayment(
+  id: string,
+  data: ReviewPaymentData,
+): Promise<ComplaintResponse> {
+  const token = await getSessionToken();
+  const response = await fetch(`/api/complaints/${id}/review-payment`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
+    throw new Error(error.message || 'Failed to review payment');
+  }
+
+  return (await response.json()) as ComplaintResponse;
+}
+
+/**
+ * Get a signed URL to view the uploaded payment screenshot (staff/admin only).
+ *
+ * @param id - UUID of the complaint
+ * @returns Signed URL valid for 1 hour
+ */
+export async function getComplaintProofUrl(id: string): Promise<string> {
+  const token = await getSessionToken();
+  const response = await fetch(`/api/complaints/${id}/payment-proof-url`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  if (!response.ok) {
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
+    throw new Error(error.message || 'Failed to load payment proof');
+  }
+
+  const data = (await response.json()) as { url: string };
+  return data.url;
+}
+
+/**
+ * Check complaint status by complaint number and email (PUBLIC — no auth)
+ *
+ * @param complaintNumber - The complaint number (e.g. "CMP-2026-0001")
+ * @param email - Email used when filing the complaint
+ * @returns Minimal complaint status
+ * @throws Error if not found or email mismatch
+ */
+export async function getComplaintStatus(
+  complaintNumber: string,
+  email: string,
+): Promise<ComplaintStatusResponse> {
+  const params = new URLSearchParams({ complaintNumber, email });
+  const response = await fetch(`/api/complaints/status?${params.toString()}`);
+
+  if (!response.ok) {
+    const error = (await response.json().catch(() => ({}))) as { message?: string };
+    throw new Error(error.message || 'Failed to check complaint status');
+  }
+
+  return (await response.json()) as ComplaintStatusResponse;
+}
+
+/**
+ * Claim all guest complaints matching the logged-in user's email.
+ * Safe to call on every login — idempotent and best-effort.
+ *
+ * @returns Number of complaints claimed
+ */
+export async function claimComplaints(): Promise<{ claimed: number }> {
+  const token = await getSessionToken();
+  const response = await fetch('/api/complaints/claim', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  if (!response.ok) {
+    return { claimed: 0 };
+  }
+
+  return (await response.json()) as { claimed: number };
 }
 
 /**

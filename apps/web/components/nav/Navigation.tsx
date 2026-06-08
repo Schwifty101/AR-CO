@@ -19,6 +19,7 @@ import { useConsultationOverlay } from '../consultation'
 import { useAboutOverlay } from '../about'
 import { useScrollLock } from '@/lib/hooks/useScrollLock'
 import { useAuth } from '@/lib/auth/use-auth'
+import { UserType } from '@repo/shared'
 
 
 // Register GSAP plugins
@@ -145,7 +146,8 @@ interface IHeroNavbarProps {
 
 const HeroNavbar: React.FC<IHeroNavbarProps> = ({ isHidden, hasEntered, navItems, onMenuClick, onOpenPracticeAreas, onOpenFacilitation, onOpenAbout, hideCta }) => {
     const { openOverlay: openConsultationOverlay } = useConsultationOverlay()
-    const { isAuthenticated } = useAuth()
+    const { isAuthenticated, user } = useAuth()
+    const isAdmin = user?.userType === UserType.ADMIN
     return (
         <motion.nav
             initial={{ y: "-100%", opacity: 0 }}
@@ -164,7 +166,9 @@ const HeroNavbar: React.FC<IHeroNavbarProps> = ({ isHidden, hasEntered, navItems
                     {!hideCta && (
                         <div className="hidden lg:flex" style={{ gap: '0.75rem', alignItems: 'center' }}>
                             {isAuthenticated
-                                ? <CtaButton variant="outline" text="Client Portal" href="/client/dashboard" />
+                                ? (isAdmin
+                                    ? <CtaButton variant="outline" text="Admin Panel" href="/admin/dashboard" />
+                                    : <CtaButton variant="outline" text="Client Portal" href="/client/dashboard" />)
                                 : <CtaButton variant="outline" text="signin / signup" href="/auth/signin" />
                             }
                             <CtaButton variant="filled" onClick={openConsultationOverlay} />
@@ -240,7 +244,8 @@ interface IStickyNavbarProps {
 
 const StickyNavbar: React.FC<IStickyNavbarProps> = ({ isVisible, onMenuClick, hideCta }) => {
     const { openOverlay: openConsultationOverlay } = useConsultationOverlay()
-    const { isAuthenticated } = useAuth()
+    const { isAuthenticated, user } = useAuth()
+    const isAdmin = user?.userType === UserType.ADMIN
     return (
         <motion.div
             initial={{ y: "-100%", opacity: 0 }}
@@ -254,7 +259,9 @@ const StickyNavbar: React.FC<IStickyNavbarProps> = ({ isVisible, onMenuClick, hi
             {!hideCta && (
                 <div className={`${styles.stickyContent} hidden md:flex`} style={{ gap: '0.75rem', alignItems: 'center' }}>
                     {isAuthenticated
-                        ? <Link href="/client/dashboard" className={styles.navLink} style={{ fontSize: '13px', letterSpacing: '0.05em', fontWeight: 500, color: '#fff' }}>Client Portal</Link>
+                        ? (isAdmin
+                            ? <Link href="/admin/dashboard" className={styles.navLink} style={{ fontSize: '13px', letterSpacing: '0.05em', fontWeight: 500, color: '#fff' }}>Admin Panel</Link>
+                            : <Link href="/client/dashboard" className={styles.navLink} style={{ fontSize: '13px', letterSpacing: '0.05em', fontWeight: 500, color: '#fff' }}>Client Portal</Link>)
                         : <Link href="/auth/signin" className={styles.navLink} style={{ fontSize: '13px', letterSpacing: '0.05em', fontWeight: 500, color: '#fff' }}>signin / signup</Link>
                     }
                     <CtaButton variant="filled" onClick={openConsultationOverlay} />
@@ -333,7 +340,8 @@ const FullScreenMenu: React.FC<IFullScreenMenuProps> = ({ onClose, navItems, onO
     const [currentTime, setCurrentTime] = useState<string>('')
     const [isOfficeOpen, setIsOfficeOpen] = useState<boolean>(false)
     const { openOverlay: openConsultationOverlay } = useConsultationOverlay()
-    const { isAuthenticated } = useAuth()
+    const { isAuthenticated, user } = useAuth()
+    const isAdmin = user?.userType === UserType.ADMIN
 
     // Check viewport on mount to determine animation origin
     useEffect(() => {
@@ -452,19 +460,19 @@ const FullScreenMenu: React.FC<IFullScreenMenuProps> = ({ onClose, navItems, onO
                 <div className={styles.menuHeaderActions}>
                     <div className="hidden md:flex" style={{ gap: '0.75rem' }}>
                         {isAuthenticated
-                            ? <Link href="/client/dashboard" className={`${styles.ctaButton} ${styles.ctaButtonOutline}`} style={{ padding: '0 1.5rem' }} onClick={onClose}>Client Portal</Link>
+                            ? (isAdmin
+                                ? <Link href="/admin/dashboard" className={`${styles.ctaButton} ${styles.ctaButtonOutline}`} style={{ padding: '0 1.5rem' }} onClick={onClose}>Admin Panel</Link>
+                                : <Link href="/client/dashboard" className={`${styles.ctaButton} ${styles.ctaButtonOutline}`} style={{ padding: '0 1.5rem' }} onClick={onClose}>Client Portal</Link>)
                             : <Link href="/auth/signin" className={`${styles.ctaButton} ${styles.ctaButtonOutline}`} style={{ padding: '0 1.5rem' }} onClick={onClose}>signin / signup</Link>
                         }
-                        <Link href="/subscribe" className={`${styles.ctaButton} ${styles.ctaButtonUpgrade}`} onClick={onClose}>
-                            Upgrade
-                            <ArrowUpRight size={14} className={styles.ctaIcon} />
-                        </Link>
                         <CtaButton variant="outline" onClick={openConsultationOverlay} />
                     </div>
                     {/* Mobile: portal/signin + Consultation in header */}
                     <div className="md:hidden flex" style={{ gap: '0.5rem', alignItems: 'center' }}>
                         {isAuthenticated
-                            ? <Link href="/client/dashboard" className={`${styles.ctaButton} ${styles.ctaButtonOutline} ${styles.mobileSignin}`} onClick={onClose}>Client Portal</Link>
+                            ? (isAdmin
+                                ? <Link href="/admin/dashboard" className={`${styles.ctaButton} ${styles.ctaButtonOutline} ${styles.mobileSignin}`} onClick={onClose}>Admin Panel</Link>
+                                : <Link href="/client/dashboard" className={`${styles.ctaButton} ${styles.ctaButtonOutline} ${styles.mobileSignin}`} onClick={onClose}>Client Portal</Link>)
                             : <Link href="/auth/signin" className={`${styles.ctaButton} ${styles.ctaButtonOutline} ${styles.mobileSignin}`} onClick={onClose}>signin / signup</Link>
                         }
                         <CtaButton variant="outline" onClick={openConsultationOverlay} className={styles.mobileHeaderCta} />
@@ -537,20 +545,6 @@ const FullScreenMenu: React.FC<IFullScreenMenuProps> = ({ onClose, navItems, onO
                             </motion.div>
                         </div>
                     ))}
-
-                    {/* Mobile Only: Upgrade Button as last menu item */}
-                    <div className={`${styles.menuLinkWrapper} md:hidden`}>
-                        <motion.div variants={linkVariants}>
-                            <Link
-                                href="/subscribe"
-                                className={styles.menuLink}
-                                onClick={onClose}
-                                style={{ color: 'var(--heritage-gold)' }}
-                            >
-                                <SlotMachineText>Upgrade</SlotMachineText>
-                            </Link>
-                        </motion.div>
-                    </div>
                 </motion.nav>
             </div>
 

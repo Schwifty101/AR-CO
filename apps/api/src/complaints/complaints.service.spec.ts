@@ -6,6 +6,9 @@ import {
 } from '@nestjs/common';
 import { ComplaintsService } from './complaints.service';
 import { SupabaseService } from '../database/supabase.service';
+import { PaymentProofService } from '../payments/payment-proof.service';
+import { PaymentEmailService } from '../payments/payment-email.service';
+import { MailerService } from '../payments/mailer.service';
 import { UserType } from '../common/enums/user-type.enum';
 import type { AuthUser } from '../common/interfaces/auth-user.interface';
 import {
@@ -81,6 +84,21 @@ describe('ComplaintsService', () => {
             getAdminClient: jest.fn().mockReturnValue(mockAdminClient),
           },
         },
+        {
+          provide: PaymentProofService,
+          useValue: {
+            uploadProof: jest.fn(),
+            getSignedProofUrl: jest.fn(),
+          },
+        },
+        {
+          provide: PaymentEmailService,
+          useValue: { send: jest.fn() },
+        },
+        {
+          provide: MailerService,
+          useValue: { sendMail: jest.fn(), sendToAdmin: jest.fn() },
+        },
       ],
     }).compile();
 
@@ -103,6 +121,11 @@ describe('ComplaintsService', () => {
       location: 'Clifton, Karachi',
       category: ComplaintCategory.INFRASTRUCTURE,
       evidenceUrls: ['https://example.com/photo1.jpg'],
+      fullName: 'Test Client',
+      email: 'client@example.com',
+      phoneNumber: '+923001234567',
+      declarationTruthful: true,
+      declarationTerms: true,
     };
 
     it('should create complaint successfully', async () => {
@@ -117,7 +140,7 @@ describe('ComplaintsService', () => {
         }),
       });
 
-      const result = await service.submitComplaint(clientUser, createDto);
+      const result = await service.submitComplaint(createDto);
 
       expect(mockAdminClient.from).toHaveBeenCalledWith('complaints');
       expect(result.complaintNumber).toBe('CMP-2026-0001');
@@ -137,23 +160,9 @@ describe('ComplaintsService', () => {
         }),
       });
 
-      await expect(
-        service.submitComplaint(clientUser, createDto),
-      ).rejects.toThrow(InternalServerErrorException);
-    });
-
-    it('should throw BadRequestException when client profile not found', async () => {
-      const userWithoutProfile: AuthUser = {
-        id: 'user-uuid-123',
-        email: 'client@example.com',
-        userType: UserType.CLIENT,
-        fullName: 'Test Client',
-        phoneNumber: null,
-      };
-
-      await expect(
-        service.submitComplaint(userWithoutProfile, createDto),
-      ).rejects.toThrow();
+      await expect(service.submitComplaint(createDto)).rejects.toThrow(
+        InternalServerErrorException,
+      );
     });
   });
 
@@ -202,11 +211,23 @@ describe('ComplaintsService', () => {
         }),
       });
 
-      mockAdminClient.from.mockReturnValue({
-        select: jest.fn().mockReturnValue({
-          eq: mockEq,
-        }),
-      });
+      mockAdminClient.from
+        // First call: the listing query builder (select → eq → order → range)
+        .mockReturnValueOnce({
+          select: jest.fn().mockReturnValue({
+            eq: mockEq,
+          }),
+        })
+        // Second call: claimComplaints (update → eq → is → select)
+        .mockReturnValueOnce({
+          update: jest.fn().mockReturnValue({
+            eq: jest.fn().mockReturnValue({
+              is: jest.fn().mockReturnValue({
+                select: jest.fn().mockResolvedValue({ data: [], error: null }),
+              }),
+            }),
+          }),
+        });
 
       const result = await service.getComplaints(
         clientUser,

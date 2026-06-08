@@ -25,7 +25,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import * as sgMail from '@sendgrid/mail';
+import { MailerService } from './mailer.service';
 import { SupabaseService } from '../database/supabase.service';
 import { STAFF_ROLES } from '../common/constants/roles';
 import type { AuthUser } from '../common/interfaces/auth-user.interface';
@@ -90,6 +90,7 @@ export class InvoicesService {
   constructor(
     private readonly supabaseService: SupabaseService,
     private readonly configService: ConfigService<Configuration>,
+    private readonly mailerService: MailerService,
   ) {}
 
   /**
@@ -503,7 +504,7 @@ export class InvoicesService {
   }
 
   /**
-   * Sends an HTML invoice email via SendGrid.
+   * Sends an HTML invoice email via the shared SMTP mailer.
    */
   private async sendInvoiceEmail(
     invoice: InvoiceRow,
@@ -511,19 +512,6 @@ export class InvoicesService {
     toEmail: string,
     toName: string,
   ): Promise<void> {
-    const sendgridApiKey = this.configService.get<string>(
-      'email.resendApiKey',
-      { infer: true },
-    );
-    if (!sendgridApiKey) {
-      this.logger.warn(
-        'SendGrid API key not configured — skipping invoice email',
-      );
-      return;
-    }
-
-    sgMail.setApiKey(sendgridApiKey);
-
     const itemsHtml = items
       .map(
         (item) =>
@@ -536,12 +524,10 @@ export class InvoicesService {
       )
       .join('');
 
-    try {
-      await sgMail.send({
-        to: { email: toEmail, name: toName },
-        from: 'noreply@arco.pk',
-        subject: `Invoice ${invoice.invoice_number ?? invoice.id} from AR&CO`,
-        html: `
+    await this.mailerService.sendMail({
+      to: toEmail,
+      subject: `Invoice ${invoice.invoice_number ?? invoice.id} from AR&CO`,
+      html: `
           <h2>Invoice from AR&CO Law Firm</h2>
           <p>Dear ${toName},</p>
           <p>Please find your invoice details below.</p>
@@ -564,11 +550,7 @@ export class InvoicesService {
           ${invoice.notes ? `<p><strong>Notes:</strong> ${invoice.notes}</p>` : ''}
           <p>Best regards,<br/>AR&CO Team</p>
         `,
-      });
-      this.logger.log(`Invoice email sent to ${toEmail}`);
-    } catch (err) {
-      this.logger.error(`Failed to send invoice email to ${toEmail}`, err);
-    }
+    });
   }
 
   /**

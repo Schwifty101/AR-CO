@@ -9,6 +9,7 @@ import { SupabaseService } from '../database/supabase.service';
 import { PaymentProofService } from '../payments/payment-proof.service';
 import { PaymentEmailService } from '../payments/payment-email.service';
 import { InvoicesService } from '../payments/invoices.service';
+import { MailerService } from '../payments/mailer.service';
 import {
   ConsultationBookingStatus,
   ConsultationPaymentStatus,
@@ -94,6 +95,10 @@ describe('ConsultationsService', () => {
         {
           provide: InvoicesService,
           useValue: mockInvoicesService,
+        },
+        {
+          provide: MailerService,
+          useValue: { sendMail: jest.fn(), sendToAdmin: jest.fn() },
         },
       ],
     }).compile();
