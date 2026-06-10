@@ -45,12 +45,26 @@ export interface JwtConfig {
 }
 
 /**
- * Email configuration interface
+ * Email configuration interface (legacy SendGrid/Resend — used by PaymentEmailService)
  */
 export interface EmailConfig {
   resendApiKey: string;
   fromEmail: string;
   fromName: string;
+}
+
+/**
+ * SMTP configuration interface (used by MailService for admin notifications)
+ */
+export interface SmtpConfig {
+  host: string;
+  port: number;
+  secure: boolean;
+  user: string;
+  pass: string;
+  from: string;
+  fromName: string;
+  adminEmail: string;
 }
 
 /**
@@ -124,6 +138,7 @@ export interface Configuration {
   supabase: SupabaseConfig;
   jwt: JwtConfig;
   email: EmailConfig;
+  smtp: SmtpConfig;
   fileUpload: FileUploadConfig;
   admin: AdminConfig;
   lemonsqueezy: LemonSqueezyConfig;
@@ -171,6 +186,16 @@ export default (): Configuration => ({
     resendApiKey: process.env.RESEND_API_KEY || '',
     fromEmail: process.env.RESEND_FROM_EMAIL || 'noreply@example.com',
     fromName: process.env.RESEND_FROM_NAME || 'AR&CO Law Firm',
+  },
+  smtp: {
+    host: process.env.SMTP_HOST || '',
+    port: parseInt(process.env.SMTP_PORT || '587', 10),
+    secure: process.env.SMTP_SECURE === 'true',
+    user: process.env.SMTP_USER || '',
+    pass: process.env.SMTP_PASS || '',
+    from: process.env.MAIL_FROM || '',
+    fromName: process.env.MAIL_FROM_NAME || 'AR&CO Law Firm',
+    adminEmail: process.env.MAIL_ADMIN || '',
   },
   fileUpload: {
     maxFileSize: parseInt(process.env.MAX_FILE_SIZE || '10485760', 10), // 10MB default

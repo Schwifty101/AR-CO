@@ -37,6 +37,7 @@ import { SupabaseService } from '../database/supabase.service';
 import { PaymentProofService } from '../payments/payment-proof.service';
 import { PaymentEmailService } from '../payments/payment-email.service';
 import { InvoicesService } from '../payments/invoices.service';
+import { MailService } from '../mail/mail.service';
 import type { DbResult, DbListResult } from '../database/db-result.types';
 import {
   validateSortColumn,
@@ -86,6 +87,7 @@ export class ConsultationsService {
     private readonly paymentProofService: PaymentProofService,
     private readonly paymentEmailService: PaymentEmailService,
     private readonly invoicesService: InvoicesService,
+    private readonly mailService: MailService,
   ) {}
 
   /**
@@ -146,6 +148,12 @@ export class ConsultationsService {
     this.logger.log(
       `Booking created: ${booking.reference_number} (ID: ${booking.id})`,
     );
+
+    this.mailService.sendAdminNotification(
+      `New consultation booking: ${booking.reference_number} — ${booking.practice_area}`,
+      `New consultation booking received:\n\nReference: ${booking.reference_number}\nName: ${booking.full_name}\nEmail: ${booking.email}\nPhone: ${booking.phone_number}\nPractice Area: ${booking.practice_area}\nUrgency: ${booking.urgency}\nSummary: ${booking.issue_summary}`,
+    );
+
     return mapConsultationRow(booking);
   }
 

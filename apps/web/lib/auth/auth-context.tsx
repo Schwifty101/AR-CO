@@ -129,10 +129,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
         event === 'TOKEN_REFRESHED'
       ) {
         if (session) {
-          // Print bearer token to console on sign in
-          if (event === 'SIGNED_IN') {
-            console.log('Bearer Token:', session.access_token);
-          }
           const userData = await fetchUserFromBackend(session.access_token);
           setUserState(userData);
           // Silently claim any guest registrations submitted before login

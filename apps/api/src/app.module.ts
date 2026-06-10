@@ -21,12 +21,14 @@ import { ContentModule } from './content/content.module';
 import { AuditModule } from './audit/audit.module';
 import { AdminModule } from './admin/admin.module';
 import { WebhooksModule } from './payments/webhooks.module';
+import { MailModule } from './mail/mail.module';
 
 @Module({
   imports: [
     AppConfigModule,
     DatabaseModule,
     StorageModule,
+    MailModule,
     ThrottlerModule.forRoot([{ ttl: 60000, limit: 100 }]),
     AuthModule,
     UsersModule,

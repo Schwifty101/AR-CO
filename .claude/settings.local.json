@@ -13,7 +13,6 @@
       "mcp__ide__getDiagnostics",
       "Bash(curl:*)",
       "Bash(/Users/sobanahmad/.claude/plugins/cache/claude-plugins-official/ralph-loop/*)",
-      "\"Bash(! \\\"/Users/sobanahmad/.claude/plugins/cache/claude-plugins-official/ralph-loop/*)\"\n``*",
       "mcp__supabase__execute_sql",
       "Bash(pnpm test:*)",
       "mcp__supabase__list_tables",
@@ -89,7 +88,9 @@
       "mcp__plugin_supabase_supabase__execute_sql",
       "Bash(docker info *)",
       "Bash(docker context *)",
-      "mcp__plugin_supabase_supabase__get_logs"
+      "mcp__plugin_supabase_supabase__get_logs",
+      "mcp__plugin_supabase_supabase__list_projects",
+      "Bash(git *)"
     ],
     "env": {
       "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
