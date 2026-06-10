@@ -78,12 +78,8 @@ export const validationSchema = Joi.object({
         'JWT_REFRESH_TOKEN_EXPIRATION must be in format: 15m, 1h, 7d, etc.',
     }),
 
-  // Email Configuration (SMTP / nodemailer). Optional — sends are skipped if SMTP_HOST is unset.
-  SMTP_HOST: Joi.string().optional().allow(''),
-  SMTP_PORT: Joi.number().optional().default(587),
-  SMTP_SECURE: Joi.string().optional().valid('true', 'false').default('false'),
-  SMTP_USER: Joi.string().optional().allow(''),
-  SMTP_PASS: Joi.string().optional().allow(''),
+  // Email Configuration (Resend HTTP API). Optional — sends are skipped if RESEND_API_KEY is unset.
+  RESEND_API_KEY: Joi.string().optional().allow(''),
   MAIL_FROM: Joi.string().email().default('info@arandcolaw.com').messages({
     'string.email': 'MAIL_FROM must be a valid email address',
   }),

@@ -1,22 +1,19 @@
 /**
  * Mailer Service
  *
- * Central SMTP email sender built on nodemailer. All outgoing transactional
- * mail (payment confirmations, welcome emails, invoices, internal new-request
- * notifications) goes through here, sent from the configured `MAIL_FROM`
- * address (info@arandcolaw.com by default).
+ * Central email sender via Resend HTTP API. All outgoing transactional mail
+ * (payment confirmations, welcome emails, invoices, internal notifications)
+ * goes through here, sent from the configured `MAIL_FROM` address.
  *
- * Sends are best-effort: when SMTP is not configured, or a send fails, the
- * error is logged and never propagated so it can't block the calling flow.
+ * Sends are best-effort: when Resend is not configured or a send fails, the
+ * error is logged and never propagated so it cannot block the calling flow.
  *
  * @module PaymentsModule
  */
 
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import * as nodemailer from 'nodemailer';
-import type { Transporter } from 'nodemailer';
-import type SMTPTransport from 'nodemailer/lib/smtp-transport';
+import { Resend } from 'resend';
 import type { Configuration } from '../config/configuration';
 
 /** Options for a single outgoing email */
@@ -34,30 +31,22 @@ export interface MailOptions {
 @Injectable()
 export class MailerService {
   private readonly logger = new Logger(MailerService.name);
-  private readonly transporter: Transporter | null;
+  private readonly resend: Resend | null;
 
   constructor(private readonly configService: ConfigService<Configuration>) {
-    const host = this.configService.get('email.smtpHost', { infer: true });
+    const apiKey = this.configService.get('email.resendApiKey', {
+      infer: true,
+    });
 
-    if (!host) {
+    if (!apiKey) {
       this.logger.warn(
-        'SMTP_HOST not configured — outgoing emails are disabled (set SMTP_* env vars)',
+        'RESEND_API_KEY not configured — outgoing emails are disabled',
       );
-      this.transporter = null;
+      this.resend = null;
       return;
     }
 
-    this.transporter = nodemailer.createTransport({
-      host,
-      port: this.configService.get('email.smtpPort', { infer: true }),
-      secure: this.configService.get('email.smtpSecure', { infer: true }),
-      auth: {
-        user: this.configService.get('email.smtpUser', { infer: true }),
-        pass: this.configService.get('email.smtpPass', { infer: true }),
-      },
-      // Force IPv4 — Railway can't reach Gmail over IPv6 (ENETUNREACH on smtp.gmail.com:587)
-      family: 4,
-    } as SMTPTransport.Options);
+    this.resend = new Resend(apiKey);
   }
 
   /** Builds the `From` header: `AR&CO Law Firm <info@arandcolaw.com>`. */
@@ -86,36 +75,39 @@ export class MailerService {
    * ```
    */
   async sendMail(options: MailOptions): Promise<void> {
-    if (!this.transporter) {
+    if (!this.resend) {
       this.logger.warn(
-        `Email skipped (SMTP not configured): "${options.subject}" → ${String(options.to)}`,
+        `Email skipped (Resend not configured): "${options.subject}" → ${String(options.to)}`,
       );
       return;
     }
 
-    try {
-      await this.transporter.sendMail({
-        from: this.fromHeader(),
-        to: options.to,
-        subject: options.subject,
-        html: options.html,
-        replyTo: options.replyTo,
-      });
-      this.logger.log(
-        `Email sent: "${options.subject}" → ${String(options.to)}`,
-      );
-    } catch (err) {
+    const to = Array.isArray(options.to) ? options.to : [options.to];
+
+    const { error } = await this.resend.emails.send({
+      from: this.fromHeader(),
+      to,
+      subject: options.subject,
+      html: options.html,
+      replyTo: options.replyTo,
+    });
+
+    if (error) {
       this.logger.error(
         `Failed to send email "${options.subject}" → ${String(options.to)}`,
-        err as Error,
+        error,
       );
+      return;
     }
+
+    this.logger.log(
+      `Email sent: "${options.subject}" → ${String(options.to)}`,
+    );
   }
 
   /**
    * Sends an internal notification to the firm mailbox (`MAIL_ADMIN`,
-   * info@arandcolaw.com by default). The sending address is the same mailbox,
-   * which is fine — a mailbox can receive mail it sent to itself.
+   * info@arandcolaw.com by default).
    *
    * @param subject - Notification subject
    * @param html - Notification HTML body

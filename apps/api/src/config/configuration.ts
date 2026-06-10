@@ -45,19 +45,11 @@ export interface JwtConfig {
 }
 
 /**
- * Email configuration interface (SMTP / nodemailer)
+ * Email configuration interface (Resend HTTP API)
  */
 export interface EmailConfig {
-  /** SMTP host (e.g. smtp.gmail.com, mail.arandcolaw.com) */
-  smtpHost: string;
-  /** SMTP port (587 for STARTTLS, 465 for SSL) */
-  smtpPort: number;
-  /** Use a fully-encrypted connection (true for port 465) */
-  smtpSecure: boolean;
-  /** SMTP auth username (usually the full mailbox address) */
-  smtpUser: string;
-  /** SMTP auth password / app password */
-  smtpPass: string;
+  /** Resend API key (re_...) */
+  resendApiKey: string;
   /** From address shown to recipients (info@arandcolaw.com) */
   fromEmail: string;
   /** From display name */
@@ -181,11 +173,7 @@ export default (): Configuration => ({
     refreshTokenExpiration: process.env.JWT_REFRESH_TOKEN_EXPIRATION || '7d',
   },
   email: {
-    smtpHost: process.env.SMTP_HOST || '',
-    smtpPort: parseInt(process.env.SMTP_PORT || '587', 10),
-    smtpSecure: process.env.SMTP_SECURE === 'true',
-    smtpUser: process.env.SMTP_USER || '',
-    smtpPass: process.env.SMTP_PASS || '',
+    resendApiKey: process.env.RESEND_API_KEY ?? '',
     fromEmail: process.env.MAIL_FROM || 'info@arandcolaw.com',
     fromName: process.env.MAIL_FROM_NAME || 'AR&CO Law Firm',
     adminEmail: process.env.MAIL_ADMIN || 'info@arandcolaw.com',
