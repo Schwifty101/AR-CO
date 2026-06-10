@@ -54,7 +54,6 @@ import {
   XCircle,
   CheckCircle,
   AlertTriangle,
-  ArrowRight,
 } from 'lucide-react';
 import {
   getMySubscription,
@@ -193,22 +192,16 @@ function SubscriptionSkeleton() {
 
 /** Empty state when user has no subscription */
 function NoSubscriptionState() {
-  const router = useRouter();
-
   return (
     <Card>
       <CardContent className="py-12">
         <div className="flex flex-col items-center justify-center text-center">
           <CreditCard className="h-12 w-12 text-muted-foreground/50 mb-4" />
           <h3 className="text-lg font-medium mb-1">No Active Subscription</h3>
-          <p className="text-sm text-muted-foreground mb-6 max-w-md">
-            You do not have an active subscription. Subscribe to a plan to
-            access premium legal services and features.
+          <p className="text-sm text-muted-foreground max-w-md">
+            You do not have an active subscription. Please contact our team if
+            you would like to discuss a subscription plan.
           </p>
-          <Button onClick={() => router.push('/subscribe')}>
-            View Plans
-            <ArrowRight className="ml-2 h-4 w-4" />
-          </Button>
         </div>
       </CardContent>
     </Card>
@@ -494,12 +487,6 @@ export default function ClientSubscriptionPage() {
                     disabled={isResuming}
                   >
                     {isResuming ? 'Resuming...' : 'Resume Subscription'}
-                  </Button>
-                )}
-                {isInactive && (
-                  <Button onClick={() => router.push('/subscribe')}>
-                    Subscribe Again
-                    <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 )}
               </div>

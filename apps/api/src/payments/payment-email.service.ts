@@ -6,15 +6,16 @@
  * out-of-band follow-up. Used by both consultation bookings and service
  * registrations.
  *
- * Uses SendGrid (`@sendgrid/mail`) with the configured sender. Sends are
- * best-effort: failures are logged and never block the status update.
+ * Uses the shared {@link MailerService} (nodemailer / SMTP) with the configured
+ * sender. Sends are best-effort: failures are logged and never block the status
+ * update.
  *
  * @module PaymentsModule
  */
 
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import * as sgMail from '@sendgrid/mail';
+import { MailerService } from './mailer.service';
 import type { Configuration } from '../config/configuration';
 
 /** Which review outcome an email represents */
@@ -38,7 +39,10 @@ export interface PaymentEmailContext {
 export class PaymentEmailService {
   private readonly logger = new Logger(PaymentEmailService.name);
 
-  constructor(private readonly configService: ConfigService<Configuration>) {}
+  constructor(
+    private readonly configService: ConfigService<Configuration>,
+    private readonly mailerService: MailerService,
+  ) {}
 
   /**
    * Sends a payment-status email (confirmed or flagged) to a client.
@@ -57,18 +61,6 @@ export class PaymentEmailService {
    * ```
    */
   async send(kind: PaymentEmailKind, ctx: PaymentEmailContext): Promise<void> {
-    const apiKey = this.configService.get('email.resendApiKey', {
-      infer: true,
-    });
-    if (!apiKey) {
-      this.logger.warn('Email API key not configured — skipping payment email');
-      return;
-    }
-
-    const fromEmail = this.configService.get('email.fromEmail', {
-      infer: true,
-    });
-    const fromName = this.configService.get('email.fromName', { infer: true });
     const whatsapp = this.configService.get('manualPayment.whatsappNumber', {
       infer: true,
     });
@@ -79,27 +71,10 @@ export class PaymentEmailService {
     const contactLine = this.buildContactLine(whatsapp, contactEmail);
     const { subject, html } = this.buildContent(kind, ctx, contactLine);
 
-    sgMail.setApiKey(apiKey);
-    try {
-      await sgMail.send({
-        to: ctx.to,
-        from: {
-          email: fromEmail ?? 'noreply@arandcolaw.com',
-          name: fromName ?? 'AR&CO Law Firm',
-        },
-        subject,
-        html,
-      });
-      this.logger.log(
-        `Payment ${kind} email sent to ${ctx.to} (${ctx.referenceNumber})`,
-      );
-    } catch (err) {
-      // Best-effort — never block the status update on an email failure.
-      this.logger.error(
-        `Failed to send payment ${kind} email to ${ctx.to}`,
-        err as Error,
-      );
-    }
+    await this.mailerService.sendMail({ to: ctx.to, subject, html });
+    this.logger.log(
+      `Payment ${kind} email queued for ${ctx.to} (${ctx.referenceNumber})`,
+    );
   }
 
   /** Builds the "questions? contact us" line, hiding WhatsApp when not configured. */

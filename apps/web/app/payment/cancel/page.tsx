@@ -37,7 +37,7 @@ function getRetryHref(type: PaymentType): string {
     case 'service':
       return '/services';
     case 'subscription':
-      return '/subscribe';
+      return '/';
     default:
       return '/';
   }

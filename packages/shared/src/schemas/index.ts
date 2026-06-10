@@ -42,9 +42,11 @@ export {
 
 export {
   CreateComplaintSchema,
+  ComplaintStatusCheckSchema,
   UpdateComplaintStatusSchema,
   ComplaintFiltersSchema,
   ComplaintResponseSchema,
+  ComplaintStatusResponseSchema,
   PaginatedComplaintsResponseSchema,
 } from './complaints.schemas';
 

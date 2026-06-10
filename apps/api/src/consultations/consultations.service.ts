@@ -37,7 +37,7 @@ import { SupabaseService } from '../database/supabase.service';
 import { PaymentProofService } from '../payments/payment-proof.service';
 import { PaymentEmailService } from '../payments/payment-email.service';
 import { InvoicesService } from '../payments/invoices.service';
-import { MailService } from '../mail/mail.service';
+import { MailerService } from '../payments/mailer.service';
 import type { DbResult, DbListResult } from '../database/db-result.types';
 import {
   validateSortColumn,
@@ -87,7 +87,7 @@ export class ConsultationsService {
     private readonly paymentProofService: PaymentProofService,
     private readonly paymentEmailService: PaymentEmailService,
     private readonly invoicesService: InvoicesService,
-    private readonly mailService: MailService,
+    private readonly mailerService: MailerService,
   ) {}
 
   /**
@@ -149,9 +149,21 @@ export class ConsultationsService {
       `Booking created: ${booking.reference_number} (ID: ${booking.id})`,
     );
 
-    this.mailService.sendAdminNotification(
+    // Notify the firm mailbox — fire-and-forget so SMTP never blocks the HTTP response
+    void this.mailerService.sendToAdmin(
       `New consultation booking: ${booking.reference_number} — ${booking.practice_area}`,
-      `New consultation booking received:\n\nReference: ${booking.reference_number}\nName: ${booking.full_name}\nEmail: ${booking.email}\nPhone: ${booking.phone_number}\nPractice Area: ${booking.practice_area}\nUrgency: ${booking.urgency}\nSummary: ${booking.issue_summary}`,
+      `
+        <h2>New Consultation Booking</h2>
+        <p><strong>Reference:</strong> ${booking.reference_number}</p>
+        <p><strong>Practice Area:</strong> ${booking.practice_area}</p>
+        <p><strong>Urgency:</strong> ${booking.urgency}</p>
+        <p><strong>Name:</strong> ${booking.full_name}</p>
+        <p><strong>Email:</strong> ${booking.email}</p>
+        <p><strong>Phone:</strong> ${booking.phone_number}</p>
+        <p><strong>Issue:</strong> ${booking.issue_summary}</p>
+        <p>Awaiting payment. Review it in the admin panel.</p>
+      `,
+      booking.email,
     );
 
     return mapConsultationRow(booking);

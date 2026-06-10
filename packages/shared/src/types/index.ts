@@ -41,9 +41,11 @@ export type {
 
 export type {
   CreateComplaintData,
+  ComplaintStatusCheckData,
   UpdateComplaintStatusData,
   ComplaintFilters,
   ComplaintResponse,
+  ComplaintStatusResponse,
   PaginatedComplaintsResponse,
 } from './complaints.types';
 

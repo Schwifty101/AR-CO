@@ -136,7 +136,7 @@ export default function ClientComplaintsPage() {
             Track and manage your submitted complaints
           </p>
         </div>
-        <Button onClick={() => router.push('/client/complaints/new')}>
+        <Button onClick={() => router.push('/complaint-section/form')}>
           New Complaint
         </Button>
       </div>

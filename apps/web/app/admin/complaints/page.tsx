@@ -49,7 +49,7 @@ import {
   type ComplaintResponse,
   type ComplaintFilters,
 } from '@/lib/api/complaints';
-import { ComplaintStatus, ComplaintCategory } from '@repo/shared';
+import { ComplaintStatus, ComplaintCategory, ComplaintPaymentStatus } from '@repo/shared';
 
 /** Complaint status badge color mapping */
 const STATUS_COLORS: Record<ComplaintStatus, string> = {
@@ -58,6 +58,14 @@ const STATUS_COLORS: Record<ComplaintStatus, string> = {
   [ComplaintStatus.ESCALATED]: 'bg-orange-500 text-white',
   [ComplaintStatus.RESOLVED]: 'bg-green-500 text-white',
   [ComplaintStatus.CLOSED]: 'bg-blue-500 text-white',
+};
+
+/** Payment status badge color mapping */
+const PAYMENT_STATUS_COLORS: Record<ComplaintPaymentStatus, string> = {
+  [ComplaintPaymentStatus.PENDING]: 'bg-gray-400 text-white',
+  [ComplaintPaymentStatus.AWAITING_CONFIRMATION]: 'bg-yellow-500 text-white',
+  [ComplaintPaymentStatus.PAID]: 'bg-green-600 text-white',
+  [ComplaintPaymentStatus.FLAGGED]: 'bg-red-500 text-white',
 };
 
 /** Items per page */
@@ -252,6 +260,7 @@ export default function AdminComplaintsPage() {
                       <TableHead>Target Org</TableHead>
                       <TableHead>Category</TableHead>
                       <TableHead>Status</TableHead>
+                      <TableHead>Payment</TableHead>
                       <TableHead>Assigned To</TableHead>
                       <TableHead>Date</TableHead>
                     </TableRow>
@@ -277,6 +286,9 @@ export default function AdminComplaintsPage() {
                             <Skeleton className="h-5 w-24" />
                           </TableCell>
                           <TableCell>
+                            <Skeleton className="h-5 w-24" />
+                          </TableCell>
+                          <TableCell>
                             <Skeleton className="h-4 w-32" />
                           </TableCell>
                           <TableCell>
@@ -286,7 +298,7 @@ export default function AdminComplaintsPage() {
                       ))
                     ) : complaints.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={7} className="py-12">
+                        <TableCell colSpan={8} className="py-12">
                           <div className="flex flex-col items-center justify-center text-center">
                             <MessageSquareWarning className="h-12 w-12 text-muted-foreground/50 mb-4" />
                             <h3 className="text-lg font-medium mb-1">No complaints found</h3>
@@ -314,6 +326,11 @@ export default function AdminComplaintsPage() {
                           <TableCell>
                             <Badge className={STATUS_COLORS[complaint.status]}>
                               {complaint.status.replace(/_/g, ' ')}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge className={PAYMENT_STATUS_COLORS[complaint.paymentStatus]}>
+                              {complaint.paymentStatus.replace(/_/g, ' ')}
                             </Badge>
                           </TableCell>
                           <TableCell>

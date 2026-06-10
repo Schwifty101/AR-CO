@@ -1,11 +1,18 @@
 'use client'
 
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowLeft, ArrowRight, ArrowUpRight, Upload, Check, X, ChevronDown } from 'lucide-react'
+import { ArrowLeft, ArrowRight, ArrowUpRight, Upload, Check, X, ChevronDown, CreditCard, Loader2, AlertCircle, Shield } from 'lucide-react'
 import * as Popover from '@radix-ui/react-popover'
 import styles from './form.module.css'
+import { submitComplaint, uploadComplaintPaymentProof } from '@/lib/api/complaints'
+import { getPaymentInstructions, type PaymentInstructions } from '@/lib/api/payments'
+
+/** Flat complaint filing fee shown to the user */
+const COMPLAINT_FEE_LABEL = 'PKR 1,000'
+const MAX_PROOF_BYTES = 10 * 1024 * 1024
+const ACCEPTED_PROOF = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf']
 
 // ─── CustomSelect ─────────────────────────────────────────────────────────────
 
@@ -202,7 +209,11 @@ const SECTIONS = [
   { number: '§ 02', title: 'Institution', subtitle: 'The organisation & incident' },
   { number: '§ 03', title: 'Complaint', subtitle: 'The details of your case' },
   { number: '§ 04', title: 'Declaration', subtitle: 'Documents & confirmation' },
+  { number: '§ 05', title: 'Payment', subtitle: `Filing fee — ${COMPLAINT_FEE_LABEL}` },
 ]
+
+/** Index of the payment step (after the four intake sections) */
+const PAYMENT_STEP = 4
 
 const WORD_LIMIT = 300
 const OUTCOME_LIMIT = 150
@@ -281,9 +292,15 @@ function validateSection(step: number, data: FormData): FieldError {
   }
 
   if (step === 2) {
-    if (!data.subject.trim()) errors.subject = 'A subject is required'
+    if (!data.subject.trim()) {
+      errors.subject = 'A subject is required'
+    } else if (data.subject.trim().length < 5) {
+      errors.subject = 'Subject must be at least 5 characters'
+    }
     if (!data.description.trim()) {
       errors.description = 'Please describe your complaint'
+    } else if (data.description.trim().length < 20) {
+      errors.description = 'Description must be at least 20 characters'
     } else if (countWords(data.description) > WORD_LIMIT) {
       errors.description = `Maximum ${WORD_LIMIT} words allowed`
     }
@@ -330,6 +347,22 @@ export default function ComplaintFormPage() {
   const [errors, setErrors] = useState<FieldError>({})
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  // Submission + payment state
+  const [submitting, setSubmitting] = useState(false)
+  const [apiError, setApiError] = useState<string | null>(null)
+  const [complaintId, setComplaintId] = useState<string | null>(null)
+  const [complaintNumber, setComplaintNumber] = useState<string | null>(null)
+  const [instructions, setInstructions] = useState<PaymentInstructions | null>(null)
+  const [proofFile, setProofFile] = useState<File | null>(null)
+  const [uploading, setUploading] = useState(false)
+  const proofInputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    getPaymentInstructions()
+      .then(setInstructions)
+      .catch(() => setInstructions(null))
+  }, [])
+
   const [form, setForm] = useState<FormData>({
     fullName: '', cnic: '', email: '', phone: '', city: '', address: '',
     institution: '', department: '', incidentDate: '', referenceNumber: '', issueType: '',
@@ -356,14 +389,55 @@ export default function ComplaintFormPage() {
       : 'rgba(249, 248, 246, 0.08)'
   }, [errors])
 
-  const goNext = () => {
+  /** Maps the form state onto the backend CreateComplaintData shape */
+  const buildComplaintPayload = () => ({
+    title: form.subject.trim(),
+    description: form.description.trim(),
+    targetOrganization: form.institution,
+    location: form.city || undefined,
+    fullName: form.fullName.trim(),
+    email: form.email.trim(),
+    phoneNumber: form.phone.trim(),
+    cnic: form.cnic || undefined,
+    city: form.city || undefined,
+    address: form.address || undefined,
+    department: form.department || undefined,
+    institutionReference: form.referenceNumber || undefined,
+    issueType: form.issueType || undefined,
+    incidentDate: form.incidentDate || undefined,
+    desiredOutcome: form.desiredOutcome || undefined,
+    priorAttempts: form.priorAttempts ? form.priorAttempts === 'Yes' : undefined,
+    priorAttemptReference: form.priorReference || undefined,
+    declarationTruthful: form.declarationTrue,
+    declarationTerms: form.declarationTerms,
+  })
+
+  const goNext = async () => {
     const errs = validateSection(step, form)
     if (Object.keys(errs).length > 0) { setErrors(errs); return }
-    if (step < SECTIONS.length - 1) {
+
+    // Steps before the declaration simply advance
+    if (step < SECTIONS.length - 2) {
       setDirection(1)
       setStep((s) => s + 1)
-    } else {
-      setSubmitted(true)
+      return
+    }
+
+    // Declaration step → create the complaint, then move to payment
+    if (step === SECTIONS.length - 2) {
+      setApiError(null)
+      setSubmitting(true)
+      try {
+        const complaint = await submitComplaint(buildComplaintPayload())
+        setComplaintId(complaint.id)
+        setComplaintNumber(complaint.complaintNumber)
+        setDirection(1)
+        setStep(PAYMENT_STEP)
+      } catch (err) {
+        setApiError(err instanceof Error ? err.message : 'Failed to submit complaint')
+      } finally {
+        setSubmitting(false)
+      }
     }
   }
 
@@ -371,6 +445,34 @@ export default function ComplaintFormPage() {
     setDirection(-1)
     setStep((s) => s - 1)
     setErrors({})
+  }
+
+  const handleProofSelect = (selected: File | null) => {
+    setApiError(null)
+    if (!selected) return
+    if (!ACCEPTED_PROOF.includes(selected.type)) {
+      setApiError('Please upload a JPG, PNG, WEBP, or PDF file.')
+      return
+    }
+    if (selected.size > MAX_PROOF_BYTES) {
+      setApiError('File is too large (max 10 MB).')
+      return
+    }
+    setProofFile(selected)
+  }
+
+  const handleProofUpload = async () => {
+    if (!proofFile || !complaintId) return
+    setUploading(true)
+    setApiError(null)
+    try {
+      await uploadComplaintPaymentProof(complaintId, proofFile)
+      setSubmitted(true)
+    } catch (err) {
+      setApiError(err instanceof Error ? err.message : 'Failed to upload payment screenshot')
+    } finally {
+      setUploading(false)
+    }
   }
 
   const descWords = countWords(form.description)
@@ -402,10 +504,20 @@ export default function ComplaintFormPage() {
               <h2 className={styles.modalTitle}>
                 Your dossier has been<br /><em>submitted.</em>
               </h2>
+              {complaintNumber && (
+                <p className={styles.modalBody} style={{ marginBottom: '0.75rem' }}>
+                  Your complaint number is <strong>{complaintNumber}</strong>. Keep it to
+                  track your case.
+                </p>
+              )}
               <p className={styles.modalBody}>
-                Your complaint details will be shared with our legal team. You will receive
-                a confirmation and follow-up via <strong>email</strong> and{' '}
-                <strong>WhatsApp</strong> shortly.
+                We have received your payment screenshot. Our team will verify it and your
+                complaint will be reviewed by our legal team. Questions?{' '}
+                {instructions?.whatsappNumber
+                  ? <>WhatsApp <strong>{instructions.whatsappNumber}</strong> or </>
+                  : null}
+                email{' '}
+                <strong>{instructions?.contactEmail ?? 'info@arandcolaw.com'}</strong>.
               </p>
               <button
                 type="button"
@@ -431,7 +543,7 @@ export default function ComplaintFormPage() {
                 File a<br /><em>Complaint</em>
               </h1>
               <p className={styles.sidebarSub}>
-                Complete all four sections. Your information is handled with
+                Complete all five steps. Your information is handled with
                 strict legal confidentiality.
               </p>
             </div>
@@ -829,33 +941,137 @@ export default function ComplaintFormPage() {
                   ))}
                 </div>
               )}
+
+              {/* ── §05 Payment ──────────────────────────────────── */}
+              {step === PAYMENT_STEP && (
+                <div className={styles.fieldsGrid}>
+                  {/* Fee summary */}
+                  <div style={{ gridColumn: '1 / -1', display: 'flex', alignItems: 'center', gap: '1rem', padding: '1.1rem 1.25rem', border: '1px solid rgba(212, 175, 55, 0.2)', borderRadius: '0.75rem', background: 'rgba(212, 175, 55, 0.05)' }}>
+                    <CreditCard style={{ width: 20, height: 20, color: 'var(--heritage-gold)', flexShrink: 0 }} />
+                    <div style={{ flex: 1 }}>
+                      <span style={{ display: 'block', fontFamily: "'Georgia', serif", fontSize: '0.66rem', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(249,248,246,0.45)' }}>Complaint Filing Fee</span>
+                      <span style={{ display: 'block', fontFamily: "'Georgia', serif", fontSize: '1.15rem', color: 'var(--heritage-cream)' }}>{COMPLAINT_FEE_LABEL}</span>
+                    </div>
+                    {complaintNumber && (
+                      <span style={{ fontFamily: "'Georgia', serif", fontSize: '0.75rem', color: 'rgba(212,175,55,0.7)' }}>{complaintNumber}</span>
+                    )}
+                  </div>
+
+                  {/* Bank details */}
+                  <div style={{ gridColumn: '1 / -1', padding: '1.25rem', border: '1px solid rgba(249,248,246,0.08)', borderRadius: '0.75rem', background: 'rgba(249,248,246,0.02)' }}>
+                    <p style={{ fontFamily: "'Lora', Georgia, serif", fontStyle: 'italic', fontSize: '0.85rem', lineHeight: 1.6, color: 'rgba(249,248,246,0.6)', marginTop: 0, marginBottom: '0.9rem' }}>
+                      Transfer the fee to the account below, then upload your payment screenshot to complete your submission.
+                    </p>
+                    {instructions ? (
+                      <dl style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', rowGap: '0.4rem', columnGap: '1rem', margin: 0, fontFamily: "'Georgia', serif", fontSize: '0.84rem' }}>
+                        <dt style={{ color: 'rgba(249,248,246,0.4)' }}>Bank</dt><dd style={{ margin: 0, color: 'var(--heritage-cream)' }}>{instructions.bankName}</dd>
+                        <dt style={{ color: 'rgba(249,248,246,0.4)' }}>Account Title</dt><dd style={{ margin: 0, color: 'var(--heritage-cream)' }}>{instructions.accountTitle}</dd>
+                        <dt style={{ color: 'rgba(249,248,246,0.4)' }}>Account No.</dt><dd style={{ margin: 0, color: 'var(--heritage-cream)' }}>{instructions.accountNumber}</dd>
+                        <dt style={{ color: 'rgba(249,248,246,0.4)' }}>IBAN</dt><dd style={{ margin: 0, color: 'var(--heritage-cream)' }}>{instructions.iban}</dd>
+                      </dl>
+                    ) : (
+                      <p style={{ fontFamily: "'Georgia', serif", fontSize: '0.8rem', color: 'rgba(249,248,246,0.4)', margin: 0 }}>Loading payment details…</p>
+                    )}
+                  </div>
+
+                  {/* Screenshot upload */}
+                  <div style={{ gridColumn: '1 / -1' }}>
+                    <label style={labelStyle}>Payment Screenshot *</label>
+                    <button
+                      type="button"
+                      onClick={() => proofInputRef.current?.click()}
+                      disabled={uploading}
+                      style={{
+                        width: '100%', padding: '1.5rem', border: '1px dashed rgba(212, 175, 55, 0.25)',
+                        borderRadius: '0.75rem', background: 'rgba(212, 175, 55, 0.03)', cursor: 'pointer',
+                        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', transition: 'all 0.3s',
+                      }}
+                    >
+                      <Upload style={{ width: 20, height: 20, color: 'rgba(212, 175, 55, 0.6)' }} />
+                      <span style={{ fontFamily: "'Lora', Georgia, serif", fontStyle: 'italic', fontSize: '0.9rem', color: 'rgba(249, 248, 246, 0.5)' }}>
+                        {proofFile ? 'Change screenshot' : 'Click to upload your payment screenshot'}
+                      </span>
+                      <span style={{ fontFamily: "'Georgia', serif", fontSize: '0.7rem', color: 'rgba(249, 248, 246, 0.25)', letterSpacing: '0.1em' }}>
+                        JPG, PNG, WEBP, PDF · Max 10MB
+                      </span>
+                    </button>
+                    <input
+                      ref={proofInputRef}
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp,application/pdf"
+                      style={{ display: 'none' }}
+                      onChange={(e) => handleProofSelect(e.target.files?.[0] ?? null)}
+                    />
+                    {proofFile && (
+                      <div style={{ marginTop: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 0.75rem', background: 'rgba(212, 175, 55, 0.06)', borderRadius: '100px', border: '1px solid rgba(212, 175, 55, 0.15)' }}>
+                        <Check style={{ width: 14, height: 14, color: 'var(--heritage-gold)', flexShrink: 0 }} />
+                        <span style={{ fontFamily: "'Georgia', serif", fontSize: '0.78rem', color: 'rgba(249, 248, 246, 0.7)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{proofFile.name}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div style={{ gridColumn: '1 / -1', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <Shield style={{ width: 13, height: 13, color: 'rgba(249,248,246,0.35)', flexShrink: 0 }} />
+                    <span style={{ fontFamily: "'Georgia', serif", fontSize: '0.74rem', color: 'rgba(249,248,246,0.4)' }}>
+                      Your complaint is reviewed once our team verifies your payment.
+                    </span>
+                  </div>
+                </div>
+              )}
             </motion.div>
           </AnimatePresence>
 
-          {/* ── Navigation buttons ──────────────────────────────── */}
-          <div className={styles.formNav}>
-            <button
-              type="button"
-              onClick={goBack}
-              disabled={step === 0}
-              className={styles.btnBack}
-            >
-              <ArrowLeft style={{ width: 14, height: 14 }} />
-              Back
-            </button>
+          {apiError && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.75rem', padding: '0.65rem 0.9rem', border: '1px solid rgba(201, 116, 83, 0.4)', borderRadius: '0.5rem', background: 'rgba(201, 116, 83, 0.08)' }} role="alert">
+              <AlertCircle style={{ width: 14, height: 14, color: 'rgba(201, 116, 83, 0.9)', flexShrink: 0 }} />
+              <span style={{ fontFamily: "'Georgia', serif", fontSize: '0.8rem', color: 'rgba(201, 116, 83, 0.9)' }}>{apiError}</span>
+            </div>
+          )}
 
-            <button
-              type="button"
-              onClick={goNext}
-              className={styles.btnNext}
-            >
-              {step < SECTIONS.length - 1 ? (
-                <><span>Continue</span><ArrowRight style={{ width: 14, height: 14 }} /></>
-              ) : (
-                <><span>Submit Complaint</span><ArrowUpRight style={{ width: 14, height: 14 }} /></>
-              )}
-            </button>
-          </div>
+          {/* ── Navigation buttons ──────────────────────────────── */}
+          {step === PAYMENT_STEP ? (
+            <div className={styles.formNav} style={{ justifyContent: 'flex-end' }}>
+              <button
+                type="button"
+                onClick={handleProofUpload}
+                disabled={!proofFile || uploading}
+                className={styles.btnNext}
+              >
+                {uploading ? (
+                  <><Loader2 style={{ width: 14, height: 14 }} className={styles.spinner} /><span>Uploading…</span></>
+                ) : (
+                  <><span>Submit Payment Proof</span><ArrowUpRight style={{ width: 14, height: 14 }} /></>
+                )}
+              </button>
+            </div>
+          ) : (
+            <div className={styles.formNav}>
+              <button
+                type="button"
+                onClick={goBack}
+                disabled={step === 0 || submitting}
+                className={styles.btnBack}
+              >
+                <ArrowLeft style={{ width: 14, height: 14 }} />
+                Back
+              </button>
+
+              <button
+                type="button"
+                onClick={goNext}
+                disabled={submitting}
+                className={styles.btnNext}
+              >
+                {step < SECTIONS.length - 2 ? (
+                  <><span>Continue</span><ArrowRight style={{ width: 14, height: 14 }} /></>
+                ) : submitting ? (
+                  <><Loader2 style={{ width: 14, height: 14 }} className={styles.spinner} /><span>Submitting…</span></>
+                ) : (
+                  <><span>Continue to Payment</span><ArrowUpRight style={{ width: 14, height: 14 }} /></>
+                )}
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </main>

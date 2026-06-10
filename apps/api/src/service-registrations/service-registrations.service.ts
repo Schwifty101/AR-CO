@@ -7,7 +7,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import * as sgMail from '@sendgrid/mail';
+import { MailerService } from '../payments/mailer.service';
 import { SupabaseService } from '../database/supabase.service';
 import { PaymentProofService } from '../payments/payment-proof.service';
 import { PaymentEmailService } from '../payments/payment-email.service';
@@ -117,6 +117,7 @@ export class ServiceRegistrationsService {
     private readonly paymentEmailService: PaymentEmailService,
     private readonly invoicesService: InvoicesService,
     private readonly configService: ConfigService<Configuration>,
+    private readonly mailerService: MailerService,
   ) {}
 
   /** Creates a new service registration (guest/unauthenticated access) */
@@ -172,6 +173,24 @@ export class ServiceRegistrationsService {
     this.logger.log(
       `Registration ${data.reference_number} created successfully`,
     );
+
+    // Notify the firm mailbox of the new registration (best-effort)
+    await this.mailerService.sendToAdmin(
+      `New service registration: ${data.reference_number} — ${service.name}`,
+      `
+        <h2>New Service Registration</h2>
+        <p><strong>Reference:</strong> ${data.reference_number}</p>
+        <p><strong>Service:</strong> ${service.name}</p>
+        <p><strong>Name:</strong> ${data.full_name}</p>
+        <p><strong>Email:</strong> ${data.email}</p>
+        <p><strong>Phone:</strong> ${data.phone_number}</p>
+        ${data.cnic ? `<p><strong>CNIC:</strong> ${data.cnic}</p>` : ''}
+        ${data.description_of_need ? `<p><strong>Need:</strong> ${data.description_of_need}</p>` : ''}
+        <p>Review it in the admin panel.</p>
+      `,
+      data.email,
+    );
+
     return this.mapRegistrationRow(data);
   }
 
@@ -233,6 +252,13 @@ export class ServiceRegistrationsService {
       if (!user.clientProfileId) {
         throw new BadRequestException('Client profile not found');
       }
+      // Self-heal: link any of the client's email-matched guest registrations to
+      // their profile before listing. Under manual payment a registration stays
+      // unlinked (client_profile_id = null) until an admin confirms payment, which
+      // can be days later — so without this the client cannot see their own
+      // pending registration in the portal. claimRegistrations is best-effort and
+      // idempotent (WHERE client_profile_id IS NULL AND email = user.email).
+      await this.claimRegistrations(user);
       query = query.eq('client_profile_id', user.clientProfileId);
     }
 
@@ -1032,19 +1058,6 @@ export class ServiceRegistrationsService {
     fullName: string,
     tempPassword: string,
   ): Promise<void> {
-    const sendgridApiKey = this.configService.get<string>(
-      'email.resendApiKey',
-      {
-        infer: true,
-      },
-    );
-    if (!sendgridApiKey) {
-      this.logger.warn(
-        'SendGrid API key not configured — skipping welcome email',
-      );
-      return;
-    }
-
     const frontendUrl = this.configService.get<string>(
       'lemonsqueezy.frontendUrl',
       {
@@ -1052,14 +1065,10 @@ export class ServiceRegistrationsService {
       },
     );
 
-    sgMail.setApiKey(sendgridApiKey);
-
-    try {
-      await sgMail.send({
-        to: email,
-        from: 'noreply@arco.pk',
-        subject: 'Welcome to AR&CO — Your Client Portal Access',
-        html: `
+    await this.mailerService.sendMail({
+      to: email,
+      subject: 'Welcome to AR&CO — Your Client Portal Access',
+      html: `
           <h2>Welcome to AR&CO, ${fullName}!</h2>
           <p>Your service registration payment has been confirmed. We have created a client portal account for you.</p>
           <p><strong>Login Email:</strong> ${email}</p>
@@ -1068,12 +1077,7 @@ export class ServiceRegistrationsService {
           <p>Our team will be in touch shortly to process your registration.</p>
           <p>Best regards,<br/>AR&CO Team</p>
         `,
-      });
-      this.logger.log(`Welcome email sent to ${email}`);
-    } catch (err) {
-      this.logger.error(`Failed to send welcome email to ${email}`, err);
-      // Non-fatal — account is created, email failure shouldn't block payment confirmation
-    }
+    });
   }
 
   /** Maps a database row (snake_case) to ServiceRegistrationResponse (camelCase) */

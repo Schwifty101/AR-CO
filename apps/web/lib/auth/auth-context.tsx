@@ -30,6 +30,7 @@ import {
 } from 'react';
 import { createBrowserClient } from '@/lib/supabase/client';
 import { claimRegistrations } from '@/lib/api/service-registrations';
+import { claimComplaints } from '@/lib/api/complaints';
 import type { AuthState, AuthUser } from './types';
 
 /** Context value shape with state and actions */
@@ -131,9 +132,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
         if (session) {
           const userData = await fetchUserFromBackend(session.access_token);
           setUserState(userData);
-          // Silently claim any guest registrations submitted before login
+          // Silently claim any guest registrations / complaints submitted before login
           if (event === 'SIGNED_IN') {
             void claimRegistrations();
+            void claimComplaints();
           }
         } else {
           setUserState(null);

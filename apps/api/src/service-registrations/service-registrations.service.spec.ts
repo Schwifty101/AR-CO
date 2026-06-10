@@ -10,6 +10,7 @@ import { SupabaseService } from '../database/supabase.service';
 import { PaymentProofService } from '../payments/payment-proof.service';
 import { PaymentEmailService } from '../payments/payment-email.service';
 import { InvoicesService } from '../payments/invoices.service';
+import { MailerService } from '../payments/mailer.service';
 import { UserType } from '../common/enums/user-type.enum';
 import type { AuthUser } from '../common/interfaces/auth-user.interface';
 import {
@@ -116,6 +117,10 @@ describe('ServiceRegistrationsService', () => {
         {
           provide: ConfigService,
           useValue: { get: jest.fn() },
+        },
+        {
+          provide: MailerService,
+          useValue: { sendMail: jest.fn(), sendToAdmin: jest.fn() },
         },
       ],
     }).compile();
@@ -358,11 +363,23 @@ describe('ServiceRegistrationsService', () => {
         }),
       });
 
-      mockAdminClient.from.mockReturnValue({
-        select: jest.fn().mockReturnValue({
-          eq: mockEq,
-        }),
-      });
+      mockAdminClient.from
+        // First call: the listing query builder (select → eq → order → range)
+        .mockReturnValueOnce({
+          select: jest.fn().mockReturnValue({
+            eq: mockEq,
+          }),
+        })
+        // Second call: claimRegistrations self-heal (update → eq → is → select)
+        .mockReturnValueOnce({
+          update: jest.fn().mockReturnValue({
+            eq: jest.fn().mockReturnValue({
+              is: jest.fn().mockReturnValue({
+                select: jest.fn().mockResolvedValue({ data: [], error: null }),
+              }),
+            }),
+          }),
+        });
 
       const result = await service.getRegistrations(clientUser, pagination);
 

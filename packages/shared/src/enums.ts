@@ -25,6 +25,16 @@ export enum ComplaintStatus {
   CLOSED = 'closed',
 }
 
+/** Payment status for complaints (manual screenshot flow) */
+export enum ComplaintPaymentStatus {
+  PENDING = 'pending',
+  /** Screenshot proof uploaded by the guest, awaiting admin review */
+  AWAITING_CONFIRMATION = 'awaiting_confirmation',
+  PAID = 'paid',
+  /** Admin reviewed the proof and flagged an issue; handled out-of-band */
+  FLAGGED = 'flagged',
+}
+
 /** Categories for civic complaints */
 export enum ComplaintCategory {
   INFRASTRUCTURE = 'infrastructure',
